@@ -1,0 +1,349 @@
+/* layout.css - Structural Layout and Positioning */
+
+/* Global Reset and Body */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    line-height: 1.4;
+    overflow-x: hidden;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23ff6b6b" opacity="0.6"/></svg>'), auto;
+}
+
+/* Navigation */
+.nav {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    border: 3px solid var(--accent-primary);
+    padding: 20px;
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+    backdrop-filter: blur(10px);
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+}
+
+/* Hero Section */
+.hero {
+    padding: 80px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+.hero-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+/* Projects Section */
+.projects {
+    padding: 100px 20px;
+    background: var(--bg-secondary);
+    border-top: 5px solid var(--accent-primary);
+}
+
+.section-header {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    text-align: center;
+}
+
+.projects-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 40px;
+}
+
+.projects-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 40px;
+}
+
+/* About Section */
+.about {
+    padding: 100px 20px;
+    background: var(--bg-primary);
+    position: relative;
+}
+
+.about-content {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.about-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 80px;
+    align-items: center;
+}
+
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+/* Contact Section */
+.contact {
+    padding: 100px 20px;
+    background: var(--bg-secondary);
+    border-top: 5px solid var(--accent-primary);
+}
+
+.contact-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.contact-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+}
+
+/* Process Section */
+.process {
+    padding: 100px 20px;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    border-top: 5px solid var(--accent-primary);
+}
+
+.process-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.process-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+.process-nav {
+    position: sticky;
+    top: 100px;
+    background: var(--bg-secondary);
+    border: 3px solid var(--text-light);
+    padding: 30px;
+    transform: rotate(-1deg);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+}
+
+.process-content-area {
+    padding: 20px 0;
+}
+
+.process-steps {
+    display: grid;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+/* Theme Control */
+.theme-control {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 54px;
+}
+
+/* Floating Elements Container */
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.floating-element {
+    position: absolute;
+    pointer-events: all;
+    z-index: 10;
+}
+
+.floating-element:nth-child(1) {
+    top: 15%;
+    right: 15%;
+    transform: rotate(12deg);
+}
+
+.floating-element:nth-child(2) {
+    bottom: 25%;
+    left: 10%;
+    transform: rotate(-8deg);
+}
+
+.floating-element:nth-child(3) {
+    top: 60%;
+    right: 5%;
+    transform: rotate(15deg);
+}
+
+/* Section Spacing */
+section {
+    position: relative;
+    z-index: 1;
+}
+
+/* Container Utilities */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.container-narrow {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.container-wide {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Flexbox Utilities */
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-around {
+    justify-content: space-around;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+/* Grid Utilities */
+.grid {
+    display: grid;
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-auto {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.gap-sm {
+    gap: 10px;
+}
+
+.gap-md {
+    gap: 20px;
+}
+
+.gap-lg {
+    gap: 40px;
+}
+
+.gap-xl {
+    gap: 60px;
+}
+
+/* Spacing Utilities */
+.mb-sm { margin-bottom: 10px; }
+.mb-md { margin-bottom: 20px; }
+.mb-lg { margin-bottom: 40px; }
+.mb-xl { margin-bottom: 60px; }
+
+.mt-sm { margin-top: 10px; }
+.mt-md { margin-top: 20px; }
+.mt-lg { margin-top: 40px; }
+.mt-xl { margin-top: 60px; }
+
+.p-sm { padding: 10px; }
+.p-md { padding: 20px; }
+.p-lg { padding: 40px; }
+.p-xl { padding: 60px; }
+
+/* Text Alignment */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* Position Utilities */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+
+/* Z-Index Layers */
+.z-10 { z-index: 10; }
+.z-100 { z-index: 100; }
+.z-1000 { z-index: 1000; }
+.z-10000 { z-index: 10000; }

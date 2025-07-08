@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Joel Lithgow Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #f8f8f8;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            background: white;
+            border: 3px solid #333;
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            transform: rotate(-1deg);
+            box-shadow: 8px 8px 0px #ff6b6b;
+        }
+        
+        .offline-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .offline-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .offline-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .offline-button {
+            background: #ff6b6b;
+            color: white;
+            padding: 12px 24px;
+            border: 3px solid #333;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .offline-button:hover {
+            background: #4ecdc4;
+            transform: scale(1.05);
+        }
+        
+        .offline-features {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .offline-features h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .offline-features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .offline-features li {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .offline-features li:before {
+            content: "→ ";
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 30px;
+                transform: rotate(0deg);
+            }
+            
+            .offline-title {
+                font-size: 20px;
+            }
+            
+            .offline-message {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1 class="offline-title">You're Offline</h1>
+        <p class="offline-message">
+            It looks like you're not connected to the internet. 
+            Some features may not be available, but you can still browse 
+            the cached content from your last visit.
+        </p>
+        
+        <button class="offline-button" onclick="location.reload()">
+            Try Again
+        </button>
+        
+        <div class="offline-features">
+            <h3>Available Offline:</h3>
+            <ul>
+                <li>Browse cached projects</li>
+                <li>View skills and experience</li>
+                <li>Read about my process</li>
+                <li>Switch between themes</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Check if we're back online
+        window.addEventListener('online', function() {
+            location.reload();
+        });
+        
+        // Update UI if connection status changes
+        function updateConnectionStatus() {
+            if (navigator.onLine) {
+                document.body.style.filter = 'none';
+            } else {
+                document.body.style.filter = 'grayscale(20%)';
+            }
+        }
+        
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial check
+        updateConnectionStatus();
+    </script>
+</body>
+</html>

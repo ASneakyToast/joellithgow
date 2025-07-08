@@ -1,0 +1,245 @@
+// js/components/project-cards.js
+// Project Cards Module - Handles project data, case study modals, and project interactions
+
+import projects from '../data/projects.js';
+
+// Case Study Modal Functions
+function openCaseStudy(data) {
+    const modal = document.getElementById('caseStudyModal');
+    if (!modal) {
+        console.error('Case study modal not found');
+        return;
+    }
+    
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    if (modalTitle) modalTitle.textContent = data.title;
+    if (modalBody) modalBody.innerHTML = generateCaseStudyContent(data);
+    
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('caseStudyModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function getProjectData(id) {
+    if (typeof id === 'number') {
+        return projects[id] || projects[0];
+    }
+    return projects.find(project => project.id === id) || projects[0];
+}
+
+function generateCaseStudyContent(data) {
+    return `
+        <div class="case-hero">
+            <div class="case-subtitle">${data.subtitle}</div>
+            <h1 class="case-title">${data.title}</h1>
+            <p class="case-overview">${data.overview}</p>
+            
+            <div class="case-meta">
+                <div class="meta-item">
+                    <div class="meta-label">duration</div>
+                    <div class="meta-value">${data.duration}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">team</div>
+                    <div class="meta-value">${data.team}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">role</div>
+                    <div class="meta-value">${data.role}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">tools</div>
+                    <div class="meta-value">${data.tools}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">the challenge</h2>
+            <div class="section-content">${data.problem}</div>
+            <div class="insight-box">
+                <strong>key insight:</strong> ${data.insights[0]}
+            </div>
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">the approach</h2>
+            <div class="section-content">${data.solution}</div>
+            <div class="image-placeholder">[process visualization would go here]</div>
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">process deep dive</h2>
+            <div class="process-steps">
+                ${data.process.map((step, index) => `
+                    <div class="process-step-detailed">
+                        <div class="step-number-detailed">${index + 1}</div>
+                        <div class="step-title-detailed">${step.title}</div>
+                        <div class="step-description-detailed">${step.description}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">key insights</h2>
+            ${data.insights.map(insight => `
+                <div class="quote-block">
+                    "${insight}"
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="section-content">
+                This project demonstrated the power of ${data.subtitle.toLowerCase()} thinking, showing how creative technology solutions can drive measurable business impact while improving user experience.
+            </div>
+        </div>
+    `;
+}
+
+// Initialize project card interactions
+function initProjectCards() {
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    projectCards.forEach((card, index) => {
+        // Add click handler
+        card.addEventListener('click', function() {
+            const projectId = this.getAttribute('data-project-id');
+            const projectData = getProjectData(projectId);
+            openCaseStudy(projectData);
+        });
+        
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.03) rotate(1deg)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const isOdd = index % 2 === 0;
+            this.style.transform = isOdd ? 'rotate(0.5deg)' : 'rotate(-0.5deg)';
+        });
+    });
+}
+
+// Render project cards dynamically
+function renderProjectCards(container) {
+    if (!container) return;
+    
+    const projectsHTML = projects.map(project => `
+        <div class="project-card" data-project-id="${project.id}">
+            <div class="project-header">
+                <div class="project-number">${project.number}</div>
+                <div class="project-type">${project.type}</div>
+            </div>
+            <div class="project-content">
+                <h3 class="project-title">${project.title}</h3>
+                <p class="project-description">${project.description}</p>
+                <div class="project-tech">
+                    ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                </div>
+                <div class="project-impact">
+                    <div class="impact-metric">→ ${project.impact}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = projectsHTML;
+    
+    // Initialize interactions after rendering
+    initProjectCards();
+}
+
+// Initialize case study modal
+function initCaseStudyModal() {
+    // Create modal HTML if it doesn't exist
+    let modal = document.getElementById('caseStudyModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'caseStudyModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Case Study</h2>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Case study content will be inserted here -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Add event listeners
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+    
+    const closeButton = modal.querySelector('.modal-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeModal);
+    }
+}
+
+// Get all projects
+function getAllProjects() {
+    return projects;
+}
+
+// Get project by ID
+function getProjectById(id) {
+    return projects.find(project => project.id === id);
+}
+
+// Filter projects by type
+function filterProjectsByType(type) {
+    return projects.filter(project => project.type === type);
+}
+
+// Search projects
+function searchProjects(query) {
+    const searchTerm = query.toLowerCase();
+    return projects.filter(project => 
+        project.title.toLowerCase().includes(searchTerm) ||
+        project.description.toLowerCase().includes(searchTerm) ||
+        project.technologies.some(tech => tech.toLowerCase().includes(searchTerm))
+    );
+}
+
+// Export functions for use in other modules
+export {
+    openCaseStudy,
+    closeModal,
+    getProjectData,
+    generateCaseStudyContent,
+    initProjectCards,
+    renderProjectCards,
+    initCaseStudyModal,
+    getAllProjects,
+    getProjectById,
+    filterProjectsByType,
+    searchProjects
+};
