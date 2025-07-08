@@ -1,0 +1,83 @@
+[build]
+  # Directory to change to before starting a build
+  base = "."
+  
+  # Directory that contains the deploy-ready HTML files and assets
+  publish = "."
+  
+  # A command to run after processing each of your site's form submissions
+  # command = "echo 'default context'"
+
+[build.environment]
+  # Set the version of Node to use in builds
+  NODE_VERSION = "18"
+
+# Production context: all deploys from the Production branch
+[context.production]
+  publish = "."
+  command = "echo 'Production build - static site ready'"
+
+# Deploy Preview context: all deploys generated from a pull/merge request
+[context.deploy-preview]
+  publish = "."
+
+# Branch Deploy context: all deploys that are not from a pull/merge request or from the Production branch
+[context.branch-deploy]
+  publish = "."
+
+# Redirect rules for SPA behavior
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Service Worker configuration
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+# Static assets caching
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Security headers for all pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# PWA manifest and icons
+[[headers]]
+  for = "/*.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+
+# Preload critical resources
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Link = "</css/themes.css>; rel=preload; as=style, </css/layout.css>; rel=preload; as=style, </js/main.js>; rel=preload; as=script"
+
+# Form handling (if you want to add contact forms later)
+# [[headers]]
+#   for = "/contact"
+#   [headers.values]
+#     X-Robots-Tag = "noindex"
