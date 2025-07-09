@@ -2,6 +2,7 @@
 // Theme Manager Module - Handles theme switching, persistence, modal controls
 
 import { themes, themeConfig, themeUtils } from '../data/themes.js';
+import scrollManager from '../utils/scroll-manager.js';
 
 // Theme Management Functions
 function setTheme(theme, updateFromKeyboard = false) {
@@ -71,7 +72,7 @@ function openThemeModal() {
     const modal = document.getElementById('themeModal');
     if (modal) {
         modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        scrollManager.lockBodyScroll();
         themeConfig.modalOpen = true;
     }
 }
@@ -80,7 +81,7 @@ function closeThemeModal() {
     const modal = document.getElementById('themeModal');
     if (modal) {
         modal.classList.remove('show');
-        document.body.style.overflow = 'auto';
+        scrollManager.restoreBodyScroll();
         themeConfig.modalOpen = false;
     }
 }

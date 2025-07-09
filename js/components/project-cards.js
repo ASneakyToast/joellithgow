@@ -2,6 +2,7 @@
 // Project Cards Module - Handles project data, case study modals, and project interactions
 
 import projects from '../data/projects.js';
+import scrollManager from '../utils/scroll-manager.js';
 
 // Case Study Modal Functions
 function openCaseStudy(data) {
@@ -13,19 +14,24 @@ function openCaseStudy(data) {
     
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
+    const modalContent = modal.querySelector('.modal-content');
     
     if (modalTitle) modalTitle.textContent = data.title;
-    if (modalBody) modalBody.innerHTML = generateCaseStudyContent(data);
+    if (modalBody) {
+        modalBody.innerHTML = generateCaseStudyContent(data);
+        // Reset scroll position of the actual scrollable container
+        if (modalContent) modalContent.scrollTop = 0;
+    }
     
     modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
+    scrollManager.lockBodyScroll();
 }
 
 function closeModal() {
     const modal = document.getElementById('caseStudyModal');
     if (modal) {
         modal.classList.remove('show');
-        document.body.style.overflow = 'auto';
+        scrollManager.restoreBodyScroll();
     }
 }
 
@@ -141,6 +147,23 @@ function generateCaseStudyContent(data) {
                 This project demonstrated the power of ${data.subtitle.toLowerCase()} thinking, showing how creative technology solutions can drive measurable business impact while improving user experience.
             </div>
         </div> -->
+        
+        ${data.id === 'homepage-redesign' ? `
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="section-content">
+                This homepage redesign demonstrated the power of user-centered design thinking, showing how strategic UX improvements can drive measurable business impact while dramatically improving user experience and engagement.
+            </div>
+        </div>
+        ` : ''}
         
         ${data.liveLink ? `
         <div class="case-section">
