@@ -17,13 +17,13 @@
 [data-theme="electric"] {
     --accent-primary: #00ffff;
     --accent-secondary: #ff00ff;
-    --accent-tertiary: #ffff00;
+    --accent-tertiary: #000000;
     --bg-primary: #0a0a0a;
     --bg-secondary: #1a1a1a;
     --bg-dark: #000;
     --text-primary: #fff;
     --text-secondary: #ccc;
-    --text-light: #fff;
+    --text-light: #000;
 }
 
 /* Theme: Retro */
@@ -69,13 +69,13 @@
     [data-theme="system"] {
         --accent-primary: #00ffff;
         --accent-secondary: #ff00ff;
-        --accent-tertiary: #ffff00;
+        --accent-tertiary: #000000;
         --bg-primary: #0a0a0a;
         --bg-secondary: #1a1a1a;
         --bg-dark: #000;
         --text-primary: #fff;
         --text-secondary: #ccc;
-        --text-light: #fff;
+        --text-light: #000;
     }
 }
 
@@ -83,7 +83,7 @@
 [data-theme="high-contrast"] {
     --accent-primary: #ffffff;
     --accent-secondary: #ffff00;
-    --accent-tertiary: #00ffff;
+    --accent-tertiary: #000000;
     --bg-primary: #000000;
     --bg-secondary: #111111;
     --bg-dark: #ffffff;
@@ -102,7 +102,7 @@
     --bg-dark: #ff073a;
     --text-primary: #39ff14;
     --text-secondary: #ff073a;
-    --text-light: #0d0d0d;
+    --text-light: #000000;
 }
 
 /* Custom scrollbar */
