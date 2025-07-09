@@ -14,7 +14,17 @@ const themes = [
             '--bg-dark': '#333',
             '--text-primary': '#333',
             '--text-secondary': '#666',
-            '--text-light': 'white'
+            '--text-light': 'white',
+            '--gradient-primary-light': 'rgba(255, 107, 107, 0.25)',
+            '--gradient-primary-medium': 'rgba(255, 107, 107, 0.4)',
+            '--gradient-primary-dim': 'rgba(255, 107, 107, 0.3)',
+            '--gradient-primary-subtle': 'rgba(255, 107, 107, 0.15)',
+            '--gradient-secondary-medium': 'rgba(78, 205, 196, 0.6)',
+            '--gradient-secondary-light': 'rgba(78, 205, 196, 0.5)',
+            '--gradient-secondary-dim': 'rgba(78, 205, 196, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(78, 205, 196, 0.15)',
+            '--gradient-tertiary-light': 'rgba(255, 230, 109, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(255, 230, 109, 0.5)'
         },
         isDefault: true
     },
@@ -32,7 +42,17 @@ const themes = [
             '--bg-dark': '#000',
             '--text-primary': '#fff',
             '--text-secondary': '#ccc',
-            '--text-light': '#fff'
+            '--text-light': '#fff',
+            '--gradient-primary-light': 'rgba(0, 255, 255, 0.25)',
+            '--gradient-primary-medium': 'rgba(0, 255, 255, 0.4)',
+            '--gradient-primary-dim': 'rgba(0, 255, 255, 0.3)',
+            '--gradient-primary-subtle': 'rgba(0, 255, 255, 0.15)',
+            '--gradient-secondary-medium': 'rgba(255, 0, 255, 0.6)',
+            '--gradient-secondary-light': 'rgba(255, 0, 255, 0.5)',
+            '--gradient-secondary-dim': 'rgba(255, 0, 255, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(255, 0, 255, 0.15)',
+            '--gradient-tertiary-light': 'rgba(0, 0, 0, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(0, 0, 0, 0.5)'
         }
     },
     {
@@ -49,7 +69,17 @@ const themes = [
             '--bg-dark': '#657b83',
             '--text-primary': '#586e75',
             '--text-secondary': '#93a1a1',
-            '--text-light': '#ffffff'
+            '--text-light': '#ffffff',
+            '--gradient-primary-light': 'rgba(255, 140, 66, 0.25)',
+            '--gradient-primary-medium': 'rgba(255, 140, 66, 0.4)',
+            '--gradient-primary-dim': 'rgba(255, 140, 66, 0.3)',
+            '--gradient-primary-subtle': 'rgba(255, 140, 66, 0.15)',
+            '--gradient-secondary-medium': 'rgba(102, 153, 204, 0.6)',
+            '--gradient-secondary-light': 'rgba(102, 153, 204, 0.5)',
+            '--gradient-secondary-dim': 'rgba(102, 153, 204, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(102, 153, 204, 0.15)',
+            '--gradient-tertiary-light': 'rgba(255, 204, 92, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(255, 204, 92, 0.5)'
         }
     },
     {
@@ -66,7 +96,17 @@ const themes = [
             '--bg-dark': '#212529',
             '--text-primary': '#212529',
             '--text-secondary': '#6c757d',
-            '--text-light': '#ffffff'
+            '--text-light': '#ffffff',
+            '--gradient-primary-light': 'rgba(0, 122, 204, 0.25)',
+            '--gradient-primary-medium': 'rgba(0, 122, 204, 0.4)',
+            '--gradient-primary-dim': 'rgba(0, 122, 204, 0.3)',
+            '--gradient-primary-subtle': 'rgba(0, 122, 204, 0.15)',
+            '--gradient-secondary-medium': 'rgba(92, 107, 192, 0.6)',
+            '--gradient-secondary-light': 'rgba(92, 107, 192, 0.5)',
+            '--gradient-secondary-dim': 'rgba(92, 107, 192, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(92, 107, 192, 0.15)',
+            '--gradient-tertiary-light': 'rgba(38, 198, 218, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(38, 198, 218, 0.5)'
         }
     },
     {
@@ -87,7 +127,17 @@ const themes = [
             '--bg-dark': '#212529',
             '--text-primary': '#212529',
             '--text-secondary': '#6c757d',
-            '--text-light': '#ffffff'
+            '--text-light': '#ffffff',
+            '--gradient-primary-light': 'rgba(0, 122, 204, 0.25)',
+            '--gradient-primary-medium': 'rgba(0, 122, 204, 0.4)',
+            '--gradient-primary-dim': 'rgba(0, 122, 204, 0.3)',
+            '--gradient-primary-subtle': 'rgba(0, 122, 204, 0.15)',
+            '--gradient-secondary-medium': 'rgba(92, 107, 192, 0.6)',
+            '--gradient-secondary-light': 'rgba(92, 107, 192, 0.5)',
+            '--gradient-secondary-dim': 'rgba(92, 107, 192, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(92, 107, 192, 0.15)',
+            '--gradient-tertiary-light': 'rgba(38, 198, 218, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(38, 198, 218, 0.5)'
         },
         darkModeVariables: {
             '--accent-primary': '#00ffff',
@@ -98,7 +148,17 @@ const themes = [
             '--bg-dark': '#000',
             '--text-primary': '#fff',
             '--text-secondary': '#ccc',
-            '--text-light': '#fff'
+            '--text-light': '#fff',
+            '--gradient-primary-light': 'rgba(0, 255, 255, 0.25)',
+            '--gradient-primary-medium': 'rgba(0, 255, 255, 0.4)',
+            '--gradient-primary-dim': 'rgba(0, 255, 255, 0.3)',
+            '--gradient-primary-subtle': 'rgba(0, 255, 255, 0.15)',
+            '--gradient-secondary-medium': 'rgba(255, 0, 255, 0.6)',
+            '--gradient-secondary-light': 'rgba(255, 0, 255, 0.5)',
+            '--gradient-secondary-dim': 'rgba(255, 0, 255, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(255, 0, 255, 0.15)',
+            '--gradient-tertiary-light': 'rgba(0, 0, 0, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(0, 0, 0, 0.5)'
         },
         isSystem: true
     },
@@ -116,7 +176,17 @@ const themes = [
             '--bg-dark': '#ffffff',
             '--text-primary': '#ffffff',
             '--text-secondary': '#ffffff',
-            '--text-light': '#000000'
+            '--text-light': '#000000',
+            '--gradient-primary-light': 'rgba(255, 255, 255, 0.25)',
+            '--gradient-primary-medium': 'rgba(255, 255, 255, 0.4)',
+            '--gradient-primary-dim': 'rgba(255, 255, 255, 0.3)',
+            '--gradient-primary-subtle': 'rgba(255, 255, 255, 0.15)',
+            '--gradient-secondary-medium': 'rgba(255, 255, 0, 0.6)',
+            '--gradient-secondary-light': 'rgba(255, 255, 0, 0.5)',
+            '--gradient-secondary-dim': 'rgba(255, 255, 0, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(255, 255, 0, 0.15)',
+            '--gradient-tertiary-light': 'rgba(0, 0, 0, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(0, 0, 0, 0.5)'
         },
         isHighContrast: true
     },
@@ -134,7 +204,17 @@ const themes = [
             '--bg-dark': '#ff073a',
             '--text-primary': '#39ff14',
             '--text-secondary': '#ff073a',
-            '--text-light': '#0d0d0d'
+            '--text-light': '#0d0d0d',
+            '--gradient-primary-light': 'rgba(255, 7, 58, 0.25)',
+            '--gradient-primary-medium': 'rgba(255, 7, 58, 0.4)',
+            '--gradient-primary-dim': 'rgba(255, 7, 58, 0.3)',
+            '--gradient-primary-subtle': 'rgba(255, 7, 58, 0.15)',
+            '--gradient-secondary-medium': 'rgba(57, 255, 20, 0.6)',
+            '--gradient-secondary-light': 'rgba(57, 255, 20, 0.5)',
+            '--gradient-secondary-dim': 'rgba(57, 255, 20, 0.2)',
+            '--gradient-secondary-subtle': 'rgba(57, 255, 20, 0.15)',
+            '--gradient-tertiary-light': 'rgba(255, 7, 58, 0.4)',
+            '--gradient-tertiary-medium': 'rgba(255, 7, 58, 0.5)'
         }
     }
 ];
