@@ -59,9 +59,9 @@ body {
     height: 100%;
     background-image: 
         /* Subtle vertical lines */
-        linear-gradient(90deg, transparent 79px, rgba(255, 107, 107, 0.25) 80px, rgba(255, 107, 107, 0.25) 81px, transparent 82px),
+        linear-gradient(90deg, transparent 79px, var(--gradient-primary-light) 80px, var(--gradient-primary-light) 81px, transparent 82px),
         /* Subtle horizontal lines */
-        linear-gradient(transparent 79px, rgba(255, 107, 107, 0.25) 80px, rgba(255, 107, 107, 0.25) 81px, transparent 82px);
+        linear-gradient(transparent 79px, var(--gradient-primary-light) 80px, var(--gradient-primary-light) 81px, transparent 82px);
     background-size: 80px 80px;
     background-position: 0 0;
     animation: gridBreathe 4s ease-in-out infinite, gridDrift 12s ease-in-out infinite;
@@ -78,17 +78,17 @@ body {
     height: 100%;
     background-image: 
         /* Single accent dot */
-        radial-gradient(circle at 85% 15%, rgba(78, 205, 196, 0.6) 3px, transparent 3px),
+        radial-gradient(circle at 85% 15%, var(--gradient-secondary-medium) 3px, transparent 3px),
         /* Bold visible spiral */
         conic-gradient(from 0deg at 85% 15%, 
             transparent 0deg,
-            rgba(255, 107, 107, 0.4) 45deg,
+            var(--gradient-primary-medium) 45deg,
             transparent 90deg,
-            rgba(78, 205, 196, 0.5) 135deg,
+            var(--gradient-secondary-light) 135deg,
             transparent 180deg,
-            rgba(255, 230, 109, 0.4) 225deg,
+            var(--gradient-tertiary-light) 225deg,
             transparent 270deg,
-            rgba(255, 107, 107, 0.3) 315deg,
+            var(--gradient-primary-dim) 315deg,
             transparent 360deg);
     background-size: 
         100% 100%,
@@ -390,8 +390,8 @@ body {
     height: 100%;
     background-image: 
         /* Grid pattern - different color for contact */
-        linear-gradient(90deg, transparent 79px, rgba(78, 205, 196, 0.2) 80px, rgba(78, 205, 196, 0.2) 81px, transparent 82px),
-        linear-gradient(transparent 79px, rgba(78, 205, 196, 0.2) 80px, rgba(78, 205, 196, 0.2) 81px, transparent 82px);
+        linear-gradient(90deg, transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px),
+        linear-gradient(transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px);
     background-size: 80px 80px;
     background-position: 0 0;
     animation: contactGridBreathe 5s ease-in-out infinite, contactGridDrift 15s ease-in-out infinite;
@@ -408,13 +408,13 @@ body {
     height: 100%;
     background-image: 
         /* Connection dots scattered like network nodes */
-        radial-gradient(circle 20px at 15% 25%, rgba(255, 230, 109, 0.5) 0%, rgba(255, 230, 109, 0.5) 70%, transparent 100%),
-        radial-gradient(circle 18px at 75% 35%, rgba(255, 107, 107, 0.4) 0%, rgba(255, 107, 107, 0.4) 70%, transparent 100%),
-        radial-gradient(circle 22px at 25% 75%, rgba(78, 205, 196, 0.5) 0%, rgba(78, 205, 196, 0.5) 70%, transparent 100%),
-        radial-gradient(circle 19px at 85% 85%, rgba(255, 230, 109, 0.4) 0%, rgba(255, 230, 109, 0.4) 70%, transparent 100%),
+        radial-gradient(circle 20px at 15% 25%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 70%, transparent 100%),
+        radial-gradient(circle 18px at 75% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 70%, transparent 100%),
+        radial-gradient(circle 22px at 25% 75%, var(--gradient-secondary-light) 0%, var(--gradient-secondary-light) 70%, transparent 100%),
+        radial-gradient(circle 19px at 85% 85%, var(--gradient-tertiary-light) 0%, var(--gradient-tertiary-light) 70%, transparent 100%),
         /* Curved connection paths */
-        radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, rgba(78, 205, 196, 0.15) 40%, transparent 50%),
-        radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, rgba(255, 107, 107, 0.15) 45%, transparent 55%);
+        radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, var(--gradient-secondary-subtle) 40%, transparent 50%),
+        radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, var(--gradient-primary-subtle) 45%, transparent 55%);
     background-size: 
         100% 100%,
         100% 100%,
