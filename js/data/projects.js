@@ -5,14 +5,14 @@ const projects = [
         number: '01',
         type: 'homepage redesign',
         title: 'CCA homepage redesign',
-        description: 'data-driven redesign that solved user confusion about institutional identity, achieving a 36% reduction in confusion-driven navigation while improving conversion paths and engagement metrics',
+        description: 'data-driven redesign that solved user confusion about institutional identity, achieving a 33% reduction in confusion-driven navigation while improving conversion paths and engagement metrics',
         technologies: [
             'user research',
             'google analytics',
             'stakeholder interviews',
             'conversion optimization'
         ],
-        impact: '36% reduction in confusion-driven navigation',
+        impact: '33% reduction in confusion-driven navigation',
         images: [
             {
                 src: 'assets/images/homepage-scroll-720.webm',
@@ -74,9 +74,8 @@ const projects = [
             'A strategic three-phase approach emerged: awareness (hero/identity), consideration (community/programs), conversion (CTAs)'
         ],
         metrics: [
-            { number: '36%', label: 'reduction in "about" clicks' },
-            { number: '28%', label: 'increase in page engagement' },
-            { number: '15%', label: 'more admissions event clicks' }
+            { number: '33%', label: 'reduction in "about" clicks' },
+            { number: '20%', label: 'increase of engagement time' }
         ],
         liveLink: {
             title: 'see for yourself',

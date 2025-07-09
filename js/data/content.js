@@ -17,7 +17,7 @@ const heroData = {
 const statisticsData = [
     { number: "5+", label: "years experience" },
     { number: "50+", label: "projects completed" },
-    { number: "15+", label: "happy clients" },
+    { number: "1", label: "Art Degree" },
     { number: "∞", label: "ideas per day" }
 ];
 
@@ -59,8 +59,8 @@ const processData = {
             title: "rapid prototyping",
             description: "Direct-to-prototype with real content, utilizing advanced tools and efficient workflows to create high-fidelity designs that eliminate translation issues between wireframes and final products.",
             example: {
-                title: "Real Example: Homepage Redesign",
-                content: "Stakeholder said 'make it more engaging' → 2-hour prototype session → shipped design that reduced bounce rate 36%. By jumping straight to high-fidelity prototypes with real content, we could test actual user reactions and iterate in real-time."
+                title: "Real Example: Proactive Feature Development",
+                content: "Instead of waiting for requirements → presented working prototype at design meeting → gathered feedback and iterated in between other priority tasks → returned next week with updated version. Result: typical feature development timeline compressed from months to weeks."
             },
             icon: "prototype" // SVG icon identifier
         },
