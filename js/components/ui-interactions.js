@@ -218,12 +218,18 @@ function initCursorTrail() {
 
 // Draggable functionality for floating elements
 function makeDraggable() {
-    const floatingElements = document.querySelectorAll('.floating-element');
+    const floatingElements = document.querySelectorAll('.floating-element, .contact-floating-element');
     
     floatingElements.forEach(element => {
         let isDragging = false;
         let startX = 0;
         let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let initialTransform = '';
+        
+        // Store initial transform to preserve rotation
+        initialTransform = window.getComputedStyle(element).transform;
         
         function handleStart(e) {
             isDragging = true;
@@ -232,31 +238,58 @@ function makeDraggable() {
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
             
+            // Get current position more accurately
             const rect = element.getBoundingClientRect();
+            
+            // Calculate offset from mouse to element's top-left corner
             startX = clientX - rect.left;
             startY = clientY - rect.top;
             
-            // Prevent text selection
+            // Store the current computed transform to preserve rotation
+            const computedStyle = window.getComputedStyle(element);
+            const currentTransform = computedStyle.transform;
+            
+            // Convert element to fixed positioning to avoid parent container issues
+            currentX = rect.left;
+            currentY = rect.top;
+            
+            element.style.position = 'fixed';
+            element.style.left = currentX + 'px';
+            element.style.top = currentY + 'px';
+            element.style.right = 'auto';
+            element.style.bottom = 'auto';
+            element.style.margin = '0';
+            element.style.transform = currentTransform; // Preserve rotation
+            element.style.zIndex = '1000'; // Bring to front while dragging
+            
+            // Prevent text selection and default behaviors
             e.preventDefault();
+            e.stopPropagation();
         }
         
         function handleMove(e) {
             if (!isDragging) return;
             
+            e.preventDefault();
+            
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
             
+            // Calculate new position
             const newX = clientX - startX;
             const newY = clientY - startY;
             
-            // Constrain to viewport
-            const maxX = window.innerWidth - element.offsetWidth;
-            const maxY = window.innerHeight - element.offsetHeight;
+            // Constrain to viewport with padding
+            const padding = 10;
+            const maxX = window.innerWidth - element.offsetWidth - padding;
+            const maxY = window.innerHeight - element.offsetHeight - padding;
             
-            element.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
-            element.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
-            element.style.right = 'auto';
-            element.style.bottom = 'auto';
+            currentX = Math.max(padding, Math.min(newX, maxX));
+            currentY = Math.max(padding, Math.min(newY, maxY));
+            
+            // Apply position with transform preserved
+            element.style.left = currentX + 'px';
+            element.style.top = currentY + 'px';
         }
         
         function handleEnd() {
@@ -264,17 +297,36 @@ function makeDraggable() {
             
             isDragging = false;
             element.classList.remove('dragging');
+            
+            // Convert back to absolute positioning within parent container
+            const parentRect = element.parentElement.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            
+            // Calculate position relative to parent
+            const relativeX = elementRect.left - parentRect.left;
+            const relativeY = elementRect.top - parentRect.top;
+            
+            // Convert to absolute positioning within parent
+            element.style.position = 'absolute';
+            element.style.left = relativeX + 'px';
+            element.style.top = relativeY + 'px';
+            element.style.right = 'auto';
+            element.style.bottom = 'auto';
+            element.style.zIndex = '10'; // Reset to normal z-index
         }
         
         // Mouse events
-        element.addEventListener('mousedown', handleStart);
-        document.addEventListener('mousemove', handleMove);
+        element.addEventListener('mousedown', handleStart, { passive: false });
+        document.addEventListener('mousemove', handleMove, { passive: false });
         document.addEventListener('mouseup', handleEnd);
         
-        // Touch events
-        element.addEventListener('touchstart', handleStart);
-        document.addEventListener('touchmove', handleMove);
+        // Touch events  
+        element.addEventListener('touchstart', handleStart, { passive: false });
+        document.addEventListener('touchmove', handleMove, { passive: false });
         document.addEventListener('touchend', handleEnd);
+        
+        // Prevent context menu on long press
+        element.addEventListener('contextmenu', e => e.preventDefault());
     });
 }
 
