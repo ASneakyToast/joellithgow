@@ -82,20 +82,6 @@
         </div>
     </nav>
     
-    <!-- Theme Control -->
-    <button 
-        id="themeControl" 
-        class="theme-control" 
-        aria-label="Open theme selector"
-        aria-expanded="false"
-        aria-controls="themeModal"
-        onclick="openThemeModal()"
-        title="Press Ctrl+T to cycle themes">
-        <div class="theme-control-text">
-            <span aria-hidden="true">⚙</span>
-            <span>themes</span>
-        </div>
-    </button>
     
     <!-- Main Content -->
     <main id="main-content">
@@ -114,6 +100,19 @@
                     <a href="#work" class="cta-button" aria-describedby="work-cta-description">
                         view my work
                     </a>
+                    <button 
+                        id="themeControl" 
+                        class="theme-control" 
+                        aria-label="Open theme selector"
+                        aria-expanded="false"
+                        aria-controls="themeModal"
+                        onclick="openThemeModal()"
+                        title="Press Ctrl+T to cycle themes">
+                        <div class="theme-control-text">
+                            <span aria-hidden="true">⚙</span>
+                            <span>themes</span>
+                        </div>
+                    </button>
                     <div id="work-cta-description" class="sr-only">
                         Explore my recent projects and case studies
                     </div>
@@ -162,17 +161,7 @@
                     <nav class="process-nav" role="navigation" aria-label="Process steps navigation">
                         <div class="process-nav-item active" data-step="1" tabindex="0" role="button" aria-pressed="true">
                             <div class="nav-step-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.35-4.35"></path>
-                                </svg>
-                            </div>
-                            <div class="nav-step-title">ai research</div>
-                        </div>
-                        
-                        <div class="process-nav-item" data-step="2" tabindex="0" role="button" aria-pressed="false">
-                            <div class="nav-step-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
                                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                                     <line x1="8" y1="21" x2="16" y2="21"></line>
                                     <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -181,9 +170,9 @@
                             <div class="nav-step-title">rapid prototyping</div>
                         </div>
                         
-                        <div class="process-nav-item" data-step="3" tabindex="0" role="button" aria-pressed="false">
+                        <div class="process-nav-item" data-step="2" tabindex="0" role="button" aria-pressed="false">
                             <div class="nav-step-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="9" cy="7" r="4"></circle>
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -193,39 +182,31 @@
                             <div class="nav-step-title">live collaboration</div>
                         </div>
                         
-                        <div class="process-nav-item" data-step="4" tabindex="0" role="button" aria-pressed="false">
+                        <div class="process-nav-item" data-step="3" tabindex="0" role="button" aria-pressed="false">
                             <div class="nav-step-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
                                     <polyline points="16 18 22 12 16 6"></polyline>
                                     <polyline points="8 6 2 12 8 18"></polyline>
                                 </svg>
                             </div>
-                            <div class="nav-step-title">technical implementation</div>
+                            <div class="nav-step-title">continuous learning</div>
+                        </div>
+                        
+                        <div class="process-nav-item" data-step="4" tabindex="0" role="button" aria-pressed="false">
+                            <div class="nav-step-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </div>
+                            <div class="nav-step-title">ai research</div>
                         </div>
                     </nav>
                     
                     <div class="process-content-area">
                         <article class="process-step-content active" id="step-1" aria-labelledby="step-1-title">
                             <header class="step-content-header">
-                                <h3 id="step-1-title" class="step-content-title">ai research</h3>
-                                <p class="step-content-description">
-                                    Leverage AI tools for competitive analysis, user insights, and strategic documentation 
-                                    to accelerate research phases and uncover deeper insights faster than traditional methods.
-                                </p>
-                            </header>
-                            <div class="step-content-example">
-                                <h4>Real Example: Feature Planning</h4>
-                                <p>
-                                    Used Claude AI to analyze 20 competitors → strategic brief → GitHub issues in 2 hours. 
-                                    What typically takes days of manual research and documentation was completed in a single 
-                                    focused session, providing comprehensive competitive insights and actionable next steps.
-                                </p>
-                            </div>
-                        </article>
-                        
-                        <article class="process-step-content" id="step-2" aria-labelledby="step-2-title">
-                            <header class="step-content-header">
-                                <h3 id="step-2-title" class="step-content-title">rapid prototyping</h3>
+                                <h3 id="step-1-title" class="step-content-title">rapid prototyping</h3>
                                 <p class="step-content-description">
                                     Direct-to-prototype with real content, utilizing advanced tools and efficient workflows 
                                     to create high-fidelity designs that eliminate translation issues between wireframes and final products.
@@ -241,9 +222,9 @@
                             </div>
                         </article>
                         
-                        <article class="process-step-content" id="step-3" aria-labelledby="step-3-title">
+                        <article class="process-step-content" id="step-2" aria-labelledby="step-2-title">
                             <header class="step-content-header">
-                                <h3 id="step-3-title" class="step-content-title">live collaboration</h3>
+                                <h3 id="step-2-title" class="step-content-title">live collaboration</h3>
                                 <p class="step-content-description">
                                     Real-time stakeholder sessions with instant implementation and feedback loops, transforming 
                                     traditional review meetings into collaborative creation sessions that align teams immediately.
@@ -259,20 +240,38 @@
                             </div>
                         </article>
                         
-                        <article class="process-step-content" id="step-4" aria-labelledby="step-4-title">
+                        <article class="process-step-content" id="step-3" aria-labelledby="step-3-title">
                             <header class="step-content-header">
-                                <h3 id="step-4-title" class="step-content-title">technical implementation</h3>
+                                <h3 id="step-3-title" class="step-content-title">continuous learning</h3>
                                 <p class="step-content-description">
-                                    Full-stack development leveraging modern technologies and streamlined deployment processes, 
-                                    from feature planning through cloud deployment, ensuring designs become functional products efficiently.
+                                    Embracing unfamiliar technologies and pushing beyond comfort zones to deliver innovative solutions, 
+                                    turning knowledge gaps into growth opportunities through systematic learning and experimentation.
                                 </p>
                             </header>
                             <div class="step-content-example">
-                                <h4>Real Example: Infrastructure Migration</h4>
+                                <h4>Real Example: Learning Cloud Technologies</h4>
                                 <p>
-                                    Kubernetes → Cloud Run migration with Docker containerization and CI/CD pipeline setup. 
-                                    By utilizing modern cloud technologies and automated deployment processes, complex infrastructure 
-                                    changes were completed smoothly with minimal downtime.
+                                    Zero cloud experience → successful Kubernetes to Cloud Run migration in 3 weeks. 
+                                    By approaching unfamiliar technologies systematically and leveraging documentation, completed 
+                                    infrastructure modernization with zero downtime and 70% faster deployments.
+                                </p>
+                            </div>
+                        </article>
+                        
+                        <article class="process-step-content" id="step-4" aria-labelledby="step-4-title">
+                            <header class="step-content-header">
+                                <h3 id="step-4-title" class="step-content-title">ai research</h3>
+                                <p class="step-content-description">
+                                    Leverage AI tools for competitive analysis, user insights, and strategic documentation 
+                                    to accelerate research phases and uncover deeper insights faster than traditional methods.
+                                </p>
+                            </header>
+                            <div class="step-content-example">
+                                <h4>Real Example: Feature Planning</h4>
+                                <p>
+                                    Used Claude AI to analyze 20 competitors → strategic brief → GitHub issues in 2 hours. 
+                                    What typically takes days of manual research and documentation was completed in a single 
+                                    focused session, providing comprehensive competitive insights and actionable next steps.
                                 </p>
                             </div>
                         </article>

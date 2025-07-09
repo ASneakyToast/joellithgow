@@ -56,16 +56,6 @@ const processData = {
     steps: [
         {
             id: 1,
-            title: "ai research",
-            description: "Leverage AI tools for competitive analysis, user insights, and strategic documentation to accelerate research phases and uncover deeper insights faster than traditional methods.",
-            example: {
-                title: "Real Example: Feature Planning",
-                content: "Used Claude AI to analyze 20 competitors → strategic brief → GitHub issues in 2 hours. What typically takes days of manual research and documentation was completed in a single focused session, providing comprehensive competitive insights and actionable next steps."
-            },
-            icon: "research" // SVG icon identifier
-        },
-        {
-            id: 2,
             title: "rapid prototyping",
             description: "Direct-to-prototype with real content, utilizing advanced tools and efficient workflows to create high-fidelity designs that eliminate translation issues between wireframes and final products.",
             example: {
@@ -75,7 +65,7 @@ const processData = {
             icon: "prototype" // SVG icon identifier
         },
         {
-            id: 3,
+            id: 2,
             title: "live collaboration",
             description: "Real-time stakeholder sessions with instant implementation and feedback loops, transforming traditional review meetings into collaborative creation sessions that align teams immediately.",
             example: {
@@ -85,14 +75,24 @@ const processData = {
             icon: "collaboration" // SVG icon identifier
         },
         {
-            id: 4,
-            title: "technical implementation",
-            description: "Full-stack development leveraging modern technologies and streamlined deployment processes, from feature planning through cloud deployment, ensuring designs become functional products efficiently.",
+            id: 3,
+            title: "continuous learning",
+            description: "Embracing unfamiliar technologies and pushing beyond comfort zones to deliver innovative solutions, turning knowledge gaps into growth opportunities through systematic learning and experimentation.",
             example: {
-                title: "Real Example: Infrastructure Migration",
-                content: "Kubernetes → Cloud Run migration with Docker containerization and CI/CD pipeline setup. By utilizing modern cloud technologies and automated deployment processes, complex infrastructure changes were completed smoothly with minimal downtime."
+                title: "Real Example: Learning Cloud Technologies",
+                content: "Zero cloud experience → successful Kubernetes to Cloud Run migration in 3 weeks. By approaching unfamiliar technologies systematically and leveraging documentation, completed infrastructure modernization with zero downtime and 70% faster deployments."
             },
-            icon: "implementation" // SVG icon identifier
+            icon: "learning" // SVG icon identifier
+        },
+        {
+            id: 4,
+            title: "ai research",
+            description: "Leverage AI tools for competitive analysis, user insights, and strategic documentation to accelerate research phases and uncover deeper insights faster than traditional methods.",
+            example: {
+                title: "Real Example: Feature Planning",
+                content: "Used Claude AI to analyze 20 competitors → strategic brief → GitHub issues in 2 hours. What typically takes days of manual research and documentation was completed in a single focused session, providing comprehensive competitive insights and actionable next steps."
+            },
+            icon: "research" // SVG icon identifier
         }
     ]
 };

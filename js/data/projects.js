@@ -4,8 +4,8 @@ const projects = [
         id: 'homepage-redesign',
         number: '01',
         type: 'homepage redesign',
-        title: 'cca.edu transformation',
-        description: 'data-driven redesign that solved user confusion about institutional identity while improving conversion paths and engagement metrics',
+        title: 'CCA homepage redesign',
+        description: 'data-driven redesign that solved user confusion about institutional identity, achieving a 36% reduction in confusion-driven navigation while improving conversion paths and engagement metrics',
         technologies: [
             'user research',
             'google analytics',
@@ -13,11 +13,29 @@ const projects = [
             'conversion optimization'
         ],
         impact: '36% reduction in confusion-driven navigation',
+        images: [
+            {
+                src: 'assets/images/homepage-hero-9x16.webm',
+                alt: 'CCA homepage before and after redesign comparison',
+                caption: 'Homepage transformation showing improved clarity and user flow',
+                type: 'video'
+            },
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'User analytics showing improved engagement metrics',
+                caption: 'Analytics dashboard demonstrating 36% reduction in confusion-driven navigation'
+            },
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Design process wireframes and prototypes',
+                caption: 'Progressive disclosure approach: identity first, community second, conversion third'
+            }
+        ],
         // Extended data from the modal
         subtitle: 'homepage redesign',
         overview: 'A comprehensive homepage redesign that transformed user understanding of CCA\'s identity while dramatically improving conversion metrics and user engagement.',
         duration: '4 months',
-        team: 'marketing team + 1 developer',
+        team: 'Joel Lithgow (UX), Tanza Solis (Dev), Stephanie Smith (Strategy), Nikol Plass (PM)',
         role: 'lead ux designer',
         tools: 'figma, google analytics, looker studio',
         problem: 'Users landing on CCA\'s homepage didn\'t understand what the institution was or where it was located. Analytics showed high bounce rates and users immediately clicking to the "About" page in the footer, indicating fundamental communication failure.',
@@ -41,22 +59,27 @@ const projects = [
             }
         ],
         insights: [
-            'Users needed immediate geographic context - San Francisco location was crucial for prospective students',
-            'The old content-first approach buried institutional identity',
-            'Stakeholders needed to see themselves reflected in the new design to buy in'
+            'The homepage needed to function as CCA\'s "front door" - balancing user needs for immediate brand understanding with admissions team conversion goals',
+            'Users weren\'t getting essential information upfront: who CCA was, what programs were offered, and where they were located',
+            'A strategic three-phase approach emerged: awareness (hero/identity), consideration (community/programs), conversion (CTAs)'
         ],
         metrics: [
             { number: '36%', label: 'reduction in "about" clicks' },
             { number: '28%', label: 'increase in page engagement' },
             { number: '15%', label: 'more admissions event clicks' }
-        ]
+        ],
+        liveLink: {
+            title: 'see for yourself',
+            url: 'https://www.cca.edu',
+            description: 'Visit the live CCA homepage to experience the redesigned user flow'
+        }
     },
     {
         id: 'ai-pipeline',
         number: '02',
         type: 'ai-augmented development',
         title: 'end-to-end ai pipeline',
-        description: 'complete feature development from research to deployment using ai tools for every step of the process',
+        description: 'complete feature development from research to deployment using ai tools for every step of the process, achieving strategy to deployment in just 1 day',
         technologies: [
             'claude ai',
             'github integration',
@@ -64,6 +87,18 @@ const projects = [
             'cloud deployment'
         ],
         impact: 'strategy to deployment in 1 day',
+        images: [
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'AI-augmented development workflow diagram',
+                caption: 'Complete feature development pipeline using AI tools for every stage'
+            },
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Claude AI interface showing automated code generation',
+                caption: 'AI-guided development process with human oversight at critical decision points'
+            }
+        ],
         // Extended data from the modal
         subtitle: 'ai-augmented development',
         overview: 'Pioneered a complete feature development workflow using AI tools for every stage from research to deployment, demonstrating the future of human-AI collaboration in product development.',
@@ -105,103 +140,130 @@ const projects = [
     {
         id: 'editorial-process',
         number: '03',
-        type: 'collaborative design',
-        title: 'real-time editorial process',
-        description: 'high-fidelity rapid prototyping workflow that transforms stakeholder meetings into collaborative design sessions',
+        type: 'creative webpages',
+        title: 'multimedia digital storytelling',
+        description: 'creating unique digital web experiences for the CCA editorial newsroom through innovative design and multimedia storytelling, delivering custom editorial content experiences',
         technologies: [
             'rapid prototyping',
             'figma',
-            'live collaboration',
+            'vev.design',
             'multimedia storytelling'
         ],
-        impact: '3 days reduced to 1 hour iteration cycles',
-        // Extended data from the modal
-        subtitle: 'collaborative design',
-        overview: 'Developed a revolutionary workflow that transforms traditional design review meetings into collaborative creation sessions through high-fidelity rapid prototyping.',
-        duration: 'ongoing process (6+ months)',
-        team: 'editorial team + marketing',
-        role: 'design facilitator',
-        tools: 'figma, real content, live collaboration',
-        problem: 'Traditional design workflows create bottlenecks where non-designers struggle to visualize ideas, leading to lengthy revision cycles and misaligned expectations.',
-        solution: 'Skip wireframes entirely - jump straight to high-fidelity prototypes using real content, then facilitate live design sessions where stakeholders can see their feedback implemented instantly.',
-        process: [
+        impact: 'unique web experiences for editorial content',
+        images: [
             {
-                title: 'editorial strategy session',
-                description: 'Team evaluates story pitches not just for editorial merit but for multimedia potential and available content assets.'
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Before and after: traditional vs rapid prototyping workflow',
+                caption: 'Transformation from lengthy revision cycles to real-time collaborative design'
             },
             {
-                title: 'rapid hi-fi prototyping',
-                description: 'Create multiple high-fidelity design directions using actual story content and real images before the next team meeting.'
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Live collaborative design session in progress',
+                caption: 'Stakeholders watching ideas come to life through high-fidelity rapid prototyping'
             },
             {
-                title: 'live collaborative iteration',
-                description: 'Present prototypes in working sessions where I implement feedback and suggestions in real-time, allowing non-designers to "design" by seeing ideas come to life instantly.'
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Multimedia story layout examples',
+                caption: 'Editorial content transformed into engaging multimedia storytelling formats'
             },
             {
-                title: 'immediate alignment',
-                description: 'Team leaves meeting with clear vision and aligned expectations, eliminating revision cycles and scope creep.'
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Real content vs lorem ipsum design comparison',
+                caption: 'How real content reveals design problems that placeholder text hides'
             }
         ],
+        // Extended data from the modal
+        subtitle: 'multimedia storytelling',
+        overview: 'Creating unique digital web experiences for the CCA editorial newsroom through innovative design and storytelling using modern web technologies.',
+        duration: 'ongoing process (6+ months)',
+        team: 'editorial + digital strategy team',
+        role: 'designer',
+        tools: 'vev.design, multimedia storytelling',
+        problem: 'A marketing department-wide initiative to visually demonstrate the creativity and energy happening on campus within our newsroom was being limited by generic CMS templates that didn\'t reflect the vibrant community and brand identity of what was actually happening at CCA.',
+        solution: 'Create unique, custom digital storytelling experiences that capture the authentic energy and creativity of the CCA community by moving beyond generic CMS templates to craft bespoke multimedia narratives that truly reflect campus life and identity.',
         insights: [
-            'Real content reveals design problems that lorem ipsum hides',
-            'Live implementation gets stakeholders excited and engaged in ways static presentations cannot',
-            'Non-designers can contribute meaningfully when they see immediate visual feedback'
+            'Generic CMS templates fail to capture the authentic energy and creativity of campus life',
+            'Custom digital storytelling experiences better reflect community identity and brand values',
+            'Multimedia narratives can transform editorial content into engaging, immersive experiences'
         ],
         metrics: [
             { number: '1 hour', label: 'meeting to final design' },
             { number: '85%', label: 'stakeholder satisfaction' },
             { number: '3 days', label: 'time saved per project' }
-        ]
+        ],
+        liveLinks: {
+            title: 'see for yourself',
+            description: 'Explore the unique digital storytelling experiences created for CCA\'s editorial newsroom',
+            links: [
+                { title: 'Story Example 1', url: 'https://example1.com' },
+                { title: 'Story Example 2', url: 'https://example2.com' },
+                { title: 'Story Example 3', url: 'https://example3.com' },
+                { title: 'Story Example 4', url: 'https://example4.com' },
+                { title: 'Story Example 5', url: 'https://example5.com' }
+            ]
+        }
     },
     {
-        id: 'cross-department',
+        id: 'infrastructure-migration',
         number: '04',
-        type: 'technical translation',
-        title: 'cross-department integration',
-        description: 'bridging technical constraints with business goals across marketing, development, and stakeholder teams',
+        type: 'infrastructure migration',
+        title: 'kubernetes to cloud run migration',
+        description: 'modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline, achieving zero-downtime migration with 70% faster deployments',
         technologies: [
-            'stakeholder management',
-            'system architecture',
-            'data analytics',
-            'process optimization'
+            'kubernetes',
+            'cloud run',
+            'docker',
+            'ci/cd pipeline'
         ],
-        impact: 'aligned multiple departments on unified vision',
+        impact: 'zero-downtime migration with 70% faster deployments',
+        images: [
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'Infrastructure migration architecture diagram',
+                caption: 'Before and after: Kubernetes cluster to Cloud Run simplified deployment'
+            },
+            {
+                src: 'assets/images/landscape-placeholder.svg',
+                alt: 'CI/CD pipeline automation workflow',
+                caption: 'Automated deployment pipeline reducing manual intervention by 90%'
+            }
+        ],
         // Extended data from the modal
-        subtitle: 'technical translation',
-        overview: 'Served as technical translator between marketing operations, external agencies, and internal systems to align data collection strategies with business intelligence needs.',
-        duration: '6 months (ongoing)',
-        team: 'marketing + external agency + IT',
-        role: 'technical translator',
-        tools: 'workday, pardot, google analytics, looker',
-        problem: 'Marketing team and external ad agency struggled to set up proper data collection systems, leading to incomplete insights and misaligned campaign optimization.',
-        solution: 'Bridge the gap between technical system capabilities (Workday, Pardot) and marketing intelligence needs by translating requirements and identifying integration opportunities.',
+        subtitle: 'infrastructure migration',
+        overview: 'A comprehensive infrastructure modernization project that transformed a complex Kubernetes deployment into a streamlined Cloud Run solution, demonstrating adaptability in learning new cloud technologies.',
+        duration: '3 weeks',
+        team: 'solo project with stakeholder collaboration',
+        role: 'full-stack developer',
+        tools: 'kubernetes, google cloud run, docker, github actions',
+        problem: 'Existing Kubernetes infrastructure was complex to maintain, slow to deploy, and required specialized knowledge that created bottlenecks. Team needed a more accessible and efficient deployment solution.',
+        solution: 'Migrated to Google Cloud Run with containerized applications and automated CI/CD pipeline, prioritizing simplicity and developer experience while maintaining performance and reliability.',
         process: [
             {
-                title: 'system architecture audit',
-                description: 'Mapped existing data flows between Workday, Pardot, Google Analytics, and other systems to identify gaps and opportunities.'
+                title: 'learning phase',
+                description: 'Deep dive into Cloud Run documentation and best practices, coming from zero prior experience with Google Cloud Platform.'
             },
             {
-                title: 'requirement translation',
-                description: 'Interpreted marketing team\'s analytics needs into specific technical field configurations and data collection strategies.'
+                title: 'migration strategy',
+                description: 'Developed step-by-step migration plan to minimize downtime and risk, including rollback procedures and testing protocols.'
             },
             {
-                title: 'cross-team facilitation',
-                description: 'Led sessions between marketing ops, external agency, and IT to align on implementation approach and timeline.'
+                title: 'containerization',
+                description: 'Dockerized applications and optimized container builds for Cloud Run\'s specific requirements and constraints.'
             },
             {
-                title: 'ongoing optimization',
-                description: 'Continuous monitoring and refinement of data collection to ensure marketing insights remain actionable and accurate.'
+                title: 'ci/cd automation',
+                description: 'Implemented GitHub Actions pipeline for automated testing, building, and deployment to Cloud Run services.'
             }
         ],
         insights: [
-            'Technical systems often have capabilities that business teams don\'t know exist',
-            'External agencies need internal context to set up effective measurement',
-            'Data architecture decisions have long-term implications for business intelligence'
+            'Cloud-native solutions can dramatically simplify operations when chosen thoughtfully for the specific use case',
+            'Learning new technologies requires systematic documentation and experimentation approach',
+            'Developer experience improvements compound over time through reduced friction and faster iteration cycles'
         ],
         metrics: [
-            { number: '100%', label: 'data collection accuracy' },
-            { number: '3 depts', label: 'successfully aligned' },
-            { number: '50%', label: 'reporting efficiency gain' }
+            { number: '0min', label: 'deployment downtime' },
+            { number: '70%', label: 'faster deployments' },
+            { number: '90%', label: 'reduced manual steps' }
         ]
     }
 ];

@@ -74,9 +74,22 @@ function generateCaseStudyContent(data) {
         <div class="case-section">
             <h2 class="section-title">the approach</h2>
             <div class="section-content">${data.solution}</div>
-            <div class="image-placeholder">[process visualization would go here]</div>
+            ${data.images && data.images.length > 0 ? `
+                <div class="case-image-gallery">
+                    ${data.images[0].type === 'video' ? `
+                        <video class="case-image primary-image" autoplay muted loop playsinline controls>
+                            <source src="${data.images[0].src}" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    ` : `
+                        <img src="${data.images[0].src}" alt="${data.images[0].alt}" class="case-image primary-image" loading="lazy">
+                    `}
+                    <div class="image-caption">${data.images[0].caption}</div>
+                </div>
+            ` : ''}
         </div>
         
+        ${data.process && data.process.length > 0 ? `
         <div class="case-section">
             <h2 class="section-title">process deep dive</h2>
             <div class="process-steps">
@@ -89,6 +102,21 @@ function generateCaseStudyContent(data) {
                 `).join('')}
             </div>
         </div>
+        ` : ''}
+        
+        ${data.images && data.images.length > 1 ? `
+            <div class="case-section">
+                <h2 class="section-title">visual documentation</h2>
+                <div class="image-grid">
+                    ${data.images.slice(1).map(image => `
+                        <div class="image-item">
+                            <img src="${image.src}" alt="${image.alt}" class="case-image gallery-image" loading="lazy">
+                            <div class="image-caption">${image.caption}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
         
         <div class="case-section">
             <h2 class="section-title">key insights</h2>
@@ -113,6 +141,36 @@ function generateCaseStudyContent(data) {
                 This project demonstrated the power of ${data.subtitle.toLowerCase()} thinking, showing how creative technology solutions can drive measurable business impact while improving user experience.
             </div>
         </div>
+        
+        ${data.liveLink ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLink.title}</h2>
+            <div class="live-link-container">
+                <a href="${data.liveLink.url}" target="_blank" class="live-link-button">
+                    Visit Live Site
+                    <span class="link-arrow">→</span>
+                </a>
+                <p class="live-link-description">${data.liveLink.description}</p>
+            </div>
+        </div>
+        ` : ''}
+        
+        ${data.liveLinks ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLinks.title}</h2>
+            <div class="live-links-container">
+                <p class="live-links-description">${data.liveLinks.description}</p>
+                <div class="live-links-grid">
+                    ${data.liveLinks.links.map(link => `
+                        <a href="${link.url}" target="_blank" class="live-link-button">
+                            ${link.title}
+                            <span class="link-arrow">→</span>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
     `;
 }
 
@@ -150,14 +208,23 @@ function renderProjectCards(container) {
                 <div class="project-number">${project.number}</div>
                 <div class="project-type">${project.type}</div>
             </div>
+            ${project.images && project.images.length > 0 ? `
+                <div class="project-image-preview ${project.images[0].type === 'video' ? 'video-container' : ''}">
+                    ${project.images[0].type === 'video' ? `
+                        <video class="project-preview-image" autoplay muted loop playsinline>
+                            <source src="${project.images[0].src}" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    ` : `
+                        <img src="${project.images[0].src}" alt="${project.images[0].alt}" class="project-preview-image" loading="lazy">
+                    `}
+                </div>
+            ` : ''}
             <div class="project-content">
                 <h3 class="project-title">${project.title}</h3>
                 <p class="project-description">${project.description}</p>
                 <div class="project-tech">
                     ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
-                </div>
-                <div class="project-impact">
-                    <div class="impact-metric">→ ${project.impact}</div>
                 </div>
             </div>
         </div>

@@ -2,8 +2,107 @@
 
 /* Mobile First Approach - Base styles are mobile, then scale up */
 
+/* Extra Small Mobile Devices (≤320px) */
+@media (max-width: 320px) {
+    .theme-modal {
+        max-width: calc(100vw - 10px);
+        width: calc(100vw - 10px);
+        padding: 10px;
+        margin: 5px;
+        border-width: 1px;
+    }
+    
+    .theme-option {
+        padding: 6px;
+        gap: 4px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .theme-name {
+        font-size: 11px;
+        min-width: auto;
+        max-width: none;
+        margin-bottom: 3px;
+    }
+    
+    .theme-palette {
+        gap: 2px;
+        order: 2;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .theme-color {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .theme-description {
+        font-size: 9px;
+        min-width: auto;
+        max-width: none;
+        text-align: left;
+        order: 3;
+    }
+    
+    .theme-modal-title {
+        font-size: 12px;
+    }
+}
+
 /* Small Mobile Devices (320px - 480px) */
 @media (max-width: 480px) {
+    .theme-modal {
+        max-width: calc(100vw - 20px);
+        width: calc(100vw - 20px);
+        padding: 15px;
+        margin: 10px;
+        max-height: calc(100vh - 20px);
+        border-width: 2px;
+    }
+    
+    .theme-modal-title {
+        font-size: 14px;
+    }
+    
+    .theme-option {
+        padding: 8px;
+        gap: 6px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+    
+    .theme-name {
+        font-size: 12px;
+        min-width: 60px;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .theme-color {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+    
+    .theme-palette {
+        gap: 3px;
+        flex-shrink: 1;
+        overflow: hidden;
+    }
+    
+    .theme-description {
+        font-size: 10px;
+        min-width: 50px;
+        max-width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
     .nav {
         top: 15px;
         right: 15px;
@@ -86,10 +185,14 @@
         margin-bottom: 15px;
     }
     
-    .projects-grid,
     .projects-container {
-        grid-template-columns: 1fr;
-        gap: 25px;
+        gap: 20px;
+        padding: 30px 15px; /* Increased top/bottom padding for mobile */
+        padding-right: 30px;
+    }
+    
+    .project-card {
+        flex: 0 0 320px; /* Smaller cards on mobile with overflow */
     }
     
     .project-card {
@@ -320,10 +423,14 @@
         margin-bottom: 18px;
     }
     
-    .projects-grid,
     .projects-container {
-        grid-template-columns: 1fr;
-        gap: 30px;
+        gap: 25px;
+        padding: 35px 20px; /* Increased top/bottom padding for mobile landscape */
+        padding-right: 35px;
+    }
+    
+    .project-card {
+        flex: 0 0 360px; /* Medium cards on mobile landscape with overflow */
     }
     
     .project-content {
@@ -503,10 +610,14 @@
         margin-bottom: 18px;
     }
     
-    .projects-grid,
     .projects-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 35px;
+        gap: 30px;
+        padding: 40px 25px; /* Increased top/bottom padding for tablet */
+        padding-right: 40px;
+    }
+    
+    .project-card {
+        flex: 0 0 420px; /* Larger cards on tablet with overflow */
     }
     
     .project-content {
@@ -627,9 +738,13 @@
 /* Modal Responsiveness */
 @media (max-width: 768px) {
     .theme-modal {
-        max-width: 350px;
-        padding: 25px;
+        max-width: calc(100vw - 40px);
+        width: calc(100vw - 40px);
+        padding: 20px;
         margin: 20px;
+        max-height: calc(100vh - 40px);
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
     
     .theme-modal-title {
@@ -660,6 +775,42 @@
     
     .theme-modal-hint {
         font-size: 11px;
+    }
+    
+    .theme-name {
+        font-size: 14px;
+        min-width: 70px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .theme-description {
+        font-size: 12px;
+        min-width: 80px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .theme-color {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+    
+    .theme-palette {
+        gap: 4px;
+        flex-shrink: 1;
+        overflow: hidden;
+    }
+    
+    .theme-option {
+        padding: 12px;
+        gap: 8px;
+        overflow: hidden;
     }
     
     .modal-content {
@@ -776,10 +927,14 @@
 
 /* Large Tablet and Small Desktop (1025px - 1199px) */
 @media (min-width: 1025px) and (max-width: 1199px) {
-    .projects-grid,
     .projects-container {
-        grid-template-columns: repeat(2, 1fr);
         gap: 35px;
+        padding: 40px 30px; /* Increased top/bottom padding for large tablet */
+        padding-right: 50px;
+    }
+    
+    .project-card {
+        flex: 0 0 440px; /* Standard desktop card size with overflow */
     }
     
     .about-intro {
@@ -800,10 +955,14 @@
 
 /* Large Desktop (1200px+) */
 @media (min-width: 1200px) {
-    .projects-grid,
     .projects-container {
-        grid-template-columns: repeat(2, 1fr);
         gap: 40px;
+        padding: 40px 40px; /* Increased top/bottom padding for large desktop */
+        padding-right: 60px;
+    }
+    
+    .project-card {
+        flex: 0 0 460px; /* Full desktop card size with overflow */
     }
     
     .about-intro {
@@ -822,12 +981,16 @@
     }
 }
 
-/* Ultra Wide Desktop (1400px+) */
-@media (min-width: 1400px) {
-    .projects-grid,
+/* Ultra Wide Desktop (1600px+) */
+@media (min-width: 1600px) {
     .projects-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 40px;
+        gap: 50px;
+        padding: 40px 50px; /* Increased top/bottom padding for ultra-wide */
+        padding-right: 80px;
+    }
+    
+    .project-card {
+        flex: 0 0 520px; /* Larger cards on ultra-wide screens with overflow */
     }
     
     .skills-grid {

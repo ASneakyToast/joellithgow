@@ -61,6 +61,7 @@
 /* Project Card Hover */
 .project-card:hover {
     transform: scale(1.03) rotate(1deg);
+    transform-origin: center top; /* Scale from center-top to prevent bottom clipping */
     box-shadow: 12px 12px 0px var(--accent-secondary);
 }
 
