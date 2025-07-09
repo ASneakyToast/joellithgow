@@ -248,6 +248,10 @@
         font-size: 28px;
     }
     
+    .stat-number.infinity {
+        font-size: 48px;
+    }
+    
     .skills-grid {
         grid-template-columns: 1fr;
         gap: 25px;
@@ -470,6 +474,10 @@
         font-size: 32px;
     }
     
+    .stat-number.infinity {
+        font-size: 52px;
+    }
+    
     .skills-grid {
         grid-template-columns: 1fr;
         gap: 30px;
@@ -655,6 +663,10 @@
     
     .stat-number {
         font-size: 34px;
+    }
+    
+    .stat-number.infinity {
+        font-size: 56px;
     }
     
     .skills-grid {
