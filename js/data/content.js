@@ -89,8 +89,8 @@ const processData = {
             title: "ai research",
             description: "Leverage AI tools for competitive analysis, user insights, and strategic documentation to accelerate research phases and uncover deeper insights faster than traditional methods.",
             example: {
-                title: "Real Example: Feature Planning",
-                content: "Used Claude AI to analyze 20 competitors → strategic brief → GitHub issues in 2 hours. What typically takes days of manual research and documentation was completed in a single focused session, providing comprehensive competitive insights and actionable next steps."
+                title: "Real Example: End-to-End Feature Development",
+                content: "Complete feature cycle: AI competitive research → strategic planning → design prototyping → code generation → automated testing in 24 hours. Traditional multi-week process compressed into a single day while maintaining quality through AI-augmented planning, design, development, and QA phases."
             },
             icon: "research" // SVG icon identifier
         }

@@ -127,7 +127,7 @@ function generateCaseStudyContent(data) {
             `).join('')}
         </div>
         
-        <div class="case-section">
+        <!-- <div class="case-section">
             <h2 class="section-title">impact & results</h2>
             <div class="metric-grid">
                 ${data.metrics.map(metric => `
@@ -140,7 +140,7 @@ function generateCaseStudyContent(data) {
             <div class="section-content">
                 This project demonstrated the power of ${data.subtitle.toLowerCase()} thinking, showing how creative technology solutions can drive measurable business impact while improving user experience.
             </div>
-        </div>
+        </div> -->
         
         ${data.liveLink ? `
         <div class="case-section">

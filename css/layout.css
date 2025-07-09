@@ -79,6 +79,7 @@ body {
     width: 100%;
     margin: 0 auto;
     display: flex;
+    align-items: flex-start;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;

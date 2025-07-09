@@ -15,20 +15,30 @@ const projects = [
         impact: '36% reduction in confusion-driven navigation',
         images: [
             {
-                src: 'assets/images/homepage-hero-9x16.webm',
+                src: 'assets/images/homepage-scroll-720.webm',
                 alt: 'CCA homepage before and after redesign comparison',
                 caption: 'Homepage transformation showing improved clarity and user flow',
                 type: 'video'
             },
             {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'User analytics showing improved engagement metrics',
-                caption: 'Analytics dashboard demonstrating 36% reduction in confusion-driven navigation'
+                src: 'assets/images/homepage-wavyfeatures-image--processed.png',
+                alt: 'Homepage wavy features section design',
+                caption: 'Dynamic wavy features section showcasing CCA programs and community'
             },
             {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Design process wireframes and prototypes',
-                caption: 'Progressive disclosure approach: identity first, community second, conversion third'
+                src: 'assets/images/homepage-adm-image--processed.png',
+                alt: 'Homepage admissions section design',
+                caption: 'Strategic admissions section with clear conversion paths and program highlights'
+            },
+            {
+                src: 'assets/images/homepage-experience-image--processed.png',
+                alt: 'Homepage experience section design',
+                caption: 'Community experience section demonstrating progressive disclosure approach'
+            },
+            {
+                src: 'assets/images/homepage-hero-image--processed.png',
+                alt: 'Homepage hero section design',
+                caption: 'Clean, focused hero section establishing CCA identity and value proposition'
             }
         ],
         // Extended data from the modal
@@ -75,8 +85,132 @@ const projects = [
         }
     },
     {
-        id: 'ai-pipeline',
+        id: 'editorial-process',
         number: '02',
+        type: 'creative webpages',
+        title: 'multimedia digital storytelling',
+        description: 'creating unique digital web experiences for the CCA editorial newsroom through innovative design and multimedia storytelling, delivering custom editorial content experiences',
+        technologies: [
+            'rapid prototyping',
+            'figma',
+            'vev.design',
+            'multimedia storytelling'
+        ],
+        impact: 'unique web experiences for editorial content',
+        images: [
+            {
+                src: 'assets/images/vev-studio_forward-thumbnail.webm',
+                alt: 'Multimedia digital storytelling workflow demonstration',
+                caption: 'Creative digital storytelling process using modern web technologies',
+                type: 'video'
+            },
+            {
+                src: 'assets/images/vev-designfaculty-image--processed.png',
+                alt: 'Design faculty showcase multimedia storytelling page',
+                caption: 'Faculty spotlight featuring interactive multimedia elements and engaging visual storytelling'
+            },
+            {
+                src: 'assets/images/vev-studioforward-image--processed.png',
+                alt: 'Studio Forward exhibition digital experience',
+                caption: 'Custom digital exhibition experience showcasing student work through immersive storytelling'
+            },
+            {
+                src: 'assets/images/vev-commencement-image--processed.png',
+                alt: 'Commencement ceremony multimedia story layout',
+                caption: 'Dynamic commencement coverage transformed into engaging multimedia narrative format'
+            },
+            {
+                src: 'assets/images/vev-summer-image--processed.png',
+                alt: 'Summer program multimedia storytelling showcase',
+                caption: 'Summer program coverage featuring dynamic layouts and interactive multimedia storytelling elements'
+            }
+        ],
+        // Extended data from the modal
+        subtitle: 'multimedia storytelling',
+        overview: 'Creating unique digital web experiences for the CCA editorial newsroom through innovative design and storytelling using modern web technologies.',
+        duration: 'ongoing process (6+ months)',
+        team: 'editorial + digital strategy team',
+        role: 'designer',
+        tools: 'vev.design, multimedia storytelling',
+        problem: 'A marketing department-wide initiative to visually demonstrate the creativity and energy happening on campus within our newsroom was being limited by generic CMS templates that didn\'t reflect the vibrant community and brand identity of what was actually happening at CCA.',
+        solution: 'Create unique, custom digital storytelling experiences that capture the authentic energy and creativity of the CCA community by moving beyond generic CMS templates to craft bespoke multimedia narratives that truly reflect campus life and identity.',
+        insights: [
+            'Generic CMS templates fail to capture the authentic energy and creativity of campus life',
+            'Custom digital storytelling experiences better reflect community identity and brand values',
+            'Multimedia narratives can transform editorial content into engaging, immersive experiences'
+        ],
+        metrics: [
+            { number: '1 hour', label: 'meeting to final design' },
+            { number: '85%', label: 'stakeholder satisfaction' },
+            { number: '3 days', label: 'time saved per project' }
+        ],
+        liveLinks: {
+            title: 'see for yourself',
+            description: 'Explore the unique digital storytelling experiences created for CCA\'s editorial newsroom',
+            links: [
+                { title: 'Bringing the San Francisco design community together with light and sound', url: 'https://cca.edu/newsroom/future-resonance-studio-forward/' },
+                { title: 'CCA students graduate as their true, authentic selves', url: 'https://cca.edu/newsroom/commencement-looks-2023/' },
+                { title: 'Practice to Pedagogy', url: 'https://cca.edu/newsroom/design-is-faculty-practices/' },
+                { title: 'GLANCE 2024', url: 'https://cca.edu/glance/' },
+                { title: 'Creative Citizenship Energizes Campus', url: 'https://cca.edu/newsroom/creative-citizenship-on-campus/' }
+            ]
+        }
+    },
+    {
+        id: 'infrastructure-migration',
+        number: '03',
+        type: 'infrastructure migration',
+        title: 'kubernetes to cloud run migration',
+        description: 'modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline, achieving zero-downtime migration with 70% faster deployments',
+        technologies: [
+            'kubernetes',
+            'cloud run',
+            'docker',
+            'ci/cd pipeline'
+        ],
+        impact: 'zero-downtime migration with 70% faster deployments',
+        // Extended data from the modal
+        subtitle: 'infrastructure migration',
+        overview: 'A comprehensive infrastructure modernization project that transformed a complex Kubernetes deployment into a streamlined Cloud Run solution, demonstrating adaptability in learning new cloud technologies.',
+        duration: '3 weeks',
+        team: 'solo project with stakeholder collaboration',
+        role: 'full-stack developer',
+        tools: 'kubernetes, google cloud run, docker, github actions',
+        problem: 'Existing Kubernetes infrastructure was complex to maintain, slow to deploy, and required specialized knowledge that created bottlenecks. Team needed a more accessible and efficient deployment solution.',
+        solution: 'Migrated to Google Cloud Run with containerized applications and automated CI/CD pipeline, prioritizing simplicity and developer experience while maintaining performance and reliability.',
+        process: [
+            {
+                title: 'learning phase',
+                description: 'Deep dive into Cloud Run documentation and best practices, coming from zero prior experience with Google Cloud Platform.'
+            },
+            {
+                title: 'migration strategy',
+                description: 'Developed step-by-step migration plan to minimize downtime and risk, including rollback procedures and testing protocols.'
+            },
+            {
+                title: 'containerization',
+                description: 'Dockerized applications and optimized container builds for Cloud Run\'s specific requirements and constraints.'
+            },
+            {
+                title: 'ci/cd automation',
+                description: 'Implemented GitHub Actions pipeline for automated testing, building, and deployment to Cloud Run services.'
+            }
+        ],
+        insights: [
+            'Cloud-native solutions can dramatically simplify operations when chosen thoughtfully for the specific use case',
+            'Learning new technologies requires systematic documentation and experimentation approach',
+            'Understanding static file handling in containerized environments is crucial for successful cloud deployments'
+        ],
+        metrics: [
+            { number: '0min', label: 'deployment downtime' },
+            { number: '70%', label: 'faster deployments' },
+            { number: '90%', label: 'reduced manual steps' }
+        ]
+    }
+    /*,
+    {
+        id: 'ai-pipeline',
+        number: '04',
         type: 'ai-augmented development',
         title: 'end-to-end ai pipeline',
         description: 'complete feature development from research to deployment using ai tools for every step of the process, achieving strategy to deployment in just 1 day',
@@ -136,136 +270,8 @@ const projects = [
             { number: '90%', label: 'process automation' },
             { number: '5x', label: 'speed improvement' }
         ]
-    },
-    {
-        id: 'editorial-process',
-        number: '03',
-        type: 'creative webpages',
-        title: 'multimedia digital storytelling',
-        description: 'creating unique digital web experiences for the CCA editorial newsroom through innovative design and multimedia storytelling, delivering custom editorial content experiences',
-        technologies: [
-            'rapid prototyping',
-            'figma',
-            'vev.design',
-            'multimedia storytelling'
-        ],
-        impact: 'unique web experiences for editorial content',
-        images: [
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Before and after: traditional vs rapid prototyping workflow',
-                caption: 'Transformation from lengthy revision cycles to real-time collaborative design'
-            },
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Live collaborative design session in progress',
-                caption: 'Stakeholders watching ideas come to life through high-fidelity rapid prototyping'
-            },
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Multimedia story layout examples',
-                caption: 'Editorial content transformed into engaging multimedia storytelling formats'
-            },
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Real content vs lorem ipsum design comparison',
-                caption: 'How real content reveals design problems that placeholder text hides'
-            }
-        ],
-        // Extended data from the modal
-        subtitle: 'multimedia storytelling',
-        overview: 'Creating unique digital web experiences for the CCA editorial newsroom through innovative design and storytelling using modern web technologies.',
-        duration: 'ongoing process (6+ months)',
-        team: 'editorial + digital strategy team',
-        role: 'designer',
-        tools: 'vev.design, multimedia storytelling',
-        problem: 'A marketing department-wide initiative to visually demonstrate the creativity and energy happening on campus within our newsroom was being limited by generic CMS templates that didn\'t reflect the vibrant community and brand identity of what was actually happening at CCA.',
-        solution: 'Create unique, custom digital storytelling experiences that capture the authentic energy and creativity of the CCA community by moving beyond generic CMS templates to craft bespoke multimedia narratives that truly reflect campus life and identity.',
-        insights: [
-            'Generic CMS templates fail to capture the authentic energy and creativity of campus life',
-            'Custom digital storytelling experiences better reflect community identity and brand values',
-            'Multimedia narratives can transform editorial content into engaging, immersive experiences'
-        ],
-        metrics: [
-            { number: '1 hour', label: 'meeting to final design' },
-            { number: '85%', label: 'stakeholder satisfaction' },
-            { number: '3 days', label: 'time saved per project' }
-        ],
-        liveLinks: {
-            title: 'see for yourself',
-            description: 'Explore the unique digital storytelling experiences created for CCA\'s editorial newsroom',
-            links: [
-                { title: 'Story Example 1', url: 'https://example1.com' },
-                { title: 'Story Example 2', url: 'https://example2.com' },
-                { title: 'Story Example 3', url: 'https://example3.com' },
-                { title: 'Story Example 4', url: 'https://example4.com' },
-                { title: 'Story Example 5', url: 'https://example5.com' }
-            ]
-        }
-    },
-    {
-        id: 'infrastructure-migration',
-        number: '04',
-        type: 'infrastructure migration',
-        title: 'kubernetes to cloud run migration',
-        description: 'modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline, achieving zero-downtime migration with 70% faster deployments',
-        technologies: [
-            'kubernetes',
-            'cloud run',
-            'docker',
-            'ci/cd pipeline'
-        ],
-        impact: 'zero-downtime migration with 70% faster deployments',
-        images: [
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'Infrastructure migration architecture diagram',
-                caption: 'Before and after: Kubernetes cluster to Cloud Run simplified deployment'
-            },
-            {
-                src: 'assets/images/landscape-placeholder.svg',
-                alt: 'CI/CD pipeline automation workflow',
-                caption: 'Automated deployment pipeline reducing manual intervention by 90%'
-            }
-        ],
-        // Extended data from the modal
-        subtitle: 'infrastructure migration',
-        overview: 'A comprehensive infrastructure modernization project that transformed a complex Kubernetes deployment into a streamlined Cloud Run solution, demonstrating adaptability in learning new cloud technologies.',
-        duration: '3 weeks',
-        team: 'solo project with stakeholder collaboration',
-        role: 'full-stack developer',
-        tools: 'kubernetes, google cloud run, docker, github actions',
-        problem: 'Existing Kubernetes infrastructure was complex to maintain, slow to deploy, and required specialized knowledge that created bottlenecks. Team needed a more accessible and efficient deployment solution.',
-        solution: 'Migrated to Google Cloud Run with containerized applications and automated CI/CD pipeline, prioritizing simplicity and developer experience while maintaining performance and reliability.',
-        process: [
-            {
-                title: 'learning phase',
-                description: 'Deep dive into Cloud Run documentation and best practices, coming from zero prior experience with Google Cloud Platform.'
-            },
-            {
-                title: 'migration strategy',
-                description: 'Developed step-by-step migration plan to minimize downtime and risk, including rollback procedures and testing protocols.'
-            },
-            {
-                title: 'containerization',
-                description: 'Dockerized applications and optimized container builds for Cloud Run\'s specific requirements and constraints.'
-            },
-            {
-                title: 'ci/cd automation',
-                description: 'Implemented GitHub Actions pipeline for automated testing, building, and deployment to Cloud Run services.'
-            }
-        ],
-        insights: [
-            'Cloud-native solutions can dramatically simplify operations when chosen thoughtfully for the specific use case',
-            'Learning new technologies requires systematic documentation and experimentation approach',
-            'Developer experience improvements compound over time through reduced friction and faster iteration cycles'
-        ],
-        metrics: [
-            { number: '0min', label: 'deployment downtime' },
-            { number: '70%', label: 'faster deployments' },
-            { number: '90%', label: 'reduced manual steps' }
-        ]
     }
+    */
 ];
 
 export default projects;
