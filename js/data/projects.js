@@ -160,7 +160,7 @@ const projects = [
         number: '03',
         type: 'infrastructure migration',
         title: 'kubernetes to cloud run migration',
-        description: 'modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline, achieving zero-downtime migration with 70% faster deployments',
+        description: 'modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline',
         technologies: [
             'kubernetes',
             'cloud run',
