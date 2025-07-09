@@ -12,6 +12,20 @@
     border: 2px solid transparent;
 }
 
+.nav-links a:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+    border-color: var(--accent-primary);
+}
+
+.nav-links a.active {
+    color: var(--text-light);
+    background: var(--accent-primary);
+    border-color: var(--bg-dark);
+    transform: rotate(2deg);
+    box-shadow: 2px 2px 0px var(--accent-secondary);
+}
+
 /* Buttons */
 .cta-button {
     background: var(--accent-primary);
@@ -413,6 +427,11 @@ video.project-preview-image {
     font-size: 36px;
     font-weight: bold;
     margin-bottom: 10px;
+}
+
+.stat-number.infinity {
+    font-size: 60px;
+    line-height: 1;
 }
 
 .stat-label {

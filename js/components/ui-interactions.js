@@ -30,6 +30,40 @@ function updateActiveNavigation(href) {
     });
 }
 
+// Scroll spy for main navigation
+function initScrollSpy() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (sections.length === 0 || navLinks.length === 0) return;
+    
+    const observerOptions = {
+        threshold: [0.1, 0.25, 0.5],
+        rootMargin: '-10% 0px -40% 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const sectionId = entry.target.id;
+                updateActiveNavigation(`#${sectionId}`);
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all sections
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+    
+    // Handle scroll to top case (no active section)
+    window.addEventListener('scroll', () => {
+        if (window.scrollY < 200) {
+            navLinks.forEach(link => link.classList.remove('active'));
+        }
+    });
+}
+
 // Parallax effect for floating elements
 function initParallaxEffects() {
     let ticking = false;
@@ -411,6 +445,7 @@ function initTechTagInteractions() {
 // Initialize all UI interactions
 function initAllUIInteractions() {
     initSmoothScrolling();
+    initScrollSpy();
     initParallaxEffects();
     initProcessSection();
     initThemeOptionHovers();
@@ -427,6 +462,7 @@ function initAllUIInteractions() {
 export {
     initSmoothScrolling,
     updateActiveNavigation,
+    initScrollSpy,
     initParallaxEffects,
     initProcessSection,
     updateActiveStep,
