@@ -8,6 +8,9 @@
     <meta name="author" content="Joel Lithgow">
     <meta name="theme-color" content="#00ff41">
     
+    <!-- Theme System -->
+    <link rel="stylesheet" href="css/themes.css">
+    
     <title>Snake Game - Joel Lithgow</title>
     
     <style>
@@ -30,9 +33,24 @@
         }
 
         body {
-            background-color: #0a0a0a;
-            color: #ffffff;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             position: relative;
+        }
+
+        /* Game-specific CSS variables */
+        :root {
+            --game-canvas-bg: var(--bg-secondary);
+            --game-snake-head: var(--accent-primary);
+            --game-snake-body: var(--accent-secondary);
+            --game-food: var(--accent-tertiary);
+            --game-text-primary: var(--text-primary);
+            --game-text-accent: var(--accent-primary);
+            --game-ui-bg: var(--bg-dark);
+            --game-ui-border: var(--accent-primary);
+            --game-ui-text: var(--text-light);
+            --game-glow: var(--gradient-primary-medium);
+            --game-grid-lines: var(--gradient-primary-subtle);
         }
 
         /* Game canvas */
@@ -41,8 +59,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #111111;
-            box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);
+            background-color: var(--game-canvas-bg);
+            box-shadow: 0 0 50px var(--game-glow);
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
@@ -56,12 +74,13 @@
             transform: translateX(-50%);
             display: flex;
             gap: 30px;
-            background: rgba(0, 0, 0, 0.8);
+            background: var(--bg-secondary);
             padding: 15px 30px;
             border-radius: 30px;
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(0, 255, 65, 0.3);
+            border: 2px solid var(--accent-primary);
             z-index: 10;
+            opacity: 0.95;
         }
 
         .score-item {
@@ -71,7 +90,7 @@
         .score-label {
             display: block;
             font-size: 12px;
-            color: #00ff41;
+            color: var(--text-primary);
             opacity: 0.8;
             text-transform: uppercase;
             margin-bottom: 5px;
@@ -81,7 +100,7 @@
             display: block;
             font-size: 24px;
             font-weight: bold;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         /* Mobile controls */
@@ -104,20 +123,22 @@
             position: absolute;
             width: 60px;
             height: 60px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid rgba(0, 255, 65, 0.5);
+            background: var(--game-ui-bg);
+            border: 2px solid var(--game-ui-border);
             border-radius: 10px;
-            color: #00ff41;
+            color: var(--game-text-accent);
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
             backdrop-filter: blur(5px);
+            opacity: 0.8;
         }
 
         .control-btn:active {
-            background: rgba(0, 255, 65, 0.3);
+            background: var(--game-glow);
             transform: scale(0.95);
+            opacity: 1;
         }
 
         .control-up {
@@ -152,7 +173,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: var(--bg-primary);
+            background-opacity: 0.95;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -166,33 +188,33 @@
         }
 
         .overlay-content {
-            background: #1a1a1a;
+            background: var(--bg-secondary);
             padding: 40px;
             border-radius: 20px;
             text-align: center;
             max-width: 500px;
             width: 90%;
-            border: 3px solid #00ff41;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+            border: 3px solid var(--game-ui-border);
+            box-shadow: 0 0 30px var(--game-glow);
         }
 
         .game-title {
             font-size: 48px;
-            color: #00ff41;
+            color: var(--game-text-accent);
             margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0, 255, 65, 0.8);
+            text-shadow: 0 0 20px var(--game-glow);
             letter-spacing: 5px;
         }
 
         .game-subtitle {
             font-size: 18px;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 30px;
         }
 
         .overlay-title {
             font-size: 36px;
-            color: #00ff41;
+            color: var(--game-text-accent);
             margin-bottom: 20px;
         }
 
@@ -203,8 +225,8 @@
             font-size: 18px;
             font-family: inherit;
             background: transparent;
-            color: #00ff41;
-            border: 2px solid #00ff41;
+            color: var(--game-text-accent);
+            border: 2px solid var(--game-ui-border);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
@@ -213,31 +235,32 @@
         }
 
         .game-btn:hover {
-            background: #00ff41;
-            color: #000;
+            background: var(--game-text-accent);
+            color: var(--bg-secondary);
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.5);
+            box-shadow: 0 5px 20px var(--game-glow);
         }
 
         .game-btn.primary {
-            background: #00ff41;
-            color: #000;
+            background: var(--game-text-accent);
+            color: var(--bg-secondary);
         }
 
         .game-btn.primary:hover {
-            background: #00cc33;
-            border-color: #00cc33;
+            background: var(--accent-secondary);
+            border-color: var(--accent-secondary);
         }
+
 
         .instructions {
             text-align: left;
             margin: 20px 0;
-            color: #ccc;
+            color: var(--text-secondary);
             line-height: 1.8;
         }
 
         .instructions h3 {
-            color: #00ff41;
+            color: var(--game-text-accent);
             margin-bottom: 10px;
         }
 
@@ -248,14 +271,14 @@
         .final-score-value {
             display: block;
             font-size: 48px;
-            color: #00ff41;
+            color: var(--accent-primary);
             font-weight: bold;
             margin: 10px 0;
         }
 
         .high-score-message {
             font-size: 20px;
-            color: #ffcc00;
+            color: var(--accent-tertiary);
             margin-top: 10px;
         }
 
@@ -307,13 +330,57 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 24px;
-            color: #00ff41;
+            color: var(--game-text-accent);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: var(--game-ui-bg);
+            border: 2px solid var(--game-ui-border);
+            border-radius: 50%;
+            color: var(--game-text-accent);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            opacity: 0.8;
+        }
+
+        .theme-toggle:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--game-glow);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .menu-theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
     <!-- Game Canvas -->
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" title="Change Theme">
+        🎨
+    </button>
     
     <!-- Score Panel -->
     <div class="score-panel">
@@ -350,6 +417,10 @@
             <button class="game-btn primary" id="startGame">Start Game</button>
             <button class="game-btn" id="showInstructions">How to Play</button>
         </div>
+        <!-- Theme toggle positioned in top-right of menu -->
+        <button class="theme-toggle menu-theme-toggle" id="themeMenuToggle" title="Change Theme">
+            🎨
+        </button>
     </div>
     
     <!-- Instructions -->
@@ -403,21 +474,31 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Import theme manager
+        import { initThemeSystem, setTheme, cycleTheme } from './js/components/theme-manager.js';
+        
         // Game configuration
         const config = {
             gridSize: 20,
             baseSpeed: 120,
             speedIncrement: 10,
             foodsPerLevel: 5,
-            colors: {
-                background: '#111111',
-                snakeHead: '#00ff41',
-                snakeBody: '#00cc33',
-                food: '#ff0066',
-                gridLines: 'rgba(255, 255, 255, 0.05)'
-            }
+            // Colors will be loaded from CSS variables
+            colors: null
         };
+        
+        // Function to get current colors from CSS variables
+        function getGameColors() {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return {
+                background: computedStyle.getPropertyValue('--game-canvas-bg').trim(),
+                snakeHead: computedStyle.getPropertyValue('--game-snake-head').trim(),
+                snakeBody: computedStyle.getPropertyValue('--game-snake-body').trim(),
+                food: computedStyle.getPropertyValue('--game-food').trim(),
+                gridLines: computedStyle.getPropertyValue('--game-grid-lines').trim()
+            };
+        }
 
         // Game elements
         const canvas = document.getElementById('gameCanvas');
@@ -454,6 +535,12 @@
 
         // Initialize game
         function init() {
+            // Initialize theme system first
+            initThemeSystem();
+            
+            // Load colors from CSS variables
+            config.colors = getGameColors();
+            
             setupCanvas();
             loadHighScore();
             updateHighScoreDisplay();
@@ -522,6 +609,30 @@
             });
             
             document.getElementById('mobilePause').addEventListener('click', togglePause);
+            
+            // Theme toggle button
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                cycleTheme();
+                // Update colors after theme change
+                setTimeout(() => {
+                    config.colors = getGameColors();
+                    if (gameState === 'playing' || gameState === 'paused') {
+                        draw();
+                    }
+                }, 100);
+            });
+
+            // Theme toggle button in menu
+            document.getElementById('themeMenuToggle').addEventListener('click', () => {
+                cycleTheme();
+                // Update colors after theme change
+                setTimeout(() => {
+                    config.colors = getGameColors();
+                    if (gameState === 'playing' || gameState === 'paused') {
+                        draw();
+                    }
+                }, 100);
+            });
             
             // Menu buttons
             document.getElementById('startGame').addEventListener('click', startGame);
@@ -856,12 +967,15 @@
         }
 
         function clearCanvas() {
-            ctx.fillStyle = config.colors.background;
+            // Always get fresh colors in case theme changed
+            const colors = getGameColors();
+            ctx.fillStyle = colors.background;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawGrid() {
-            ctx.strokeStyle = config.colors.gridLines;
+            const colors = getGameColors();
+            ctx.strokeStyle = colors.gridLines;
             ctx.lineWidth = 1;
             
             for (let i = 0; i <= tileCount; i++) {
@@ -882,6 +996,7 @@
         }
 
         function drawSnake() {
+            const colors = getGameColors();
             snake.forEach((segment, index) => {
                 const x = segment.x * config.gridSize;
                 const y = segment.y * config.gridSize;
@@ -890,12 +1005,12 @@
                 // Set color based on segment
                 if (index === 0) {
                     // Head
-                    ctx.fillStyle = config.colors.snakeHead;
+                    ctx.fillStyle = colors.snakeHead;
                     ctx.shadowBlur = 10;
-                    ctx.shadowColor = config.colors.snakeHead;
+                    ctx.shadowColor = colors.snakeHead;
                 } else {
                     // Body
-                    ctx.fillStyle = config.colors.snakeBody;
+                    ctx.fillStyle = colors.snakeBody;
                     ctx.shadowBlur = 0;
                 }
                 
@@ -928,6 +1043,7 @@
         }
 
         function drawFood() {
+            const colors = getGameColors();
             const x = food.x * config.gridSize;
             const y = food.y * config.gridSize;
             const size = config.gridSize - 2;
@@ -936,10 +1052,10 @@
             
             // Add glow effect
             ctx.shadowBlur = 15;
-            ctx.shadowColor = config.colors.food;
+            ctx.shadowColor = colors.food;
             
             // Draw food as a circle
-            ctx.fillStyle = config.colors.food;
+            ctx.fillStyle = colors.food;
             ctx.beginPath();
             ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
             ctx.fill();
