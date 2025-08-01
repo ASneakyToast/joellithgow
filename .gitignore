@@ -2,3 +2,5 @@
 .claude/
 # Local Netlify folder
 .netlify
+# Archive folder for old sketches
+archive/
