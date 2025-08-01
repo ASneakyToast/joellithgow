@@ -205,6 +205,65 @@ const projects = [
             { number: '70%', label: 'faster deployments' },
             { number: '90%', label: 'reduced manual steps' }
         ]
+    },
+    {
+        id: 'ai-powered-portfolio',
+        number: '04',
+        type: 'ai-augmented development',
+        title: '24-Hour AI-Powered Portfolio: From Job Posting to Deployment',
+        description: 'When a dream job opportunity appeared with an urgent application deadline, I pioneered a collaborative AI-powered development workflow that allowed me to build a sophisticated single-page application portfolio in under 24 hours.',
+        technologies: [
+            'claude ai',
+            'strategic planning',
+            'rapid prototyping',
+            'netlify deployment'
+        ],
+        impact: 'Portfolio successfully landed target position',
+        images: [
+            {
+                src: 'assets/images/ai-portfolio-homepage.png',
+                alt: 'AI-powered portfolio homepage screenshot showing modern design and smooth interactions',
+                caption: 'The completed AI-powered portfolio homepage demonstrating sophisticated SPA-like experience with smooth transitions and professional design'
+            }
+        ],
+        // Extended data from the modal
+        subtitle: 'ai-augmented development',
+        overview: 'A groundbreaking portfolio development project that demonstrated how AI collaboration can accelerate creative and technical work without compromising quality, proving that speed and excellence can coexist when human creativity is amplified by strategic AI partnership.',
+        duration: 'under 24 hours',
+        team: 'Joel Lithgow + Claude AI (collaborative development partner)',
+        role: 'creative technologist',
+        tools: 'claude code, netlify, mcp integration, strategic interview process',
+        problem: 'When a dream job opportunity appeared with an urgent application deadline, I needed to create a professional portfolio from scratch—fast. Traditional development timelines would have made meeting the deadline impossible, but rushing would compromise the quality needed to make a strong impression.',
+        solution: 'Rather than rushing through a basic website, I pioneered a collaborative AI-powered development workflow that allowed me to build a sophisticated single-page application portfolio in under 24 hours, focusing on strategic thinking and creative decisions while AI handled implementation details.',
+        process: [
+            {
+                title: 'strategic interview phase',
+                description: 'Started with Claude conducting a recruiter-style interview to clarify my professional narrative and value proposition, ensuring the portfolio would tell a compelling story rather than just showcase projects.'
+            },
+            {
+                title: 'rapid prototyping with ai',
+                description: 'Used AI to experiment with modern design systems and test concepts through live demo pages, iterating on design and functionality in real-time rather than working from static mockups.'
+            },
+            {
+                title: 'iterative development partnership',
+                description: 'Collaborated with Claude Code as an AI development partner to build a SPA-like experience with smooth transitions and modal-based case studies, focusing on architectural decisions while AI handled coding implementation.'
+            },
+            {
+                title: 'seamless deployment integration',
+                description: 'Learned and deployed to Netlify through MCP integration—all within the same workflow, demonstrating how AI collaboration can include the entire development lifecycle from concept to production.'
+            }
+        ],
+        insights: [
+            'AI collaboration isn\'t just about coding faster—it\'s about creating space for higher-level creative and strategic decisions while maintaining technical excellence',
+            'By chunking work into focused conversations and creating strategic briefs, I spent less time on repetitive coding tasks and more time refining content quality and design polish',
+            'The AI advantage allows for rapid iteration cycles that would typically take weeks to achieve, but only when paired with clear strategic thinking and creative direction'
+        ],
+        metrics: [
+            { number: '24hrs', label: 'total development time' },
+            { number: '100%', label: 'application success rate' },
+            { number: '3', label: 'interactive case studies' },
+            { number: '0', label: 'page reloads needed' }
+        ]
     }
     /*,
     {

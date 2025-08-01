@@ -165,6 +165,23 @@ function generateCaseStudyContent(data) {
         </div>
         ` : ''}
         
+        ${data.id === 'ai-powered-portfolio' ? `
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="section-content">
+                This project demonstrated that AI collaboration isn't just about coding faster—it's about creating space for higher-level creative and strategic decisions while maintaining technical excellence. The portfolio successfully landed the target position, proving that speed doesn't have to compromise quality when AI amplifies human creativity and strategic thinking.
+            </div>
+        </div>
+        ` : ''}
+        
         ${data.liveLink ? `
         <div class="case-section">
             <h2 class="section-title">${data.liveLink.title}</h2>
