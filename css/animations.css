@@ -185,6 +185,17 @@
     transform: rotate(0deg) scale(1.05);
 }
 
+/* Disable general stat hover for infinity symbol to prevent conflicts */
+/* Temporarily disabled for debugging
+.stat-item:hover:has(.stat-number.infinity) {
+    transform: none;
+}
+
+.stat-item.infinity-parent:hover {
+    transform: none;
+}
+*/
+
 /* Skill Category Hover */
 .skill-category:hover {
     transform: rotate(0deg) scale(1.02);

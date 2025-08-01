@@ -442,6 +442,165 @@ function initTechTagInteractions() {
     });
 }
 
+// Snake Easter Egg - Slithering Infinity Symbol
+function initSnakeEasterEgg() {
+    const infinitySymbol = document.querySelector('.stat-number.infinity');
+    
+    if (!infinitySymbol) return;
+    
+    let clickCount = 0;
+    let clickTimer = null;
+    
+    // Add click handler for navigation to Snake game
+    infinitySymbol.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        clickCount++;
+        
+        // Clear existing timer
+        if (clickTimer) {
+            clearTimeout(clickTimer);
+        }
+        
+        // Single click - navigate to Snake game with subtle animation
+        if (clickCount === 1) {
+            clickTimer = setTimeout(() => {
+                // Add extra slither animation before navigation
+                this.style.animation = 'slither 0.5s ease-in-out 2';
+                
+                // Navigate after animation
+                setTimeout(() => {
+                    window.location.href = '/snake.html';
+                }, 1000);
+                
+                clickCount = 0;
+            }, 300);
+        }
+        
+        // Double click - immediate navigation with special effect
+        if (clickCount === 2) {
+            clearTimeout(clickTimer);
+            
+            // Special double-click effect
+            this.style.animation = 'slither 0.2s ease-in-out 3';
+            this.style.transform = 'scale(1.3)';
+            
+            // Navigate immediately with snake-like transition
+            setTimeout(() => {
+                // Add screen flash effect like eating food in snake
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: var(--accent-secondary);
+                    opacity: 0.7;
+                    z-index: 9999;
+                    pointer-events: none;
+                    animation: flash 0.3s ease-out;
+                `;
+                
+                // Add flash animation keyframes
+                if (!document.querySelector('#snake-flash-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'snake-flash-style';
+                    style.textContent = `
+                        @keyframes flash {
+                            0% { opacity: 0; }
+                            50% { opacity: 0.7; }
+                            100% { opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(flash);
+                
+                // Navigate after flash
+                setTimeout(() => {
+                    window.location.href = '/snake';
+                }, 300);
+                
+                // Clean up flash element
+                setTimeout(() => {
+                    if (flash.parentNode) {
+                        flash.parentNode.removeChild(flash);
+                    }
+                }, 350);
+                
+            }, 400);
+            
+            clickCount = 0;
+        }
+    });
+    
+    // Add subtle hint on long hover (3+ seconds)
+    let hoverTimer = null;
+    
+    infinitySymbol.addEventListener('mouseenter', function() {
+        hoverTimer = setTimeout(() => {
+            // Add subtle pulsing to hint it's clickable
+            this.style.animation = 'slither 1s ease-in-out 1, glow-pulse 2s ease-in-out infinite';
+            
+            // Add small tooltip hint
+            const hint = document.createElement('div');
+            hint.className = 'snake-hint';
+            hint.textContent = '🐍 Click me!';
+            hint.style.cssText = `
+                position: absolute;
+                top: -40px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--bg-secondary);
+                color: var(--accent-secondary);
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 1000;
+                animation: fadeInOut 2s ease-in-out;
+                pointer-events: none;
+                border: 1px solid var(--accent-secondary);
+            `;
+            
+            // Add hint animation
+            if (!document.querySelector('#snake-hint-style')) {
+                const style = document.createElement('style');
+                style.id = 'snake-hint-style';
+                style.textContent = `
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+                        20% { opacity: 1; transform: translateX(-50%) translateY(0px); }
+                        80% { opacity: 1; transform: translateX(-50%) translateY(0px); }
+                        100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            this.appendChild(hint);
+            
+            // Remove hint after animation
+            setTimeout(() => {
+                if (hint.parentNode) {
+                    hint.parentNode.removeChild(hint);
+                }
+            }, 2000);
+            
+        }, 3000);
+    });
+    
+    infinitySymbol.addEventListener('mouseleave', function() {
+        if (hoverTimer) {
+            clearTimeout(hoverTimer);
+        }
+        // Reset animation to normal hover state  
+        this.style.animation = '';
+    });
+}
+
 // Initialize all UI interactions
 function initAllUIInteractions() {
     initSmoothScrolling();
@@ -456,6 +615,7 @@ function initAllUIInteractions() {
     initContactMethodInteractions();
     initSkillItemInteractions();
     initTechTagInteractions();
+    initSnakeEasterEgg();
 }
 
 // Export functions for use in other modules
@@ -474,5 +634,6 @@ export {
     initContactMethodInteractions,
     initSkillItemInteractions,
     initTechTagInteractions,
+    initSnakeEasterEgg,
     initAllUIInteractions
 };
