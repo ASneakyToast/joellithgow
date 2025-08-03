@@ -1,0 +1,273 @@
+---
+// Navigation component with theme switching functionality
+export interface Props {
+  currentPath?: string;
+}
+
+// Navigation items
+const navItems = [
+  { href: '#work', label: 'work', description: 'View my recent projects and case studies' },
+  { href: '#process', label: 'process', description: 'Learn about my design and development process' },
+  { href: '#about', label: 'about', description: 'Read about my background and skills' },
+  { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' }
+];
+---
+
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-links">
+    {navItems.map((item) => (
+      <a 
+        href={item.href} 
+        class="nav-link" 
+        aria-describedby={`${item.label}-description`}
+      >
+        {item.label}
+      </a>
+    ))}
+  </div>
+  
+  <!-- Theme Control Button -->
+  <button 
+    id="themeControl" 
+    class="theme-control" 
+    aria-label="Open theme selector"
+    aria-expanded="false"
+    aria-controls="themeModal"
+    title="Press Ctrl+T to cycle themes">
+    <div class="theme-control-text">
+      <span aria-hidden="true">⚙</span>
+      <span>themes</span>
+    </div>
+  </button>
+  
+  <!-- Hidden descriptions for screen readers -->
+  <div class="sr-only">
+    {navItems.map((item) => (
+      <div id={`${item.label}-description`}>{item.description}</div>
+    ))}
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 1000;
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-primary);
+    padding: 20px;
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+  }
+
+  .nav-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: lowercase;
+    transition: all 0.3s ease;
+    padding: 5px 8px;
+    border: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+    border-color: var(--accent-primary);
+  }
+
+  .nav-link.active {
+    color: var(--text-light);
+    background: var(--accent-primary);
+    border-color: var(--bg-dark);
+    transform: rotate(2deg);
+    box-shadow: 2px 2px 0px var(--accent-secondary);
+  }
+
+  .theme-control {
+    background: white;
+    color: var(--accent-primary);
+    padding: 15px 30px;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+    font-family: inherit;
+    transform: rotate(2deg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  .theme-control:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: rotate(2deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+  }
+
+  .theme-control-text {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .theme-control-text span:first-child {
+    font-size: 16px;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .nav {
+      position: relative;
+      top: 0;
+      right: 0;
+      transform: none;
+      margin: 20px;
+      width: calc(100% - 40px);
+      padding: 15px;
+    }
+
+    .nav-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .theme-control {
+      padding: 12px 20px;
+      margin-top: 15px;
+    }
+
+    .theme-control-text {
+      font-size: 12px;
+      gap: 6px;
+    }
+  }
+
+  /* Screen reader only styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script>
+  // Enhanced navigation functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    // Load saved theme
+    const savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Theme control button
+    const themeControl = document.getElementById('themeControl');
+    if (themeControl) {
+      themeControl.addEventListener('click', () => {
+        cycleTheme();
+      });
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+        e.preventDefault();
+        cycleTheme();
+      }
+    });
+
+    function cycleTheme() {
+      const themes = ['default', 'electric', 'retro', 'minimal', 'system', 'high-contrast', 'neon'];
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+      const currentIndex = themes.indexOf(currentTheme);
+      const nextIndex = (currentIndex + 1) % themes.length;
+      const nextTheme = themes[nextIndex];
+      
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('portfolio-theme', nextTheme);
+    }
+
+    // Smooth scrolling and active state management
+    function updateActiveNavigation(href: string) {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === href) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = (link as HTMLAnchorElement).getAttribute('href');
+        if (href) {
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            // Update active navigation state
+            updateActiveNavigation(href);
+          }
+        }
+      });
+    });
+
+    // Scroll spy for main navigation
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (sections.length > 0 && navLinks.length > 0) {
+      const observerOptions = {
+        threshold: [0.1, 0.25, 0.5],
+        rootMargin: '-10% 0px -40% 0px'
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const sectionId = entry.target.id;
+            updateActiveNavigation(`#${sectionId}`);
+          }
+        });
+      }, observerOptions);
+      
+      // Observe all sections
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+      
+      // Handle scroll to top case (no active section)
+      window.addEventListener('scroll', () => {
+        if (window.scrollY < 200) {
+          navLinks.forEach(link => link.classList.remove('active'));
+        }
+      });
+    }
+  });
+</script>

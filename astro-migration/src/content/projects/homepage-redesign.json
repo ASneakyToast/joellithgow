@@ -1,0 +1,84 @@
+{
+  "id": "homepage-redesign",
+  "number": 1,
+  "type": "homepage redesign",
+  "title": "CCA homepage redesign",
+  "description": "data-driven redesign that solved user confusion about institutional identity, achieving a 33% reduction in confusion-driven navigation while improving conversion paths and engagement metrics",
+  "technologies": [
+    "user research",
+    "google analytics",
+    "stakeholder interviews",
+    "conversion optimization"
+  ],
+  "impact": "33% reduction in confusion-driven navigation",
+  "images": [
+    {
+      "src": "assets/images/homepage-scroll-720.webm",
+      "alt": "CCA homepage before and after redesign comparison",
+      "caption": "Homepage transformation showing improved clarity and user flow",
+      "type": "video"
+    },
+    {
+      "src": "assets/images/homepage-wavyfeatures-image--processed.png",
+      "alt": "Homepage wavy features section design",
+      "caption": "Dynamic wavy features section showcasing CCA programs and community"
+    },
+    {
+      "src": "assets/images/homepage-adm-image--processed.png",
+      "alt": "Homepage admissions section design",
+      "caption": "Strategic admissions section with clear conversion paths and program highlights"
+    },
+    {
+      "src": "assets/images/homepage-experience-image--processed.png",
+      "alt": "Homepage experience section design",
+      "caption": "Community experience section demonstrating progressive disclosure approach"
+    },
+    {
+      "src": "assets/images/homepage-hero-image--processed.png",
+      "alt": "Homepage hero section design",
+      "caption": "Clean, focused hero section establishing CCA identity and value proposition"
+    }
+  ],
+  "subtitle": "homepage redesign",
+  "overview": "A comprehensive homepage redesign that transformed user understanding of CCA's identity while dramatically improving conversion metrics and user engagement.",
+  "duration": "4 months",
+  "team": "Joel Lithgow (UX), Tanza Solis (Dev), Stephanie Smith (Strategy), Nikol Plass (PM)",
+  "role": "lead ux designer",
+  "tools": "figma, google analytics, looker studio",
+  "problem": "Users landing on CCA's homepage didn't understand what the institution was or where it was located. Analytics showed high bounce rates and users immediately clicking to the \"About\" page in the footer, indicating fundamental communication failure.",
+  "solution": "Redesigned the homepage with a \"front door\" approach - immediately communicating CCA's identity, location in San Francisco, and value proposition before progressively revealing community content and conversion opportunities.",
+  "process": [
+    {
+      "title": "stakeholder interviews",
+      "description": "Conducted interviews with key departments to understand what they felt was missing from the current homepage and identify core messaging priorities."
+    },
+    {
+      "title": "analytics analysis",
+      "description": "Deep dive into Google Analytics data to understand user behavior patterns, bounce rates, and navigation flows from the existing homepage."
+    },
+    {
+      "title": "content strategy",
+      "description": "Developed a progressive disclosure approach: identity first, community second, conversion third."
+    },
+    {
+      "title": "rapid prototyping",
+      "description": "Created high-fidelity prototypes with real content to test messaging hierarchy and visual communication."
+    }
+  ],
+  "insights": [
+    "The homepage needed to function as CCA's \"front door\" - balancing user needs for immediate brand understanding with admissions team conversion goals",
+    "Users weren't getting essential information upfront: who CCA was, what programs were offered, and where they were located",
+    "A strategic three-phase approach emerged: awareness (hero/identity), consideration (community/programs), conversion (CTAs)"
+  ],
+  "metrics": [
+    { "number": "33%", "label": "reduction in \"about\" clicks" },
+    { "number": "20%", "label": "increase of engagement time" }
+  ],
+  "liveLink": {
+    "title": "see for yourself",
+    "url": "https://www.cca.edu",
+    "description": "Visit the live CCA homepage to experience the redesigned user flow"
+  },
+  "featured": true,
+  "tags": ["ux-design", "analytics", "conversion-optimization"]
+}

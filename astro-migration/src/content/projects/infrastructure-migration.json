@@ -1,0 +1,53 @@
+{
+  "id": "infrastructure-migration",
+  "number": 3,
+  "type": "infrastructure migration",
+  "title": "kubernetes to cloud run migration",
+  "description": "modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline",
+  "technologies": [
+    "kubernetes",
+    "cloud run",
+    "docker",
+    "ci/cd pipeline"
+  ],
+  "impact": "zero-downtime migration with 70% faster deployments",
+  "images": [],
+  "subtitle": "infrastructure migration",
+  "overview": "A comprehensive infrastructure modernization project that transformed a complex Kubernetes deployment into a streamlined Cloud Run solution, demonstrating adaptability in learning new cloud technologies.",
+  "duration": "3 weeks",
+  "team": "solo project with stakeholder collaboration",
+  "role": "full-stack developer",
+  "tools": "kubernetes, google cloud run, docker, github actions",
+  "problem": "Existing Kubernetes infrastructure was complex to maintain, slow to deploy, and required specialized knowledge that created bottlenecks. Team needed a more accessible and efficient deployment solution.",
+  "solution": "Migrated to Google Cloud Run with containerized applications and automated CI/CD pipeline, prioritizing simplicity and developer experience while maintaining performance and reliability.",
+  "process": [
+    {
+      "title": "learning phase",
+      "description": "Deep dive into Cloud Run documentation and best practices, coming from zero prior experience with Google Cloud Platform."
+    },
+    {
+      "title": "migration strategy",
+      "description": "Developed step-by-step migration plan to minimize downtime and risk, including rollback procedures and testing protocols."
+    },
+    {
+      "title": "containerization",
+      "description": "Dockerized applications and optimized container builds for Cloud Run's specific requirements and constraints."
+    },
+    {
+      "title": "ci/cd automation",
+      "description": "Implemented GitHub Actions pipeline for automated testing, building, and deployment to Cloud Run services."
+    }
+  ],
+  "insights": [
+    "Cloud-native solutions can dramatically simplify operations when chosen thoughtfully for the specific use case",
+    "Learning new technologies requires systematic documentation and experimentation approach",
+    "Understanding static file handling in containerized environments is crucial for successful cloud deployments"
+  ],
+  "metrics": [
+    { "number": "0min", "label": "deployment downtime" },
+    { "number": "70%", "label": "faster deployments" },
+    { "number": "90%", "label": "reduced manual steps" }
+  ],
+  "featured": false,
+  "tags": ["infrastructure", "cloud-migration", "devops"]
+}

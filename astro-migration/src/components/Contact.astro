@@ -1,0 +1,606 @@
+---
+// Contact section component - exact original design
+export interface Props {
+  title?: string;
+  description?: string;
+  emailAddress?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+}
+
+const {
+  title = "let's create",
+  description = "Ready to bring your ideas to life? I'm always excited to collaborate on projects that push the boundaries of what's possible with design and technology.",
+  emailAddress = "joelnotlithgow@gmail.com",
+  linkedinUrl = "https://www.linkedin.com/in/joel-lithgow-40a9341b4/",
+  githubUrl = "https://github.com/ASneakyToast"
+} = Astro.props;
+
+// Contact methods configuration - matching original exactly
+const contactMethods = [
+  {
+    id: 'email',
+    label: 'email',
+    text: 'send an email',
+    href: `mailto:${emailAddress}`,
+    description: 'Send me an email to discuss your project',
+    external: false
+  },
+  {
+    id: 'linkedin',
+    label: 'linkedin',
+    text: 'connect with me',
+    href: linkedinUrl,
+    description: 'Connect with me on LinkedIn',
+    external: true
+  },
+  {
+    id: 'github',
+    label: 'github',
+    text: 'see my code',
+    href: githubUrl,
+    description: 'View my code repositories on GitHub',
+    external: true
+  }
+];
+
+// Floating elements configuration
+const floatingElements = [
+  {
+    id: 3,
+    text: 'collaboration: remote-friendly',
+    class: 'contact-floating-3'
+  },
+  {
+    id: 4,
+    text: 'location: bay area',
+    class: 'contact-floating-4'
+  },
+  {
+    id: 5,
+    text: 'coffee: essential fuel ☕',
+    class: 'contact-floating-5'
+  }
+];
+---
+
+<section id="contact" class="contact" aria-labelledby="contact-heading">
+  <div class="contact-content">
+    <header>
+      <h2 id="contact-heading" class="contact-title">{title}</h2>
+      <p class="contact-description">
+        {description}
+      </p>
+    </header>
+    
+    <div class="contact-methods" role="group" aria-label="Contact methods">
+      {contactMethods.map((method) => (
+        <a 
+          href={method.href} 
+          class="contact-method" 
+          aria-describedby={`${method.id}-description`}
+          target={method.external ? "_blank" : undefined}
+          rel={method.external ? "noopener noreferrer" : undefined}
+        >
+          <div class="contact-label">{method.label}</div>
+          <div class="contact-text">{method.text}</div>
+        </a>
+      ))}
+    </div>
+    
+    <!-- Contact Floating Elements -->
+    <div class="contact-floating-elements" aria-hidden="true">
+      {floatingElements.map((element) => (
+        <div 
+          class={`contact-floating-element ${element.class}`} 
+          tabindex="0" 
+          role="img" 
+          aria-label={`Floating element: ${element.text}`}
+        >
+          {element.text}
+        </div>
+      ))}
+    </div>
+    
+    <!-- Hidden descriptions for screen readers -->
+    <div class="sr-only">
+      {contactMethods.map((method) => (
+        <div id={`${method.id}-description`}>{method.description}</div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding: 100px 20px;
+    background: var(--bg-secondary);
+    border-top: 5px solid var(--accent-primary);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Contact Section Animated Background Grid */
+  .contact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      /* Grid pattern - different color for contact */
+      linear-gradient(90deg, transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px),
+      linear-gradient(transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px);
+    background-size: 80px 80px;
+    background-position: 0 0;
+    animation: contactGridBreathe 5s ease-in-out infinite, contactGridDrift 15s ease-in-out infinite;
+    z-index: 1;
+  }
+
+  /* Contact Section Accent Elements */
+  .contact::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      /* Connection dots scattered like network nodes */
+      radial-gradient(circle 20px at 15% 25%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 70%, transparent 100%),
+      radial-gradient(circle 18px at 75% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 70%, transparent 100%),
+      radial-gradient(circle 22px at 25% 75%, var(--gradient-secondary-light) 0%, var(--gradient-secondary-light) 70%, transparent 100%),
+      radial-gradient(circle 19px at 85% 85%, var(--gradient-tertiary-light) 0%, var(--gradient-tertiary-light) 70%, transparent 100%),
+      /* Curved connection paths */
+      radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, var(--gradient-secondary-subtle) 40%, transparent 50%),
+      radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, var(--gradient-primary-subtle) 45%, transparent 55%);
+    background-size: 
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      400px 400px,
+      350px 350px;
+    background-position: 
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      center,
+      center;
+    background-repeat: no-repeat;
+    animation: contactAccentPulse 4s ease-in-out infinite, contactAccentFloat 10s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  @keyframes contactGridBreathe {
+    0%, 100% { 
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.3;
+      transform: scale(1.015);
+    }
+  }
+
+  @keyframes contactGridDrift {
+    0% { 
+      background-position: 0 0;
+    }
+    25% { 
+      background-position: -20px 20px;
+    }
+    50% { 
+      background-position: -40px -20px;
+    }
+    75% { 
+      background-position: 20px -40px;
+    }
+    100% { 
+      background-position: 0 0;
+    }
+  }
+
+  @keyframes contactAccentPulse {
+    0%, 100% { 
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+    50% { 
+      filter: brightness(2) saturate(1.8);
+      transform: scale(1.15);
+    }
+  }
+
+  @keyframes contactAccentFloat {
+    0%, 100% { 
+      transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    25% { 
+      transform: translateY(-10px) translateX(-8px) rotate(-1deg);
+    }
+    50% { 
+      transform: translateY(8px) translateX(10px) rotate(0.5deg);
+    }
+    75% { 
+      transform: translateY(-6px) translateX(-12px) rotate(-0.8deg);
+    }
+  }
+
+  .contact-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .contact-title {
+    font-size: 56px;
+    margin-bottom: 40px;
+    color: var(--text-primary);
+    text-shadow: 4px 4px 0px var(--accent-secondary);
+    transform: skew(-1deg);
+  }
+
+  .contact-description {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 50px;
+    color: var(--text-secondary);
+  }
+
+  .contact-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+  }
+
+  .contact-method {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 40px 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(1deg);
+    display: block;
+    text-align: center;
+  }
+
+  .contact-method:nth-child(2) {
+    background: var(--accent-secondary);
+    transform: rotate(-1deg);
+  }
+
+  .contact-method:nth-child(3) {
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+    transform: rotate(2deg);
+  }
+
+  .contact-method:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  .contact-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .contact-text {
+    font-size: 16px;
+    font-weight: bold;
+    word-break: auto-phrase;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+  }
+
+  /* Contact Floating Elements */
+  .contact-floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5; /* Between background and content */
+  }
+
+  .contact-floating-element {
+    position: absolute;
+    pointer-events: all;
+    z-index: 5;
+    background: var(--accent-secondary);
+    border: 2px solid var(--bg-dark);
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--text-light);
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 6px;
+    box-shadow: 4px 4px 0px var(--accent-primary);
+  }
+
+  .contact-floating-element:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 6px 6px 0px var(--accent-primary);
+  }
+
+  .contact-floating-element.dragging {
+    transform: rotate(15deg) scale(1.1) !important;
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  /* Contact floating element positions */
+  .contact-floating-3 {
+    top: 45%;
+    right: 5%;
+    transform: rotate(-12deg);
+    background: var(--accent-primary);
+  }
+
+  .contact-floating-4 {
+    bottom: 15%;
+    left: 15%;
+    transform: rotate(6deg);
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+  }
+
+  .contact-floating-5 {
+    top: 65%;
+    left: 25%;
+    transform: rotate(-3deg);
+    background: var(--accent-secondary);
+  }
+
+  /* Screen reader only styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .contact {
+      padding: 60px 20px;
+    }
+
+    .contact-title {
+      font-size: 36px;
+    }
+
+    .contact-description {
+      font-size: 16px;
+    }
+
+    .contact-methods {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .contact-method {
+      padding: 30px 20px;
+    }
+
+    /* Hide floating elements on mobile */
+    .contact-floating-elements {
+      display: none;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .contact::before,
+    .contact::after {
+      animation: none !important;
+      transform: none !important;
+      filter: none !important;
+    }
+    
+    .contact-method:hover {
+      transform: scale(1.02);
+    }
+  }
+
+  /* High contrast mode adjustments */
+  @media (prefers-contrast: high) {
+    .contact-method {
+      border-width: 4px;
+    }
+  }
+</style>
+
+<script>
+  // Contact method interactions and draggable floating elements
+  document.addEventListener('DOMContentLoaded', () => {
+    const contactMethods = document.querySelectorAll('.contact-method');
+    
+    // Enhanced contact method interactions
+    contactMethods.forEach(method => {
+      method.addEventListener('mouseenter', function(this: HTMLElement) {
+        this.style.transform = 'scale(1.05) rotate(0deg)';
+      });
+      
+      method.addEventListener('mouseleave', function(this: HTMLElement) {
+        const transform = this.style.transform;
+        const currentRotation = transform.match(/rotate\(([^)]+)\)/);
+        const rotation = currentRotation ? currentRotation[1] : '1deg';
+        this.style.transform = `rotate(${rotation})`;
+      });
+
+      // Add keyboard navigation enhancement
+      method.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+          e.preventDefault();
+          (method as HTMLElement).click();
+        }
+      });
+
+      // Track clicks for analytics (placeholder)
+      method.addEventListener('click', () => {
+        const methodType = method.querySelector('.contact-label')?.textContent?.trim();
+        console.log(`Contact method clicked: ${methodType}`);
+      });
+    });
+
+    // Draggable functionality for floating elements
+    const floatingElements = document.querySelectorAll('.contact-floating-element');
+    
+    floatingElements.forEach(element => {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      
+      function handleStart(e: MouseEvent | TouchEvent) {
+        isDragging = true;
+        element.classList.add('dragging');
+        
+        const clientX = (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX;
+        const clientY = (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY;
+        
+        // Get current position more accurately
+        const rect = element.getBoundingClientRect();
+        
+        // Calculate offset from mouse to element's top-left corner
+        startX = clientX - rect.left;
+        startY = clientY - rect.top;
+        
+        // Store the current computed transform to preserve rotation
+        const computedStyle = window.getComputedStyle(element);
+        const currentTransform = computedStyle.transform;
+        
+        // Convert element to fixed positioning to avoid parent container issues
+        currentX = rect.left;
+        currentY = rect.top;
+        
+        (element as HTMLElement).style.position = 'fixed';
+        (element as HTMLElement).style.left = currentX + 'px';
+        (element as HTMLElement).style.top = currentY + 'px';
+        (element as HTMLElement).style.right = 'auto';
+        (element as HTMLElement).style.bottom = 'auto';
+        (element as HTMLElement).style.margin = '0';
+        (element as HTMLElement).style.transform = currentTransform; // Preserve rotation
+        (element as HTMLElement).style.zIndex = '1000'; // Bring to front while dragging
+        
+        // Prevent text selection and default behaviors
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      function handleMove(e: MouseEvent | TouchEvent) {
+        if (!isDragging) return;
+        
+        e.preventDefault();
+        
+        const clientX = (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX;
+        const clientY = (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY;
+        
+        // Calculate new position
+        const newX = clientX - startX;
+        const newY = clientY - startY;
+        
+        // Constrain to viewport with padding
+        const padding = 10;
+        const maxX = window.innerWidth - (element as HTMLElement).offsetWidth - padding;
+        const maxY = window.innerHeight - (element as HTMLElement).offsetHeight - padding;
+        
+        currentX = Math.max(padding, Math.min(newX, maxX));
+        currentY = Math.max(padding, Math.min(newY, maxY));
+        
+        // Apply position with transform preserved
+        (element as HTMLElement).style.left = currentX + 'px';
+        (element as HTMLElement).style.top = currentY + 'px';
+      }
+      
+      function handleEnd() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        element.classList.remove('dragging');
+        
+        // Convert back to absolute positioning within parent container
+        const parentRect = (element.parentElement as HTMLElement).getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        
+        // Calculate position relative to parent
+        const relativeX = elementRect.left - parentRect.left;
+        const relativeY = elementRect.top - parentRect.top;
+        
+        // Convert to absolute positioning within parent
+        (element as HTMLElement).style.position = 'absolute';
+        (element as HTMLElement).style.left = relativeX + 'px';
+        (element as HTMLElement).style.top = relativeY + 'px';
+        (element as HTMLElement).style.right = 'auto';
+        (element as HTMLElement).style.bottom = 'auto';
+        (element as HTMLElement).style.zIndex = '5'; // Reset to normal z-index
+      }
+      
+      // Mouse events
+      element.addEventListener('mousedown', handleStart as EventListener);
+      document.addEventListener('mousemove', handleMove as EventListener);
+      document.addEventListener('mouseup', handleEnd);
+      
+      // Touch events  
+      element.addEventListener('touchstart', handleStart as EventListener, { passive: false });
+      document.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+      document.addEventListener('touchend', handleEnd);
+      
+      // Prevent context menu on long press
+      element.addEventListener('contextmenu', e => e.preventDefault());
+    });
+
+    // Intersection Observer for animation on scroll
+    if ('IntersectionObserver' in window) {
+      const observerOptions = {
+        threshold: 0.2,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const methods = entry.target.querySelectorAll('.contact-method');
+            methods.forEach((method, index) => {
+              setTimeout(() => {
+                (method as HTMLElement).style.opacity = '1';
+                (method as HTMLElement).style.transform = 'translateY(0)';
+              }, index * 100);
+            });
+          }
+        });
+      }, observerOptions);
+
+      const contactSection = document.querySelector('.contact');
+      if (contactSection) {
+        // Set initial state for contact methods
+        const methods = contactSection.querySelectorAll('.contact-method');
+        methods.forEach(method => {
+          (method as HTMLElement).style.opacity = '0';
+          (method as HTMLElement).style.transform = 'translateY(20px)';
+          (method as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        });
+        
+        observer.observe(contactSection);
+      }
+    }
+  });
+</script>

@@ -1,0 +1,491 @@
+---
+// About section component - exact original design
+export interface Props {
+  sectionTitle?: string;
+  bio?: string;
+}
+
+const {
+  sectionTitle = 'about me',
+  bio = "I'm passionate about creating digital experiences that feel both innovative and human. My journey spans from visual design to full-stack development, giving me a unique perspective on how to bridge the gap between what's possible and what's meaningful."
+} = Astro.props;
+
+// Skills configuration - matching original exactly
+const skillCategories = [
+  {
+    title: 'design',
+    skills: ['figma', 'sketch', 'adobe cc', 'prototyping', 'user research', 'design systems']
+  },
+  {
+    title: 'development',
+    skills: ['javascript', 'typescript', 'react', 'node.js', 'python', 'docker']
+  },
+  {
+    title: 'emerging tech',
+    skills: ['claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js']
+  }
+];
+
+// Stats configuration - matching original exactly
+const stats = [
+  {
+    number: '5',
+    label: 'years experience',
+    suffix: '+'
+  },
+  {
+    number: '50',
+    label: 'projects completed',
+    suffix: '+'
+  },
+  {
+    number: '1',
+    label: 'Art Degree',
+    suffix: ''
+  },
+  {
+    number: '∞',
+    label: 'ideas per day',
+    suffix: '',
+    isInfinity: true
+  }
+];
+---
+
+<section id="about" class="about" aria-labelledby="about-heading">
+  <div class="about-content">
+    <header>
+      <h2 id="about-heading" class="section-title">{sectionTitle}</h2>
+    </header>
+    
+    <div class="about-intro">
+      <div class="about-text">
+        {bio}
+      </div>
+      
+      <div class="about-stats" role="group" aria-label="Professional statistics">
+        {stats.map((stat) => (
+          <div class="stat-item">
+            <div class={`stat-number ${stat.isInfinity ? 'infinity' : ''}`}>{stat.number}{stat.suffix}</div>
+            <div class="stat-label">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <div class="skills-grid" role="group" aria-label="Technical skills">
+      {skillCategories.map((category) => (
+        <div class="skill-category">
+          <h3 class="skill-title">{category.title}</h3>
+          <div class="skill-list" role="list">
+            {category.skills.map((skill) => (
+              <span class="skill-item" role="listitem">{skill}</span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    padding: 100px 20px;
+    background: var(--bg-primary);
+    position: relative;
+  }
+
+  .about-content {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 48px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    transform: skew(-2deg);
+  }
+
+  .about-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 80px;
+    align-items: center;
+  }
+
+  .about-text {
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    padding: 40px;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .stat-item {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 30px;
+    text-align: center;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(1deg);
+  }
+
+  .stat-item:nth-child(even) {
+    transform: rotate(-2deg);
+    background: var(--accent-secondary);
+  }
+
+  .stat-number {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .stat-number.infinity {
+    font-size: 60px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Snake Easter Egg - Simple Test */
+  .stat-number.infinity:hover {
+    color: #00ff00 !important;
+    transform: scale(1.2) !important;
+    opacity: 1 !important;
+    background: rgba(0, 255, 0, 0.1) !important;
+    border-radius: 10px !important;
+  }
+
+  /* Snake-like slithering animation */
+  @keyframes slither {
+    0%, 100% { 
+      transform: scale(1.1) rotate(0deg) skewX(0deg);
+    }
+    25% { 
+      transform: scale(1.15) rotate(2deg) skewX(5deg);
+    }
+    50% { 
+      transform: scale(1.1) rotate(0deg) skewX(-3deg);
+    }
+    75% { 
+      transform: scale(1.15) rotate(-2deg) skewX(3deg);
+    }
+  }
+
+  /* Glow effect like snake game */
+  @keyframes glow-pulse {
+    0%, 100% { 
+      opacity: 0.3;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+      opacity: 0.6;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+  }
+
+  .stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+  }
+
+  .skill-category {
+    background: var(--bg-secondary);
+    border: 3px solid var(--bg-dark);
+    padding: 30px;
+    transform: rotate(0.5deg);
+  }
+
+  .skill-category:nth-child(even) {
+    transform: rotate(-0.5deg);
+  }
+
+  .skill-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .skill-item {
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid var(--bg-dark);
+    font-weight: bold;
+  }
+
+  .skill-item:nth-child(odd) {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .about {
+      padding: 60px 20px;
+    }
+
+    .section-title {
+      font-size: 36px;
+    }
+
+    .about-intro {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .about-text {
+      font-size: 18px;
+      padding: 30px;
+    }
+
+    .about-stats {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .stat-item {
+      padding: 20px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+    }
+
+    .stat-number.infinity {
+      font-size: 50px;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .skill-category {
+      padding: 20px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .stat-number.infinity:hover {
+      transform: scale(1.05) !important;
+    }
+    
+    .stat-number.infinity {
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Snake Easter Egg - Slithering Infinity Symbol
+  document.addEventListener('DOMContentLoaded', () => {
+    const infinitySymbol = document.querySelector('.stat-number.infinity');
+    
+    if (!infinitySymbol) return;
+    
+    let clickCount = 0;
+    let clickTimer: ReturnType<typeof setTimeout> | null = null;
+    
+    // Add click handler for navigation to Snake game
+    infinitySymbol.addEventListener('click', function(this: HTMLElement, e) {
+      e.preventDefault();
+      
+      clickCount++;
+      
+      // Clear existing timer
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+      }
+      
+      // Single click - navigate to Snake game with subtle animation
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          // Add extra slither animation before navigation
+          (this as HTMLElement).style.animation = 'slither 0.5s ease-in-out 2';
+          
+          // Navigate after animation
+          setTimeout(() => {
+            window.location.href = '/snake';
+          }, 1000);
+          
+          clickCount = 0;
+        }, 300);
+      }
+      
+      // Double click - immediate navigation with special effect
+      if (clickCount === 2) {
+        if (clickTimer) clearTimeout(clickTimer);
+        
+        // Special double-click effect
+        (this as HTMLElement).style.animation = 'slither 0.2s ease-in-out 3';
+        (this as HTMLElement).style.transform = 'scale(1.3)';
+        
+        // Navigate immediately with snake-like transition
+        setTimeout(() => {
+          // Add screen flash effect like eating food in snake
+          const flash = document.createElement('div');
+          flash.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--accent-secondary);
+            opacity: 0.7;
+            z-index: 9999;
+            pointer-events: none;
+            animation: flash 0.3s ease-out;
+          `;
+          
+          // Add flash animation keyframes
+          if (!document.querySelector('#snake-flash-style')) {
+            const style = document.createElement('style');
+            style.id = 'snake-flash-style';
+            style.textContent = `
+              @keyframes flash {
+                0% { opacity: 0; }
+                50% { opacity: 0.7; }
+                100% { opacity: 0; }
+              }
+            `;
+            document.head.appendChild(style);
+          }
+          
+          document.body.appendChild(flash);
+          
+          // Navigate after flash
+          setTimeout(() => {
+            window.location.href = '/snake';
+          }, 300);
+          
+          // Clean up flash element
+          setTimeout(() => {
+            if (flash.parentNode) {
+              flash.parentNode.removeChild(flash);
+            }
+          }, 350);
+          
+        }, 400);
+        
+        clickCount = 0;
+      }
+    });
+    
+    // Add subtle hint on long hover (3+ seconds)
+    let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+    
+    infinitySymbol.addEventListener('mouseenter', function(this: HTMLElement) {
+      hoverTimer = setTimeout(() => {
+        // Add subtle pulsing to hint it's clickable
+        (this as HTMLElement).style.animation = 'slither 1s ease-in-out 1, glow-pulse 2s ease-in-out infinite';
+        
+        // Add small tooltip hint
+        const hint = document.createElement('div');
+        hint.className = 'snake-hint';
+        hint.textContent = '🐍 Click me!';
+        hint.style.cssText = `
+          position: absolute;
+          top: -40px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--bg-secondary);
+          color: var(--accent-secondary);
+          padding: 5px 10px;
+          border-radius: 15px;
+          font-size: 12px;
+          white-space: nowrap;
+          z-index: 1000;
+          animation: fadeInOut 2s ease-in-out;
+          pointer-events: none;
+          border: 1px solid var(--accent-secondary);
+        `;
+        
+        // Add hint animation
+        if (!document.querySelector('#snake-hint-style')) {
+          const style = document.createElement('style');
+          style.id = 'snake-hint-style';
+          style.textContent = `
+            @keyframes fadeInOut {
+              0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+              20% { opacity: 1; transform: translateX(-50%) translateY(0px); }
+              80% { opacity: 1; transform: translateX(-50%) translateY(0px); }
+              100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+        
+        (this as HTMLElement).appendChild(hint);
+        
+        // Remove hint after animation
+        setTimeout(() => {
+          if (hint.parentNode) {
+            hint.parentNode.removeChild(hint);
+          }
+        }, 2000);
+        
+      }, 3000);
+    });
+    
+    infinitySymbol.addEventListener('mouseleave', function(this: HTMLElement) {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      // Reset animation to normal hover state  
+      this.style.animation = '';
+    });
+
+    // Enhanced skill item interactions
+    const skillItems = document.querySelectorAll('.skill-item');
+    skillItems.forEach(item => {
+      item.addEventListener('mouseenter', function(this: HTMLElement) {
+        this.style.transform = 'scale(1.1)';
+        this.style.background = 'var(--accent-primary)';
+        this.style.color = 'var(--text-light)';
+      });
+      
+      item.addEventListener('mouseleave', function(this: HTMLElement) {
+        this.style.transform = 'scale(1)';
+        this.style.background = '';
+        this.style.color = '';
+      });
+    });
+  });
+</script>

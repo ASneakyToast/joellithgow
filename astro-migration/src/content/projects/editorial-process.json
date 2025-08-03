@@ -1,0 +1,73 @@
+{
+  "id": "editorial-process",
+  "number": 2,
+  "type": "creative webpages",
+  "title": "multimedia digital storytelling",
+  "description": "creating unique digital web experiences for the CCA editorial newsroom through innovative design and multimedia storytelling, delivering custom editorial content experiences",
+  "technologies": [
+    "rapid prototyping",
+    "figma",
+    "vev.design",
+    "multimedia storytelling"
+  ],
+  "impact": "unique web experiences for editorial content",
+  "images": [
+    {
+      "src": "assets/images/vev-studio_forward-thumbnail.webm",
+      "alt": "Multimedia digital storytelling workflow demonstration",
+      "caption": "Creative digital storytelling process using modern web technologies",
+      "type": "video"
+    },
+    {
+      "src": "assets/images/vev-designfaculty-image--processed.png",
+      "alt": "Design faculty showcase multimedia storytelling page",
+      "caption": "Faculty spotlight featuring interactive multimedia elements and engaging visual storytelling"
+    },
+    {
+      "src": "assets/images/vev-studioforward-image--processed.png",
+      "alt": "Studio Forward exhibition digital experience",
+      "caption": "Custom digital exhibition experience showcasing student work through immersive storytelling"
+    },
+    {
+      "src": "assets/images/vev-commencement-image--processed.png",
+      "alt": "Commencement ceremony multimedia story layout",
+      "caption": "Dynamic commencement coverage transformed into engaging multimedia narrative format"
+    },
+    {
+      "src": "assets/images/vev-summer-image--processed.png",
+      "alt": "Summer program multimedia storytelling showcase",
+      "caption": "Summer program coverage featuring dynamic layouts and interactive multimedia storytelling elements"
+    }
+  ],
+  "subtitle": "multimedia storytelling",
+  "overview": "Creating unique digital web experiences for the CCA editorial newsroom through innovative design and storytelling using modern web technologies.",
+  "duration": "ongoing process (6+ months)",
+  "team": "editorial + digital strategy team",
+  "role": "designer",
+  "tools": "vev.design, multimedia storytelling",
+  "problem": "A marketing department-wide initiative to visually demonstrate the creativity and energy happening on campus within our newsroom was being limited by generic CMS templates that didn't reflect the vibrant community and brand identity of what was actually happening at CCA.",
+  "solution": "Create unique, custom digital storytelling experiences that capture the authentic energy and creativity of the CCA community by moving beyond generic CMS templates to craft bespoke multimedia narratives that truly reflect campus life and identity.",
+  "insights": [
+    "Generic CMS templates fail to capture the authentic energy and creativity of campus life",
+    "Custom digital storytelling experiences better reflect community identity and brand values",
+    "Multimedia narratives can transform editorial content into engaging, immersive experiences"
+  ],
+  "metrics": [
+    { "number": "1 hour", "label": "meeting to final design" },
+    { "number": "85%", "label": "stakeholder satisfaction" },
+    { "number": "3 days", "label": "time saved per project" }
+  ],
+  "liveLinks": {
+    "title": "see for yourself",
+    "description": "Explore the unique digital storytelling experiences created for CCA's editorial newsroom",
+    "links": [
+      { "title": "Bringing the San Francisco design community together with light and sound", "url": "https://cca.edu/newsroom/future-resonance-studio-forward/" },
+      { "title": "CCA students graduate as their true, authentic selves", "url": "https://cca.edu/newsroom/commencement-looks-2023/" },
+      { "title": "Practice to Pedagogy", "url": "https://cca.edu/newsroom/design-is-faculty-practices/" },
+      { "title": "GLANCE 2024", "url": "https://cca.edu/glance/" },
+      { "title": "Creative Citizenship Energizes Campus", "url": "https://cca.edu/newsroom/creative-citizenship-on-campus/" }
+    ]
+  },
+  "featured": true,
+  "tags": ["multimedia", "storytelling", "editorial-design"]
+}

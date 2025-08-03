@@ -1,0 +1,29 @@
+{
+  "name": "joel-lithgow-portfolio-astro",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "type-check": "astro check --watch"
+  },
+  "keywords": [
+    "astro",
+    "portfolio",
+    "creative-technologist"
+  ],
+  "author": "Joel Lithgow",
+  "license": "MIT",
+  "description": "Joel Lithgow's portfolio - Creative technologist transforming ideas into digital experiences",
+  "dependencies": {
+    "astro": "^5.12.8",
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4"
+  }
+}
