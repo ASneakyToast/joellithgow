@@ -120,10 +120,6 @@ export const collections = {
   'blog': defineCollection({
     type: 'content',
     schema: blogSchema
-  }),
-  'artworks': defineCollection({
-    type: 'data',
-    schema: artworkSchema
   })
 };
 

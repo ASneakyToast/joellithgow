@@ -1,26 +1,20 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Navigation from '@components/Navigation.astro';
-import { getCollection } from 'astro:content';
-import type { Artwork } from '@content/config.ts';
+import { getAllArtworks } from '@lib/artwork-data';
 
-// Get all artworks from content collections
-const artworks = await getCollection('artworks');
-
-// Sort artworks by creation date (newest first)
-const sortedArtworks = artworks.sort((a, b) => 
-  new Date(b.data.creationDate).getTime() - new Date(a.data.creationDate).getTime()
-);
+// Get all artworks (placeholder + API data)
+const allArtworks = await getAllArtworks();
 
 // Group artworks by project
-const projectGroups = sortedArtworks.reduce((groups, artwork) => {
-  const project = artwork.data.projectTitle;
+const projectGroups = allArtworks.reduce((groups, artwork) => {
+  const project = artwork.projectTitle;
   if (!groups[project]) {
     groups[project] = [];
   }
   groups[project].push(artwork);
   return groups;
-}, {} as Record<string, typeof artworks>);
+}, {} as Record<string, typeof allArtworks>);
 
 const pageTitle = 'Artworks - Joel Lithgow';
 const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exhibitions, and collaborative works exploring the intersection of digital and analog processes.';
@@ -51,40 +45,44 @@ const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exh
         {Object.entries(projectGroups).map(([projectTitle, projectArtworks]) => (
           <div class="project-group">
             <h2 class="project-title">{projectTitle}</h2>
-            <p class="project-description">{projectArtworks[0].data.projectDescription}</p>
+            <p class="project-description">{projectArtworks[0].projectDescription}</p>
             
             <div class="artworks-grid">
               {projectArtworks.map((artwork) => (
-                <article class="artwork-card" key={artwork.data.id}>
+                <article class="artwork-card" key={artwork.id}>
                   <div class="artwork-image">
-                    <img 
-                      src={artwork.data.images[0].src} 
-                      alt={artwork.data.images[0].alt}
-                      loading="lazy"
-                    />
-                    {artwork.data.featured && (
+                    {artwork.images && artwork.images.length > 0 ? (
+                      <img 
+                        src={artwork.images[0].src} 
+                        alt={artwork.images[0].alt}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="no-image-placeholder">No image available</div>
+                    )}
+                    {artwork.featured && (
                       <span class="featured-badge" aria-label="Featured artwork">★</span>
                     )}
                   </div>
                   
                   <div class="artwork-info">
-                    <h3 class="artwork-title">{artwork.data.title}</h3>
-                    <p class="artwork-medium">{artwork.data.medium}</p>
+                    <h3 class="artwork-title">{artwork.title}</h3>
+                    <p class="artwork-medium">{artwork.medium}</p>
                     <p class="artwork-date">
-                      {new Date(artwork.data.creationDate).getFullYear()}
+                      {new Date(artwork.creationDate).getFullYear()}
                     </p>
-                    {artwork.data.dimensions && (
-                      <p class="artwork-dimensions">{artwork.data.dimensions}</p>
+                    {artwork.dimensions && (
+                      <p class="artwork-dimensions">{artwork.dimensions}</p>
                     )}
-                    <p class="artwork-description">{artwork.data.description}</p>
+                    <p class="artwork-description">{artwork.description}</p>
                     
-                    {artwork.data.collaborators && artwork.data.collaborators.length > 0 && (
+                    {artwork.collaborators && artwork.collaborators.length > 0 && (
                       <p class="artwork-collaborators">
-                        With: {artwork.data.collaborators.join(', ')}
+                        With: {artwork.collaborators.join(', ')}
                       </p>
                     )}
                     
-                    <a href={`/artworks/${artwork.data.id}`} class="artwork-link">
+                    <a href={`/artworks/${artwork.id}`} class="artwork-link">
                       View Details
                     </a>
                   </div>
@@ -280,6 +278,19 @@ const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exh
 
   .skip-link:focus {
     top: 6px;
+  }
+
+  .no-image-placeholder {
+    width: 100%;
+    height: 250px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-style: italic;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
   }
 
   @media (max-width: 768px) {
