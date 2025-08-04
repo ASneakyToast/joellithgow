@@ -1,0 +1,308 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Navigation from '@components/Navigation.astro';
+import { getCollection } from 'astro:content';
+import type { Artwork } from '@content/config.ts';
+
+// Get all artworks from content collections
+const artworks = await getCollection('artworks');
+
+// Sort artworks by creation date (newest first)
+const sortedArtworks = artworks.sort((a, b) => 
+  new Date(b.data.creationDate).getTime() - new Date(a.data.creationDate).getTime()
+);
+
+// Group artworks by project
+const projectGroups = sortedArtworks.reduce((groups, artwork) => {
+  const project = artwork.data.projectTitle;
+  if (!groups[project]) {
+    groups[project] = [];
+  }
+  groups[project].push(artwork);
+  return groups;
+}, {} as Record<string, typeof artworks>);
+
+const pageTitle = 'Artworks - Joel Lithgow';
+const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exhibitions, and collaborative works exploring the intersection of digital and analog processes.';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <!-- Skip to main content link for screen readers -->
+  <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
+  
+  <!-- Navigation Component -->
+  <Navigation />
+
+  <!-- Main Content -->
+  <main id="main-content" class="artworks-main">
+    <!-- Header Section -->
+    <section class="artworks-header">
+      <div class="container">
+        <h1 class="artworks-title">Fine Art Portfolio</h1>
+        <p class="artworks-description">
+          An exploration of printmedia, sculpture, collaborative works, and exhibitions investigating the relationships between digital and analog processes, material transformation, and the traces we leave through creative practice.
+        </p>
+      </div>
+    </section>
+
+    <!-- Artworks Grid -->
+    <section class="artworks-content">
+      <div class="container">
+        {Object.entries(projectGroups).map(([projectTitle, projectArtworks]) => (
+          <div class="project-group">
+            <h2 class="project-title">{projectTitle}</h2>
+            <p class="project-description">{projectArtworks[0].data.projectDescription}</p>
+            
+            <div class="artworks-grid">
+              {projectArtworks.map((artwork) => (
+                <article class="artwork-card" key={artwork.data.id}>
+                  <div class="artwork-image">
+                    <img 
+                      src={artwork.data.images[0].src} 
+                      alt={artwork.data.images[0].alt}
+                      loading="lazy"
+                    />
+                    {artwork.data.featured && (
+                      <span class="featured-badge" aria-label="Featured artwork">★</span>
+                    )}
+                  </div>
+                  
+                  <div class="artwork-info">
+                    <h3 class="artwork-title">{artwork.data.title}</h3>
+                    <p class="artwork-medium">{artwork.data.medium}</p>
+                    <p class="artwork-date">
+                      {new Date(artwork.data.creationDate).getFullYear()}
+                    </p>
+                    {artwork.data.dimensions && (
+                      <p class="artwork-dimensions">{artwork.data.dimensions}</p>
+                    )}
+                    <p class="artwork-description">{artwork.data.description}</p>
+                    
+                    {artwork.data.collaborators && artwork.data.collaborators.length > 0 && (
+                      <p class="artwork-collaborators">
+                        With: {artwork.data.collaborators.join(', ')}
+                      </p>
+                    )}
+                    
+                    <a href={`/artworks/${artwork.data.id}`} class="artwork-link">
+                      View Details
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .artworks-main {
+    min-height: 100vh;
+    padding-top: 80px; /* Account for fixed navigation */
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .artworks-header {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    margin-bottom: 80px;
+  }
+
+  .artworks-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .artworks-description {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #666;
+    max-width: 800px;
+  }
+
+  .project-group {
+    margin-bottom: 100px;
+  }
+
+  .project-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #2c3e50;
+  }
+
+  .project-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 40px;
+    max-width: 700px;
+  }
+
+  .artworks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+
+  .artwork-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .artwork-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .artwork-image {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+  }
+
+  .artwork-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .artwork-card:hover .artwork-image img {
+    transform: scale(1.05);
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #ff6b6b;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  }
+
+  .artwork-info {
+    padding: 25px;
+  }
+
+  .artwork-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2c3e50;
+  }
+
+  .artwork-medium {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .artwork-date {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+
+  .artwork-dimensions {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+
+  .artwork-description {
+    line-height: 1.5;
+    color: #555;
+    margin-bottom: 15px;
+  }
+
+  .artwork-collaborators {
+    font-size: 0.9rem;
+    color: #3498db;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .artwork-link {
+    display: inline-block;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .artwork-link:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+  }
+
+  .skip-link:focus {
+    top: 6px;
+  }
+
+  @media (max-width: 768px) {
+    .artworks-title {
+      font-size: 2.2rem;
+    }
+    
+    .artworks-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    
+    .project-title {
+      font-size: 1.8rem;
+    }
+    
+    .artworks-header {
+      padding: 40px 0;
+      margin-bottom: 60px;
+    }
+    
+    .project-group {
+      margin-bottom: 80px;
+    }
+  }
+</style>

@@ -1,0 +1,45 @@
+{
+  "id": "sculpture-piece",
+  "title": "Accumulated Gestures",
+  "description": "A sculptural work made from accumulated paper fragments, exploring how small daily actions compound into substantial physical presence over time.",
+  "projectTitle": "Material Accumulation Studies",
+  "projectDescription": "An ongoing sculptural practice investigating how everyday materials can be transformed through repetitive actions and accumulated time into objects that carry the weight of process and duration.",
+  "creationDate": "2023-11-28",
+  "medium": "Compressed paper fragments, wheat paste binder",
+  "dimensions": "14\" x 12\" x 8\"",
+  "images": [
+    {
+      "src": "assets/artworks/accumulated-gestures-main.jpg",
+      "alt": "Sculptural object made of compressed layered paper with organic, rock-like form",
+      "caption": "Accumulated Gestures - showing the dense, stratified surface created through months of daily additions",
+      "type": "main"
+    },
+    {
+      "src": "assets/artworks/accumulated-gestures-side.jpg",
+      "alt": "Side view showing the layered construction and varied surface textures",
+      "caption": "Side view revealing the archaeological layers of accumulated material",
+      "type": "detail"
+    },
+    {
+      "src": "assets/artworks/daily-addition-process.jpg",
+      "alt": "Hands adding small paper fragments to the growing sculpture",
+      "caption": "Daily process - adding small fragments each morning as part of studio routine",
+      "type": "process"
+    },
+    {
+      "src": "assets/artworks/sculpture-in-context.jpg",
+      "alt": "The sculpture displayed in studio setting with natural lighting",
+      "caption": "The finished piece in the studio, showing how it relates to the daily workspace",
+      "type": "context"
+    }
+  ],
+  "materials": ["daily paper waste", "wheat paste", "natural pigments"],
+  "techniques": ["layered compression", "daily accumulation", "organic binding"],
+  "processNotes": "This piece was built through a daily practice over 6 months - every morning I would add 3-5 small paper fragments from the previous day's work. The form emerged organically as the weight of accumulated material found its own structural logic.",
+  "inspiration": "Geological stratification and the way sedimentary rocks hold time visible in their layers. Also influenced by Richard Long's daily walks and how repeated actions can create substantial artistic statements.",
+  "technicalNotes": "The wheat paste binder was applied only to every 10th layer, allowing most of the material to maintain its original texture while providing just enough structural integrity. The natural pigments were added irregularly to create temporal markers.",
+  "featured": false,
+  "draft": false,
+  "tags": ["sculpture", "process-based", "time", "accumulation", "daily-practice"],
+  "category": "sculpture"
+}

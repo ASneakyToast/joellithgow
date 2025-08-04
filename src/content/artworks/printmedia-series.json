@@ -1,0 +1,41 @@
+{
+  "id": "printmedia-series",
+  "title": "Screen Memory #4",
+  "description": "Silkscreen print exploring the layered nature of digital memory and physical trace. This piece investigates how our relationship with screens creates both presence and absence in our lived experience.",
+  "projectTitle": "Screen Memory Series",
+  "projectDescription": "A series of silkscreen prints examining the psychological and physical traces left by our daily interactions with digital screens. Each print captures a different aspect of how digital interfaces become embedded in our memory and perception.",
+  "creationDate": "2024-01-10",
+  "medium": "3-color silkscreen on handmade paper",
+  "dimensions": "22\" x 30\"",
+  "images": [
+    {
+      "src": "assets/artworks/screen-memory-4-main.jpg",
+      "alt": "Silkscreen print with layered geometric forms in blue, gray, and transparent inks",
+      "caption": "Screen Memory #4 showing the layered interaction between opaque and transparent screen elements",
+      "type": "main"
+    },
+    {
+      "src": "assets/artworks/screen-memory-4-detail-texture.jpg",
+      "alt": "Close-up showing the texture of ink on handmade paper",
+      "caption": "Detail revealing the interaction between digital-inspired imagery and analog printing process",
+      "type": "detail"
+    },
+    {
+      "src": "assets/artworks/screen-printing-setup.jpg",
+      "alt": "Silkscreen printing setup with squeegees and inks",
+      "caption": "The printing setup showing the three-screen registration process",
+      "type": "process"
+    }
+  ],
+  "materials": ["handmade paper", "water-based screenprint inks", "photo emulsion"],
+  "techniques": ["silkscreen printing", "photo-emulsion stencils", "registration printing"],
+  "series": "Screen Memory",
+  "artistStatement": "These prints are about the phantom limb effect of digital interfaces - how the ghost of screens persists in our vision even when we look away. Each layer in the printing process corresponds to a different temporal layer of memory.",
+  "processNotes": "This particular print required perfect registration across three screens. The transparent middle layer was the most challenging - getting the opacity just right so it suggests the ghostly presence of interface elements.",
+  "inspiration": "The afterimage effect when looking away from bright screens, and Freud's concept of 'screen memories' - how certain memories mask or stand in for others.",
+  "technicalNotes": "The blue ink contains a subtle metallic component that only shows up under certain lighting conditions, mimicking the way screens appear different in various environments.",
+  "featured": false,
+  "draft": false,
+  "tags": ["printmedia", "silkscreen", "digital-culture", "memory", "interface"],
+  "category": "printmedia"
+}

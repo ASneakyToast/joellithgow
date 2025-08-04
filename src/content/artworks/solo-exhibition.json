@@ -1,0 +1,54 @@
+{
+  "id": "solo-exhibition",
+  "title": "Peripheral Visions: Solo Exhibition Overview",
+  "description": "A comprehensive solo exhibition featuring 12 works exploring themes of attention, peripheral awareness, and the spaces between focus and distraction in contemporary life.",
+  "projectTitle": "Peripheral Visions Solo Show",
+  "projectDescription": "My first solo exhibition, presented at Gallery Commons in March 2024. The show examined how we perceive and process information at the edges of our attention, using various media to create works that exist in the liminal space between clarity and ambiguity.",
+  "creationDate": "2024-03-01",
+  "medium": "Mixed media installation",
+  "dimensions": "Variable dimensions, 900 sq ft gallery space",
+  "images": [
+    {
+      "src": "assets/artworks/peripheral-visions-gallery-overview.jpg",
+      "alt": "Gallery overview showing the complete solo exhibition installation",
+      "caption": "Full gallery view of 'Peripheral Visions' showing the relationship between individual works and the overall spatial composition",
+      "type": "main"
+    },
+    {
+      "src": "assets/artworks/peripheral-visions-entrance.jpg",
+      "alt": "Gallery entrance with title wall and first encountered artwork",
+      "caption": "Exhibition entrance featuring the title work that sets the conceptual framework",
+      "type": "context"
+    },
+    {
+      "src": "assets/artworks/peripheral-visions-centerpiece.jpg",
+      "alt": "Central installation piece with layered transparent materials",
+      "caption": "The central installation 'Attention Drift' - a layered work designed to shift focus as viewers move through the space",
+      "type": "detail"
+    },
+    {
+      "src": "assets/artworks/opening-reception.jpg",
+      "alt": "Opening reception with visitors engaging with the work",
+      "caption": "Opening reception showing audience engagement with the interactive elements",
+      "type": "context"
+    }
+  ],
+  "materials": ["transparent films", "projected light", "sound elements", "printed matter", "sculptural objects"],
+  "techniques": ["layered transparency", "environmental installation", "light manipulation", "spatial composition"],
+  "artistStatement": "This exhibition emerged from my fascination with how we process information that exists at the periphery of our attention. In an age of constant distraction, I'm interested in creating work that rewards both focused observation and ambient awareness. Each piece can be experienced as a discrete object, but the real content emerges in the relationships between works and in the spaces between focused attention.",
+  "processNotes": "The exhibition was developed over 8 months, with each piece informing the others. The spatial arrangement was crucial - I spent weeks in the gallery working out sight lines and movement patterns to create an experience that unfolds over time.",
+  "inspiration": "Virginia Woolf's writing about consciousness, ambient music composition, and the experience of driving at dusk when peripheral vision becomes more important than central focus.",
+  "technicalNotes": "The lighting design was critical - I worked with custom-dimmed LED strips to create subtle gradients that shift throughout the day, making the exhibition a different experience at different times.",
+  "featured": true,
+  "draft": false,
+  "tags": ["solo-exhibition", "installation", "perception", "attention", "spatial-composition"],
+  "category": "exhibition",
+  "exhibitions": [
+    {
+      "name": "Peripheral Visions",
+      "location": "Gallery Commons, Oakland CA",
+      "date": "March 2024",
+      "type": "solo"
+    }
+  ]
+}

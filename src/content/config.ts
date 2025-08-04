@@ -71,6 +71,46 @@ const blogSchema = z.object({
   readingTime: z.number().optional()
 });
 
+// Define artwork schema for fine art portfolio
+const artworkSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  projectTitle: z.string(),
+  projectDescription: z.string(),
+  creationDate: z.string().transform((str) => new Date(str)),
+  medium: z.string(),
+  dimensions: z.string().optional(),
+  images: z.array(z.object({
+    src: z.string(),
+    alt: z.string(),
+    caption: z.string(),
+    type: z.enum(['main', 'detail', 'process', 'context']).default('main')
+  })),
+  // Artistic details
+  materials: z.array(z.string()).optional(),
+  techniques: z.array(z.string()).optional(),
+  series: z.string().optional(),
+  collaborators: z.array(z.string()).optional(),
+  // Rich content
+  artistStatement: z.string().optional(),
+  processNotes: z.string().optional(),
+  inspiration: z.string().optional(),
+  technicalNotes: z.string().optional(),
+  // Organization and metadata
+  featured: z.boolean().default(false),
+  draft: z.boolean().default(false),
+  tags: z.array(z.string()).optional(),
+  category: z.enum(['printmedia', 'sculpture', 'exhibition', 'collaborative', 'mixed-media']).optional(),
+  // Exhibition/context
+  exhibitions: z.array(z.object({
+    name: z.string(),
+    location: z.string(),
+    date: z.string(),
+    type: z.enum(['solo', 'group', 'online']).optional()
+  })).optional()
+});
+
 // Define collections
 export const collections = {
   'projects': defineCollection({
@@ -80,9 +120,14 @@ export const collections = {
   'blog': defineCollection({
     type: 'content',
     schema: blogSchema
+  }),
+  'artworks': defineCollection({
+    type: 'data',
+    schema: artworkSchema
   })
 };
 
 // Export types for use in components
 export type Project = z.infer<typeof projectSchema>;
 export type BlogPost = z.infer<typeof blogSchema>;
+export type Artwork = z.infer<typeof artworkSchema>;

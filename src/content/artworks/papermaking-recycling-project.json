@@ -1,0 +1,45 @@
+{
+  "id": "papermaking-recycling-project",
+  "title": "Discarded Conversations #7",
+  "description": "Hand-pulled paper made from discarded office documents, transforming forgotten corporate communications into tactile art objects that reveal hidden patterns in everyday waste.",
+  "projectTitle": "Passive Recycling Project: Papermaking",
+  "projectDescription": "An ongoing investigation into waste streams and material transformation, using traditional papermaking techniques to give new life to discarded documents and creating contemplative objects from the detritus of daily life.",
+  "creationDate": "2024-02-22",
+  "medium": "Handmade paper from recycled office documents",
+  "dimensions": "16\" x 12\" x 0.5\"",
+  "images": [
+    {
+      "src": "assets/artworks/discarded-conversations-7-main.jpg",
+      "alt": "Handmade paper sheet with visible text fragments and organic texture",
+      "caption": "Final paper sheet showing ghostly text fragments embedded in the handmade paper surface",
+      "type": "main"
+    },
+    {
+      "src": "assets/artworks/discarded-conversations-7-detail.jpg",
+      "alt": "Close-up of paper texture showing embedded text and fiber patterns",
+      "caption": "Detail showing the interplay between original text and new paper matrix",
+      "type": "detail"
+    },
+    {
+      "src": "assets/artworks/papermaking-process-1.jpg",
+      "alt": "Documents being pulped in water for papermaking",
+      "caption": "Initial stage: corporate documents being broken down in the pulping process",
+      "type": "process"
+    },
+    {
+      "src": "assets/artworks/papermaking-process-2.jpg",
+      "alt": "Paper pulp being formed on a screen",
+      "caption": "Forming the new paper sheet on the papermaking screen",
+      "type": "process"
+    }
+  ],
+  "materials": ["discarded office documents", "water", "natural binder"],
+  "techniques": ["traditional papermaking", "pulp formation", "screen drying"],
+  "processNotes": "Each sheet takes approximately 3 days from collection to finished piece. The most interesting discoveries happen when unexpected documents create visual patterns - legal contracts become topographical maps, and email threads form organic textures.",
+  "inspiration": "Fascinated by the parallel between paper recycling and memory - how information gets broken down and reformed into something entirely new, yet traces of the original remain visible.",
+  "technicalNotes": "I avoid using any bleaching agents, preferring to let the original inks and toners create subtle color variations in the final sheets. Some documents resist breaking down completely, creating intentional imperfections.",
+  "featured": false,
+  "draft": false,
+  "tags": ["sustainability", "process-based", "papermaking", "recycling", "material-transformation"],
+  "category": "mixed-media"
+}
