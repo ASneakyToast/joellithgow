@@ -1,187 +1,213 @@
-# Joel Lithgow Portfolio - Refactored
+# Joel Lithgow Portfolio - Astro.js
 
-A modern, component-based portfolio website built with semantic HTML, modular CSS, and vanilla JavaScript.
+A modern, component-based portfolio website built with **Astro.js**, showcasing creative technology work through interactive components and optimized performance.
 
 ## 🚀 Features
 
-- **7 Dynamic Themes**: Electric, Retro, Minimal, System, High-contrast, Neon, and Default
-- **Responsive Design**: Optimized for all screen sizes
+- **Modern Astro.js Architecture**: Static site generation with component islands
+- **7 Dynamic Themes**: Electric, Retro, Minimal, System, High-contrast, Neon, and Default  
+- **Responsive Design**: Optimized for all screen sizes with mobile-first approach
 - **Accessibility**: WCAG 2.1 AA compliant with screen reader support
-- **Performance**: Service worker caching, lazy loading, and optimized assets
-- **Interactive Elements**: Draggable floating elements, smooth scrolling, parallax effects
-- **Case Studies**: Detailed project modals with process documentation
-- **Progressive Web App**: Offline functionality and installable
+- **Performance Optimized**: Fast loading with Astro's static generation
+- **Interactive Elements**: Draggable floating elements, smooth scrolling, animations
+- **Component-Based**: Reusable Astro components with separation of concerns
+- **TypeScript Support**: Enhanced development experience with type safety
 
 ## 📁 Project Structure
 
 ```
 portfolio/
-├── index.html                 # Main HTML file with semantic markup
-├── offline.html              # Offline fallback page
-├── sw.js                     # Service worker for caching
-├── css/
-│   ├── themes.css            # Theme variables and system
-│   ├── layout.css            # Structural layout and positioning
-│   ├── components.css        # UI component styles
-│   ├── animations.css        # Transitions and animations
-│   └── responsive.css        # Media queries and mobile styles
-├── js/
-│   ├── main.js              # App initialization and coordination
-│   ├── performance.js       # Performance optimizations
-│   ├── components/
-│   │   ├── theme-manager.js  # Theme switching logic
-│   │   ├── project-cards.js  # Project display and modals
-│   │   ├── ui-interactions.js # Interactive behaviors
-│   │   └── ui-components.js  # Component factory functions
-│   └── data/
-│       ├── projects.js       # Project data and content
-│       ├── themes.js         # Theme configurations
-│       └── content.js        # Site content and copy
-└── assets/
-    ├── images/              # Optimized images
-    ├── icons/               # Icon files
-    └── fonts/               # Web fonts
+├── README.md                    # Project documentation
+├── package.json                 # Dependencies and scripts
+├── astro.config.mjs            # Astro configuration
+├── tsconfig.json               # TypeScript configuration
+├── netlify.toml                # Deployment configuration
+├── public/                     # Static assets
+│   └── assets/
+│       └── images/             # Optimized images and media
+├── src/                        # Source code
+│   ├── components/             # Astro components
+│   │   ├── About.astro         # About section component
+│   │   ├── Contact.astro       # Contact section with floating elements
+│   │   ├── Hero.astro          # Hero section with animations
+│   │   ├── Navigation.astro    # Site navigation
+│   │   ├── Projects.astro      # Projects showcase
+│   │   ├── Process.astro       # Process explanation
+│   │   └── *.astro            # Interactive and utility components
+│   ├── content/               # Content collections
+│   │   ├── config.ts          # Content configuration
+│   │   └── projects/          # Project case studies (JSON)
+│   ├── layouts/               # Page layouts
+│   │   └── BaseLayout.astro   # Base page template
+│   ├── pages/                 # Route pages
+│   │   ├── index.astro        # Homepage
+│   │   └── snake.astro        # Snake game easter egg
+│   ├── styles/                # Global styles
+│   │   └── themes.css         # Theme system and CSS variables
+│   └── utils/                 # Utility functions
+│       └── themes.ts          # Theme management utilities
+├── dist/                      # Build output (auto-generated)
+└── archive/                   # Historical project files
 ```
 
-## 🎨 Refactoring Improvements
+## 🎨 Astro.js Migration Benefits
 
-### Before (Original)
-- **2,761 lines** in single HTML file
-- **Inline CSS and JavaScript**
-- **Repetitive code** for themes and components
-- **Limited accessibility** features
-- **No performance optimizations**
+### Before (Legacy Vanilla JS)
+- **Monolithic structure** with large single files
+- **Manual component management** and duplication
+- **Complex build process** with service workers
+- **Limited performance optimization**
 
-### After (Refactored)
-- **~1,200 lines** total across all files (57% reduction)
-- **Modular architecture** with separated concerns
-- **Component-based templates** for reusable elements
-- **Full accessibility** support with ARIA labels
-- **Performance optimized** with service worker and lazy loading
+### After (Astro.js)
+- **Component-based architecture** with `.astro` files
+- **Static site generation** for optimal performance
+- **Island architecture** for selective hydration
+- **Built-in optimizations** (image optimization, CSS bundling)
+- **Modern developer experience** with TypeScript support
 
-## 🔧 Technical Details
+## 🔧 Technical Stack
 
-### CSS Architecture
-- **themes.css**: 7 theme variations with CSS custom properties
-- **layout.css**: Flexbox and Grid layouts, positioning utilities
-- **components.css**: Styled components (buttons, cards, modals)
-- **animations.css**: Smooth transitions and keyframe animations
-- **responsive.css**: Mobile-first responsive design
+### Core Technologies
+- **Astro.js 5.12+**: Static site generation framework
+- **TypeScript**: Enhanced development with type safety
+- **CSS Custom Properties**: Theme system with 7 variations
+- **Modern JavaScript**: ES6+ with component islands
 
-### JavaScript Modules
-- **main.js**: App initialization and global event handling
-- **theme-manager.js**: Theme switching and persistence
-- **project-cards.js**: Project data and case study modals
-- **ui-interactions.js**: Interactive behaviors and animations
-- **ui-components.js**: Component factory for dynamic HTML generation
+### Component Architecture
+- **Hero.astro**: Landing section with floating interactive elements
+- **Projects.astro**: Horizontal scrolling project showcase
+- **Contact.astro**: Contact section with repositioned floating elements
+- **InteractiveElements.astro**: Modals, themes, and dynamic behaviors
+- **UIInteractions.astro**: Scroll animations and hover effects
 
-### Data Architecture
-- **projects.js**: Structured project data with full case studies
-- **themes.js**: Theme configurations with color schemes
-- **content.js**: Site content, skills, and contact information
+### Performance Features
+- **Static Generation**: Pre-built pages for fast loading
+- **Component Islands**: Selective JavaScript hydration
+- **Image Optimization**: Built-in asset optimization
+- **CSS Bundling**: Automatic style optimization
+- **Modern Build Pipeline**: Vite-powered development
 
-## 🎯 Key Features
+## 🎯 Key Interactive Features
 
 ### Theme System
-- **7 unique themes** with distinct personalities
+- **7 unique themes** with distinct visual personalities
 - **Keyboard shortcut** (Ctrl+T) for quick theme cycling
 - **LocalStorage persistence** remembers user preference
-- **System theme** respects OS dark/light mode preference
+- **CSS custom properties** for consistent theming
 
-### Accessibility
-- **Semantic HTML5** elements (article, section, nav, main)
-- **ARIA labels** and descriptions for screen readers
-- **Keyboard navigation** support throughout
-- **Focus management** for modal interactions
-- **Skip links** for screen reader users
-- **High contrast** theme for visibility needs
+### Floating Elements
+- **Repositioned contact elements** for better visual hierarchy
+- **Draggable interactions** maintained from legacy version
+- **Coffee element** moved to top 20% positioning
+- **Direct child** of contact section for better control
 
-### Performance
-- **Service Worker** caching for offline functionality
-- **Lazy loading** for images and non-critical resources
-- **Resource hints** (preload, prefetch) for critical assets
-- **Code splitting** with ES6 modules
-- **Debounced/throttled** event handlers for smooth interactions
-
-### Interactive Elements
-- **Draggable floating elements** in hero section
-- **Smooth scrolling** navigation with active state tracking
-- **Parallax effects** on scroll
-- **Hover animations** on interactive elements
-- **Process navigation** with scroll-based highlighting
+### Navigation & UX
+- **Smooth scrolling** with active state tracking
+- **Accessibility focused** with proper ARIA labels
+- **Mobile responsive** with touch-friendly interactions
+- **Snake game easter egg** accessible via navigation
 
 ## 🛠 Development
 
+### Prerequisites
+- **Node.js 18+**
+- **npm** or **yarn**
+
 ### Local Development
-1. **Clone the repository**
-2. **Serve files** using a local HTTP server (required for ES6 modules)
-3. **Open in browser** and start developing
+```bash
+# Install dependencies
+npm install
 
-### Building for Production
-1. **Optimize images** (WebP conversion, compression)
-2. **Minify CSS and JavaScript** files
-3. **Generate service worker** cache manifest
-4. **Configure CDN** for static assets
+# Start development server
+npm run dev
 
-### Browser Support
-- **Modern browsers** with ES6 module support
-- **Progressive enhancement** for older browsers
-- **Graceful degradation** for missing features
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run check` - Run TypeScript type checking
+
+## 🚀 Deployment
+
+### Netlify (Recommended)
+The site is configured for automatic deployment on Netlify:
+- **Build command**: `npm run build`
+- **Publish directory**: `dist`
+- **Node version**: 18+
+
+### Manual Deployment
+```bash
+npm run build
+# Upload contents of dist/ folder to your hosting provider
+```
 
 ## 📊 Performance Metrics
 
-### Load Time Improvements
-- **First Contentful Paint**: ~1.2s
-- **Largest Contentful Paint**: ~2.1s
-- **Time to Interactive**: ~2.8s
-- **Total Blocking Time**: <100ms
+### Astro.js Optimizations
+- **Static HTML generation** for instant loading
+- **Selective hydration** with component islands
+- **Automatic asset optimization** (images, CSS, JS)
+- **Modern browser targets** with fallbacks
 
-### Bundle Size
-- **CSS**: ~45KB total (gzipped: ~12KB)
-- **JavaScript**: ~35KB total (gzipped: ~10KB)
-- **Images**: Optimized WebP with lazy loading
-- **Fonts**: Subset web fonts with display: swap
+### Build Output
+- **Optimized bundles** with code splitting
+- **CSS extraction** and minification
+- **Image processing** with WebP conversion
+- **JavaScript tree shaking** for minimal payload
 
-## 🔍 Code Quality
+## 🧩 Component Highlights
 
-### Architecture Benefits
-- **Separation of concerns** with modular structure
-- **Reusable components** reduce duplication
-- **Data-driven** content management
-- **Type safety** with JSDoc comments
-- **Error handling** with graceful degradation
+### Recent Improvements
+- **Contact floating elements** moved to direct child of contact section
+- **Coffee element positioning** optimized to top 20% for better hierarchy
+- **Component architecture** fully migrated to Astro.js patterns
+- **Build process** streamlined with modern tooling
 
-### Maintainability
-- **Clear naming conventions** throughout
-- **Consistent code style** with proper indentation
-- **Comprehensive comments** for complex logic
-- **Modular imports/exports** for clean dependencies
+### Interactive Components
+- **Draggable floating elements** with touch support
+- **Theme selector modal** with live preview
+- **Project case study modals** with detailed information
+- **Snake game integration** as easter egg feature
+
+## 🔍 Architecture Decisions
+
+### Component Organization
+- **Single-file components** with HTML, CSS, and JavaScript
+- **Props-based data flow** for reusable components
+- **Scoped styling** to prevent CSS conflicts
+- **TypeScript integration** for development safety
+
+### Content Management
+- **JSON-based project data** in content collections
+- **Static asset optimization** through Astro pipeline
+- **Theme configuration** via CSS custom properties
+- **Responsive design** with mobile-first approach
 
 ## 🌟 Future Enhancements
 
 ### Planned Features
-- **CMS integration** for easier content updates
-- **Animation timeline** controls for reduced motion
-- **Multiple language** support
-- **Dark mode** improvements
-- **Enhanced analytics** tracking
-
-### Performance Optimizations
-- **Image optimization** pipeline
-- **Critical CSS** inlining
-- **JavaScript tree shaking**
-- **HTTP/2 server push**
-- **Edge caching** strategies
+- **Content Management System** integration
+- **Enhanced animations** with view transitions
+- **Progressive Web App** features
+- **Advanced TypeScript** implementation
+- **Performance monitoring** integration
 
 ## 📝 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Contributions are welcome! The codebase is now fully modernized with Astro.js.
 
 ---
 
 **Joel Lithgow** - Creative Technologist  
-[LinkedIn](https://linkedin.com/in/joellithgow) | [GitHub](https://github.com/joellithgow)
+Portfolio: [joellithgow.com](https://joellithgow.com) | [LinkedIn](https://linkedin.com/in/joellithgow) | [GitHub](https://github.com/joellithgow)
