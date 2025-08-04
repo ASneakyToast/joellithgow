@@ -133,6 +133,7 @@ npm run preview
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run check` - Run TypeScript type checking
+- `netlify deploy --prod --dir=dist` - Deploy to production
 
 ## 🚀 Deployment
 
@@ -144,8 +145,11 @@ The site is configured for automatic deployment on Netlify:
 
 ### Manual Deployment
 ```bash
+# Build and deploy to Netlify production
 npm run build
-# Upload contents of dist/ folder to your hosting provider
+netlify deploy --prod --dir=dist
+
+# Or upload contents of dist/ folder to your hosting provider
 ```
 
 ## 📊 Performance Metrics
