@@ -4,3 +4,12 @@
 .netlify
 # Archive folder for old sketches
 archive/
+
+# Astro build and cache files
+astro-migration/.astro/
+astro-migration/node_modules/.astro/
+astro-migration/node_modules/.vite/
+*.astro-data-store.json
+
+# Development test files
+astro-migration/theme-test.html
