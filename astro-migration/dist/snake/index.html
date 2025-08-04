@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-37fxchfa> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Classic Snake game with modern design. Full-screen gaming experience integrated with the portfolio theme system."><meta name="keywords" content="creative technologist, UX designer, frontend developer, AI-augmented development, rapid prototyping"><meta name="author" content="Joel Lithgow"><meta name="theme-color" content="#ff6b6b"><meta name="robots" content="index, follow"><!-- Canonical URL --><link rel="canonical" href="https://joellithgow.com/snake/"><!-- Open Graph / Facebook --><meta property="og:type" content="website"><meta property="og:url" content="https://joellithgow.com/snake/"><meta property="og:title" content="Snake Game - Joel Lithgow"><meta property="og:description" content="Classic Snake game with modern design. Full-screen gaming experience integrated with the portfolio theme system."><meta property="og:image" content="https://joellithgow.com/assets/og-image.jpg"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://joellithgow.com/snake/"><meta property="twitter:title" content="Snake Game - Joel Lithgow"><meta property="twitter:description" content="Classic Snake game with modern design. Full-screen gaming experience integrated with the portfolio theme system."><meta property="twitter:image" content="https://joellithgow.com/assets/og-image.jpg"><!-- Structured Data --><script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Joel Lithgow",
+    "jobTitle": "Creative Technologist",
+    "description": "I transform complex ideas into intuitive digital experiences through design thinking and technical expertise.",
+    "url": "https://joellithgow.com",
+    "sameAs": [
+      "https://linkedin.com/in/joellithgow",
+      "https://github.com/joellithgow"
+    ]
+  }
+  </script><title>Snake Game - Joel Lithgow</title><!-- Early theme system initialization to ensure functions are available for onclick handlers --><script>
+    // Global theme functions - available immediately for onclick handlers
+    window.openThemeModal = function() {
+      console.log('Early openThemeModal called');
+      const modal = document.getElementById('themeModal');
+      if (modal) {
+        console.log('Opening theme modal');
+        modal.classList.remove('hidden');
+        // Update active theme option
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+        document.querySelectorAll('.theme-option').forEach(function(option) {
+          option.classList.toggle('active', option.dataset.theme === currentTheme);
+        });
+      } else {
+        console.error('Theme modal not found - will retry once DOM is loaded');
+        // Try again once DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+          const modalAfterLoad = document.getElementById('themeModal');
+          if (modalAfterLoad) {
+            console.log('Opening theme modal after DOM load');
+            modalAfterLoad.classList.remove('hidden');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+            document.querySelectorAll('.theme-option').forEach(function(option) {
+              option.classList.toggle('active', option.dataset.theme === currentTheme);
+            });
+          }
+        });
+      }
+    };
+
+    window.closeThemeModal = function() {
+      const modal = document.getElementById('themeModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    };
+
+    window.setTheme = function(theme) {
+      console.log('Setting theme to:', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('portfolio-theme', theme);
+      // Update active theme option
+      document.querySelectorAll('.theme-option').forEach(function(option) {
+        option.classList.toggle('active', option.dataset.theme === theme);
+      });
+      // Close modal after selection
+      window.closeThemeModal();
+    };
+  </script><!-- Favicon --><link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="stylesheet" href="/assets/css/index-CgglaqyD.css">
+<link rel="stylesheet" href="/assets/css/snake-Cgd4nBhy.css"><script type="module" src="/assets/js/page-DtcMas2y.js"></script></head> <body data-astro-cid-37fxchfa> <!-- Skip to main content link for screen readers --> <a href="#main-content" class="skip-link" aria-label="Skip to main content" data-astro-cid-37fxchfa>Skip to main content</a>   <canvas id="gameCanvas" data-astro-cid-pvafdirh></canvas>  <a href="/" class="home-link" id="homeLink" aria-label="Return to homepage" data-astro-cid-pvafdirh> <div class="home-brand" data-astro-cid-pvafdirh> <span class="home-icon" data-astro-cid-pvafdirh>🏠</span> <span class="home-text" data-astro-cid-pvafdirh>Joel Lithgow</span> </div> </a>  <button class="theme-toggle" id="themeToggle" title="Change Theme" data-astro-cid-pvafdirh>
+🎨
+</button>  <div class="score-panel" data-astro-cid-pvafdirh> <div class="score-item" data-astro-cid-pvafdirh> <span class="score-label" data-astro-cid-pvafdirh>Score</span> <span class="score-value" id="currentScore" data-astro-cid-pvafdirh>0</span> </div> <div class="score-item" data-astro-cid-pvafdirh> <span class="score-label" data-astro-cid-pvafdirh>High Score</span> <span class="score-value" id="highScore" data-astro-cid-pvafdirh>0</span> </div> <div class="score-item" data-astro-cid-pvafdirh> <span class="score-label" data-astro-cid-pvafdirh>Level</span> <span class="score-value" id="level" data-astro-cid-pvafdirh>1</span> </div> </div>  <div class="mobile-controls" data-astro-cid-pvafdirh> <div class="control-pad" data-astro-cid-pvafdirh> <button class="control-btn control-up" data-direction="up" data-astro-cid-pvafdirh>↑</button> <button class="control-btn control-down" data-direction="down" data-astro-cid-pvafdirh>↓</button> <button class="control-btn control-left" data-direction="left" data-astro-cid-pvafdirh>←</button> <button class="control-btn control-right" data-direction="right" data-astro-cid-pvafdirh>→</button> <button class="control-btn control-pause" id="mobilePause" data-astro-cid-pvafdirh>⏸</button> </div> </div>  <div id="menuOverlay" class="game-overlay" data-astro-cid-pvafdirh> <div class="overlay-content" data-astro-cid-pvafdirh> <h1 class="game-title" data-astro-cid-pvafdirh>SNAKE</h1> <p class="game-subtitle" data-astro-cid-pvafdirh>Classic arcade game</p> <button class="game-btn primary" id="startGame" data-astro-cid-pvafdirh>Start Game</button> <button class="game-btn" id="showInstructions" data-astro-cid-pvafdirh>How to Play</button> </div> <!-- Back to Site button positioned in top-left of menu --> <button class="menu-nav-btn menu-back-btn" id="backToSiteFromMenu" title="Return to homepage" data-astro-cid-pvafdirh>
+← Back to Site
+</button> <!-- Theme toggle positioned in top-right of menu --> <button class="theme-toggle menu-theme-toggle" id="themeMenuToggle" title="Change Theme" data-astro-cid-pvafdirh>
+🎨
+</button> </div>  <div id="instructionsOverlay" class="game-overlay hidden" data-astro-cid-pvafdirh> <div class="overlay-content" data-astro-cid-pvafdirh> <h2 class="overlay-title" data-astro-cid-pvafdirh>How to Play</h2> <div class="instructions" data-astro-cid-pvafdirh> <h3 data-astro-cid-pvafdirh>Objective</h3> <p data-astro-cid-pvafdirh>Guide the snake to eat food and grow longer. Each food eaten increases your score.</p> <h3 data-astro-cid-pvafdirh>Controls</h3> <p data-astro-cid-pvafdirh> <strong data-astro-cid-pvafdirh>Desktop:</strong> Use WASD or Arrow Keys to move<br data-astro-cid-pvafdirh> <strong data-astro-cid-pvafdirh>Mobile:</strong> Use on-screen buttons or swipe gestures<br data-astro-cid-pvafdirh> <strong data-astro-cid-pvafdirh>Pause:</strong> Press Space or P
+</p> <h3 data-astro-cid-pvafdirh>Rules</h3> <p data-astro-cid-pvafdirh>
+• Don't hit the walls<br data-astro-cid-pvafdirh>
+• Don't hit your own tail<br data-astro-cid-pvafdirh>
+• Speed increases with each level<br data-astro-cid-pvafdirh>
+• Every 5 foods advances to next level
+</p> </div> <button class="game-btn primary" id="backToMenu" data-astro-cid-pvafdirh>Back</button> </div> </div>  <div id="pauseOverlay" class="game-overlay hidden" data-astro-cid-pvafdirh> <div class="overlay-content" data-astro-cid-pvafdirh> <h2 class="overlay-title" data-astro-cid-pvafdirh>Game Paused</h2> <button class="game-btn primary" id="resumeGame" data-astro-cid-pvafdirh>Resume</button> <button class="game-btn" id="restartGame" data-astro-cid-pvafdirh>Restart</button> <button class="game-btn" id="quitToMenu" data-astro-cid-pvafdirh>Main Menu</button> <button class="game-btn" id="backToSiteFromPause" data-astro-cid-pvafdirh>← Back to Site</button> </div> </div>  <div id="gameOverOverlay" class="game-overlay hidden" data-astro-cid-pvafdirh> <div class="overlay-content" data-astro-cid-pvafdirh> <h2 class="overlay-title" data-astro-cid-pvafdirh>Game Over!</h2> <div class="final-score" data-astro-cid-pvafdirh> <span data-astro-cid-pvafdirh>Final Score</span> <span class="final-score-value" id="finalScore" data-astro-cid-pvafdirh>0</span> <div class="high-score-message" id="highScoreMessage" data-astro-cid-pvafdirh></div> </div> <button class="game-btn primary" id="playAgain" data-astro-cid-pvafdirh>Play Again</button> <button class="game-btn" id="backToMenuFromGameOver" data-astro-cid-pvafdirh>Main Menu</button> <button class="game-btn" id="backToSiteFromGameOver" data-astro-cid-pvafdirh>← Back to Site</button> </div> </div>  <!-- Screen reader only content --> <div class="sr-only" data-astro-cid-37fxchfa> <div data-astro-cid-37fxchfa>This website uses themes. Press Ctrl+T to cycle through available themes.</div> <div data-astro-cid-37fxchfa>Some elements on this page are interactive and can be dragged around.</div> </div> </body></html>  <!-- Snake Game Logic with Client-side JavaScript --> <script type="module" src="/assets/js/snake.astro_astro_type_script_index_0_lang-Cez161BD.js"></script>

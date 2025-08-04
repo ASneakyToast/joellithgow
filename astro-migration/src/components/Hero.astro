@@ -18,7 +18,7 @@ const {
   ctaHref = '#work'
 } = Astro.props;
 
-// Floating elements configuration - matching original positions
+// Floating elements configuration
 const floatingElements = [
   {
     id: 1,
@@ -50,21 +50,28 @@ const floatingElements = [
       <a href={ctaHref} class="cta-button" aria-describedby="work-cta-description">
         {ctaText}
       </a>
+      <button 
+        id="themeControl" 
+        class="theme-control" 
+        aria-label="Open theme selector"
+        aria-expanded="false"
+        aria-controls="themeModal"
+        title="Press Ctrl+T to cycle themes">
+        <div class="theme-control-text">
+          <span aria-hidden="true">⚙</span>
+          <span>themes</span>
+        </div>
+      </button>
       <div id="work-cta-description" class="sr-only">
         Explore my recent projects and case studies
       </div>
     </div>
   </div>
   
-  <!-- Floating Elements -->
+  <!-- Floating Status Elements -->
   <div class="floating-elements" aria-hidden="true">
     {floatingElements.map((element) => (
-      <div 
-        class={`floating-element ${element.class}`}
-        tabindex="0" 
-        role="img" 
-        aria-label={`Floating element: ${element.text}`}
-      >
+      <div class={`floating-element ${element.class}`}>
         {element.text}
       </div>
     ))}
@@ -272,7 +279,40 @@ const floatingElements = [
     box-shadow: 6px 6px 0px var(--accent-secondary);
   }
 
-  /* Floating Elements Container */
+  .theme-control {
+    background: white;
+    color: var(--accent-primary);
+    padding: 15px 30px;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+    font-family: inherit;
+    transform: rotate(2deg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .theme-control:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: rotate(2deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+  }
+
+  .theme-control-text {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .theme-control-text span:first-child {
+    font-size: 16px;
+  }
+
+  /* Floating Elements Container - Positioned within hero section */
   .floating-elements {
     position: absolute;
     top: 0;
@@ -280,47 +320,36 @@ const floatingElements = [
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 10;
   }
 
   .floating-element {
     position: absolute;
-    pointer-events: all;
-    z-index: 10;
+    pointer-events: none;
     background: var(--accent-tertiary);
     border: 2px solid var(--bg-dark);
     padding: 12px 16px;
     font-size: 11px;
     font-weight: bold;
     color: var(--text-primary);
-    cursor: grab;
     user-select: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 6px;
     box-shadow: 4px 4px 0px var(--accent-primary);
+    max-width: 200px;
+    word-wrap: break-word;
   }
 
-  .floating-element:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 6px 6px 0px var(--accent-primary);
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .floating-element,
+  [data-theme="electric"] .floating-element {
+    color: var(--bg-dark);
   }
 
-  .floating-element.dragging {
-    transform: rotate(15deg) scale(1.1) !important;
-    box-shadow: 8px 8px 0px var(--accent-primary);
-  }
-
+  /* Individual element styling */
   .floating-element:nth-child(2) {
     background: var(--accent-secondary);
     color: var(--text-light);
     box-shadow: 4px 4px 0px var(--accent-tertiary);
-  }
-
-  .floating-element:nth-child(2):hover {
-    box-shadow: 6px 6px 0px var(--accent-tertiary);
-  }
-
-  .floating-element:nth-child(2).dragging {
-    box-shadow: 8px 8px 0px var(--accent-tertiary);
   }
 
   .floating-element:nth-child(3) {
@@ -329,44 +358,26 @@ const floatingElements = [
     box-shadow: 4px 4px 0px var(--accent-secondary);
   }
 
-  .floating-element:nth-child(3):hover {
-    box-shadow: 6px 6px 0px var(--accent-secondary);
-  }
-
-  .floating-element:nth-child(3).dragging {
-    box-shadow: 8px 8px 0px var(--accent-secondary);
-  }
-
+  /* Simple positioning within hero section - avoiding nav menu overlap */
   .floating-element-1 {
     top: 15%;
-    right: 15%;
+    right: 23%;
     transform: rotate(12deg);
   }
 
   .floating-element-2 {
-    bottom: 25%;
-    left: 10%;
+    top: 60%;
+    left: 4%;
     transform: rotate(-8deg);
   }
 
   .floating-element-3 {
-    top: 60%;
-    right: 5%;
+    bottom: 15%;
+    right: 8%;
     transform: rotate(15deg);
   }
 
-  /* Screen reader only styles */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
 
   /* Responsive design */
   @media (max-width: 768px) {
@@ -399,6 +410,15 @@ const floatingElements = [
       font-size: 16px;
       padding: 20px;
     }
+
+    .theme-control {
+      padding: 12px 20px;
+    }
+
+    .theme-control-text {
+      font-size: 12px;
+      gap: 6px;
+    }
   }
 
   /* Reduced motion support */
@@ -414,125 +434,21 @@ const floatingElements = [
       transform: scale(1.02);
     }
     
-    .floating-element:hover {
+    .floating-element {
+      animation: none !important;
+    }
+    
+    .floating-element:hover,
+    .floating-element:focus {
       transform: scale(1.05) !important;
+      animation: none !important;
     }
   }
 </style>
 
 <script>
-  // Enhanced floating elements with dragging functionality
+  // Simple floating elements with hover interactions
   document.addEventListener('DOMContentLoaded', () => {
-    const floatingElements = document.querySelectorAll('.floating-element');
-    
-    // Make floating elements draggable
-    floatingElements.forEach(element => {
-      let isDragging = false;
-      let startX = 0;
-      let startY = 0;
-      let currentX = 0;
-      let currentY = 0;
-      // Store initial transform to preserve rotation (for future use)
-      // const initialTransform = window.getComputedStyle(element).transform;
-      
-      function handleStart(e: MouseEvent | TouchEvent) {
-        isDragging = true;
-        element.classList.add('dragging');
-        
-        const clientX = (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX;
-        const clientY = (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY;
-        
-        // Get current position more accurately
-        const rect = element.getBoundingClientRect();
-        
-        // Calculate offset from mouse to element's top-left corner
-        startX = clientX - rect.left;
-        startY = clientY - rect.top;
-        
-        // Store the current computed transform to preserve rotation
-        const computedStyle = window.getComputedStyle(element);
-        const currentTransform = computedStyle.transform;
-        
-        // Convert element to fixed positioning to avoid parent container issues
-        currentX = rect.left;
-        currentY = rect.top;
-        
-        (element as HTMLElement).style.position = 'fixed';
-        (element as HTMLElement).style.left = currentX + 'px';
-        (element as HTMLElement).style.top = currentY + 'px';
-        (element as HTMLElement).style.right = 'auto';
-        (element as HTMLElement).style.bottom = 'auto';
-        (element as HTMLElement).style.margin = '0';
-        (element as HTMLElement).style.transform = currentTransform; // Preserve rotation
-        (element as HTMLElement).style.zIndex = '1000'; // Bring to front while dragging
-        
-        // Prevent text selection and default behaviors
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      
-      function handleMove(e: MouseEvent | TouchEvent) {
-        if (!isDragging) return;
-        
-        e.preventDefault();
-        
-        const clientX = (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX;
-        const clientY = (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY;
-        
-        // Calculate new position
-        const newX = clientX - startX;
-        const newY = clientY - startY;
-        
-        // Constrain to viewport with padding
-        const padding = 10;
-        const maxX = window.innerWidth - (element as HTMLElement).offsetWidth - padding;
-        const maxY = window.innerHeight - (element as HTMLElement).offsetHeight - padding;
-        
-        currentX = Math.max(padding, Math.min(newX, maxX));
-        currentY = Math.max(padding, Math.min(newY, maxY));
-        
-        // Apply position with transform preserved
-        (element as HTMLElement).style.left = currentX + 'px';
-        (element as HTMLElement).style.top = currentY + 'px';
-      }
-      
-      function handleEnd() {
-        if (!isDragging) return;
-        
-        isDragging = false;
-        element.classList.remove('dragging');
-        
-        // Convert back to absolute positioning within parent container
-        const parentRect = (element.parentElement as HTMLElement).getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        
-        // Calculate position relative to parent
-        const relativeX = elementRect.left - parentRect.left;
-        const relativeY = elementRect.top - parentRect.top;
-        
-        // Convert to absolute positioning within parent
-        (element as HTMLElement).style.position = 'absolute';
-        (element as HTMLElement).style.left = relativeX + 'px';
-        (element as HTMLElement).style.top = relativeY + 'px';
-        (element as HTMLElement).style.right = 'auto';
-        (element as HTMLElement).style.bottom = 'auto';
-        (element as HTMLElement).style.zIndex = '10'; // Reset to normal z-index
-      }
-      
-      // Mouse events
-      element.addEventListener('mousedown', handleStart as EventListener, { passive: false });
-      document.addEventListener('mousemove', handleMove as EventListener, { passive: false });
-      document.addEventListener('mouseup', handleEnd);
-      
-      // Touch events  
-      element.addEventListener('touchstart', handleStart as EventListener, { passive: false });
-      document.addEventListener('touchmove', handleMove as EventListener, { passive: false });
-      document.addEventListener('touchend', handleEnd);
-      
-      // Prevent context menu on long press
-      element.addEventListener('contextmenu', e => e.preventDefault());
-    });
-
     // Smooth scroll for CTA button
     const ctaButton = document.querySelector('.cta-button');
     if (ctaButton) {
@@ -552,5 +468,33 @@ const floatingElements = [
         }
       });
     }
+
+    // Theme control button
+    const themeControl = document.getElementById('themeControl');
+    if (themeControl) {
+      themeControl.addEventListener('click', () => {
+        console.log('Theme control clicked');
+        // Check if global function exists
+        if (typeof (window as any).openThemeModal === 'function') {
+          (window as any).openThemeModal();
+        } else {
+          console.log('openThemeModal not available, trying direct modal access');
+          const modal = document.getElementById('themeModal');
+          if (modal) {
+            modal.classList.remove('hidden');
+            // Update active theme option
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+            document.querySelectorAll('.theme-option').forEach(option => {
+              const htmlOption = option as HTMLElement;
+              htmlOption.classList.toggle('active', htmlOption.dataset.theme === currentTheme);
+            });
+          } else {
+            console.error('Theme modal not found');
+          }
+        }
+      });
+    }
+
+    // Floating elements are now purely decorative - no interactions needed
   });
 </script>

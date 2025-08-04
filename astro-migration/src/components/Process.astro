@@ -187,11 +187,17 @@ const processSteps = [
   }
 
   .process-nav-item.active {
-    color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: var(--text-light);
+    margin: 0 -10px;
+    padding: 20px 10px;
+    transform: skew(-2deg);
   }
 
   .process-nav-item:hover {
-    color: var(--accent-primary);
+    background: var(--bg-primary);
+    margin: 0 -10px;
+    padding: 20px 10px;
   }
 
   .nav-step-icon {
@@ -213,12 +219,21 @@ const processSteps = [
     fill: var(--text-primary);
   }
 
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .nav-step-icon svg,
+  [data-theme="electric"] .nav-step-icon svg {
+    fill: var(--bg-dark);
+    stroke: var(--bg-dark);
+  }
+
   .process-nav-item.active .nav-step-icon {
-    background: var(--accent-primary);
+    background: var(--text-light);
+    transform: rotate(5deg);
   }
 
   .process-nav-item.active .nav-step-icon svg {
-    stroke: var(--text-light);
+    fill: var(--accent-primary);
+    stroke: var(--accent-primary);
   }
 
   .nav-step-title {
@@ -235,16 +250,15 @@ const processSteps = [
   .process-step-content {
     min-height: 100vh;
     padding: 60px 0;
-    opacity: 0;
-    transform: translateY(50px);
+    opacity: 0.3;
+    transform: translateY(20px);
     transition: all 0.6s ease;
-    display: none;
+    margin-bottom: 100px;
   }
 
   .process-step-content.active {
     opacity: 1;
     transform: translateY(0);
-    display: block;
   }
 
   .step-content-header {
@@ -272,7 +286,8 @@ const processSteps = [
   }
 
   .step-content-example {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-primary);
     border-left: 6px solid var(--accent-primary);
     padding: 30px;
     margin-top: 30px;
@@ -291,6 +306,7 @@ const processSteps = [
     font-size: 16px;
     line-height: 1.6;
     margin: 0;
+    color: var(--text-primary);
     opacity: 0.9;
   }
 
@@ -357,7 +373,7 @@ const processSteps = [
     
     if (navItems.length === 0 || stepContents.length === 0) return;
     
-    function updateActiveStep(stepNumber: string) {
+    function updateActiveStep(stepNumber) {
       // Update navigation active state
       navItems.forEach(item => {
         item.classList.remove('active');
@@ -383,9 +399,18 @@ const processSteps = [
     
     // Click handlers for nav items
     navItems.forEach(item => {
-      item.addEventListener('click', function(this: HTMLElement) {
+      item.addEventListener('click', function() {
         const targetStep = this.getAttribute('data-step');
-        if (targetStep) {
+        const targetElement = document.getElementById(`step-${targetStep}`);
+        
+        if (targetElement) {
+          // Smooth scroll to target element
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          
+          // Update active state
           updateActiveStep(targetStep);
         }
       });
@@ -395,17 +420,26 @@ const processSteps = [
         if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
           e.preventDefault();
           const targetStep = item.getAttribute('data-step');
-          if (targetStep) {
+          const targetElement = document.getElementById(`step-${targetStep}`);
+          
+          if (targetElement) {
+            // Smooth scroll to target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            // Update active state
             updateActiveStep(targetStep);
           }
         }
       });
     });
     
-    // Intersection Observer for scroll-based highlighting
+    // Enhanced Intersection Observer for scroll-based highlighting (scrollytelling)
     const observerOptions = {
-      threshold: 0.5,
-      rootMargin: '-20% 0px -20% 0px'
+      threshold: 0.5, // Trigger when 50% of the step is visible
+      rootMargin: '-20% 0px -20% 0px' // More precise triggering - matches original
     };
     
     const observer = new IntersectionObserver((entries) => {
@@ -413,17 +447,22 @@ const processSteps = [
         if (entry.isIntersecting) {
           const stepNumber = entry.target.id.split('-')[1];
           updateActiveStep(stepNumber);
+          console.log('Process step in view:', stepNumber); // Debug log
+          
+          // Stop auto-rotation when user scrolls to a step
+          userInteracted = true;
+          stopAutoRotate();
         }
       });
     }, observerOptions);
     
-    // Observe all process steps
+    // Observe all process steps for scrollytelling
     stepContents.forEach(step => {
       observer.observe(step);
     });
 
     // Auto-rotation functionality with pause on interaction
-    let autoRotateInterval: number | null = null;
+    let autoRotateInterval = null;
     let userInteracted = false;
     
     function startAutoRotate() {

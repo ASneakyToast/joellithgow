@@ -6,6 +6,11 @@ import Projects from '@components/Projects.astro';
 import Process from '@components/Process.astro';
 import About from '@components/About.astro';
 import Contact from '@components/Contact.astro';
+import InteractiveElements from '@components/InteractiveElements.astro';
+import UIInteractions from '@components/UIInteractions.astro';
+import SnakeEasterEgg from '@components/SnakeEasterEgg.astro';
+import KeyboardShortcuts from '@components/KeyboardShortcuts.astro';
+import PerformanceOptimizer from '@components/PerformanceOptimizer.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
 const pageDescription = 'I help people think visually. I turn abstract ideas into clear visuals through design thinking and technical expertise.';
@@ -35,6 +40,21 @@ const pageDescription = 'I help people think visually. I turn abstract ideas int
     <!-- Contact Component -->
     <Contact />
   </main>
+
+  <!-- Interactive Elements (Modals, Floating Elements, Drag System) -->
+  <InteractiveElements />
+
+  <!-- Enhanced UI Interactions (Scroll animations, hover effects, parallax) -->
+  <UIInteractions />
+
+  <!-- Snake Easter Egg Component -->
+  <SnakeEasterEgg />
+
+  <!-- Keyboard Shortcuts and Accessibility -->
+  <KeyboardShortcuts />
+
+  <!-- Performance Optimization and Monitoring -->
+  <PerformanceOptimizer />
   
   <!-- Screen reader only content -->
   <div class="sr-only">
@@ -63,18 +83,7 @@ const pageDescription = 'I help people think visually. I turn abstract ideas int
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23ff6b6b" opacity="0.6"/></svg>'), auto;
   }
 
-  /* Global accessibility styles */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  /* Global accessibility styles - sr-only class is defined globally in BaseLayout */
   
   .skip-link {
     position: absolute;
@@ -254,8 +263,16 @@ const pageDescription = 'I help people think visually. I turn abstract ideas int
 <script>
   // Global theme system integration and interactive functionality
   document.addEventListener('DOMContentLoaded', () => {
-    // Load saved theme on page load
-    const savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    // Load saved theme on page load - force reset to default if it's forest
+    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    
+    // If the saved theme is invalid, reset to default
+    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+    if (!validThemes.includes(savedTheme)) {
+      savedTheme = 'default';
+      localStorage.setItem('portfolio-theme', 'default');
+    }
+    
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     // Global keyboard shortcuts for theme switching
@@ -288,30 +305,8 @@ const pageDescription = 'I help people think visually. I turn abstract ideas int
       });
     });
 
-    // Parallax effect for floating elements
-    let ticking = false;
-    
-    function updateParallax() {
-      const scrolled = window.pageYOffset;
-      const parallaxElements = document.querySelectorAll('.floating-element');
-      
-      parallaxElements.forEach((element, index) => {
-        const speed = 0.3 * (index + 1);
-        const rotation = 12 + (index * 3);
-        (element as HTMLElement).style.transform = `translateY(${scrolled * speed}px) rotate(${rotation}deg)`;
-      });
-      
-      ticking = false;
-    }
-    
-    function requestTick() {
-      if (!ticking) {
-        requestAnimationFrame(updateParallax);
-        ticking = true;
-      }
-    }
-    
-    window.addEventListener('scroll', requestTick);
+    // Removed parallax scrolling for floating elements to match original behavior
+    // Floating elements should remain fixed in space and not move with scroll
 
     // Initialize scroll-based animations
     const observerOptions = {
@@ -333,7 +328,7 @@ const pageDescription = 'I help people think visually. I turn abstract ideas int
     });
 
     // Cursor trail animation
-    let trails: HTMLElement[] = [];
+    let trails = [];
     const maxTrails = 5;
     
     function createTrail(x: number, y: number) {

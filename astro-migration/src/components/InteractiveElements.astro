@@ -1,0 +1,1453 @@
+---
+// Interactive Elements Component - Handles floating elements, modals, and drag functionality
+// Uses Astro client directives for optimal performance
+---
+
+<!-- Theme Modal -->
+<div id="themeModal" class="theme-modal hidden">
+  <div class="theme-modal-content">
+    <div class="theme-modal-header">
+      <h3>Choose Your Theme</h3>
+      <button class="theme-modal-close" aria-label="Close theme selector" onclick="closeThemeModal()">&times;</button>
+    </div>
+    <div class="theme-options-grid">
+      <div class="theme-option" data-theme="default" onclick="setTheme('default')">
+        <div class="theme-preview theme-preview-default"></div>
+        <span>Default</span>
+      </div>
+      <div class="theme-option" data-theme="electric" onclick="setTheme('electric')">
+        <div class="theme-preview theme-preview-electric"></div>
+        <span>Electric</span>
+      </div>
+      <div class="theme-option" data-theme="retro" onclick="setTheme('retro')">
+        <div class="theme-preview theme-preview-retro"></div>
+        <span>Retro</span>
+      </div>
+      <div class="theme-option" data-theme="system" onclick="setTheme('system')">
+        <div class="theme-preview theme-preview-system"></div>
+        <span>System</span>
+      </div>
+      <div class="theme-option" data-theme="high-contrast" onclick="setTheme('high-contrast')">
+        <div class="theme-preview theme-preview-high-contrast"></div>
+        <span>High Contrast</span>
+      </div>
+      <div class="theme-option" data-theme="minimal" onclick="setTheme('minimal')">
+        <div class="theme-preview theme-preview-minimal"></div>
+        <span>Minimal</span>
+      </div>
+      <div class="theme-option" data-theme="neon" onclick="setTheme('neon')">
+        <div class="theme-preview theme-preview-neon"></div>
+        <span>Neon</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Case Study Modal -->
+<div id="caseStudyModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">case study</h3>
+      <button class="modal-close" aria-label="Close case study">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="case-study-content">
+        <!-- Content will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Elements Container - All floating elements removed as per requirements -->
+
+<style>
+  /* Theme Modal Styles */
+  .theme-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  .theme-modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .theme-modal-content {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .theme-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .theme-modal-header h3 {
+    color: var(--text-primary);
+    font-size: 24px;
+    margin: 0;
+  }
+
+  .theme-modal-close {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .theme-modal-close:hover {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    transform: scale(1.1);
+  }
+
+  .theme-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+  }
+
+  .theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .theme-option:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-secondary);
+    transform: translateY(-3px);
+  }
+
+  .theme-option.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-light);
+  }
+
+  .theme-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid currentColor;
+  }
+
+  /* Theme Preview Colors */
+  .theme-preview-default { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #ffe66d); }
+  .theme-preview-electric { background: linear-gradient(135deg, #00ffff, #ff00ff, #ffff00); }
+  .theme-preview-retro { background: linear-gradient(135deg, #ff8c42, #6699cc, #ffcc5c); }
+  .theme-preview-system { background: linear-gradient(135deg, #007acc, #5c6bc0, #26c6da); }
+  .theme-preview-high-contrast { background: linear-gradient(135deg, #ffffff, #000000, #ffffff); }
+  .theme-preview-minimal { background: linear-gradient(135deg, #000000, #333333, #666666); }
+  .theme-preview-neon { background: linear-gradient(135deg, #ff073a, #39ff14, #ff073a); }
+
+  /* Case Study Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    background: var(--bg-secondary);
+    border: 3px solid var(--bg-dark);
+    max-width: 900px;
+    max-height: 90vh;
+    width: 90%;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.8) rotate(-2deg);
+    transition: all 0.3s ease;
+    box-shadow: 10px 10px 0px var(--accent-primary);
+  }
+
+  .modal-overlay.show .modal-content,
+  .modal-overlay:not(.hidden) .modal-content {
+    transform: scale(1) rotate(0deg);
+  }
+
+  .modal-header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: lowercase;
+  }
+
+  .modal-close {
+    background: var(--accent-primary);
+    border: none;
+    color: var(--text-light);
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .modal-close:hover {
+    background: var(--accent-secondary);
+    transform: scale(1.1);
+  }
+
+  .modal-body {
+    padding: 0;
+  }
+
+  .case-study-content {
+    padding: 0;
+  }
+
+  /* Case Study Content Styles - Using :global() for dynamically generated content */
+  :global(.case-hero) {
+    padding: 40px;
+    background: var(--bg-primary);
+    border-bottom: 2px solid var(--bg-dark);
+  }
+
+  :global(.case-title) {
+    font-size: 36px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    text-shadow: 2px 2px 0px var(--accent-primary);
+  }
+
+  :global(.case-subtitle) {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  :global(.case-overview) {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+  }
+
+  :global(.case-meta) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  :global(.meta-item) {
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-dark);
+    padding: 15px;
+    transform: rotate(1deg);
+  }
+
+  :global(.meta-item:nth-child(even)) {
+    transform: rotate(-1deg);
+    background: var(--accent-tertiary);
+  }
+
+  :global(.meta-label) {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+  }
+
+  :global(.meta-value) {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-primary);
+  }
+
+  :global(.case-section) {
+    padding: 40px;
+    border-bottom: 2px solid var(--bg-primary);
+  }
+
+  :global(.case-section:nth-child(even)) {
+    background: var(--bg-primary);
+  }
+
+  :global(.case-section .section-title) {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    text-transform: lowercase;
+    border-left: 4px solid var(--accent-primary);
+    padding-left: 15px;
+  }
+
+  :global(.section-content) {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+  }
+
+  :global(.insight-box) {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px solid var(--bg-dark);
+    transform: rotate(-1deg);
+    position: relative;
+  }
+
+  :global(.insight-box::before) {
+    content: "💡";
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background: var(--accent-tertiary);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+    font-size: 14px;
+  }
+
+  :global(.metric-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  :global(.metric-card) {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 20px;
+    text-align: center;
+    border: 2px solid var(--bg-dark);
+    transform: rotate(1deg);
+  }
+
+  :global(.metric-card:nth-child(even)) {
+    transform: rotate(-2deg);
+    background: var(--accent-primary);
+  }
+
+  :global(.metric-number) {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  :global(.metric-label) {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  :global(.process-step-detailed) {
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-dark);
+    padding: 25px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  :global(.process-step-detailed:nth-child(odd)) {
+    transform: rotate(0.5deg);
+  }
+
+  :global(.process-step-detailed:nth-child(even)) {
+    transform: rotate(-0.5deg);
+    background: var(--bg-primary);
+  }
+
+  :global(.step-number-detailed) {
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  :global(.step-title-detailed) {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-primary);
+  }
+
+  :global(.step-description-detailed) {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  :global(.case-image-gallery) {
+    margin: 30px 0;
+  }
+
+  :global(.case-image) {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border: 3px solid var(--bg-dark);
+    margin-bottom: 15px;
+  }
+
+  :global(.primary-image) {
+    object-fit: contain;
+  }
+
+  :global(.image-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  }
+
+  :global(.image-item) {
+    background: var(--bg-secondary);
+    border: 3px solid var(--bg-dark);
+    padding: 20px;
+    transform: rotate(0.5deg);
+  }
+
+  :global(.image-item:nth-child(even)) {
+    transform: rotate(-0.5deg);
+  }
+
+  :global(.gallery-image) {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 15px;
+  }
+
+  :global(.image-caption) {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  :global(.quote-block) {
+    background: var(--accent-tertiary);
+    border-left: 6px solid var(--accent-primary);
+    padding: 20px;
+    margin: 20px 0;
+    font-style: italic;
+    color: var(--text-primary);
+    transform: rotate(1deg);
+  }
+
+  :global(.live-link-button) {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 18px 36px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 3px solid var(--bg-dark);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transform: rotate(-1deg);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+    margin: 20px 0;
+  }
+
+  :global(.live-link-button:hover) {
+    transform: rotate(-1deg) scale(1.05);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+  }
+
+  :global(.live-link-container) {
+    text-align: center;
+    margin: 30px 0;
+  }
+
+  :global(.live-link-description) {
+    margin: 15px 0 0 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  :global(.live-links-container) {
+    text-align: center;
+    margin: 30px 0;
+  }
+
+  :global(.live-links-description) {
+    margin: 0 0 25px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  :global(.live-links-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  :global(.image-placeholder) {
+    background: var(--bg-primary);
+    border: 2px solid var(--bg-dark);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transform: rotate(-1deg);
+  }
+
+  :global(.quote-author) {
+    margin-top: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-style: normal;
+    font-weight: bold;
+  }
+
+  /* Floating elements styles removed as per requirements */
+
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .theme-modal-content {
+      padding: 20px;
+    }
+
+    .theme-options-grid {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .theme-preview {
+      width: 50px;
+      height: 50px;
+    }
+
+    .modal-content {
+      width: 95%;
+      max-height: 95vh;
+      margin: 20px;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+    }
+
+    .modal-close {
+      width: 25px;
+      height: 25px;
+      font-size: 14px;
+    }
+
+    :global(.case-hero),
+    :global(.case-section) {
+      padding: 25px;
+    }
+
+    :global(.case-title) {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    :global(.case-subtitle) {
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+
+    :global(.case-overview) {
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    :global(.case-meta) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    :global(.meta-item) {
+      padding: 12px;
+    }
+
+    :global(.meta-label) {
+      font-size: 10px;
+    }
+
+    :global(.meta-value) {
+      font-size: 12px;
+    }
+
+    :global(.case-section .section-title) {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    :global(.section-content) {
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    :global(.metric-grid) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    :global(.metric-card) {
+      padding: 15px;
+    }
+
+    :global(.metric-number) {
+      font-size: 22px;
+    }
+
+    :global(.metric-label) {
+      font-size: 10px;
+    }
+
+    :global(.process-step-detailed) {
+      padding: 20px;
+    }
+
+    :global(.step-title-detailed) {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    :global(.step-description-detailed) {
+      font-size: 13px;
+    }
+
+    :global(.insight-box) {
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    :global(.quote-block) {
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    :global(.quote-author) {
+      font-size: 11px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .floating-element {
+      animation: none;
+    }
+    
+    .theme-modal,
+    :global(.case-study-modal),
+    .floating-element {
+      transition: none;
+    }
+  }
+</style>
+
+<!-- Client-side JavaScript -->
+<script>
+  // Theme Management System
+  class ThemeManager {
+    constructor() {
+      this.themes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+      this.currentTheme = this.loadTheme();
+      this.modal = null;
+      this.init();
+    }
+
+    init() {
+      this.modal = document.getElementById('themeModal');
+      this.setupEventListeners();
+      this.applyTheme(this.currentTheme);
+    }
+
+    setupEventListeners() {
+      // Theme option clicks
+      document.querySelectorAll('.theme-option').forEach(option => {
+        option.addEventListener('click', () => {
+          const theme = option.dataset.theme;
+          this.setTheme(theme);
+          this.closeModal();
+        });
+
+        // Preview on hover
+        option.addEventListener('mouseenter', () => {
+          if (!option.classList.contains('active')) {
+            this.previewTheme(option.dataset.theme);
+          }
+        });
+
+        option.addEventListener('mouseleave', () => {
+          if (!option.classList.contains('active')) {
+            this.applyTheme(this.currentTheme);
+          }
+        });
+      });
+
+      // Modal close button
+      const closeBtn = document.querySelector('.theme-modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => this.closeModal());
+      }
+
+      // Close on background click
+      if (this.modal) {
+        this.modal.addEventListener('click', (e) => {
+          if (e.target === this.modal) {
+            this.closeModal();
+          }
+        });
+      }
+
+      // Global keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+          e.preventDefault();
+          this.cycleTheme();
+        }
+        if (e.key === 'Escape') {
+          this.closeModal();
+        }
+      });
+    }
+
+    openModal() {
+      if (this.modal) {
+        this.modal.classList.remove('hidden');
+        this.updateActiveOption();
+      }
+    }
+
+    closeModal() {
+      if (this.modal) {
+        this.modal.classList.add('hidden');
+        this.applyTheme(this.currentTheme); // Reset any preview
+      }
+    }
+
+    setTheme(theme) {
+      this.currentTheme = theme;
+      this.applyTheme(theme);
+      this.saveTheme(theme);
+      this.updateActiveOption();
+    }
+
+    previewTheme(theme) {
+      this.applyTheme(theme);
+    }
+
+    applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    cycleTheme() {
+      const currentIndex = this.themes.indexOf(this.currentTheme);
+      const nextIndex = (currentIndex + 1) % this.themes.length;
+      this.setTheme(this.themes[nextIndex]);
+    }
+
+    updateActiveOption() {
+      document.querySelectorAll('.theme-option').forEach(option => {
+        option.classList.toggle('active', option.dataset.theme === this.currentTheme);
+      });
+    }
+
+    saveTheme(theme) {
+      localStorage.setItem('portfolio-theme', theme);
+    }
+
+    loadTheme() {
+      let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+      
+      // If the saved theme is invalid, reset to default
+      const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+      if (!validThemes.includes(savedTheme)) {
+        savedTheme = 'default';
+        localStorage.setItem('portfolio-theme', 'default');
+      }
+      
+      return savedTheme;
+    }
+  }
+
+  // Enhanced Modal Focus Management System
+  class ModalFocusManager {
+    modals: Map<string, any>;
+    focusStack: string[];
+    keyboardTrap: ((e: KeyboardEvent) => void) | null;
+
+    constructor() {
+      this.modals = new Map();
+      this.focusStack = [];
+      this.keyboardTrap = null;
+      this.init();
+    }
+
+    init() {
+      this.registerModals();
+      this.setupGlobalListeners();
+    }
+
+    registerModals() {
+      // Register all modals in the page
+      const modalSelectors = [
+        '#caseStudyModal',
+        '#themeModal',
+        '#keyboard-help-modal'
+      ];
+
+      modalSelectors.forEach(selector => {
+        const modal = document.querySelector(selector);
+        if (modal) {
+          this.modals.set(selector, {
+            element: modal,
+            isOpen: false,
+            previousFocus: null,
+            focusableElements: []
+          });
+        }
+      });
+    }
+
+    setupGlobalListeners() {
+      // Listen for modal state changes
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.closeTopModal();
+        }
+        if (e.key === 'Tab') {
+          this.handleTabNavigation(e);
+        }
+      });
+
+      // Setup mutation observer for dynamic modals
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const target = mutation.target;
+            if (this.isModal(target)) {
+              this.handleModalStateChange(target);
+            }
+          }
+        });
+      });
+
+      // Observe all registered modals
+      this.modals.forEach(modal => {
+        observer.observe(modal.element, { attributes: true, attributeFilter: ['class'] });
+      });
+    }
+
+    isModal(element) {
+      return Array.from(this.modals.values()).some(modal => modal.element === element);
+    }
+
+    handleModalStateChange(modalElement) {
+      const modalId = modalElement.id ? `#${modalElement.id}` : this.findModalSelector(modalElement);
+      const modalData = this.modals.get(modalId);
+      
+      if (!modalData) return;
+
+      const isNowOpen = !modalElement.classList.contains('hidden');
+      
+      if (isNowOpen && !modalData.isOpen) {
+        this.openModal(modalId);
+      } else if (!isNowOpen && modalData.isOpen) {
+        this.closeModal(modalId);
+      }
+    }
+
+    findModalSelector(element) {
+      for (const [selector, modal] of this.modals) {
+        if (modal.element === element) {
+          return selector;
+        }
+      }
+      return null;
+    }
+
+    openModal(modalId) {
+      const modalData = this.modals.get(modalId);
+      if (!modalData) return;
+
+      // Store current focus
+      modalData.previousFocus = document.activeElement;
+      modalData.isOpen = true;
+
+      // Add to focus stack
+      this.focusStack.push(modalId);
+
+      // Find focusable elements
+      modalData.focusableElements = this.getFocusableElements(modalData.element);
+
+      // Set initial focus
+      this.setInitialFocus(modalData);
+
+      // Setup focus trap
+      this.setupFocusTrap(modalData);
+
+      // Lock body scroll
+      this.lockBodyScroll();
+
+      // Announce to screen readers
+      this.announceModalOpen(modalData.element);
+    }
+
+    closeModal(modalId) {
+      const modalData = this.modals.get(modalId);
+      if (!modalData) return;
+
+      modalData.isOpen = false;
+
+      // Remove from focus stack
+      const index = this.focusStack.indexOf(modalId);
+      if (index > -1) {
+        this.focusStack.splice(index, 1);
+      }
+
+      // Restore focus
+      if (modalData.previousFocus && modalData.previousFocus.isConnected) {
+        modalData.previousFocus.focus();
+      }
+
+      // Remove focus trap
+      this.removeFocusTrap();
+
+      // Check if we should unlock body scroll
+      if (this.focusStack.length === 0) {
+        this.unlockBodyScroll();
+      }
+
+      // Announce to screen readers
+      this.announceModalClose();
+    }
+
+    closeTopModal() {
+      if (this.focusStack.length > 0) {
+        const topModalId = this.focusStack[this.focusStack.length - 1];
+        const modalData = this.modals.get(topModalId);
+        if (modalData && modalData.element) {
+          modalData.element.classList.add('hidden');
+        }
+      }
+    }
+
+    getFocusableElements(modal) {
+      const focusableSelectors = [
+        'button:not([disabled]):not([aria-hidden="true"])',
+        '[href]:not([disabled]):not([aria-hidden="true"])',
+        'input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"])',
+        'select:not([disabled]):not([aria-hidden="true"])',
+        'textarea:not([disabled]):not([aria-hidden="true"])',
+        '[tabindex]:not([tabindex="-1"]):not([disabled]):not([aria-hidden="true"])',
+        '[contenteditable]:not([contenteditable="false"])'
+      ];
+
+      return modal.querySelectorAll(focusableSelectors.join(','));
+    }
+
+    setInitialFocus(modalData) {
+      if (modalData.focusableElements.length > 0) {
+        // Focus on first interactive element, preferring buttons
+        const preferredElements = modalData.element.querySelectorAll('button, [role="button"]');
+        const targetElement = preferredElements.length > 0 ? 
+          preferredElements[0] : modalData.focusableElements[0];
+        
+        targetElement.focus();
+      } else {
+        // If no focusable elements, focus the modal itself
+        modalData.element.setAttribute('tabindex', '-1');
+        modalData.element.focus();
+      }
+    }
+
+    setupFocusTrap(modalData) {
+      if (modalData.focusableElements.length === 0) return;
+
+      const firstElement = modalData.focusableElements[0];
+      const lastElement = modalData.focusableElements[modalData.focusableElements.length - 1];
+
+      this.keyboardTrap = (e) => {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            // Shift + Tab
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            // Tab
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+
+      modalData.element.addEventListener('keydown', this.keyboardTrap);
+    }
+
+    removeFocusTrap() {
+      if (this.keyboardTrap) {
+        // Remove from all modals (simple cleanup)
+        this.modals.forEach(modalData => {
+          modalData.element.removeEventListener('keydown', this.keyboardTrap);
+        });
+        this.keyboardTrap = null;
+      }
+    }
+
+    handleTabNavigation(e) {
+      // Enhanced tab navigation for better UX
+      const activeElement = document.activeElement;
+      
+      // Skip invisible or disabled elements
+      if (activeElement && (
+        activeElement.style.visibility === 'hidden' ||
+        activeElement.style.display === 'none' ||
+        activeElement.hasAttribute('disabled') ||
+        activeElement.getAttribute('aria-hidden') === 'true'
+      )) {
+        e.preventDefault();
+        this.focusNextValidElement(e.shiftKey);
+      }
+    }
+
+    focusNextValidElement(reverse = false) {
+      const focusableElements = document.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+      );
+      
+      const currentIndex = Array.from(focusableElements).indexOf(document.activeElement);
+      let nextIndex;
+      
+      if (reverse) {
+        nextIndex = currentIndex <= 0 ? focusableElements.length - 1 : currentIndex - 1;
+      } else {
+        nextIndex = currentIndex >= focusableElements.length - 1 ? 0 : currentIndex + 1;
+      }
+      
+      if (focusableElements[nextIndex]) {
+        focusableElements[nextIndex].focus();
+      }
+    }
+
+    lockBodyScroll() {
+      document.body.style.overflow = 'hidden';
+      document.body.setAttribute('aria-hidden', 'true');
+    }
+
+    unlockBodyScroll() {
+      document.body.style.overflow = '';
+      document.body.removeAttribute('aria-hidden');
+    }
+
+    announceModalOpen(modal) {
+      const title = modal.querySelector('h1, h2, h3, [role="heading"]');
+      const announcement = title ? 
+        `Modal opened: ${title.textContent}` : 
+        'Modal dialog opened';
+      
+      this.announceToScreenReader(announcement);
+    }
+
+    announceModalClose() {
+      this.announceToScreenReader('Modal closed');
+    }
+
+    announceToScreenReader(message) {
+      // Create or update live region for announcements
+      let announcer = document.getElementById('modal-announcer');
+      if (!announcer) {
+        announcer = document.createElement('div');
+        announcer.id = 'modal-announcer';
+        announcer.className = 'sr-only';
+        announcer.setAttribute('aria-live', 'polite');
+        announcer.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(announcer);
+      }
+      
+      announcer.textContent = message;
+    }
+  }
+
+  // Enhanced Case Study Modal System
+  class CaseStudyModal {
+    modal: HTMLElement | null;
+    content: HTMLElement | null;
+    focusManager: any;
+
+    constructor() {
+      this.modal = document.getElementById('caseStudyModal');
+      this.content = this.modal?.querySelector('.case-study-content');
+      this.focusManager = null;
+      this.init();
+    }
+
+    init() {
+      this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+      // Close button
+      const closeBtn = document.querySelector('.modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => this.close());
+      }
+
+      // Close on background click
+      if (this.modal) {
+        this.modal.addEventListener('click', (e) => {
+          if (e.target === this.modal) {
+            this.close();
+          }
+        });
+      }
+    }
+
+    open(projectData) {
+      if (!this.modal || !this.content) return;
+
+      console.log('Opening case study modal with data:', projectData);
+
+      // Populate content
+      const generatedContent = this.generateCaseStudyContent(projectData);
+      console.log('Generated content:', generatedContent);
+      this.content.innerHTML = generatedContent;
+      
+      // Show modal
+      this.modal.classList.remove('hidden');
+      this.modal.setAttribute('aria-modal', 'true');
+      this.modal.setAttribute('role', 'dialog');
+      
+      // Debug: Check if styles are applied
+      setTimeout(() => {
+        const caseHero = this.content.querySelector('.case-hero');
+        if (caseHero) {
+          const styles = window.getComputedStyle(caseHero);
+          console.log('Case hero styles:', {
+            padding: styles.padding,
+            background: styles.backgroundColor,
+            borderBottom: styles.borderBottom
+          });
+        }
+      }, 100);
+      
+      // Focus will be managed by ModalFocusManager
+    }
+
+    close() {
+      if (this.modal) {
+        this.modal.classList.add('hidden');
+        this.modal.removeAttribute('aria-modal');
+        this.modal.removeAttribute('role');
+      }
+    }
+
+    generateCaseStudyContent(data) {
+      return `
+        <div class="case-hero">
+            <div class="case-subtitle">${data.subtitle || data.type}</div>
+            <h1 class="case-title">${data.title}</h1>
+            <p class="case-overview">${data.overview || data.description}</p>
+            
+            <div class="case-meta">
+                <div class="meta-item">
+                    <div class="meta-label">duration</div>
+                    <div class="meta-value">${data.duration || 'Ongoing'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">team</div>
+                    <div class="meta-value">${data.team || 'Solo project'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">role</div>
+                    <div class="meta-value">${data.role || 'Designer & Developer'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">tools</div>
+                    <div class="meta-value">${data.tools || data.technologies?.join(', ') || ''}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">the challenge</h2>
+            <div class="section-content">${data.problem || 'Challenge details coming soon...'}</div>
+            ${data.insights && data.insights.length > 0 ? `
+                <div class="insight-box">
+                    <strong>key insight:</strong> ${data.insights[0]}
+                </div>
+            ` : ''}
+        </div>
+        
+        <div class="case-section">
+            <h2 class="section-title">the approach</h2>
+            <div class="section-content">${data.solution || 'Solution details coming soon...'}</div>
+            ${data.images && data.images.length > 0 ? `
+                <div class="case-image-gallery">
+                    ${data.images[0].type === 'video' ? `
+                        <video class="case-image primary-image" autoplay muted loop playsinline controls>
+                            <source src="${data.images[0].src}" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    ` : `
+                        <img src="${data.images[0].src}" alt="${data.images[0].alt}" class="case-image primary-image" loading="lazy">
+                    `}
+                    <div class="image-caption">${data.images[0].caption}</div>
+                </div>
+            ` : ''}
+        </div>
+        
+        ${data.process && data.process.length > 0 ? `
+        <div class="case-section">
+            <h2 class="section-title">process deep dive</h2>
+            <div class="process-steps">
+                ${data.process.map((step, index) => `
+                    <div class="process-step-detailed">
+                        <div class="step-number-detailed">${index + 1}</div>
+                        <div class="step-title-detailed">${step.title}</div>
+                        <div class="step-description-detailed">${step.description}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        ${data.images && data.images.length > 1 ? `
+            <div class="case-section">
+                <h2 class="section-title">visual documentation</h2>
+                <div class="image-grid">
+                    ${data.images.slice(1).map(image => `
+                        <div class="image-item">
+                            <img src="${image.src}" alt="${image.alt}" class="case-image gallery-image" loading="lazy">
+                            <div class="image-caption">${image.caption}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
+        
+        <div class="case-section">
+            <h2 class="section-title">key insights</h2>
+            ${data.insights && data.insights.length > 0 ? data.insights.map(insight => `
+                <div class="quote-block">
+                    "${insight}"
+                </div>
+            `).join('') : '<p>Insights coming soon...</p>'}
+        </div>
+        
+        ${data.id === 'homepage-redesign' ? `
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics?.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('') || ''}
+            </div>
+            <div class="section-content">
+                This homepage redesign demonstrated the power of user-centered design thinking, showing how strategic UX improvements can drive measurable business impact while dramatically improving user experience and engagement.
+            </div>
+        </div>
+        ` : ''}
+        
+        ${data.id === 'ai-powered-portfolio' ? `
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics?.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `).join('') || ''}
+            </div>
+            <div class="section-content">
+                This project demonstrated that AI collaboration isn't just about coding faster—it's about creating space for higher-level creative and strategic decisions while maintaining technical excellence. The portfolio successfully landed the target position, proving that speed doesn't have to compromise quality when AI amplifies human creativity and strategic thinking.
+            </div>
+        </div>
+        ` : ''}
+        
+        ${data.liveLink ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLink.title}</h2>
+            <div class="live-link-container">
+                <a href="${data.liveLink.url}" target="_blank" class="live-link-button">
+                    Visit Live Site
+                    <span class="link-arrow">→</span>
+                </a>
+                <p class="live-link-description">${data.liveLink.description}</p>
+            </div>
+        </div>
+        ` : ''}
+        
+        ${data.liveLinks ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLinks.title}</h2>
+            <div class="live-links-container">
+                <p class="live-links-description">${data.liveLinks.description}</p>
+                <div class="live-links-grid">
+                    ${data.liveLinks.links.map(link => `
+                        <a href="${link.url}" target="_blank" class="live-link-button">
+                            ${link.title}
+                            <span class="link-arrow">→</span>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+      `;
+    }
+  }
+
+  // PhysicsDragSystem class removed as floating elements are no longer present
+
+  // Initialize all systems
+  const themeManager = new ThemeManager();
+  const modalFocusManager = new ModalFocusManager();
+  const caseStudyModal = new CaseStudyModal();
+  // PhysicsDragSystem removed as floating elements are no longer present
+
+  // Make functions globally available
+  (window as any).themeManager = themeManager;
+  (window as any).caseStudyModal = caseStudyModal;
+
+  // Global functions for HTML onclick handlers - Need to be available before DOMContentLoaded
+  (window as any).openThemeModal = () => {
+    console.log('openThemeModal called');
+    if (themeManager) {
+      themeManager.openModal();
+    } else {
+      console.error('ThemeManager not initialized');
+    }
+  };
+  (window as any).closeThemeModal = () => themeManager.closeModal();
+  (window as any).setTheme = (theme: string) => themeManager.setTheme(theme);
+  (window as any).openCaseStudy = (projectData: any) => caseStudyModal.open(projectData);
+
+  // Ensure openThemeModal is available immediately for inline onclick handlers
+  if (typeof window !== 'undefined') {
+    (window as any).openThemeModal = () => {
+      console.log('Global openThemeModal called - checking for theme modal');
+      const modal = document.getElementById('themeModal');
+      if (modal) {
+        console.log('Found theme modal, opening');
+        modal.classList.remove('hidden');
+        // Update active theme option
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+        document.querySelectorAll('.theme-option').forEach(option => {
+          const optionElement = option as HTMLElement;
+          optionElement.classList.toggle('active', optionElement.dataset.theme === currentTheme);
+        });
+      } else {
+        console.error('Theme modal not found');
+      }
+    };
+  }
+</script>

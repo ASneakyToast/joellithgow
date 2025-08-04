@@ -253,6 +253,17 @@ const stats = [
     color: var(--text-light);
   }
 
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .skill-item,
+  [data-theme="electric"] .skill-item {
+    color: var(--bg-dark);
+  }
+
+  [data-theme="neon"] .skill-item:nth-child(odd),
+  [data-theme="electric"] .skill-item:nth-child(odd) {
+    color: var(--text-light);
+  }
+
   /* Responsive design */
   @media (max-width: 768px) {
     .about {
@@ -321,10 +332,10 @@ const stats = [
     if (!infinitySymbol) return;
     
     let clickCount = 0;
-    let clickTimer: ReturnType<typeof setTimeout> | null = null;
+    let clickTimer = null;
     
     // Add click handler for navigation to Snake game
-    infinitySymbol.addEventListener('click', function(this: HTMLElement, e) {
+    infinitySymbol.addEventListener('click', function(e) {
       e.preventDefault();
       
       clickCount++;
@@ -409,12 +420,12 @@ const stats = [
     });
     
     // Add subtle hint on long hover (3+ seconds)
-    let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+    let hoverTimer = null;
     
-    infinitySymbol.addEventListener('mouseenter', function(this: HTMLElement) {
+    infinitySymbol.addEventListener('mouseenter', function() {
       hoverTimer = setTimeout(() => {
         // Add subtle pulsing to hint it's clickable
-        (this as HTMLElement).style.animation = 'slither 1s ease-in-out 1, glow-pulse 2s ease-in-out infinite';
+        (infinitySymbol as HTMLElement).style.animation = 'slither 1s ease-in-out 1, glow-pulse 2s ease-in-out infinite';
         
         // Add small tooltip hint
         const hint = document.createElement('div');
@@ -452,7 +463,7 @@ const stats = [
           document.head.appendChild(style);
         }
         
-        (this as HTMLElement).appendChild(hint);
+        infinitySymbol.appendChild(hint);
         
         // Remove hint after animation
         setTimeout(() => {
@@ -464,7 +475,7 @@ const stats = [
       }, 3000);
     });
     
-    infinitySymbol.addEventListener('mouseleave', function(this: HTMLElement) {
+    infinitySymbol.addEventListener('mouseleave', function() {
       if (hoverTimer) {
         clearTimeout(hoverTimer);
       }
@@ -475,13 +486,13 @@ const stats = [
     // Enhanced skill item interactions
     const skillItems = document.querySelectorAll('.skill-item');
     skillItems.forEach(item => {
-      item.addEventListener('mouseenter', function(this: HTMLElement) {
+      item.addEventListener('mouseenter', function() {
         this.style.transform = 'scale(1.1)';
         this.style.background = 'var(--accent-primary)';
         this.style.color = 'var(--text-light)';
       });
       
-      item.addEventListener('mouseleave', function(this: HTMLElement) {
+      item.addEventListener('mouseleave', function() {
         this.style.transform = 'scale(1)';
         this.style.background = '';
         this.style.color = '';

@@ -26,20 +26,6 @@ const navItems = [
     ))}
   </div>
   
-  <!-- Theme Control Button -->
-  <button 
-    id="themeControl" 
-    class="theme-control" 
-    aria-label="Open theme selector"
-    aria-expanded="false"
-    aria-controls="themeModal"
-    title="Press Ctrl+T to cycle themes">
-    <div class="theme-control-text">
-      <span aria-hidden="true">⚙</span>
-      <span>themes</span>
-    </div>
-  </button>
-  
   <!-- Hidden descriptions for screen readers -->
   <div class="sr-only">
     {navItems.map((item) => (
@@ -94,39 +80,6 @@ const navItems = [
     box-shadow: 2px 2px 0px var(--accent-secondary);
   }
 
-  .theme-control {
-    background: white;
-    color: var(--accent-primary);
-    padding: 15px 30px;
-    border: 3px solid var(--accent-primary);
-    box-shadow: 4px 4px 0px var(--accent-secondary);
-    font-family: inherit;
-    transform: rotate(2deg);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-
-  .theme-control:hover {
-    background: var(--accent-primary);
-    color: white;
-    transform: rotate(2deg) scale(1.05);
-    box-shadow: 6px 6px 0px var(--accent-secondary);
-  }
-
-  .theme-control-text {
-    font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .theme-control-text span:first-child {
-    font-size: 16px;
-  }
 
   /* Responsive design */
   @media (max-width: 768px) {
@@ -147,67 +100,28 @@ const navItems = [
       gap: 8px;
     }
 
-    .theme-control {
-      padding: 12px 20px;
-      margin-top: 15px;
-    }
-
-    .theme-control-text {
-      font-size: 12px;
-      gap: 6px;
-    }
   }
 
-  /* Screen reader only styles */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
 </style>
 
 <script>
   // Enhanced navigation functionality
   document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme
-    const savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    // If the saved theme is invalid, reset to default
+    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+    if (!validThemes.includes(savedTheme)) {
+      savedTheme = 'default';
+      localStorage.setItem('portfolio-theme', 'default');
+    }
+    
     document.documentElement.setAttribute('data-theme', savedTheme);
     
-    // Theme control button
-    const themeControl = document.getElementById('themeControl');
-    if (themeControl) {
-      themeControl.addEventListener('click', () => {
-        cycleTheme();
-      });
-    }
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-        e.preventDefault();
-        cycleTheme();
-      }
-    });
-
-    function cycleTheme() {
-      const themes = ['default', 'electric', 'retro', 'minimal', 'system', 'high-contrast', 'neon'];
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
-      const currentIndex = themes.indexOf(currentTheme);
-      const nextIndex = (currentIndex + 1) % themes.length;
-      const nextTheme = themes[nextIndex];
-      
-      document.documentElement.setAttribute('data-theme', nextTheme);
-      localStorage.setItem('portfolio-theme', nextTheme);
-    }
 
     // Smooth scrolling and active state management
-    function updateActiveNavigation(href: string) {
+    function updateActiveNavigation(href) {
       document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href') === href) {

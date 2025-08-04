@@ -29,13 +29,13 @@
 [data-theme="electric"] {
   --accent-primary: #00ffff;
   --accent-secondary: #ff00ff;
-  --accent-tertiary: #000000;
+  --accent-tertiary: #ffff00;
   --bg-primary: #0a0a0a;
   --bg-secondary: #1a1a1a;
   --bg-dark: #000;
   --text-primary: #fff;
   --text-secondary: #ccc;
-  --text-light: #000;
+  --text-light: #fff;
   
   /* Gradient variables */
   --gradient-primary-light: rgba(0, 255, 255, 0.25);
@@ -46,8 +46,8 @@
   --gradient-secondary-light: rgba(255, 0, 255, 0.5);
   --gradient-secondary-dim: rgba(255, 0, 255, 0.2);
   --gradient-secondary-subtle: rgba(255, 0, 255, 0.15);
-  --gradient-tertiary-light: rgba(0, 0, 0, 0.4);
-  --gradient-tertiary-medium: rgba(0, 0, 0, 0.5);
+  --gradient-tertiary-light: rgba(255, 255, 0, 0.4);
+  --gradient-tertiary-medium: rgba(255, 255, 0, 0.5);
 }
 
 /* Theme: Retro */
@@ -77,27 +77,27 @@
 
 /* Theme: Minimal */
 [data-theme="minimal"] {
-  --accent-primary: #007acc;
-  --accent-secondary: #5c6bc0;
-  --accent-tertiary: #26c6da;
+  --accent-primary: #000000;
+  --accent-secondary: #333333;
+  --accent-tertiary: #666666;
   --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-dark: #212529;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
+  --bg-secondary: #f8f8f8;
+  --bg-dark: #000000;
+  --text-primary: #000000;
+  --text-secondary: #555555;
   --text-light: #ffffff;
   
-  /* Gradient variables */
-  --gradient-primary-light: rgba(0, 122, 204, 0.25);
-  --gradient-primary-medium: rgba(0, 122, 204, 0.4);
-  --gradient-primary-dim: rgba(0, 122, 204, 0.3);
-  --gradient-primary-subtle: rgba(0, 122, 204, 0.15);
-  --gradient-secondary-medium: rgba(92, 107, 192, 0.6);
-  --gradient-secondary-light: rgba(92, 107, 192, 0.5);
-  --gradient-secondary-dim: rgba(92, 107, 192, 0.2);
-  --gradient-secondary-subtle: rgba(92, 107, 192, 0.15);
-  --gradient-tertiary-light: rgba(38, 198, 218, 0.4);
-  --gradient-tertiary-medium: rgba(38, 198, 218, 0.5);
+  /* Gradient variables using grayscale */
+  --gradient-primary-light: rgba(0, 0, 0, 0.25);
+  --gradient-primary-medium: rgba(0, 0, 0, 0.4);
+  --gradient-primary-dim: rgba(0, 0, 0, 0.3);
+  --gradient-primary-subtle: rgba(0, 0, 0, 0.15);
+  --gradient-secondary-medium: rgba(51, 51, 51, 0.6);
+  --gradient-secondary-light: rgba(51, 51, 51, 0.5);
+  --gradient-secondary-dim: rgba(51, 51, 51, 0.2);
+  --gradient-secondary-subtle: rgba(51, 51, 51, 0.15);
+  --gradient-tertiary-light: rgba(102, 102, 102, 0.4);
+  --gradient-tertiary-medium: rgba(102, 102, 102, 0.5);
 }
 
 /* Theme: System (Auto) */
@@ -129,13 +129,13 @@
   [data-theme="system"] {
     --accent-primary: #00ffff;
     --accent-secondary: #ff00ff;
-    --accent-tertiary: #000000;
+    --accent-tertiary: #ffff00;
     --bg-primary: #0a0a0a;
     --bg-secondary: #1a1a1a;
     --bg-dark: #000;
     --text-primary: #fff;
     --text-secondary: #ccc;
-    --text-light: #000;
+    --text-light: #fff;
     
     /* Gradient variables */
     --gradient-primary-light: rgba(0, 255, 255, 0.25);
@@ -146,16 +146,16 @@
     --gradient-secondary-light: rgba(255, 0, 255, 0.5);
     --gradient-secondary-dim: rgba(255, 0, 255, 0.2);
     --gradient-secondary-subtle: rgba(255, 0, 255, 0.15);
-    --gradient-tertiary-light: rgba(0, 0, 0, 0.4);
-    --gradient-tertiary-medium: rgba(0, 0, 0, 0.5);
+    --gradient-tertiary-light: rgba(255, 255, 0, 0.4);
+    --gradient-tertiary-medium: rgba(255, 255, 0, 0.5);
   }
 }
 
 /* Theme: High Contrast */
 [data-theme="high-contrast"] {
   --accent-primary: #ffffff;
-  --accent-secondary: #ffff00;
-  --accent-tertiary: #000000;
+  --accent-secondary: #ffffff;
+  --accent-tertiary: #ffffff;
   --bg-primary: #000000;
   --bg-secondary: #111111;
   --bg-dark: #ffffff;
@@ -168,12 +168,12 @@
   --gradient-primary-medium: rgba(255, 255, 255, 0.4);
   --gradient-primary-dim: rgba(255, 255, 255, 0.3);
   --gradient-primary-subtle: rgba(255, 255, 255, 0.15);
-  --gradient-secondary-medium: rgba(255, 255, 0, 0.6);
-  --gradient-secondary-light: rgba(255, 255, 0, 0.5);
-  --gradient-secondary-dim: rgba(255, 255, 0, 0.2);
-  --gradient-secondary-subtle: rgba(255, 255, 0, 0.15);
-  --gradient-tertiary-light: rgba(0, 0, 0, 0.4);
-  --gradient-tertiary-medium: rgba(0, 0, 0, 0.5);
+  --gradient-secondary-medium: rgba(255, 255, 255, 0.6);
+  --gradient-secondary-light: rgba(255, 255, 255, 0.5);
+  --gradient-secondary-dim: rgba(255, 255, 255, 0.2);
+  --gradient-secondary-subtle: rgba(255, 255, 255, 0.15);
+  --gradient-tertiary-light: rgba(255, 255, 255, 0.4);
+  --gradient-tertiary-medium: rgba(255, 255, 255, 0.5);
 }
 
 /* Theme: Neon */
@@ -186,7 +186,7 @@
   --bg-dark: #ff073a;
   --text-primary: #39ff14;
   --text-secondary: #ff073a;
-  --text-light: #000000;
+  --text-light: #ffffff;
   
   /* Gradient variables */
   --gradient-primary-light: rgba(255, 7, 58, 0.25);

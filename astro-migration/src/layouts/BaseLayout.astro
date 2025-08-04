@@ -64,6 +64,57 @@ const {
   
   <title>{title}</title>
   
+  <!-- Early theme system initialization to ensure functions are available for onclick handlers -->
+  <script is:inline>
+    // Global theme functions - available immediately for onclick handlers
+    window.openThemeModal = function() {
+      console.log('Early openThemeModal called');
+      const modal = document.getElementById('themeModal');
+      if (modal) {
+        console.log('Opening theme modal');
+        modal.classList.remove('hidden');
+        // Update active theme option
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+        document.querySelectorAll('.theme-option').forEach(function(option) {
+          option.classList.toggle('active', option.dataset.theme === currentTheme);
+        });
+      } else {
+        console.error('Theme modal not found - will retry once DOM is loaded');
+        // Try again once DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+          const modalAfterLoad = document.getElementById('themeModal');
+          if (modalAfterLoad) {
+            console.log('Opening theme modal after DOM load');
+            modalAfterLoad.classList.remove('hidden');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
+            document.querySelectorAll('.theme-option').forEach(function(option) {
+              option.classList.toggle('active', option.dataset.theme === currentTheme);
+            });
+          }
+        });
+      }
+    };
+
+    window.closeThemeModal = function() {
+      const modal = document.getElementById('themeModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    };
+
+    window.setTheme = function(theme) {
+      console.log('Setting theme to:', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('portfolio-theme', theme);
+      // Update active theme option
+      document.querySelectorAll('.theme-option').forEach(function(option) {
+        option.classList.toggle('active', option.dataset.theme === theme);
+      });
+      // Close modal after selection
+      window.closeThemeModal();
+    };
+  </script>
+  
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -104,7 +155,7 @@ const {
   }
   
   /* Accessibility styles */
-  .sr-only {
+  :global(.sr-only) {
     position: absolute;
     width: 1px;
     height: 1px;

@@ -1,0 +1,453 @@
+---
+// Performance Optimizer Component
+// Handles runtime performance monitoring, optimization, and analytics
+---
+
+<style>
+  /* Performance monitoring indicator (hidden by default) */
+  .performance-monitor {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: monospace;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .performance-monitor.show {
+    opacity: 0.8;
+  }
+
+  .performance-monitor.critical {
+    background: #ff4444;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* Intersection Observer optimization - hide elements out of view */
+  .optimize-visibility {
+    will-change: transform, opacity;
+  }
+
+  .optimize-visibility.out-of-view {
+    visibility: hidden;
+  }
+
+  /* Critical resource hints */
+  :global(img) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 300px;
+  }
+
+  :global(.floating-element) {
+    contain: layout style paint;
+  }
+
+  /* Reduce animations for low-end devices */
+  @media (prefers-reduced-motion: reduce), (max-resolution: 1dppx) {
+    :global(.floating-element),
+    :global(.project-card),
+    :global(.skill-item) {
+      animation: none !important;
+      transition: transform 0.1s ease !important;
+    }
+  }
+</style>
+
+<!-- Performance monitoring overlay (only shown in development) -->
+<div id="performanceMonitor" class="performance-monitor">
+  <div id="fpsCounter">FPS: --</div>
+  <div id="memoryUsage">Memory: --</div>
+</div>
+
+<!-- Client-side performance optimization and monitoring -->
+<script>
+  class PerformanceOptimizer {
+    constructor() {
+      this.fpsCounter = 0;
+      this.frameCount = 0;
+      this.lastTime = performance.now();
+      this.isLowEndDevice = false;
+      this.criticalMetrics = {
+        fps: 0,
+        memory: 0,
+        loadTime: 0
+      };
+      
+      this.init();
+    }
+
+    init() {
+      this.detectDeviceCapability();
+      this.optimizeForDevice();
+      this.setupPerformanceMonitoring();
+      this.setupIntersectionObserver();
+      this.setupIdleOptimizations();
+      this.setupCriticalResourceHints();
+      this.monitorWebVitals();
+    }
+
+    detectDeviceCapability() {
+      // Detect low-end devices based on various metrics
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      const deviceMetrics = {
+        cores: navigator.hardwareConcurrency || 1,
+        memory: navigator.deviceMemory || 1,
+        connection: navigator.connection?.effectiveType || '4g',
+        webgl: !!gl,
+        gpu: gl ? gl.getParameter(gl.RENDERER) : 'unknown'
+      };
+
+      // Determine if device is low-end
+      this.isLowEndDevice = (
+        deviceMetrics.cores <= 2 ||
+        deviceMetrics.memory <= 2 ||
+        deviceMetrics.connection === 'slow-2g' ||
+        deviceMetrics.connection === '2g' ||
+        deviceMetrics.connection === '3g'
+      );
+
+      console.log('Device capabilities:', deviceMetrics);
+      console.log('Low-end device detected:', this.isLowEndDevice);
+    }
+
+    optimizeForDevice() {
+      if (this.isLowEndDevice) {
+        // Reduce animations and effects for low-end devices
+        document.documentElement.style.setProperty('--animation-duration', '0.1s');
+        document.documentElement.style.setProperty('--animation-intensity', '0.5');
+        
+        // Disable expensive effects
+        const floatingElements = document.querySelectorAll('.floating-element');
+        floatingElements.forEach(element => {
+          element.style.willChange = 'auto';
+          element.style.transform = 'none';
+        });
+
+        // Reduce theme complexity
+        document.documentElement.style.setProperty('--gradient-complexity', 'simple');
+      }
+    }
+
+    setupPerformanceMonitoring() {
+      if (import.meta.env.DEV) {
+        const monitor = document.getElementById('performanceMonitor');
+        const fpsCounter = document.getElementById('fpsCounter');
+        const memoryUsage = document.getElementById('memoryUsage');
+        
+        if (monitor) {
+          monitor.classList.add('show');
+        }
+
+        // FPS monitoring
+        const measureFPS = () => {
+          this.frameCount++;
+          const currentTime = performance.now();
+          
+          if (currentTime >= this.lastTime + 1000) {
+            this.criticalMetrics.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime));
+            this.frameCount = 0;
+            this.lastTime = currentTime;
+            
+            if (fpsCounter) {
+              fpsCounter.textContent = `FPS: ${this.criticalMetrics.fps}`;
+              
+              // Warn about low FPS
+              if (this.criticalMetrics.fps < 30) {
+                monitor?.classList.add('critical');
+              } else {
+                monitor?.classList.remove('critical');
+              }
+            }
+          }
+          
+          requestAnimationFrame(measureFPS);
+        };
+        
+        requestAnimationFrame(measureFPS);
+
+        // Memory monitoring
+        if (performance.memory && memoryUsage) {
+          setInterval(() => {
+            const memory = performance.memory;
+            const used = Math.round(memory.usedJSHeapSize / 1048576);
+            const total = Math.round(memory.totalJSHeapSize / 1048576);
+            
+            this.criticalMetrics.memory = used;
+            memoryUsage.textContent = `Memory: ${used}/${total}MB`;
+            
+            // Warn about high memory usage
+            if (used > total * 0.8) {
+              monitor?.classList.add('critical');
+            }
+          }, 2000);
+        }
+      }
+    }
+
+    setupIntersectionObserver() {
+      // Optimize visibility of expensive elements
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const target = entry.target;
+          
+          if (entry.isIntersecting) {
+            target.classList.remove('out-of-view');
+            target.style.animationPlayState = 'running';
+          } else {
+            target.classList.add('out-of-view');
+            target.style.animationPlayState = 'paused';
+          }
+        });
+      }, {
+        rootMargin: '50px',
+        threshold: 0.1
+      });
+
+      // Observe expensive elements
+      const expensiveElements = document.querySelectorAll(
+        '.floating-element, .project-card, .skill-item, .process-step'
+      );
+      
+      expensiveElements.forEach(element => {
+        element.classList.add('optimize-visibility');
+        observer.observe(element);
+      });
+    }
+
+    setupIdleOptimizations() {
+      // Use Intersection Observer and Idle callbacks for better performance
+      if ('requestIdleCallback' in window) {
+        const scheduleIdleWork = (work: () => void) => {
+          (window as any).requestIdleCallback(work, { timeout: 1000 });
+        };
+
+        // Defer non-critical initializations
+        scheduleIdleWork(() => {
+          this.optimizeImages();
+        });
+
+        scheduleIdleWork(() => {
+          this.preloadCriticalResources();
+        });
+
+        scheduleIdleWork(() => {
+          this.setupLazyLoading();
+        });
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => {
+          this.optimizeImages();
+          this.preloadCriticalResources();
+          this.setupLazyLoading();
+        }, 1000);
+      }
+    }
+
+    optimizeImages() {
+      // Optimize images for better performance
+      const images = document.querySelectorAll('img');
+      
+      images.forEach(img => {
+        // Add loading optimization
+        if (!img.hasAttribute('loading')) {
+          img.setAttribute('loading', 'lazy');
+        }
+        
+        // Add decode optimization
+        if (!img.hasAttribute('decoding')) {
+          img.setAttribute('decoding', 'async');
+        }
+        
+        // Optimize for low-end devices
+        if (this.isLowEndDevice) {
+          // You could swap to lower quality images here
+          const src = img.getAttribute('src');
+          if (src && !src.includes('low-quality')) {
+            // Example: img.src = src.replace('.jpg', '-low.jpg');
+          }
+        }
+      });
+    }
+
+    preloadCriticalResources() {
+      // Preload critical resources for better performance
+      const criticalResources = [
+        '/assets/css/themes.css',
+        // Add other critical resources here
+      ];
+
+      criticalResources.forEach(resource => {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = resource.endsWith('.css') ? 'style' : 'script';
+        link.href = resource;
+        document.head.appendChild(link);
+      });
+    }
+
+    setupLazyLoading() {
+      // Enhanced lazy loading for components
+      if ('IntersectionObserver' in window) {
+        const lazyObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const target = entry.target;
+              
+              // Trigger lazy initialization
+              if (target.hasAttribute('data-lazy-init')) {
+                const initScript = target.getAttribute('data-lazy-init');
+                if (initScript) {
+                  try {
+                    new Function(initScript)();
+                  } catch (e) {
+                    console.warn('Lazy initialization failed:', e);
+                  }
+                }
+              }
+              
+              lazyObserver.unobserve(target);
+            }
+          });
+        }, {
+          rootMargin: '200px'
+        });
+
+        // Observe elements that can be lazily initialized
+        document.querySelectorAll('[data-lazy-init]').forEach(element => {
+          lazyObserver.observe(element);
+        });
+      }
+    }
+
+    setupCriticalResourceHints() {
+      // Add resource hints for better performance
+      const resourceHints = [
+        { rel: 'dns-prefetch', href: '//fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true }
+      ];
+
+      resourceHints.forEach(hint => {
+        const link = document.createElement('link');
+        link.rel = hint.rel;
+        link.href = hint.href;
+        if (hint.crossorigin) {
+          link.crossOrigin = 'anonymous';
+        }
+        document.head.appendChild(link);
+      });
+    }
+
+    monitorWebVitals() {
+      // Monitor Core Web Vitals
+      if ('PerformanceObserver' in window) {
+        try {
+          // Monitor Largest Contentful Paint (LCP)
+          const lcpObserver = new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            const lastEntry = entries[entries.length - 1] as any;
+            console.log('LCP:', lastEntry.startTime);
+            
+            if (lastEntry.startTime > 2500) {
+              console.warn('LCP is slow:', lastEntry.startTime);
+            }
+          });
+          lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+
+          // Monitor First Input Delay (FID)
+          const fidObserver = new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            entries.forEach((entry: any) => {
+              console.log('FID:', entry.processingStart - entry.startTime);
+              
+              if (entry.processingStart - entry.startTime > 100) {
+                console.warn('FID is slow:', entry.processingStart - entry.startTime);
+              }
+            });
+          });
+          fidObserver.observe({ entryTypes: ['first-input'] });
+
+          // Monitor Cumulative Layout Shift (CLS)
+          const clsObserver = new PerformanceObserver((list) => {
+            let clsValue = 0;
+            list.getEntries().forEach((entry: any) => {
+              if (!entry.hadRecentInput) {
+                clsValue += entry.value;
+              }
+            });
+            
+            if (clsValue > 0.1) {
+              console.warn('CLS is high:', clsValue);
+            }
+          });
+          clsObserver.observe({ entryTypes: ['layout-shift'] });
+        } catch (e) {
+          console.log('Web Vitals monitoring not available');
+        }
+      }
+    }
+
+    // Public method to trigger optimizations
+    optimize() {
+      this.optimizeForDevice();
+      this.optimizeImages();
+      
+      // Cleanup unused resources
+      if ('gc' in window && typeof (window as any).gc === 'function') {
+        (window as any).gc();
+      }
+    }
+
+    // Public method to get performance metrics
+    getMetrics() {
+      return {
+        ...this.criticalMetrics,
+        isLowEndDevice: this.isLowEndDevice,
+        timestamp: Date.now()
+      };
+    }
+  }
+
+  // Initialize performance optimizer
+  const performanceOptimizer = new PerformanceOptimizer();
+
+  // Make it globally available
+  window.performanceOptimizer = performanceOptimizer;
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    // Save performance metrics if needed
+    const metrics = performanceOptimizer.getMetrics();
+    if (import.meta.env.DEV) {
+      console.log('Final performance metrics:', metrics);
+    }
+  });
+
+  // Optimize on visibility change
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      // Pause expensive operations when tab is hidden
+      document.querySelectorAll('.floating-element').forEach(element => {
+        element.style.animationPlayState = 'paused';
+      });
+    } else {
+      // Resume operations when tab becomes visible
+      document.querySelectorAll('.floating-element').forEach(element => {
+        element.style.animationPlayState = 'running';
+      });
+    }
+  });
+</script>

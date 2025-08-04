@@ -1,0 +1,512 @@
+---
+// Enhanced UI Interactions Component
+// Handles advanced scroll animations, hover effects, parallax, and performance optimizations
+// Includes all interactive features from the original site
+---
+
+<style>
+  /* Scroll-based animations */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-on-scroll.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Staggered animation delays */
+  .animate-on-scroll:nth-child(1) { transition-delay: 0.1s; }
+  .animate-on-scroll:nth-child(2) { transition-delay: 0.2s; }
+  .animate-on-scroll:nth-child(3) { transition-delay: 0.3s; }
+  .animate-on-scroll:nth-child(4) { transition-delay: 0.4s; }
+  .animate-on-scroll:nth-child(5) { transition-delay: 0.5s; }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Enhanced focus styles */
+  :global(*:focus) {
+    outline: 3px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Interactive element hover effects */
+  :global(.interactive-hover) {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+
+  :global(.interactive-hover:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Cursor trail styles */
+  .cursor-trail {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.8;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Tech tag interactions */
+  :global(.tech-tag) {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  :global(.tech-tag:hover) {
+    transform: scale(1.1);
+    background: var(--accent-secondary);
+    color: var(--text-light);
+  }
+
+  /* Skill item interactions */
+  :global(.skill-item) {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  :global(.skill-item:hover) {
+    transform: scale(1.1);
+    background: var(--accent-primary);
+    color: var(--text-light);
+  }
+
+  /* Contact method interactions */
+  :global(.contact-method) {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  :global(.contact-method:hover) {
+    transform: scale(1.05) rotate(0deg);
+  }
+
+  /* Project card hover effects */
+  :global(.project-card) {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+
+  :global(.project-card:hover) {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+      0 25px 50px rgba(0, 0, 0, 0.1),
+      0 0 0 1px var(--accent-primary);
+  }
+
+  /* Process section interactions */
+  :global(.process-nav-item) {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  :global(.process-nav-item:hover) {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    transform: translateX(5px);
+  }
+
+  :global(.process-nav-item.active) {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    transform: translateX(5px);
+  }
+
+  /* Loading states */
+  .loading-placeholder {
+    background: linear-gradient(90deg, 
+      var(--bg-secondary) 25%, 
+      var(--bg-primary) 50%, 
+      var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 2s infinite;
+  }
+
+  @keyframes loading-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Performance optimizations */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-scroll {
+    will-change: scroll-position;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll,
+    .cursor-trail,
+    :global(.interactive-hover),
+    :global(.tech-tag),
+    :global(.skill-item),
+    :global(.contact-method),
+    :global(.project-card),
+    :global(.process-nav-item) {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :global(*:focus) {
+      outline: 4px solid var(--accent-primary);
+      outline-offset: 3px;
+      background: var(--bg-secondary);
+    }
+  }
+</style>
+
+<!-- Client-side JavaScript for enhanced interactions -->
+<script>
+  class UIInteractionsManager {
+    observers: Map<string, any>;
+    isInitialized: boolean;
+    scrollTicking: boolean;
+    prefersReducedMotion: boolean;
+
+    constructor() {
+      this.observers = new Map();
+      this.isInitialized = false;
+      this.scrollTicking = false;
+      this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.init();
+    }
+
+    init() {
+      if (this.isInitialized) return;
+      
+      console.log('Initializing UI Interactions Manager');
+      
+      // Wait for DOM to be ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.setupInteractions());
+      } else {
+        this.setupInteractions();
+      }
+      
+      this.isInitialized = true;
+    }
+
+    setupInteractions() {
+      this.initScrollAnimations();
+      this.initSmoothScrolling();
+      this.initScrollSpy();
+      this.initParallaxEffects();
+      this.initCursorTrail();
+      this.initInteractiveElements();
+      this.initPerformanceOptimizations();
+      this.initAccessibilityFeatures();
+    }
+
+    initScrollAnimations() {
+      if (this.prefersReducedMotion) return;
+
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const animationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            // Optimize: stop observing once animated
+            animationObserver.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe elements that should animate on scroll
+      document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        animationObserver.observe(el);
+      });
+
+      this.observers.set('animation', animationObserver);
+    }
+
+    initSmoothScrolling() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = document.querySelector(anchor.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            // Update active navigation state
+            this.updateActiveNavigation(anchor.getAttribute('href'));
+          }
+        });
+      });
+    }
+
+    updateActiveNavigation(href: string) {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === href) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    initScrollSpy() {
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      if (sections.length === 0 || navLinks.length === 0) return;
+
+      const observerOptions = {
+        threshold: [0.1, 0.25, 0.5],
+        rootMargin: '-10% 0px -40% 0px'
+      };
+
+      const spyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const sectionId = entry.target.id;
+            this.updateActiveNavigation(`#${sectionId}`);
+          }
+        });
+      }, observerOptions);
+
+      sections.forEach(section => {
+        spyObserver.observe(section);
+      });
+
+      // Handle scroll to top case
+      window.addEventListener('scroll', () => {
+        if (window.scrollY < 200) {
+          navLinks.forEach(link => link.classList.remove('active'));
+        }
+      });
+
+      this.observers.set('spy', spyObserver);
+    }
+
+    initParallaxEffects() {
+      // Parallax effects removed for floating elements - they should remain static within hero section
+      return;
+    }
+
+    initCursorTrail() {
+      if (this.prefersReducedMotion) return;
+
+      let trails = [];
+      const maxTrails = 5;
+      let lastTime = 0;
+
+      const createTrail = (x: number, y: number) => {
+        const trail = document.createElement('div');
+        trail.className = 'cursor-trail';
+        trail.style.left = `${x - 3}px`;
+        trail.style.top = `${y - 3}px`;
+        
+        document.body.appendChild(trail);
+        trails.push(trail);
+        
+        // Remove excess trails
+        if (trails.length > maxTrails) {
+          const oldTrail = trails.shift();
+          if (oldTrail && oldTrail.parentNode) {
+            oldTrail.parentNode.removeChild(oldTrail);
+          }
+        }
+        
+        // Animate trail
+        setTimeout(() => {
+          trail.style.opacity = '0';
+          trail.style.transform = 'scale(0)';
+        }, 50);
+        
+        setTimeout(() => {
+          if (trail.parentNode) {
+            trail.parentNode.removeChild(trail);
+          }
+        }, 350);
+      };
+
+      document.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastTime > 50) { // Throttle to every 50ms
+          createTrail(e.clientX, e.clientY);
+          lastTime = now;
+        }
+      }, { passive: true });
+    }
+
+    initInteractiveElements() {
+      // Tech tags
+      document.querySelectorAll('.tech-tag').forEach(tag => {
+        tag.addEventListener('mouseenter', () => {
+          tag.style.transform = 'scale(1.1)';
+          tag.style.background = 'var(--accent-secondary)';
+          tag.style.color = 'var(--text-light)';
+        });
+        
+        tag.addEventListener('mouseleave', () => {
+          tag.style.transform = 'scale(1)';
+          tag.style.background = '';
+          tag.style.color = '';
+        });
+      });
+
+      // Skill items
+      document.querySelectorAll('.skill-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+          item.style.transform = 'scale(1.1)';
+          item.style.background = 'var(--accent-primary)';
+          item.style.color = 'var(--text-light)';
+        });
+        
+        item.addEventListener('mouseleave', () => {
+          item.style.transform = 'scale(1)';
+          item.style.background = '';
+          item.style.color = '';
+        });
+      });
+
+      // Contact methods
+      document.querySelectorAll('.contact-method').forEach(method => {
+        method.addEventListener('mouseenter', () => {
+          method.style.transform = 'scale(1.05) rotate(0deg)';
+        });
+        
+        method.addEventListener('mouseleave', () => {
+          const transform = method.style.transform;
+          const currentRotation = transform.match(/rotate\(([^)]+)\)/);
+          const rotation = currentRotation ? currentRotation[1] : '1deg';
+          method.style.transform = `rotate(${rotation})`;
+        });
+      });
+
+      // Process navigation is handled by Process.astro component
+      // this.initProcessSection();
+    }
+
+    // Process section functionality moved to Process.astro component to avoid conflicts
+    // All process-related scrollytelling logic is handled in the Process component itself
+
+    initPerformanceOptimizations() {
+      // Add will-change properties to elements that will be animated
+      document.querySelectorAll('.floating-element, .project-card').forEach(el => {
+        el.classList.add('will-change-transform');
+      });
+
+      // Intersection Observer for performance optimization
+      const performanceObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Add performance optimizations for visible elements
+            entry.target.style.willChange = 'transform';
+          } else {
+            // Remove optimizations for hidden elements
+            entry.target.style.willChange = 'auto';
+          }
+        });
+      });
+
+      document.querySelectorAll('.animate-on-scroll, .floating-element').forEach(el => {
+        performanceObserver.observe(el);
+      });
+
+      this.observers.set('performance', performanceObserver);
+
+      // Handle visibility change for performance
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          // Pause heavy animations when tab is not visible
+          document.querySelectorAll('.floating-element').forEach(element => {
+            element.style.animationPlayState = 'paused';
+          });
+        } else {
+          // Resume animations when tab becomes visible
+          document.querySelectorAll('.floating-element').forEach(element => {
+            element.style.animationPlayState = 'running';
+          });
+        }
+      });
+    }
+
+    initAccessibilityFeatures() {
+      // Enhanced focus management
+      document.addEventListener('focusin', (e) => {
+        const target = e.target;
+        
+        // Add visual feedback for focused elements
+        if (target.classList.contains('floating-element')) {
+          target.style.boxShadow = '0 0 0 3px var(--accent-primary)';
+        }
+      });
+
+      document.addEventListener('focusout', (e) => {
+        const target = e.target;
+        
+        // Remove visual feedback
+        if (target.classList.contains('floating-element')) {
+          target.style.boxShadow = '';
+        }
+      });
+
+      // Prefers reduced motion listener
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      mediaQuery.addEventListener('change', (e) => {
+        this.prefersReducedMotion = e.matches;
+        if (this.prefersReducedMotion) {
+          this.disableAnimations();
+        }
+      });
+    }
+
+    disableAnimations() {
+      // Disable all animations when reduced motion is preferred
+      document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        el.style.animation = 'none';
+        el.style.transition = 'none';
+      });
+    }
+
+    // Cleanup method
+    destroy() {
+      this.observers.forEach((observer: any) => {
+        observer.disconnect();
+      });
+      this.observers.clear();
+      this.isInitialized = false;
+    }
+  }
+
+  // Initialize the UI Interactions Manager
+  const uiInteractionsManager = new UIInteractionsManager();
+
+  // Make it globally available for debugging
+  window.uiInteractionsManager = uiInteractionsManager;
+
+  // Handle page navigation (for SPAs)
+  window.addEventListener('beforeunload', () => {
+    uiInteractionsManager.destroy();
+  });
+</script>

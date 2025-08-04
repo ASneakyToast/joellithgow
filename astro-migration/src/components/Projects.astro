@@ -37,30 +37,40 @@ if (limit && limit > 0) {
   
   <div class="projects-container" role="list" aria-label="Project portfolio">
     {projects.map((project) => (
-      <article class="project-card" role="listitem">
-        <div class="project-number">{project.data.number}</div>
-        <div class="project-type">{project.data.type}</div>
-        <h3 class="project-title">{project.data.title}</h3>
-        <p class="project-description">{project.data.description}</p>
-        <div class="project-technologies">
-          {project.data.technologies.map((tech) => (
-            <span class="tech-tag">{tech}</span>
-          ))}
+      <article class="project-card" role="listitem" data-project-id={project.data.id} data-project-data={JSON.stringify(project.data)}>
+        <div class="project-header">
+          <div class="project-number">{String(project.data.number).padStart(2, '0')}</div>
+          <div class="project-type">{project.data.type}</div>
         </div>
-        <div class="project-impact">{project.data.impact}</div>
-        {project.data.url && (
-          <div class="project-actions">
-            <a 
-              href={project.data.url} 
-              class="project-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`View ${project.data.title} project`}
-            >
-              view project →
-            </a>
+        {project.data.images && project.data.images.length > 0 && (
+          <div class={`project-image-preview ${project.data.images[0].type === 'video' ? 'video-container' : ''}`}>
+            {project.data.images[0].type === 'video' ? (
+              <video class="project-preview-image" autoplay muted loop playsinline>
+                <source src={`/${project.data.images[0].src}`} type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img 
+                src={`/${project.data.images[0].src}`} 
+                alt={project.data.images[0].alt}
+                class="project-preview-image"
+                loading="lazy"
+              />
+            )}
           </div>
         )}
+        <div class="project-content">
+          <h3 class="project-title">{project.data.title}</h3>
+          <p class="project-description">{project.data.description}</p>
+          <div class="project-tech">
+            {project.data.technologies.map((tech) => (
+              <span class="tech-tag">{tech}</span>
+            ))}
+          </div>
+          <div class="project-impact">
+            <div class="impact-metric">{project.data.impact}</div>
+          </div>
+        </div>
       </article>
     ))}
   </div>
@@ -172,6 +182,78 @@ if (limit && limit > 0) {
     flex: 0 0 450px; /* Fixed width for carousel - wider for overflow hint */
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Project Image Components */
+  .project-image-preview {
+    height: 160px;
+    overflow: hidden;
+    border-bottom: 3px solid var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+  }
+
+  .project-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  /* 9:5 aspect ratio for video containers */
+  .project-image-preview.video-container {
+    height: auto;
+    aspect-ratio: 9 / 5;
+    width: 100%;
+    max-height: 280px;
+    position: relative;
+    padding: 0;
+  }
+
+  /* Video-specific styling for 9:5 aspect ratio */
+  video.project-preview-image {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* Fallback for browsers without aspect-ratio support */
+  @supports not (aspect-ratio: 1) {
+    .project-image-preview.video-container {
+      padding-bottom: 55.56% !important; /* 5/9 * 100% */
+      height: 0 !important;
+    }
+  }
+
+  .project-preview-image[controls] {
+    object-fit: contain;
+  }
+
+  .project-card:hover .project-preview-image {
+    transform: scale(1.05);
+  }
+
+  .project-content {
+    padding: 25px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .project-card:nth-child(odd) {
@@ -194,9 +276,6 @@ if (limit && limit > 0) {
     padding: 6px 12px;
     border: 2px solid var(--text-light);
     font-weight: bold;
-    color: var(--text-light);
-    display: inline-block;
-    margin-bottom: 16px;
   }
 
   .project-type {
@@ -204,8 +283,6 @@ if (limit && limit > 0) {
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.8;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
   }
 
   .project-title {
@@ -222,7 +299,7 @@ if (limit && limit > 0) {
     color: var(--text-secondary);
   }
 
-  .project-technologies {
+  .project-tech {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -240,6 +317,12 @@ if (limit && limit > 0) {
     font-weight: bold;
   }
 
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .tech-tag,
+  [data-theme="electric"] .tech-tag {
+    color: var(--bg-dark);
+  }
+
   .project-impact {
     background: var(--accent-secondary);
     color: var(--text-light);
@@ -247,31 +330,15 @@ if (limit && limit > 0) {
     transform: rotate(-1deg);
     border: 2px solid var(--bg-dark);
     margin-top: 15px;
+  }
+
+  .impact-metric {
     font-size: 14px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
   }
 
-  .project-actions {
-    margin-top: 20px;
-  }
-
-  .project-link {
-    color: var(--accent-secondary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .project-link:hover {
-    color: var(--accent-primary);
-    transform: translateX(4px);
-  }
 
   .no-projects {
     text-align: center;
@@ -348,19 +415,58 @@ if (limit && limit > 0) {
 </style>
 
 <script>
+  // Type declarations for global functions
+  declare global {
+    interface Window {
+      caseStudyModal?: {
+        open: (projectData: any) => void;
+      };
+      openCaseStudy?: (projectData: any) => void;
+    }
+  }
+
   // Enhanced project card interactions
   document.addEventListener('DOMContentLoaded', () => {
     const projectCards = document.querySelectorAll('.project-card');
     
-    projectCards.forEach(card => {
+    projectCards.forEach((card, index) => {
+      // Add click handler for entire card
+      card.addEventListener('click', function() {
+        const projectId = (this as HTMLElement).getAttribute('data-project-id');
+        const projectDataJson = (this as HTMLElement).getAttribute('data-project-data');
+        
+        if (projectDataJson) {
+          try {
+            const projectData = JSON.parse(projectDataJson);
+            console.log('Clicked project:', projectId, projectData);
+            
+            // Call the global case study modal function
+            if (window.openCaseStudy) {
+              window.openCaseStudy(projectData);
+            } else if (window.caseStudyModal) {
+              window.caseStudyModal.open(projectData);
+            }
+          } catch (error) {
+            console.error('Error parsing project data:', error);
+          }
+        }
+      });
+      
+      // Add hover effects like the original
+      card.addEventListener('mouseenter', function() {
+        (this as HTMLElement).style.transform = 'scale(1.03) rotate(1deg)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        const isOdd = index % 2 === 0;
+        (this as HTMLElement).style.transform = isOdd ? 'rotate(0.5deg)' : 'rotate(-0.5deg)';
+      });
+
       // Add keyboard navigation for project cards
       card.addEventListener('keydown', (e) => {
         if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
-          const projectLink = card.querySelector('.project-link');
-          if (projectLink) {
-            e.preventDefault();
-            (projectLink as HTMLElement).click();
-          }
+          e.preventDefault();
+          (card as HTMLElement).click();
         }
       });
 

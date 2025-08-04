@@ -48,6 +48,6 @@
     { "number": "70%", "label": "faster deployments" },
     { "number": "90%", "label": "reduced manual steps" }
   ],
-  "featured": false,
+  "featured": true,
   "tags": ["infrastructure", "cloud-migration", "devops"]
 }
