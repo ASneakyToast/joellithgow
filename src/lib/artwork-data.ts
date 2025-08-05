@@ -16,20 +16,26 @@ export interface APIArtwork {
   primary_image?: {
     id: number;
     title: string;
-    file: string;
+    alt: string;
+    credit: string;
+    description: string;
     width: number;
     height: number;
-    alt_text: string;
+    file_size: number;
+    original_url: string;
   };
   images?: Array<{
     id: number;
     image: {
       id: number;
       title: string;
-      file: string;
+      alt: string;
+      credit: string;
+      description: string;
       width: number;
       height: number;
-      alt_text: string;
+      file_size: number;
+      original_url: string;
     };
     caption: string;
     sort_order: number;
@@ -40,10 +46,13 @@ export interface APIArtwork {
     image?: {
       id: number;
       title: string;
-      file: string;
+      alt: string;
+      credit: string;
+      description: string;
       width: number;
       height: number;
-      alt_text: string;
+      file_size: number;
+      original_url: string;
     };
     caption?: string;
     text?: string;
@@ -101,14 +110,20 @@ function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
   const title = apiArtwork.title_plain || stripHTMLTags(apiArtwork.title) || `Untitled Artwork #${apiArtwork.id}`;
   const creationDate = apiArtwork.date ? new Date(apiArtwork.date) : new Date();
   
+  
+  // Debug: Log if no images found
+  if (!apiArtwork.primary_image && (!apiArtwork.images || apiArtwork.images.length === 0)) {
+    console.log(`⚠️ No images found for "${title}"`);
+  }
+  
   // Transform images
   const images = [];
   
   // Add primary image
   if (apiArtwork.primary_image) {
     images.push({
-      src: apiArtwork.primary_image.file,
-      alt: apiArtwork.primary_image.alt_text || `${title} - main view`,
+      src: apiArtwork.primary_image.original_url,
+      alt: apiArtwork.primary_image.alt || `${title} - main view`,
       caption: `Main view of ${title}`,
       type: 'main' as const,
     });
@@ -122,8 +137,8 @@ function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
       }
       
       images.push({
-        src: img.image.file,
-        alt: img.image.alt_text || `${title} - view ${index + 1}`,
+        src: img.image.original_url,
+        alt: img.image.alt || `${title} - view ${index + 1}`,
         caption: img.caption || `Additional view of ${title}`,
         type: 'detail' as const,
       });
@@ -135,8 +150,8 @@ function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
     apiArtwork.artifacts.forEach((artifact) => {
       if (artifact.type === 'image' && artifact.image) {
         images.push({
-          src: artifact.image.file,
-          alt: artifact.image.alt_text || `${title} - process documentation`,
+          src: artifact.image.original_url,
+          alt: artifact.image.alt || `${title} - process documentation`,
           caption: artifact.caption || 'Process documentation',
           type: 'process' as const,
         });
@@ -214,7 +229,7 @@ function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
     category = 'mixed-media';
   }
   
-  return {
+  const artwork = {
     id,
     title,
     description: apiArtwork.description || '',
@@ -237,6 +252,9 @@ function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
     tags: tags.length > 0 ? tags : undefined,
     category,
   };
+  
+  
+  return artwork;
 }
 
 /**

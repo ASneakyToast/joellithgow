@@ -13,6 +13,8 @@ const projectGroups = allArtworks.reduce((groups, artwork) => {
     groups[project] = [];
   }
   groups[project].push(artwork);
+  
+  
   return groups;
 }, {} as Record<string, typeof allArtworks>);
 
