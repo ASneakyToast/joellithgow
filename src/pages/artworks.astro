@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Navigation from '@components/Navigation.astro';
+import ArtworkGallery from '@components/ArtworkGallery.astro';
 import { getAllArtworks } from '@lib/artwork-data';
 
 // Get all artworks (placeholder + API data)
@@ -40,6 +41,9 @@ const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exh
         </p>
       </div>
     </section>
+
+    <!-- Gallery Overview -->
+    <ArtworkGallery artworks={allArtworks} />
 
     <!-- Artworks Grid -->
     <section class="artworks-content">
