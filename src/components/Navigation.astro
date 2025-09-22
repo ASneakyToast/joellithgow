@@ -4,12 +4,20 @@ export interface Props {
   currentPath?: string;
 }
 
+// Detect current page to show appropriate navigation
+const currentPath = Astro.url.pathname;
+const isHomePage = currentPath === '/';
+const isBlogPage = currentPath.startsWith('/blog');
+
 // Navigation items
-const navItems = [
+const navItems = isHomePage ? [
   { href: '#work', label: 'work', description: 'View my recent projects and case studies' },
   { href: '#process', label: 'process', description: 'Learn about my design and development process' },
   { href: '#about', label: 'about', description: 'Read about my background and skills' },
   { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' }
+] : [
+  { href: '/', label: 'home', description: 'Return to the main portfolio page' },
+  { href: '/artworks', label: 'artworks', description: 'View my fine art and creative projects' }
 ];
 ---
 
@@ -118,6 +126,17 @@ const navItems = [
     }
     
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Set active navigation based on current page
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentPath || 
+          (currentPath === '/' && href === '#work') ||
+          (currentPath === '/' && href === '#work')) {
+        link.classList.add('active');
+      }
+    });
     
 
     // Smooth scrolling and active state management
@@ -130,12 +149,13 @@ const navItems = [
       });
     }
 
-    // Smooth scrolling for navigation links
+    // Handle navigation links - smooth scrolling for anchors, regular navigation for pages
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', (e) => {
-        e.preventDefault();
         const href = (link as HTMLAnchorElement).getAttribute('href');
-        if (href) {
+        if (href && href.startsWith('#')) {
+          // Handle anchor links with smooth scrolling
+          e.preventDefault();
           const targetId = href.substring(1);
           const targetElement = document.getElementById(targetId);
           
@@ -149,31 +169,53 @@ const navItems = [
             updateActiveNavigation(href);
           }
         }
+        // For regular page links, let the default behavior handle navigation
       });
     });
 
-    // Scroll spy for main navigation
-    const sections = document.querySelectorAll('section[id]');
+    // Scroll spy for main navigation - find all navigation target elements
+    const navTargets = document.querySelectorAll('#work, #process, #about, #contact');
     const navLinks = document.querySelectorAll('.nav-link');
-    
-    if (sections.length > 0 && navLinks.length > 0) {
+
+
+    if (navTargets.length > 0 && navLinks.length > 0) {
       const observerOptions = {
-        threshold: [0.1, 0.25, 0.5],
-        rootMargin: '-10% 0px -40% 0px'
+        threshold: [0.1, 0.3],
+        rootMargin: '-20% 0px -50% 0px'
       };
-      
+
+      let currentIntersections = new Map();
+
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const sectionId = entry.target.id;
-            updateActiveNavigation(`#${sectionId}`);
+            currentIntersections.set(entry.target.id, entry.intersectionRatio);
+          } else {
+            currentIntersections.delete(entry.target.id);
           }
         });
+
+        // Find the section with the highest intersection ratio
+        if (currentIntersections.size > 0) {
+          let maxRatio = 0;
+          let activeSection = '';
+
+          for (const [sectionId, ratio] of currentIntersections) {
+            if (ratio > maxRatio) {
+              maxRatio = ratio;
+              activeSection = sectionId;
+            }
+          }
+
+          if (activeSection) {
+            updateActiveNavigation(`#${activeSection}`);
+          }
+        }
       }, observerOptions);
       
-      // Observe all sections
-      sections.forEach(section => {
-        observer.observe(section);
+      // Observe all navigation targets
+      navTargets.forEach(target => {
+        observer.observe(target);
       });
       
       // Handle scroll to top case (no active section)
