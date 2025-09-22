@@ -1,0 +1,530 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection('blog', ({ data }) => {
+    return !data.draft;
+  });
+  
+  return blogEntries.map(entry => ({
+    params: { slug: entry.slug }, 
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'blog'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const { title, description, publishDate, author, tags, readingTime, image } = entry.data;
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="article-container">
+    <div class="article-wrapper">
+      {/* Back to blog link */}
+      <nav class="article-nav">
+        <a href="/blog" class="nav-back-btn">
+          ← Back to blog
+        </a>
+      </nav>
+
+      <article class="blog-article">
+        {/* Article header */}
+        <header class="article-header">
+          <div class="article-meta-top">
+            <time 
+              datetime={publishDate.toISOString()}
+              class="article-date"
+            >
+              {publishDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </time>
+          </div>
+          
+          <h1 class="article-title">{title}</h1>
+          
+          <p class="article-description">
+            {description}
+          </p>
+          
+          <div class="article-meta">
+            <div class="author-info">
+              <span>By {author}</span>
+              {readingTime && (
+                <span> • {readingTime} min read</span>
+              )}
+            </div>
+            
+            {tags && tags.length > 0 && (
+              <div class="article-tags">
+                {tags.map((tag) => (
+                  <span class="article-tag">#{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Featured image */}
+        {image && (
+          <div class="article-image">
+            <img 
+              src={image.src} 
+              alt={image.alt}
+              class="featured-image"
+            />
+          </div>
+        )}
+
+        {/* Article content */}
+        <div class="article-content">
+          <Content />
+        </div>
+      </article>
+
+      {/* Footer navigation */}
+      <footer class="article-footer">
+        <nav class="footer-nav">
+          <a href="/blog" class="footer-nav-btn footer-nav-back">
+            ← Back to all posts
+          </a>
+          
+          <a href="/" class="footer-nav-btn footer-nav-home">
+            Home →
+          </a>
+        </nav>
+      </footer>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  /* Blog post styling matching portfolio design */
+  .article-container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .article-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .article-nav {
+    margin-bottom: 2rem;
+  }
+
+  .nav-back-btn {
+    display: inline-block;
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0px var(--accent-primary);
+  }
+
+  .nav-back-btn:hover {
+    transform: rotate(1deg);
+    box-shadow: 6px 6px 0px var(--accent-primary);
+    background: var(--accent-primary);
+  }
+
+  .blog-article {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-primary);
+    padding: 3rem;
+    transform: rotate(0.5deg);
+    box-shadow: 12px 12px 0px var(--accent-secondary);
+    position: relative;
+    margin-bottom: 3rem;
+  }
+
+  .article-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 3px dashed var(--accent-tertiary);
+  }
+
+  .article-meta-top {
+    margin-bottom: 1.5rem;
+  }
+
+  .article-date {
+    display: inline-block;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    border: 2px solid var(--bg-dark);
+    box-shadow: 3px 3px 0px var(--accent-primary);
+  }
+
+  .article-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    margin: 1.5rem 0;
+    text-transform: lowercase;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 2px 2px 0px var(--accent-tertiary);
+    transform: rotate(-1deg);
+    line-height: 1.1;
+  }
+
+  .article-description {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .author-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .article-tag {
+    background: var(--gradient-primary-light);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    border: 2px solid var(--accent-primary);
+    transform: rotate(-1deg);
+    font-weight: bold;
+  }
+
+  .article-image {
+    margin: 3rem 0;
+    text-align: center;
+  }
+
+  .featured-image {
+    max-width: 100%;
+    border: 3px solid var(--accent-secondary);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+  }
+
+  .featured-image:hover {
+    transform: rotate(1deg) scale(1.02);
+  }
+
+  /* Article content styling */
+  .article-content {
+    position: relative;
+    z-index: 2;
+    line-height: 1.8;
+    font-size: 1.1rem;
+  }
+
+  .article-content :global(h1),
+  .article-content :global(h2),
+  .article-content :global(h3),
+  .article-content :global(h4),
+  .article-content :global(h5),
+  .article-content :global(h6) {
+    color: var(--text-primary);
+    font-weight: 800;
+    text-transform: lowercase;
+    margin: 2rem 0 1rem 0;
+    position: relative;
+  }
+
+  .article-content :global(h1) {
+    font-size: 2.5rem;
+    transform: rotate(-1deg);
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .article-content :global(h2) {
+    font-size: 2rem;
+    color: var(--accent-primary);
+    border-bottom: 3px dashed var(--accent-secondary);
+    padding-bottom: 0.5rem;
+  }
+
+  .article-content :global(h3) {
+    font-size: 1.5rem;
+    color: var(--accent-secondary);
+  }
+
+  .article-content :global(h4),
+  .article-content :global(h5),
+  .article-content :global(h6) {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .article-content :global(p) {
+    margin: 1.5rem 0;
+    color: var(--text-primary);
+  }
+
+  .article-content :global(a) {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-decoration-thickness: 2px;
+    transition: all 0.3s ease;
+  }
+
+  .article-content :global(a:hover) {
+    color: var(--accent-secondary);
+    text-decoration-color: var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .article-content :global(strong) {
+    color: var(--accent-primary);
+    font-weight: 800;
+  }
+
+  .article-content :global(em) {
+    color: var(--accent-secondary);
+    font-style: italic;
+  }
+
+  .article-content :global(ul),
+  .article-content :global(ol) {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+  }
+
+  .article-content :global(li) {
+    margin: 0.75rem 0;
+    color: var(--text-primary);
+  }
+
+  .article-content :global(ul li::marker) {
+    color: var(--accent-primary);
+  }
+
+  .article-content :global(ol li::marker) {
+    color: var(--accent-secondary);
+    font-weight: bold;
+  }
+
+  .article-content :global(blockquote) {
+    background: var(--gradient-primary-light);
+    border-left: 5px solid var(--accent-primary);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    transform: rotate(-0.5deg);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+    font-style: italic;
+    color: var(--text-primary);
+  }
+
+  .article-content :global(code) {
+    background: var(--gradient-secondary-light);
+    color: var(--bg-dark);
+    padding: 0.25rem 0.5rem;
+    border: 2px solid var(--accent-secondary);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
+
+  .article-content :global(pre) {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+    overflow-x: auto;
+    transform: rotate(0.5deg);
+  }
+
+  .article-content :global(pre code) {
+    background: none;
+    border: none;
+    color: inherit;
+    transform: none;
+    display: block;
+  }
+
+  .article-content :global(hr) {
+    border: none;
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent-primary) 0px,
+      var(--accent-primary) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+    margin: 3rem 0;
+    transform: rotate(-1deg);
+  }
+
+  .article-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-primary);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+    transform: rotate(-0.5deg);
+  }
+
+  .article-content :global(th),
+  .article-content :global(td) {
+    padding: 1rem;
+    text-align: left;
+    border: 2px dashed var(--accent-tertiary);
+  }
+
+  .article-content :global(th) {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    font-weight: bold;
+    text-transform: lowercase;
+  }
+
+  .article-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+
+  .footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .footer-nav-btn {
+    display: inline-block;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: 3px solid var(--bg-dark);
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0px var(--accent-primary);
+  }
+
+  .footer-nav-back {
+    transform: rotate(-1deg);
+  }
+
+  .footer-nav-home {
+    transform: rotate(1deg);
+  }
+
+  .footer-nav-btn:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-primary);
+    background: var(--accent-secondary);
+    color: var(--text-light);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .article-container {
+      padding: 1rem;
+    }
+
+    .blog-article {
+      padding: 2rem;
+      transform: rotate(0deg);
+    }
+
+    .article-title {
+      font-size: 2rem;
+      transform: rotate(0deg);
+    }
+
+    .article-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .article-content {
+      font-size: 1rem;
+    }
+
+    .article-content :global(h1) {
+      font-size: 2rem;
+      transform: rotate(0deg);
+    }
+
+    .article-content :global(h2) {
+      font-size: 1.5rem;
+    }
+
+    .footer-nav {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .footer-nav-btn {
+      text-align: center;
+      transform: rotate(0deg) !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .article-container {
+      padding: 0.5rem;
+    }
+
+    .blog-article {
+      padding: 1.5rem;
+    }
+
+    .article-title {
+      font-size: 1.75rem;
+    }
+
+    .article-content {
+      font-size: 0.95rem;
+    }
+  }
+</style>

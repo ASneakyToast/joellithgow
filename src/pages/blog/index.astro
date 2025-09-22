@@ -1,0 +1,350 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const allPosts = await getCollection('blog', ({ data }) => {
+  return !data.draft;
+});
+
+// Sort posts by publish date (newest first)
+const sortedPosts = allPosts.sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+
+const pageTitle = "Blog";
+const pageDescription = "Reflections on web development, AI tools, creative projects, and lessons learned along the way.";
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="blog-container">
+    <div class="blog-wrapper">
+      <header class="blog-header">
+        <div class="badge">reflections & insights</div>
+        <h1 class="blog-title">Blog</h1>
+        <p class="blog-description">{pageDescription}</p>
+      </header>
+
+      {sortedPosts.length > 0 ? (
+        <div class="blog-posts">
+          {sortedPosts.map((post) => (
+            <article class="blog-post-card">
+              <div class="post-content">
+                <time 
+                  datetime={post.data.publishDate.toISOString()}
+                  class="post-date"
+                >
+                  {post.data.publishDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
+                
+                <h2 class="post-title">
+                  <a 
+                    href={`/blog/${post.slug}`}
+                    class="post-title-link"
+                  >
+                    {post.data.title}
+                  </a>
+                </h2>
+                
+                <p class="post-excerpt">
+                  {post.data.description}
+                </p>
+                
+                {post.data.tags && post.data.tags.length > 0 && (
+                  <div class="post-tags">
+                    {post.data.tags.map((tag) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+                
+                <div class="post-meta">
+                  <span class="post-author">
+                    By {post.data.author}
+                    {post.data.readingTime && (
+                      <span> • {post.data.readingTime} min read</span>
+                    )}
+                  </span>
+                  
+                  <a 
+                    href={`/blog/${post.slug}`}
+                    class="read-more-btn"
+                  >
+                    Read more →
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <div class="empty-message">
+            <div class="badge">coming soon</div>
+            <p>No blog posts published yet. Check back soon!</p>
+          </div>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  /* Blog page styling matching portfolio design */
+  .blog-container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .blog-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .blog-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding: 3rem 0;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: lowercase;
+    transform: rotate(-2deg);
+    margin-bottom: 1rem;
+    border: 3px solid var(--bg-dark);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+  }
+
+  .blog-title {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    margin: 1rem 0;
+    text-transform: lowercase;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 2px 2px 0px var(--accent-tertiary);
+    transform: rotate(-1deg);
+  }
+
+  .blog-description {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .blog-posts {
+    display: grid;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .blog-post-card {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-primary);
+    padding: 2rem;
+    transform: rotate(0.5deg);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .blog-post-card:nth-child(even) {
+    transform: rotate(-0.5deg);
+  }
+
+  .blog-post-card:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: 12px 12px 0px var(--accent-secondary);
+  }
+
+  .post-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .post-date {
+    display: inline-block;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-1deg);
+    margin-bottom: 1rem;
+    border: 2px solid var(--bg-dark);
+  }
+
+  .post-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-transform: lowercase;
+  }
+
+  .post-title-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .post-title-link:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .post-excerpt {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tag {
+    background: var(--gradient-primary-light);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    border: 2px solid var(--accent-primary);
+    transform: rotate(-1deg);
+    font-weight: bold;
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px dashed var(--accent-secondary);
+  }
+
+  .post-author {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .read-more-btn {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px var(--accent-secondary);
+  }
+
+  .read-more-btn:hover {
+    transform: rotate(1deg);
+    box-shadow: 5px 5px 0px var(--accent-secondary);
+    background: var(--accent-secondary);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    margin-top: 3rem;
+  }
+
+  .empty-message {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-tertiary);
+    padding: 3rem;
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  .empty-message p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .blog-container {
+      padding: 1rem;
+    }
+
+    .blog-header {
+      margin-bottom: 2rem;
+      padding: 1.5rem 0;
+    }
+
+    .blog-title {
+      font-size: 2.5rem;
+    }
+
+    .blog-description {
+      font-size: 1rem;
+    }
+
+    .blog-post-card {
+      padding: 1.5rem;
+      transform: rotate(0deg);
+    }
+
+    .blog-post-card:nth-child(even) {
+      transform: rotate(0deg);
+    }
+
+    .post-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .read-more-btn {
+      align-self: flex-end;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .blog-container {
+      padding: 0.5rem;
+    }
+
+    .blog-post-card {
+      padding: 1rem;
+    }
+
+    .post-title {
+      font-size: 1.5rem;
+    }
+
+    .post-excerpt {
+      font-size: 1rem;
+    }
+  }
+</style>
