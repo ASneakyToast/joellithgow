@@ -1,0 +1,752 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Get all blog posts that have links
+const allPosts = await getCollection('blog', ({ data }) => {
+  return !data.draft && data.links && data.links.length > 0;
+});
+
+// Aggregate all links from all posts
+const allLinks = allPosts.flatMap(post =>
+  post.data.links.map(link => ({
+    ...link,
+    sourcePost: {
+      title: post.data.title,
+      slug: post.slug,
+      publishDate: post.data.publishDate,
+      author: post.data.author
+    }
+  }))
+);
+
+// Sort links by date added (newest first)
+const sortedLinks = allLinks.sort(
+  (a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf()
+);
+
+// Get unique categories for filtering
+const categories = [...new Set(allLinks.map(link => link.category).filter(Boolean))];
+
+// Get some stats
+const totalLinks = allLinks.length;
+const totalPosts = allPosts.length;
+const uniqueDomains = [...new Set(allLinks.map(link => {
+  try {
+    return new URL(link.url).hostname;
+  } catch {
+    return 'unknown';
+  }
+}))].length;
+
+const pageTitle = "Link Collection";
+const pageDescription = `Browse all ${totalLinks} links from ${totalPosts} blog posts. Discover curated resources, tools, and interesting finds from around the web.`;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="links-container">
+    <div class="links-wrapper">
+      <header class="links-header">
+        <div class="badge">curated collection</div>
+        <h1 class="links-title">Links</h1>
+        <p class="links-description">{pageDescription}</p>
+
+        <!-- Stats -->
+        <div class="links-stats">
+          <div class="stat-card">
+            <span class="stat-number">{totalLinks}</span>
+            <span class="stat-label">total links</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">{totalPosts}</span>
+            <span class="stat-label">source posts</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">{uniqueDomains}</span>
+            <span class="stat-label">unique domains</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Filters and Search -->
+      <div class="links-controls">
+        <div class="search-container">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search links by title, description, or tags..."
+            class="search-input"
+          />
+        </div>
+
+        <div class="filter-container">
+          <select id="category-filter" class="category-filter">
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option value={category}>{category}</option>
+            ))}
+          </select>
+
+          <button id="export-btn" class="export-btn">
+            Export Links
+          </button>
+        </div>
+      </div>
+
+      <!-- Links Grid -->
+      {sortedLinks.length > 0 ? (
+        <div class="links-grid" id="links-grid">
+          {sortedLinks.map((link, index) => (
+            <article class="link-item" data-category={link.category || ''} data-tags={link.tags?.join(' ') || ''}>
+              <div class="link-header">
+                <div class="link-meta">
+                  {link.category && (
+                    <span class="link-category">{link.category}</span>
+                  )}
+                  <time class="link-date" datetime={link.dateAdded.toISOString()}>
+                    {link.dateAdded.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </time>
+                </div>
+
+                <div class="source-info">
+                  <span class="source-label">from</span>
+                  <a href={`/blog/${link.sourcePost.slug}`} class="source-link">
+                    {link.sourcePost.title}
+                  </a>
+                </div>
+              </div>
+
+              <h3 class="link-title">
+                <a href={link.url} target="_blank" rel="noopener noreferrer" class="link-url">
+                  {link.title}
+                </a>
+              </h3>
+
+              <p class="link-description">
+                {link.description}
+              </p>
+
+              {link.tags && link.tags.length > 0 && (
+                <div class="link-tags">
+                  {link.tags.map((tag) => (
+                    <span class="link-tag">#{tag}</span>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <div class="empty-message">
+            <div class="badge">coming soon</div>
+            <p>No links found. Check back as we add more curated content!</p>
+            <a href="/blog" class="back-to-blog-btn">Browse blog posts →</a>
+          </div>
+        </div>
+      )}
+
+      <!-- Back to blog navigation -->
+      <footer class="links-footer">
+        <nav class="footer-nav">
+          <a href="/blog" class="footer-nav-btn">
+            ← Back to blog
+          </a>
+          <a href="/" class="footer-nav-btn">
+            Home →
+          </a>
+        </nav>
+      </footer>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+// Search and filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search-input');
+  const categoryFilter = document.getElementById('category-filter');
+  const linksGrid = document.getElementById('links-grid');
+  const linkItems = linksGrid?.querySelectorAll('.link-item');
+  const exportBtn = document.getElementById('export-btn');
+
+  function filterLinks() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+
+    linkItems?.forEach(item => {
+      const title = item.querySelector('.link-title')?.textContent?.toLowerCase() || '';
+      const description = item.querySelector('.link-description')?.textContent?.toLowerCase() || '';
+      const tags = item.dataset.tags?.toLowerCase() || '';
+      const category = item.dataset.category || '';
+
+      const matchesSearch = !searchTerm ||
+        title.includes(searchTerm) ||
+        description.includes(searchTerm) ||
+        tags.includes(searchTerm);
+
+      const matchesCategory = !selectedCategory || category === selectedCategory;
+
+      if (matchesSearch && matchesCategory) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  searchInput?.addEventListener('input', filterLinks);
+  categoryFilter?.addEventListener('change', filterLinks);
+
+  // Export functionality
+  exportBtn?.addEventListener('click', function() {
+    const visibleLinks = Array.from(linkItems || [])
+      .filter(item => item.style.display !== 'none')
+      .map(item => {
+        const titleElement = item.querySelector('.link-url');
+        const descElement = item.querySelector('.link-description');
+        const categoryElement = item.querySelector('.link-category');
+        const sourceElement = item.querySelector('.source-link');
+        const tagsElements = item.querySelectorAll('.link-tag');
+
+        return {
+          title: titleElement?.textContent || '',
+          url: titleElement?.href || '',
+          description: descElement?.textContent || '',
+          category: categoryElement?.textContent || '',
+          sourcePost: sourceElement?.textContent || '',
+          tags: Array.from(tagsElements).map(tag => tag.textContent?.replace('#', '') || '')
+        };
+      });
+
+    const dataStr = JSON.stringify(visibleLinks, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = `links-export-${new Date().toISOString().split('T')[0]}.json`;
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  });
+});
+</script>
+
+<style>
+  /* Links page styling matching portfolio design */
+  .links-container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .links-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .links-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding: 3rem 0;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: lowercase;
+    transform: rotate(-2deg);
+    margin-bottom: 1rem;
+    border: 3px solid var(--bg-dark);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+  }
+
+  .links-title {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    margin: 1rem 0;
+    text-transform: lowercase;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 2px 2px 0px var(--accent-tertiary);
+    transform: rotate(-1deg);
+  }
+
+  .links-description {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
+  }
+
+  .links-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-secondary);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    transform: rotate(1deg);
+    box-shadow: 4px 4px 0px var(--accent-primary);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:nth-child(even) {
+    transform: rotate(-1deg);
+  }
+
+  .stat-card:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-primary);
+  }
+
+  .stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent-primary);
+    text-transform: lowercase;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-top: 0.25rem;
+  }
+
+  .links-controls {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-tertiary);
+    padding: 2rem;
+    margin-bottom: 3rem;
+    transform: rotate(-0.5deg);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-container {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1rem;
+    border: 3px solid var(--accent-primary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: bold;
+    transform: rotate(0.5deg);
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    transform: rotate(0deg);
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .filter-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .category-filter {
+    padding: 0.75rem 1rem;
+    border: 3px solid var(--accent-secondary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: bold;
+    transform: rotate(-0.5deg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .category-filter:focus {
+    outline: none;
+    transform: rotate(0deg);
+    box-shadow: 3px 3px 0px var(--accent-primary);
+  }
+
+  .export-btn {
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.75rem 1.5rem;
+    border: 3px solid var(--bg-dark);
+    font-weight: bold;
+    cursor: pointer;
+    transform: rotate(1deg);
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px var(--accent-primary);
+  }
+
+  .export-btn:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 5px 5px 0px var(--accent-primary);
+    background: var(--accent-primary);
+    color: var(--text-light);
+  }
+
+  .links-grid {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .link-item {
+    background: var(--gradient-primary-light);
+    border: 3px solid var(--accent-secondary);
+    padding: 2rem;
+    transform: rotate(0.5deg);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .link-item:nth-child(even) {
+    transform: rotate(-0.5deg);
+    background: var(--gradient-secondary-light);
+    border-color: var(--accent-tertiary);
+  }
+
+  .link-item:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: 12px 12px 0px var(--accent-primary);
+  }
+
+  .link-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .link-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .link-category {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    border: 2px solid var(--bg-dark);
+  }
+
+  .link-date {
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(2deg);
+    border: 2px solid var(--bg-dark);
+  }
+
+  .source-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .source-label {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .source-link {
+    color: var(--accent-secondary);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .source-link:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .link-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: lowercase;
+  }
+
+  .link-url {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .link-url:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .link-url::after {
+    content: "↗";
+    font-size: 0.8em;
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+  }
+
+  .link-url:hover::after {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+
+  .link-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  .link-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .link-tag {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    border: 2px solid var(--accent-secondary);
+    transform: rotate(-1deg);
+    font-weight: bold;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    margin: 4rem 0;
+  }
+
+  .empty-message {
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-tertiary);
+    padding: 3rem;
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  .empty-message p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin: 1rem 0 2rem 0;
+  }
+
+  .back-to-blog-btn {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: 3px solid var(--bg-dark);
+    transform: rotate(1deg);
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0px var(--accent-secondary);
+    display: inline-block;
+  }
+
+  .back-to-blog-btn:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+    background: var(--accent-secondary);
+  }
+
+  .links-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 3px dashed var(--accent-secondary);
+  }
+
+  .footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .footer-nav-btn {
+    display: inline-block;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: 3px solid var(--bg-dark);
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0px var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .footer-nav-btn:nth-child(2) {
+    transform: rotate(1deg);
+  }
+
+  .footer-nav-btn:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 6px 6px 0px var(--accent-primary);
+    background: var(--accent-secondary);
+    color: var(--text-light);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .links-container {
+      padding: 1rem;
+    }
+
+    .links-header {
+      margin-bottom: 2rem;
+      padding: 1.5rem 0;
+    }
+
+    .links-stats {
+      gap: 1rem;
+    }
+
+    .stat-card {
+      transform: rotate(0deg);
+      padding: 0.75rem 1rem;
+    }
+
+    .stat-card:nth-child(even) {
+      transform: rotate(0deg);
+    }
+
+    .links-controls {
+      padding: 1.5rem;
+      transform: rotate(0deg);
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-container {
+      min-width: unset;
+    }
+
+    .search-input {
+      transform: rotate(0deg);
+    }
+
+    .filter-container {
+      justify-content: space-between;
+    }
+
+    .category-filter,
+    .export-btn {
+      transform: rotate(0deg);
+    }
+
+    .link-item {
+      padding: 1.5rem;
+      transform: rotate(0deg);
+    }
+
+    .link-item:nth-child(even) {
+      transform: rotate(0deg);
+    }
+
+    .link-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .footer-nav {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .footer-nav-btn {
+      text-align: center;
+      transform: rotate(0deg) !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .links-container {
+      padding: 0.5rem;
+    }
+
+    .links-controls {
+      padding: 1rem;
+    }
+
+    .filter-container {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .category-filter,
+    .export-btn {
+      width: 100%;
+    }
+
+    .link-item {
+      padding: 1rem;
+    }
+
+    .link-title {
+      font-size: 1.25rem;
+    }
+
+    .source-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+</style>
