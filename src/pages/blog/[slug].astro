@@ -20,7 +20,7 @@ interface Props {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 
-const { title, description, publishDate, author, tags, readingTime, image } = entry.data;
+const { title, description, publishDate, author, tags, readingTime, image, links, category } = entry.data;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -88,6 +88,48 @@ const { title, description, publishDate, author, tags, readingTime, image } = en
         <div class="article-content">
           <Content />
         </div>
+
+        {/* Link collection display */}
+        {links && links.length > 0 && (
+          <section class="links-section">
+            <h2 class="links-title">Links from this collection</h2>
+            <div class="links-grid">
+              {links.map((link) => (
+                <article class="link-card">
+                  <div class="link-header">
+                    {link.category && (
+                      <span class="link-category">{link.category}</span>
+                    )}
+                    <time class="link-date">
+                      {link.dateAdded.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </time>
+                  </div>
+
+                  <h3 class="link-title">
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" class="link-url">
+                      {link.title}
+                    </a>
+                  </h3>
+
+                  <p class="link-description">
+                    {link.description}
+                  </p>
+
+                  {link.tags && link.tags.length > 0 && (
+                    <div class="link-tags">
+                      {link.tags.map((tag) => (
+                        <span class="link-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </article>
 
       {/* Footer navigation */}
@@ -425,6 +467,134 @@ const { title, description, publishDate, author, tags, readingTime, image } = en
     text-transform: lowercase;
   }
 
+  /* Link collection styles */
+  .links-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 3px dashed var(--accent-secondary);
+  }
+
+  .links-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    text-transform: lowercase;
+    margin-bottom: 2rem;
+    transform: rotate(-1deg);
+    text-align: center;
+  }
+
+  .links-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .link-card {
+    background: var(--gradient-primary-light);
+    border: 3px solid var(--accent-secondary);
+    padding: 1.5rem;
+    transform: rotate(0.5deg);
+    box-shadow: 6px 6px 0px var(--accent-primary);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .link-card:nth-child(even) {
+    transform: rotate(-0.5deg);
+    background: var(--gradient-secondary-light);
+    border-color: var(--accent-tertiary);
+  }
+
+  .link-card:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: 8px 8px 0px var(--accent-primary);
+  }
+
+  .link-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .link-category {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    border: 2px solid var(--bg-dark);
+  }
+
+  .link-date {
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(2deg);
+    border: 2px solid var(--bg-dark);
+  }
+
+  .link-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-transform: lowercase;
+  }
+
+  .link-url {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .link-url:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+  }
+
+  .link-url::after {
+    content: "↗";
+    font-size: 0.8em;
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+  }
+
+  .link-url:hover::after {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+
+  .link-description {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .link-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .link-tag {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    border: 2px solid var(--accent-secondary);
+    transform: rotate(-1deg);
+    font-weight: bold;
+  }
+
   .article-footer {
     margin-top: 3rem;
     padding-top: 2rem;
@@ -525,6 +695,25 @@ const { title, description, publishDate, author, tags, readingTime, image } = en
 
     .article-content {
       font-size: 0.95rem;
+    }
+
+    .links-title {
+      font-size: 1.5rem;
+      transform: rotate(0deg);
+    }
+
+    .link-card {
+      transform: rotate(0deg);
+    }
+
+    .link-card:nth-child(even) {
+      transform: rotate(0deg);
+    }
+
+    .link-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
   }
 </style>

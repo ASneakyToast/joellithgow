@@ -54,6 +54,16 @@ const projectSchema = z.object({
   tags: z.array(z.string()).optional()
 });
 
+// Define schema for individual links within link collections
+const linkSchema = z.object({
+  url: z.string().url(),
+  title: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()).optional(),
+  dateAdded: z.date(),
+  category: z.string().optional()
+});
+
 // Define blog schema for future use
 const blogSchema = z.object({
   title: z.string(),
@@ -68,7 +78,9 @@ const blogSchema = z.object({
   draft: z.boolean().default(false),
   featured: z.boolean().default(false),
   category: z.string().optional(),
-  readingTime: z.number().optional()
+  readingTime: z.number().optional(),
+  // Link collection support
+  links: z.array(linkSchema).optional()
 });
 
 // Define artwork schema for fine art portfolio
@@ -127,3 +139,4 @@ export const collections = {
 export type Project = z.infer<typeof projectSchema>;
 export type BlogPost = z.infer<typeof blogSchema>;
 export type Artwork = z.infer<typeof artworkSchema>;
+export type Link = z.infer<typeof linkSchema>;

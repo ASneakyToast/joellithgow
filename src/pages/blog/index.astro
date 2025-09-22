@@ -41,12 +41,17 @@ const pageDescription = "Reflections on web development, AI tools, creative proj
                 </time>
                 
                 <h2 class="post-title">
-                  <a 
+                  <a
                     href={`/blog/${post.slug}`}
                     class="post-title-link"
                   >
                     {post.data.title}
                   </a>
+                  {post.data.category === 'link-collection' && (
+                    <span class="link-collection-badge">
+                      {post.data.links?.length || 0} links
+                    </span>
+                  )}
                 </h2>
                 
                 <p class="post-excerpt">
@@ -269,6 +274,20 @@ const pageDescription = "Reflections on web development, AI tools, creative proj
     transform: rotate(1deg);
     box-shadow: 5px 5px 0px var(--accent-secondary);
     background: var(--accent-secondary);
+  }
+
+  .link-collection-badge {
+    display: inline-block;
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(2deg);
+    margin-left: 0.75rem;
+    border: 2px solid var(--bg-dark);
+    box-shadow: 2px 2px 0px var(--accent-primary);
   }
 
   .empty-state {
