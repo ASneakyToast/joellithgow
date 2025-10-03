@@ -207,15 +207,15 @@ const decorativeElements = [
     line-height: 1;
     margin: 2.5vh 0;
     color: var(--text-primary);
-    text-shadow: 4px 4px 0px var(--accent-secondary);
-    transform: skew(-1deg);
+    text-shadow: var(--text-shadow) var(--accent-secondary);
+    transform: var(--rotation-lg);
   }
 
   .subtitle {
     font-size: 1.75rem;
     color: var(--text-secondary);
     margin-bottom: 7vh;
-    transform: rotate(1deg);
+    transform: var(--rotation-sm);
     display: inline-block;
   }
 
@@ -235,26 +235,28 @@ const decorativeElements = [
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
-    border: 3px solid var(--bg-dark);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
     transition: all 0.3s ease;
     display: inline-block;
-    transform: rotate(2deg);
-    box-shadow: 4px 4px 0px var(--accent-secondary);
+    transform: var(--rotation-md);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
   }
 
   .cta-button:hover {
-    transform: rotate(2deg) scale(1.05);
-    box-shadow: 6px 6px 0px var(--accent-secondary);
+    transform: var(--rotation-md) scale(1.05);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
 
   .theme-control {
     background: white;
     color: var(--accent-primary);
     padding: 15px 30px;
-    border: 3px solid var(--accent-primary);
-    box-shadow: 4px 4px 0px var(--accent-secondary);
+    border: var(--border-width) solid var(--accent-primary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
     font-family: inherit;
-    transform: rotate(2deg);
+    transform: var(--rotation-md);
     transition: all 0.3s ease;
     cursor: pointer;
   }
@@ -262,8 +264,8 @@ const decorativeElements = [
   .theme-control:hover {
     background: var(--accent-primary);
     color: white;
-    transform: rotate(2deg) scale(1.05);
-    box-shadow: 6px 6px 0px var(--accent-secondary);
+    transform: var(--rotation-md) scale(1.05);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
 
   .theme-control-text {
@@ -303,7 +305,7 @@ const decorativeElements = [
     right: 20%;
     width: 200px;
     height: 200px;
-    border: 4px dashed var(--accent-primary);
+    border: calc(var(--border-width) + 1px) dashed var(--accent-primary);
     border-radius: 50%;
     transform: rotate(12deg);
     opacity: 0.6;
@@ -318,7 +320,7 @@ const decorativeElements = [
     background: linear-gradient(135deg, var(--accent-secondary) 50%, transparent 50%);
     opacity: 0.4;
     transform: rotate(-15deg);
-    border: 3px solid var(--accent-secondary);
+    border: var(--border-width) solid var(--accent-secondary);
   }
 
   /* Line element - diagonal line */
@@ -352,63 +354,6 @@ const decorativeElements = [
     height: 4px;
     background: var(--accent-tertiary);
     opacity: 0.4;
-  }
-
-  /* Minimal Theme Overrides - Clean, Swiss-style design */
-  [data-theme="minimal"] .main-title {
-    text-shadow: none;
-    transform: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  }
-
-  [data-theme="minimal"] .subtitle {
-    transform: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  }
-
-  [data-theme="minimal"] .cta-button {
-    transform: none;
-    box-shadow: none;
-    border-width: 1px;
-    padding: 12px 24px;
-    letter-spacing: 0;
-    text-transform: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  }
-
-  [data-theme="minimal"] .cta-button:hover {
-    transform: scale(1.02);
-    box-shadow: none;
-  }
-
-  [data-theme="minimal"] .theme-control {
-    transform: none;
-    box-shadow: none;
-    border-width: 1px;
-    padding: 12px 24px;
-  }
-
-  [data-theme="minimal"] .theme-control:hover {
-    transform: scale(1.02);
-    box-shadow: none;
-  }
-
-  [data-theme="minimal"] .theme-control-text {
-    letter-spacing: 0;
-    text-transform: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  }
-
-  [data-theme="minimal"] .decorative-elements {
-    opacity: 0.3;
-  }
-
-  [data-theme="minimal"] .hero::before {
-    opacity: 0.3;
-  }
-
-  [data-theme="minimal"] .hero::after {
-    opacity: 0.2;
   }
 
   /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
