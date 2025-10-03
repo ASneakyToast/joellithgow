@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '@components/common/BaseLayout.astro';
 
 // Get all blog posts that have links
 const allPosts = await getCollection('blog', ({ data }) => {

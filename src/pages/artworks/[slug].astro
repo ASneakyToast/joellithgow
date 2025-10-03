@@ -1,7 +1,7 @@
 ---
-import BaseLayout from '@layouts/BaseLayout.astro';
-import Navigation from '@components/Navigation.astro';
-import { getAllArtworks, getArtworkById } from '@lib/artwork-data';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Navigation from '@components/common/Navigation.astro';
+import { getAllArtworks, getArtworkById } from '@features/artworks';
 import type { Artwork } from '@content/config';
 
 export async function getStaticPaths() {

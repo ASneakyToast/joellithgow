@@ -1,8 +1,8 @@
 ---
-import BaseLayout from '@layouts/BaseLayout.astro';
-import Navigation from '@components/Navigation.astro';
-import ArtworkGallery from '@components/ArtworkGallery.astro';
-import { getAllArtworks } from '@lib/artwork-data';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Navigation from '@components/common/Navigation.astro';
+import ArtworkGallery from '@components/sections/ArtworkGallery.astro';
+import { getAllArtworks } from '@features/artworks';
 
 // Get all artworks (placeholder + API data)
 const allArtworks = await getAllArtworks();

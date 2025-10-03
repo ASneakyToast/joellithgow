@@ -28,7 +28,8 @@ export default defineConfig({
         '@layouts': fileURLToPath(new URL('./src/layouts', import.meta.url)),
         '@content': fileURLToPath(new URL('./src/content', import.meta.url)),
         '@styles': fileURLToPath(new URL('./src/styles', import.meta.url)),
-        '@utils': fileURLToPath(new URL('./src/utils', import.meta.url))
+        '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
+        '@features': fileURLToPath(new URL('./src/features', import.meta.url))
       }
     },
     build: {
@@ -38,8 +39,10 @@ export default defineConfig({
           // Optimize chunk splitting for better caching
           manualChunks: {
             'vendor': ['astro'],
-            'interactive': ['@components/InteractiveElements.astro'],
-            'snake': ['src/pages/snake.astro']
+            'interactive': ['src/components/interactive/InteractiveElements.astro'],
+            'snake': ['src/pages/snake.astro'],
+            'themes': ['src/features/themes/index.ts'],
+            'artworks': ['src/features/artworks/index.ts']
           },
           // Optimize asset naming for better caching
           chunkFileNames: 'assets/js/[name]-[hash].js',

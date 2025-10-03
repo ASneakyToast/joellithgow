@@ -1,0 +1,523 @@
+---
+// Process section component with tabbed navigation - exact original design
+export interface Props {
+  sectionTitle?: string;
+  sectionSubtitle?: string;
+}
+
+const {
+  sectionTitle = 'how i work',
+  sectionSubtitle = 'I leverage advanced technologies and streamlined methodologies to accelerate the design process while maintaining quality and stakeholder alignment. By utilizing modern tools and efficient workflows, I eliminate translation gaps and enable instant collaborative feedback.'
+} = Astro.props;
+
+// Process steps configuration - matching original content exactly
+const processSteps = [
+  {
+    id: '1',
+    title: 'rapid prototyping',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>`,
+    subtitle: 'Direct-to-prototype with real content, utilizing advanced tools and efficient workflows to create high-fidelity designs that eliminate translation issues between wireframes and final products.',
+    example: {
+      title: 'Real Example: Proactive Feature Development',
+      content: 'Instead of waiting for requirements → presented working prototype at design meeting → gathered feedback and iterated in between other priority tasks → returned next week with updated version. Result: typical feature development timeline compressed from months to weeks.'
+    }
+  },
+  {
+    id: '2',
+    title: 'live collaboration',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>`,
+    subtitle: 'Real-time stakeholder sessions with instant implementation and feedback loops, transforming traditional review meetings into collaborative creation sessions that align teams immediately.',
+    example: {
+      title: 'Real Example: Marketing Campaign',
+      content: 'Marketing team meeting → live Figma session → 10 ad variations in 1 hour vs. usual 3-day cycle. By implementing feedback in real-time, stakeholders could see their ideas come to life instantly, leading to better decisions and faster alignment.'
+    }
+  },
+  {
+    id: '3',
+    title: 'continuous learning',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>`,
+    subtitle: 'Embracing unfamiliar technologies and pushing beyond comfort zones to deliver innovative solutions, turning knowledge gaps into growth opportunities through systematic learning and experimentation.',
+    example: {
+      title: 'Real Example: Learning Cloud Technologies',
+      content: 'Zero cloud experience → successful Kubernetes to Cloud Run migration in 3 weeks. By approaching unfamiliar technologies systematically and leveraging documentation, completed infrastructure modernization with zero downtime and 70% faster deployments.'
+    }
+  },
+  {
+    id: '4',
+    title: 'ai research',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>`,
+    subtitle: 'Leverage AI tools for competitive analysis, user insights, and strategic documentation to accelerate research phases and uncover deeper insights faster than traditional methods.',
+    example: {
+      title: 'Real Example: End-to-End Feature Development',
+      content: 'Complete feature cycle: AI competitive research → strategic planning → design prototyping → code generation → automated testing in 24 hours. Traditional multi-week process compressed into a single day while maintaining quality through AI-augmented planning, design, development, and QA phases.'
+    }
+  }
+];
+---
+
+<section class="process" aria-labelledby="process">
+  <div class="process-content">
+    <header class="process-header">
+      <h2 id="process" class="process-title">{sectionTitle}</h2>
+      <p class="process-description">
+        {sectionSubtitle}
+      </p>
+    </header>
+    
+    <div class="process-layout">
+      <nav class="process-nav" role="navigation" aria-label="Process steps navigation">
+        {processSteps.map((step, index) => (
+          <div 
+            class={`process-nav-item ${index === 0 ? 'active' : ''}`} 
+            data-step={step.id} 
+            tabindex="0" 
+            role="button" 
+            aria-pressed={index === 0 ? 'true' : 'false'}
+          >
+            <div class="nav-step-icon" aria-hidden="true" set:html={step.icon}>
+            </div>
+            <div class="nav-step-title">{step.title}</div>
+          </div>
+        ))}
+      </nav>
+      
+      <div class="process-content-area">
+        {processSteps.map((step, index) => (
+          <article 
+            class={`process-step-content ${index === 0 ? 'active' : ''}`} 
+            id={`step-${step.id}`} 
+            aria-labelledby={`step-${step.id}-title`}
+          >
+            <header class="step-content-header">
+              <h3 id={`step-${step.id}-title`} class="step-content-title">{step.title}</h3>
+              <p class="step-content-description">
+                {step.subtitle}
+              </p>
+            </header>
+            <div class="step-content-example">
+              <h4>{step.example.title}</h4>
+              <p>
+                {step.example.content}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .process {
+    padding: 100px 20px;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    border-top: 5px solid var(--accent-primary);
+  }
+
+  .process-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .process-header {
+    margin-bottom: 60px;
+  }
+
+  .process-title {
+    font-size: 56px;
+    margin-bottom: 40px;
+    color: var(--text-light);
+    text-shadow: 4px 4px 0px var(--accent-primary);
+    transform: skew(-1deg);
+  }
+
+  .process-description {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 60px;
+    color: var(--text-light);
+    opacity: 0.9;
+  }
+
+  .process-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .process-nav {
+    position: sticky;
+    top: 100px;
+    background: var(--bg-secondary);
+    border: 3px solid var(--text-light);
+    padding: 30px;
+    transform: rotate(-1deg);
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+  }
+
+  .process-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 2px solid var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+  }
+
+  .process-nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .process-nav-item.active {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    margin: 0 -10px;
+    padding: 20px 10px;
+    transform: skew(-2deg);
+  }
+
+  .process-nav-item:hover {
+    background: var(--bg-primary);
+    margin: 0 -10px;
+    padding: 20px 10px;
+  }
+
+  .nav-step-icon {
+    background: var(--accent-tertiary);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    border: 2px solid var(--bg-dark);
+    transition: all 0.3s ease;
+  }
+
+  .nav-step-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-primary);
+  }
+
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .nav-step-icon svg,
+  [data-theme="electric"] .nav-step-icon svg {
+    fill: var(--bg-dark);
+    stroke: var(--bg-dark);
+  }
+
+  .process-nav-item.active .nav-step-icon {
+    background: var(--text-light);
+    transform: rotate(5deg);
+  }
+
+  .process-nav-item.active .nav-step-icon svg {
+    fill: var(--accent-primary);
+    stroke: var(--accent-primary);
+  }
+
+  .nav-step-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .process-content-area {
+    padding: 20px 0;
+  }
+
+  .process-step-content {
+    min-height: 100vh;
+    padding: 60px 0;
+    opacity: 0.3;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+    margin-bottom: 100px;
+  }
+
+  .process-step-content.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .step-content-header {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 40px;
+    border: 3px solid var(--text-light);
+    margin-bottom: 40px;
+    transform: rotate(1deg);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+  }
+
+  .step-content-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .step-content-description {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+  }
+
+  .step-content-example {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-primary);
+    border-left: 6px solid var(--accent-primary);
+    padding: 30px;
+    margin-top: 30px;
+  }
+
+  .step-content-example h4 {
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    color: var(--accent-primary);
+    font-weight: bold;
+  }
+
+  .step-content-example p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--text-primary);
+    opacity: 0.9;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .process {
+      padding: 60px 20px;
+    }
+
+    .process-title {
+      font-size: 36px;
+    }
+
+    .process-description {
+      font-size: 16px;
+    }
+
+    .process-layout {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .process-nav {
+      position: relative;
+      top: 0;
+      padding: 20px;
+    }
+
+    .step-content-header {
+      padding: 24px;
+    }
+
+    .step-content-title {
+      font-size: 24px;
+    }
+
+    .step-content-description {
+      font-size: 16px;
+    }
+
+    .step-content-example {
+      padding: 20px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .process-step-content {
+      transition: opacity 0.2s ease;
+      transform: none;
+    }
+    
+    .process-step-content.active {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Process navigation functionality - matching original behavior
+  document.addEventListener('DOMContentLoaded', () => {
+    const navItems = document.querySelectorAll('.process-nav-item');
+    const stepContents = document.querySelectorAll('.process-step-content');
+    
+    if (navItems.length === 0 || stepContents.length === 0) return;
+    
+    function updateActiveStep(stepNumber) {
+      // Update navigation active state
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        item.setAttribute('aria-pressed', 'false');
+      });
+      
+      const activeNavItem = document.querySelector(`[data-step="${stepNumber}"]`);
+      if (activeNavItem) {
+        activeNavItem.classList.add('active');
+        activeNavItem.setAttribute('aria-pressed', 'true');
+      }
+      
+      // Update content active state
+      stepContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      const activeContent = document.getElementById(`step-${stepNumber}`);
+      if (activeContent) {
+        activeContent.classList.add('active');
+      }
+    }
+    
+    // Click handlers for nav items
+    navItems.forEach(item => {
+      item.addEventListener('click', function() {
+        const targetStep = this.getAttribute('data-step');
+        const targetElement = document.getElementById(`step-${targetStep}`);
+        
+        if (targetElement) {
+          // Smooth scroll to target element
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          
+          // Update active state
+          updateActiveStep(targetStep);
+        }
+      });
+
+      // Keyboard navigation
+      item.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+          e.preventDefault();
+          const targetStep = item.getAttribute('data-step');
+          const targetElement = document.getElementById(`step-${targetStep}`);
+          
+          if (targetElement) {
+            // Smooth scroll to target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            // Update active state
+            updateActiveStep(targetStep);
+          }
+        }
+      });
+    });
+    
+    // Enhanced Intersection Observer for scroll-based highlighting (scrollytelling)
+    const observerOptions = {
+      threshold: 0.5, // Trigger when 50% of the step is visible
+      rootMargin: '-20% 0px -20% 0px' // More precise triggering - matches original
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const stepNumber = entry.target.id.split('-')[1];
+          updateActiveStep(stepNumber);
+          console.log('Process step in view:', stepNumber); // Debug log
+          
+          // Stop auto-rotation when user scrolls to a step
+          userInteracted = true;
+          stopAutoRotate();
+        }
+      });
+    }, observerOptions);
+    
+    // Observe all process steps for scrollytelling
+    stepContents.forEach(step => {
+      observer.observe(step);
+    });
+
+    // Auto-rotation functionality with pause on interaction
+    let autoRotateInterval = null;
+    let userInteracted = false;
+    
+    function startAutoRotate() {
+      if (userInteracted) return;
+      
+      autoRotateInterval = window.setInterval(() => {
+        if (userInteracted) {
+          stopAutoRotate();
+          return;
+        }
+        
+        const currentActiveItem = document.querySelector('.process-nav-item.active');
+        const itemList = Array.from(navItems);
+        const currentIndex = itemList.indexOf(currentActiveItem as Element);
+        const nextIndex = (currentIndex + 1) % itemList.length;
+        const nextItem = itemList[nextIndex] as HTMLElement;
+        const nextStepId = nextItem.getAttribute('data-step');
+        
+        if (nextStepId) {
+          updateActiveStep(nextStepId);
+        }
+      }, 8000); // 8 seconds like the original
+    }
+    
+    function stopAutoRotate() {
+      if (autoRotateInterval) {
+        clearInterval(autoRotateInterval);
+        autoRotateInterval = null;
+      }
+    }
+    
+    // Start auto-rotate after page load
+    setTimeout(startAutoRotate, 2000);
+    
+    // Stop auto-rotate on any user interaction
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        userInteracted = true;
+        stopAutoRotate();
+      });
+      
+      item.addEventListener('keydown', () => {
+        userInteracted = true;
+        stopAutoRotate();
+      });
+    });
+
+    // Pause auto-rotate on hover
+    navItems.forEach(item => {
+      item.addEventListener('mouseenter', stopAutoRotate);
+      item.addEventListener('mouseleave', () => {
+        if (!userInteracted) {
+          setTimeout(startAutoRotate, 1000);
+        }
+      });
+    });
+  });
+</script>

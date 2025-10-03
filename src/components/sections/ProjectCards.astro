@@ -1,0 +1,709 @@
+---
+// Project Cards Component - Handles project display and case study modal integration
+// Enhanced with loading states, error handling, and accessibility features
+import { getCollection } from 'astro:content';
+
+// Get project data from content collections
+let projects = [];
+try {
+  projects = await getCollection('projects');
+} catch (error) {
+  console.error('Error loading projects:', error);
+}
+
+// Sort projects by priority or date
+projects = projects.sort((a, b) => {
+  const priorityA = a.data.priority || 999;
+  const priorityB = b.data.priority || 999;
+  return priorityA - priorityB;
+});
+---
+
+<div class="projects-container" data-projects-loaded="false">
+  <div class="projects-loading" aria-live="polite">
+    <div class="loading-spinner"></div>
+    <span>Loading projects...</span>
+  </div>
+  
+  <div class="projects-error hidden" role="alert" aria-live="assertive">
+    <h3>Unable to load projects</h3>
+    <p>Please check your connection and try again.</p>
+    <button class="retry-btn">Retry</button>
+  </div>
+  
+  <div class="projects-grid" role="grid" aria-label="Portfolio projects">
+    {projects.map((project, index) => (
+      <article 
+        class="project-card animate-on-scroll interactive-hover" 
+        data-project-id={project.slug}
+        data-index={index}
+        role="gridcell"
+        tabindex="0"
+        aria-describedby={`project-${index}-desc`}
+      >
+        <div class="project-card-inner">
+          <div class="project-image-container">
+            <img 
+              src={project.data.thumbnail || project.data.image || '/assets/images/landscape-placeholder.svg'} 
+              alt={project.data.title}
+              class="project-image"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="project-overlay">
+              <span class="view-case-study" aria-hidden="true">View Case Study</span>
+            </div>
+          </div>
+          
+          <div class="project-content">
+            <header class="project-header">
+              <h3 class="project-title">{project.data.title}</h3>
+              <span class="project-category">{project.data.category}</span>
+            </header>
+            
+            <div class="project-description" id={`project-${index}-desc`}>
+              <p>{project.data.description}</p>
+            </div>
+            
+            <div class="project-meta">
+              <span class="project-date">{project.data.date}</span>
+              {project.data.technologies && (
+                <div class="project-tech" role="list" aria-label="Technologies used">
+                  {project.data.technologies.slice(0, 3).map((tech) => (
+                    <span class="tech-tag" role="listitem">{tech}</span>
+                  ))}
+                  {project.data.technologies.length > 3 && (
+                    <span class="tech-more">+{project.data.technologies.length - 3}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</div>
+
+<style>
+  .projects-container {
+    position: relative;
+    min-height: 300px;
+  }
+
+  /* Loading states */
+  .projects-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 20px;
+    color: var(--text-secondary);
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--bg-secondary);
+    border-top: 3px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .projects-error {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-primary);
+  }
+
+  .projects-error h3 {
+    color: var(--accent-primary);
+    margin-bottom: 10px;
+  }
+
+  .retry-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .retry-btn:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+  }
+
+  /* Projects grid */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .projects-container[data-projects-loaded="true"] .projects-grid {
+    opacity: 1;
+  }
+
+  .projects-container[data-projects-loaded="true"] .projects-loading {
+    display: none;
+  }
+
+  /* Project cards */
+  .project-card {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    position: relative;
+    border: 2px solid transparent;
+  }
+
+  .project-card:hover,
+  .project-card:focus {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+      0 25px 50px rgba(0, 0, 0, 0.15),
+      0 0 0 2px var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .project-card:focus {
+    outline: none;
+  }
+
+  .project-card-inner {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Project image */
+  .project-image-container {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background: var(--bg-primary);
+  }
+
+  .project-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .project-card:hover .project-image {
+    transform: scale(1.05);
+  }
+
+  .project-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      var(--gradient-primary-medium),
+      var(--gradient-secondary-medium)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .project-card:hover .project-overlay {
+    opacity: 1;
+  }
+
+  .view-case-study {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 24px;
+    border: 2px solid var(--text-light);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+  }
+
+  .project-card:hover .view-case-study {
+    transform: translateY(0);
+  }
+
+  /* Project content */
+  .project-content {
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .project-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .project-category {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-primary);
+    background: var(--gradient-primary-subtle);
+    padding: 4px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .project-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .project-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+    margin-top: auto;
+  }
+
+  .project-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .tech-tag {
+    font-size: 11px;
+    background: var(--gradient-secondary-subtle);
+    color: var(--accent-secondary);
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    border: 1px solid var(--accent-secondary);
+  }
+
+  .tech-more {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* Loading placeholder */
+  .project-card.loading {
+    background: var(--bg-secondary);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Hidden utility */
+  .hidden {
+    display: none !important;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .project-card {
+      max-width: 100%;
+    }
+
+    .project-image-container {
+      height: 180px;
+    }
+
+    .project-content {
+      padding: 20px;
+    }
+
+    .project-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .project-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .project-card,
+    .project-image,
+    .project-overlay,
+    .view-case-study {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .projects-grid {
+      transition: none !important;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .project-card {
+      border: 3px solid var(--accent-primary);
+    }
+
+    .project-card:hover,
+    .project-card:focus {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 0 3px var(--accent-primary);
+    }
+  }
+</style>
+
+<!-- Enhanced Project Cards JavaScript -->
+<script>
+  class ProjectCardsManager {
+    constructor() {
+      this.container = document.querySelector('.projects-container');
+      this.grid = document.querySelector('.projects-grid');
+      this.loadingElement = document.querySelector('.projects-loading');
+      this.errorElement = document.querySelector('.projects-error');
+      this.retryBtn = document.querySelector('.retry-btn');
+      this.cards = [];
+      this.isLoaded = false;
+      this.observerOptions = {
+        threshold: 0.1,
+        rootMargin: '50px 0px'
+      };
+      this.init();
+    }
+
+    init() {
+      console.log('Initializing Project Cards Manager');
+      this.setupEventListeners();
+      this.setupIntersectionObserver();
+      this.loadProjects();
+    }
+
+    setupEventListeners() {
+      // Card click handlers
+      document.addEventListener('click', (e) => {
+        const card = e.target.closest('.project-card');
+        if (card) {
+          this.handleCardClick(card);
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        const card = e.target.closest('.project-card');
+        if (card && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          this.handleCardClick(card);
+        }
+      });
+
+      // Retry button
+      if (this.retryBtn) {
+        this.retryBtn.addEventListener('click', () => {
+          this.loadProjects();
+        });
+      }
+
+      // Enhanced hover effects for better UX
+      document.addEventListener('mouseenter', (e) => {
+        const card = e.target.closest('.project-card');
+        if (card) {
+          this.handleCardHover(card, true);
+        }
+      }, true);
+
+      document.addEventListener('mouseleave', (e) => {
+        const card = e.target.closest('.project-card');
+        if (card) {
+          this.handleCardHover(card, false);
+        }
+      }, true);
+    }
+
+    setupIntersectionObserver() {
+      // Lazy load images and trigger animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const card = entry.target;
+            this.lazyLoadCard(card);
+            observer.unobserve(card);
+          }
+        });
+      }, this.observerOptions);
+
+      // Observe all cards
+      document.querySelectorAll('.project-card').forEach(card => {
+        observer.observe(card);
+      });
+    }
+
+    async loadProjects() {
+      try {
+        this.showLoading();
+        
+        // Simulate network delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Get project data (already rendered by Astro)
+        const projectCards = document.querySelectorAll('.project-card');
+        
+        if (projectCards.length === 0) {
+          throw new Error('No projects found');
+        }
+
+        // Process each card
+        projectCards.forEach((card, index) => {
+          this.processProjectCard(card, index);
+        });
+
+        this.showSuccess();
+        
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        this.showError();
+      }
+    }
+
+    processProjectCard(card, index) {
+      // Add enhanced accessibility attributes
+      card.setAttribute('aria-label', `Project: ${card.querySelector('.project-title')?.textContent}`);
+      card.setAttribute('role', 'button');
+      
+      // Add loading state
+      card.classList.add('loading');
+      
+      // Remove loading state after a brief delay for visual feedback
+      setTimeout(() => {
+        card.classList.remove('loading');
+      }, 100 * index);
+
+      // Store project data for modal
+      const projectData = this.extractProjectData(card);
+      card.dataset.projectData = JSON.stringify(projectData);
+
+      this.cards.push({
+        element: card,
+        data: projectData,
+        index: index
+      });
+    }
+
+    extractProjectData(card) {
+      return {
+        id: card.dataset.projectId,
+        title: card.querySelector('.project-title')?.textContent || 'Untitled Project',
+        category: card.querySelector('.project-category')?.textContent || 'Project',
+        description: card.querySelector('.project-description p')?.textContent || '',
+        date: card.querySelector('.project-date')?.textContent || '',
+        image: card.querySelector('.project-image')?.src || '',
+        technologies: Array.from(card.querySelectorAll('.tech-tag')).map(tag => tag.textContent),
+        details: 'Detailed case study coming soon...',
+        link: null // Will be populated from content collections if available
+      };
+    }
+
+    handleCardClick(card) {
+      const projectData = JSON.parse(card.dataset.projectData || '{}');
+      
+      // Add click animation
+      card.style.transform = 'scale(0.98)';
+      setTimeout(() => {
+        card.style.transform = '';
+      }, 150);
+
+      // Open case study modal
+      if (window.caseStudyModal && typeof window.caseStudyModal.open === 'function') {
+        window.caseStudyModal.open(projectData);
+      } else {
+        console.warn('Case study modal not available');
+        // Fallback: navigate to project page if available
+        if (projectData.link) {
+          window.open(projectData.link, '_blank', 'noopener,noreferrer');
+        }
+      }
+
+      // Analytics tracking
+      this.trackProjectView(projectData);
+    }
+
+    handleCardHover(card, isEntering) {
+      if (isEntering) {
+        // Add subtle glow effect
+        card.style.boxShadow = `
+          0 25px 50px rgba(0, 0, 0, 0.15),
+          0 0 0 1px var(--accent-primary),
+          0 0 30px var(--gradient-primary-subtle)
+        `;
+      } else {
+        // Reset to normal shadow
+        setTimeout(() => {
+          if (!card.matches(':hover')) {
+            card.style.boxShadow = '';
+          }
+        }, 100);
+      }
+    }
+
+    lazyLoadCard(card) {
+      // Trigger any lazy-loaded content
+      const image = card.querySelector('.project-image');
+      if (image && image.dataset.src) {
+        image.src = image.dataset.src;
+        image.removeAttribute('data-src');
+      }
+
+      // Add intersection animation
+      card.classList.add('in-view');
+    }
+
+    showLoading() {
+      if (this.loadingElement) {
+        this.loadingElement.classList.remove('hidden');
+      }
+      if (this.errorElement) {
+        this.errorElement.classList.add('hidden');
+      }
+      if (this.grid) {
+        this.grid.style.opacity = '0';
+      }
+      if (this.container) {
+        this.container.dataset.projectsLoaded = 'false';
+      }
+    }
+
+    showSuccess() {
+      if (this.loadingElement) {
+        this.loadingElement.classList.add('hidden');
+      }
+      if (this.errorElement) {
+        this.errorElement.classList.add('hidden');
+      }
+      if (this.container) {
+        this.container.dataset.projectsLoaded = 'true';
+      }
+      this.isLoaded = true;
+
+      // Trigger staggered animations
+      this.animateCardsIn();
+    }
+
+    showError() {
+      if (this.loadingElement) {
+        this.loadingElement.classList.add('hidden');
+      }
+      if (this.errorElement) {
+        this.errorElement.classList.remove('hidden');
+      }
+      if (this.grid) {
+        this.grid.style.opacity = '0';
+      }
+    }
+
+    animateCardsIn() {
+      const cards = document.querySelectorAll('.project-card');
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 100);
+      });
+    }
+
+    trackProjectView(projectData) {
+      // Analytics tracking for project interactions
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'project_view', {
+          project_id: projectData.id,
+          project_title: projectData.title,
+          project_category: projectData.category
+        });
+      }
+
+      console.log('Project viewed:', projectData.title);
+    }
+
+    // Public API methods
+    getProjectData(projectId) {
+      return this.cards.find(card => card.data.id === projectId)?.data;
+    }
+
+    refreshProjects() {
+      this.loadProjects();
+    }
+
+    getLoadState() {
+      return {
+        isLoaded: this.isLoaded,
+        projectCount: this.cards.length,
+        hasErrors: this.errorElement && !this.errorElement.classList.contains('hidden')
+      };
+    }
+  }
+
+  // Initialize Project Cards Manager
+  const projectCardsManager = new ProjectCardsManager();
+
+  // Make it globally available
+  window.projectCardsManager = projectCardsManager;
+
+  // Handle page navigation cleanup
+  window.addEventListener('beforeunload', () => {
+    // Clean up any resources if needed
+  });
+</script>

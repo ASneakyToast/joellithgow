@@ -1,0 +1,237 @@
+---
+// Navigation component with theme switching functionality
+export interface Props {
+  currentPath?: string;
+}
+
+// Detect current page to show appropriate navigation
+const currentPath = Astro.url.pathname;
+const isHomePage = currentPath === '/';
+const isBlogPage = currentPath.startsWith('/blog');
+const isLinksPage = currentPath === '/links';
+const isArtworksPage = currentPath.startsWith('/artworks');
+
+// Navigation items
+const navItems = isHomePage ? [
+  { href: '#work', label: 'work', description: 'View my recent projects and case studies' },
+  { href: '#process', label: 'process', description: 'Learn about my design and development process' },
+  { href: '#about', label: 'about', description: 'Read about my background and skills' },
+  { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' },
+  { href: '/blog', label: 'blog', description: 'Read my thoughts on web development and creative projects' },
+  { href: '/links', label: 'links', description: 'Browse curated links and resources from around the web' }
+] : [
+  { href: '/', label: 'home', description: 'Return to the main portfolio page' },
+  { href: '/artworks', label: 'artworks', description: 'View my fine art and creative projects' },
+  { href: '/blog', label: 'blog', description: 'Read my thoughts on web development and creative projects' },
+  { href: '/links', label: 'links', description: 'Browse curated links and resources from around the web' }
+];
+---
+
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-links">
+    {navItems.map((item) => (
+      <a 
+        href={item.href} 
+        class="nav-link" 
+        aria-describedby={`${item.label}-description`}
+      >
+        {item.label}
+      </a>
+    ))}
+  </div>
+  
+  <!-- Hidden descriptions for screen readers -->
+  <div class="sr-only">
+    {navItems.map((item) => (
+      <div id={`${item.label}-description`}>{item.description}</div>
+    ))}
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 1000;
+    background: var(--bg-secondary);
+    border: 3px solid var(--accent-primary);
+    padding: 20px;
+    transform: rotate(-1deg);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+  }
+
+  .nav-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: lowercase;
+    transition: all 0.3s ease;
+    padding: 5px 8px;
+    border: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--accent-primary);
+    transform: rotate(-1deg);
+    border-color: var(--accent-primary);
+  }
+
+  .nav-link.active {
+    color: var(--text-light);
+    background: var(--accent-primary);
+    border-color: var(--bg-dark);
+    transform: rotate(2deg);
+    box-shadow: 2px 2px 0px var(--accent-secondary);
+  }
+
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .nav {
+      position: relative;
+      top: 0;
+      right: 0;
+      transform: none;
+      margin: 20px;
+      width: calc(100% - 40px);
+      padding: 15px;
+    }
+
+    .nav-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+  }
+
+  /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
+</style>
+
+<script>
+  // Enhanced navigation functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    // Load saved theme
+    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
+    // If the saved theme is invalid, reset to default
+    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+    if (!validThemes.includes(savedTheme)) {
+      savedTheme = 'default';
+      localStorage.setItem('portfolio-theme', 'default');
+    }
+    
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Set active navigation based on current page
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentPath ||
+          (currentPath === '/' && href === '#work') ||
+          (currentPath.startsWith('/blog') && href === '/blog') ||
+          (currentPath === '/links' && href === '/links') ||
+          (currentPath.startsWith('/artworks') && href === '/artworks')) {
+        link.classList.add('active');
+      }
+    });
+    
+
+    // Smooth scrolling and active state management
+    function updateActiveNavigation(href) {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === href) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Handle navigation links - smooth scrolling for anchors, regular navigation for pages
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = (link as HTMLAnchorElement).getAttribute('href');
+        if (href && href.startsWith('#')) {
+          // Handle anchor links with smooth scrolling
+          e.preventDefault();
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            
+            // Update active navigation state
+            updateActiveNavigation(href);
+          }
+        }
+        // For regular page links, let the default behavior handle navigation
+      });
+    });
+
+    // Scroll spy for main navigation - find all navigation target elements
+    const navTargets = document.querySelectorAll('#work, #process, #about, #contact');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+
+    if (navTargets.length > 0 && navLinks.length > 0) {
+      const observerOptions = {
+        threshold: [0.1, 0.3],
+        rootMargin: '-20% 0px -50% 0px'
+      };
+
+      let currentIntersections = new Map();
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            currentIntersections.set(entry.target.id, entry.intersectionRatio);
+          } else {
+            currentIntersections.delete(entry.target.id);
+          }
+        });
+
+        // Find the section with the highest intersection ratio
+        if (currentIntersections.size > 0) {
+          let maxRatio = 0;
+          let activeSection = '';
+
+          for (const [sectionId, ratio] of currentIntersections) {
+            if (ratio > maxRatio) {
+              maxRatio = ratio;
+              activeSection = sectionId;
+            }
+          }
+
+          if (activeSection) {
+            updateActiveNavigation(`#${activeSection}`);
+          }
+        }
+      }, observerOptions);
+      
+      // Observe all navigation targets
+      navTargets.forEach(target => {
+        observer.observe(target);
+      });
+      
+      // Handle scroll to top case (no active section)
+      window.addEventListener('scroll', () => {
+        if (window.scrollY < 200) {
+          navLinks.forEach(link => link.classList.remove('active'));
+        }
+      });
+    }
+  });
+</script>

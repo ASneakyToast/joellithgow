@@ -1,0 +1,508 @@
+---
+// Projects section component using content collections
+import { getCollection } from 'astro:content';
+
+export interface Props {
+  sectionTitle?: string;
+  sectionSubtitle?: string;
+  featuredOnly?: boolean;
+  limit?: number;
+}
+
+const {
+  sectionTitle = 'selected work',
+  sectionSubtitle = 'Recent projects and case studies',
+  featuredOnly = true,
+  limit
+} = Astro.props;
+
+// Get projects from content collection
+const allProjects = await getCollection('projects');
+let projects = featuredOnly ? allProjects.filter(project => project.data.featured) : allProjects;
+
+// Sort by number (ascending)
+projects = projects.sort((a, b) => a.data.number - b.data.number);
+
+// Apply limit if specified
+if (limit && limit > 0) {
+  projects = projects.slice(0, limit);
+}
+---
+
+<section id="work" class="projects" aria-labelledby="projects-heading">
+  <header class="section-header">
+    <h2 id="projects-heading" class="section-title">{sectionTitle}</h2>
+    <p class="section-subtitle">{sectionSubtitle}</p>
+  </header>
+  
+  <div class="projects-container" role="list" aria-label="Project portfolio">
+    {projects.map((project) => (
+      <article class="project-card" role="listitem" data-project-id={project.data.id} data-project-data={JSON.stringify(project.data)}>
+        <div class="project-header">
+          <div class="project-number">{String(project.data.number).padStart(2, '0')}</div>
+          <div class="project-type">{project.data.type}</div>
+        </div>
+        {project.data.images && project.data.images.length > 0 && (
+          <div class={`project-image-preview ${project.data.images[0].type === 'video' ? 'video-container' : ''}`}>
+            {project.data.images[0].type === 'video' ? (
+              <video class="project-preview-image" autoplay muted loop playsinline>
+                <source src={`/${project.data.images[0].src}`} type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img 
+                src={`/${project.data.images[0].src}`} 
+                alt={project.data.images[0].alt}
+                class="project-preview-image"
+                loading="lazy"
+              />
+            )}
+          </div>
+        )}
+        <div class="project-content">
+          <h3 class="project-title">{project.data.title}</h3>
+          <p class="project-description">{project.data.description}</p>
+          <div class="project-tech">
+            {project.data.technologies.map((tech) => (
+              <span class="tech-tag">{tech}</span>
+            ))}
+          </div>
+          <div class="project-impact">
+            <div class="impact-metric">{project.data.impact}</div>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+  
+  {projects.length === 0 && (
+    <div class="no-projects">
+      <p>No projects found.</p>
+    </div>
+  )}
+</section>
+
+<style>
+  .projects {
+    padding: 100px 0;
+    background: var(--bg-secondary);
+    border-top: 5px solid var(--accent-primary);
+    position: relative; /* Enable positioning context for gradients */
+  }
+
+  .section-header {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 48px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    transform: skew(-2deg);
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .projects-container {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    gap: 40px;
+    padding: 40px 20px; /* Increased top/bottom padding for scaled cards */
+    padding-right: 40px; /* Extra padding for last item */
+    scroll-padding-left: 20px;
+    position: relative;
+  }
+
+  /* Custom scrollbar styling */
+  .projects-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .projects-container::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    margin: 0 20px;
+  }
+
+  .projects-container::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+    border: 2px solid var(--bg-secondary);
+  }
+
+  .projects-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+  }
+
+  /* Scroll fade indicators - positioned on parent section to stay fixed */
+  .projects::before,
+  .projects::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .projects::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg-secondary) 0%, transparent 100%);
+  }
+
+  .projects::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg-secondary) 0%, transparent 100%);
+  }
+
+  .project-card {
+    background: var(--bg-primary);
+    border: 3px solid var(--bg-dark);
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 450px; /* Fixed width for carousel - wider for overflow hint */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Project Image Components */
+  .project-image-preview {
+    height: 160px;
+    overflow: hidden;
+    border-bottom: 3px solid var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+  }
+
+  .project-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  /* 9:5 aspect ratio for video containers */
+  .project-image-preview.video-container {
+    height: auto;
+    aspect-ratio: 9 / 5;
+    width: 100%;
+    max-height: 280px;
+    position: relative;
+    padding: 0;
+  }
+
+  /* Video-specific styling for 9:5 aspect ratio */
+  video.project-preview-image {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* Fallback for browsers without aspect-ratio support */
+  @supports not (aspect-ratio: 1) {
+    .project-image-preview.video-container {
+      padding-bottom: 55.56% !important; /* 5/9 * 100% */
+      height: 0 !important;
+    }
+  }
+
+  .project-preview-image[controls] {
+    object-fit: contain;
+  }
+
+  .project-card:hover .project-preview-image {
+    transform: scale(1.05);
+  }
+
+  .project-content {
+    padding: 25px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-card:nth-child(odd) {
+    transform: rotate(0.5deg);
+  }
+
+  .project-card:nth-child(even) {
+    transform: rotate(-0.5deg);
+  }
+
+  .project-card:hover {
+    transform: scale(1.05);
+    box-shadow: 12px 12px 0px var(--accent-secondary);
+    z-index: 5;
+  }
+
+  .project-number {
+    font-size: 14px;
+    background: var(--accent-primary);
+    padding: 6px 12px;
+    border: 2px solid var(--text-light);
+    font-weight: bold;
+  }
+
+  .project-type {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+
+  .project-title {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-weight: bold;
+  }
+
+  .project-description {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tech-tag {
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid var(--bg-dark);
+    font-weight: bold;
+  }
+
+  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
+  [data-theme="neon"] .tech-tag,
+  [data-theme="electric"] .tech-tag {
+    color: var(--bg-dark);
+  }
+
+  .project-impact {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: 15px;
+    transform: rotate(-1deg);
+    border: 2px solid var(--bg-dark);
+    margin-top: 15px;
+  }
+
+  .impact-metric {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+
+  .no-projects {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .projects {
+      padding: 60px 0;
+    }
+
+    .section-header {
+      margin-bottom: 40px;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      font-size: 36px;
+    }
+
+    .projects-container {
+      flex-direction: column;
+      overflow-x: visible;
+      scroll-snap-type: none;
+      padding: 20px;
+    }
+
+    .project-card {
+      flex: none;
+      width: 100%;
+    }
+
+    .projects::before,
+    .projects::after {
+      display: none;
+    }
+  }
+
+  /* Enhanced accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .projects-container {
+      scroll-behavior: auto;
+      scroll-snap-type: none;
+    }
+    
+    .project-card {
+      scroll-snap-align: none;
+      scroll-snap-stop: normal;
+    }
+    
+    .project-card:hover {
+      transform: scale(1.02);
+    }
+    
+    .project-link:hover {
+      transform: translateX(2px);
+    }
+  }
+
+  /* Focus styles */
+  .project-link:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .tech-tag:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  // Type declarations for global functions
+  declare global {
+    interface Window {
+      caseStudyModal?: {
+        open: (projectData: any) => void;
+      };
+      openCaseStudy?: (projectData: any) => void;
+    }
+  }
+
+  // Enhanced project card interactions
+  document.addEventListener('DOMContentLoaded', () => {
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    projectCards.forEach((card, index) => {
+      // Add click handler for entire card
+      card.addEventListener('click', function() {
+        const projectId = (this as HTMLElement).getAttribute('data-project-id');
+        const projectDataJson = (this as HTMLElement).getAttribute('data-project-data');
+        
+        if (projectDataJson) {
+          try {
+            const projectData = JSON.parse(projectDataJson);
+            console.log('Clicked project:', projectId, projectData);
+            
+            // Call the global case study modal function
+            if (window.openCaseStudy) {
+              window.openCaseStudy(projectData);
+            } else if (window.caseStudyModal) {
+              window.caseStudyModal.open(projectData);
+            }
+          } catch (error) {
+            console.error('Error parsing project data:', error);
+          }
+        }
+      });
+      
+      // Add hover effects like the original
+      card.addEventListener('mouseenter', function() {
+        (this as HTMLElement).style.transform = 'scale(1.03) rotate(1deg)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        const isOdd = index % 2 === 0;
+        (this as HTMLElement).style.transform = isOdd ? 'rotate(0.5deg)' : 'rotate(-0.5deg)';
+      });
+
+      // Add keyboard navigation for project cards
+      card.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+          e.preventDefault();
+          (card as HTMLElement).click();
+        }
+      });
+
+      // Add focus styles for keyboard navigation
+      card.addEventListener('focus', () => {
+        (card as HTMLElement).style.outline = '2px solid var(--accent-primary)';
+        (card as HTMLElement).style.outlineOffset = '2px';
+      });
+
+      card.addEventListener('blur', () => {
+        (card as HTMLElement).style.outline = 'none';
+      });
+    });
+
+    // Intersection Observer for animation on scroll
+    if ('IntersectionObserver' in window) {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).style.opacity = '1';
+            (entry.target as HTMLElement).style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      projectCards.forEach(card => {
+        (card as HTMLElement).style.opacity = '0';
+        (card as HTMLElement).style.transform = 'translateY(20px)';
+        (card as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+      });
+    }
+  });
+</script>
