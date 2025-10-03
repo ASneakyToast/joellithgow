@@ -46,12 +46,12 @@ if (limit && limit > 0) {
           <div class={`project-image-preview ${project.data.images[0].type === 'video' ? 'video-container' : ''}`}>
             {project.data.images[0].type === 'video' ? (
               <video class="project-preview-image" autoplay muted loop playsinline>
-                <source src={`/${project.data.images[0].src}`} type="video/webm" />
+                <source src={project.data.images[0].src} type="video/webm" />
                 Your browser does not support the video tag.
               </video>
             ) : (
-              <img 
-                src={`/${project.data.images[0].src}`} 
+              <img
+                src={project.data.images[0].src}
                 alt={project.data.images[0].alt}
                 class="project-preview-image"
                 loading="lazy"

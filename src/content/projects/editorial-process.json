@@ -13,28 +13,28 @@
   "impact": "unique web experiences for editorial content",
   "images": [
     {
-      "src": "assets/images/vev-studio_forward-thumbnail.webm",
+      "src": "/assets/images/projects/vev-studio_forward-thumbnail.webm",
       "alt": "Multimedia digital storytelling workflow demonstration",
       "caption": "Creative digital storytelling process using modern web technologies",
       "type": "video"
     },
     {
-      "src": "assets/images/vev-designfaculty-image--processed.png",
+      "src": "/assets/images/projects/vev-designfaculty-image--processed.png",
       "alt": "Design faculty showcase multimedia storytelling page",
       "caption": "Faculty spotlight featuring interactive multimedia elements and engaging visual storytelling"
     },
     {
-      "src": "assets/images/vev-studioforward-image--processed.png",
+      "src": "/assets/images/projects/vev-studioforward-image--processed.png",
       "alt": "Studio Forward exhibition digital experience",
       "caption": "Custom digital exhibition experience showcasing student work through immersive storytelling"
     },
     {
-      "src": "assets/images/vev-commencement-image--processed.png",
+      "src": "/assets/images/projects/vev-commencement-image--processed.png",
       "alt": "Commencement ceremony multimedia story layout",
       "caption": "Dynamic commencement coverage transformed into engaging multimedia narrative format"
     },
     {
-      "src": "assets/images/vev-summer-image--processed.png",
+      "src": "/assets/images/projects/vev-summer-image--processed.png",
       "alt": "Summer program multimedia storytelling showcase",
       "caption": "Summer program coverage featuring dynamic layouts and interactive multimedia storytelling elements"
     }

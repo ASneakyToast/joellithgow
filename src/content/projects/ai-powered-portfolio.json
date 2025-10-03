@@ -13,7 +13,7 @@
   "impact": "Portfolio successfully landed target position",
   "images": [
     {
-      "src": "assets/images/ai-portfolio-homepage.png",
+      "src": "/assets/images/projects/ai-portfolio-homepage.png",
       "alt": "AI-powered portfolio homepage screenshot showing modern design and smooth interactions",
       "caption": "The completed AI-powered portfolio homepage demonstrating sophisticated SPA-like experience with smooth transitions and professional design"
     }

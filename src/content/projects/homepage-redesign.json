@@ -13,28 +13,28 @@
   "impact": "33% reduction in confusion-driven navigation",
   "images": [
     {
-      "src": "assets/images/homepage-scroll-720.webm",
+      "src": "/assets/videos/homepage-scroll-720.webm",
       "alt": "CCA homepage before and after redesign comparison",
       "caption": "Homepage transformation showing improved clarity and user flow",
       "type": "video"
     },
     {
-      "src": "assets/images/homepage-wavyfeatures-image--processed.png",
+      "src": "/assets/images/projects/homepage-wavyfeatures-image--processed.png",
       "alt": "Homepage wavy features section design",
       "caption": "Dynamic wavy features section showcasing CCA programs and community"
     },
     {
-      "src": "assets/images/homepage-adm-image--processed.png",
+      "src": "/assets/images/projects/homepage-adm-image--processed.png",
       "alt": "Homepage admissions section design",
       "caption": "Strategic admissions section with clear conversion paths and program highlights"
     },
     {
-      "src": "assets/images/homepage-experience-image--processed.png",
+      "src": "/assets/images/projects/homepage-experience-image--processed.png",
       "alt": "Homepage experience section design",
       "caption": "Community experience section demonstrating progressive disclosure approach"
     },
     {
-      "src": "assets/images/homepage-hero-image--processed.png",
+      "src": "/assets/images/projects/homepage-hero-image--processed.png",
       "alt": "Homepage hero section design",
       "caption": "Clean, focused hero section establishing CCA identity and value proposition"
     }
