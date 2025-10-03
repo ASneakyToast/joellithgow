@@ -144,6 +144,29 @@ const decorativeElements = [
     opacity: 0 !important;
   }
 
+  /* Cleaner geometric shapes for minimal theme */
+  :global([data-theme="minimal"]) .decorative-element-1 {
+    border-style: solid;
+    border-width: 1px;
+    opacity: 0.3;
+  }
+
+  :global([data-theme="minimal"]) .decorative-element-2 {
+    background: var(--accent-secondary);
+    opacity: 0.15;
+    border: none;
+  }
+
+  :global([data-theme="minimal"]) .decorative-element-3 {
+    height: 1px;
+    opacity: 0.25;
+  }
+
+  :global([data-theme="minimal"]) .decorative-element-3::before,
+  :global([data-theme="minimal"]) .decorative-element-3::after {
+    display: none;
+  }
+
   /* Enhanced CSS Animations */
   @keyframes gridBreathe {
     0%, 100% { 
