@@ -15,29 +15,9 @@
         <div class="theme-preview theme-preview-default"></div>
         <span>Default</span>
       </div>
-      <div class="theme-option" data-theme="electric" onclick="setTheme('electric')">
-        <div class="theme-preview theme-preview-electric"></div>
-        <span>Electric</span>
-      </div>
-      <div class="theme-option" data-theme="retro" onclick="setTheme('retro')">
-        <div class="theme-preview theme-preview-retro"></div>
-        <span>Retro</span>
-      </div>
-      <div class="theme-option" data-theme="system" onclick="setTheme('system')">
-        <div class="theme-preview theme-preview-system"></div>
-        <span>System</span>
-      </div>
-      <div class="theme-option" data-theme="high-contrast" onclick="setTheme('high-contrast')">
-        <div class="theme-preview theme-preview-high-contrast"></div>
-        <span>High Contrast</span>
-      </div>
       <div class="theme-option" data-theme="minimal" onclick="setTheme('minimal')">
         <div class="theme-preview theme-preview-minimal"></div>
         <span>Minimal</span>
-      </div>
-      <div class="theme-option" data-theme="neon" onclick="setTheme('neon')">
-        <div class="theme-preview theme-preview-neon"></div>
-        <span>Neon</span>
       </div>
     </div>
   </div>
@@ -171,12 +151,7 @@
 
   /* Theme Preview Colors */
   .theme-preview-default { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #ffe66d); }
-  .theme-preview-electric { background: linear-gradient(135deg, #00ffff, #ff00ff, #ffff00); }
-  .theme-preview-retro { background: linear-gradient(135deg, #ff8c42, #6699cc, #ffcc5c); }
-  .theme-preview-system { background: linear-gradient(135deg, #007acc, #5c6bc0, #26c6da); }
-  .theme-preview-high-contrast { background: linear-gradient(135deg, #ffffff, #000000, #ffffff); }
   .theme-preview-minimal { background: linear-gradient(135deg, #000000, #333333, #666666); }
-  .theme-preview-neon { background: linear-gradient(135deg, #ff073a, #39ff14, #ff073a); }
 
   /* Case Study Modal */
   .modal-overlay {
@@ -750,7 +725,7 @@
   // Theme Management System
   class ThemeManager {
     constructor() {
-      this.themes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+      this.themes = ['default', 'minimal'];
       this.currentTheme = this.loadTheme();
       this.modal = null;
       this.init();
@@ -859,9 +834,9 @@
 
     loadTheme() {
       let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
-      
+
       // If the saved theme is invalid, reset to default
-      const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+      const validThemes = ['default', 'minimal'];
       if (!validThemes.includes(savedTheme)) {
         savedTheme = 'default';
         localStorage.setItem('portfolio-theme', 'default');

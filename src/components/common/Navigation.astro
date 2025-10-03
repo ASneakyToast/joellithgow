@@ -131,7 +131,7 @@ const navItems = isHomePage ? [
     // Load saved theme
     let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
     // If the saved theme is invalid, reset to default
-    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
+    const validThemes = ['default', 'minimal'];
     if (!validThemes.includes(savedTheme)) {
       savedTheme = 'default';
       localStorage.setItem('portfolio-theme', 'default');
