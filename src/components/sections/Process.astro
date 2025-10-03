@@ -166,10 +166,11 @@ const processSteps = [
     position: sticky;
     top: 100px;
     background: var(--bg-secondary);
-    border: 3px solid var(--text-light);
+    border: var(--border-width) solid var(--text-light);
+    border-radius: var(--border-radius);
     padding: 30px;
-    transform: rotate(-1deg);
-    box-shadow: 6px 6px 0px var(--accent-secondary);
+    transform: var(--rotation-sm);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
 
   .process-nav-item {
@@ -228,7 +229,7 @@ const processSteps = [
 
   .process-nav-item.active .nav-step-icon {
     background: var(--text-light);
-    transform: rotate(5deg);
+    transform: var(--rotation-md);
   }
 
   .process-nav-item.active .nav-step-icon svg {
@@ -265,10 +266,11 @@ const processSteps = [
     background: var(--bg-secondary);
     color: var(--text-primary);
     padding: 40px;
-    border: 3px solid var(--text-light);
+    border: var(--border-width) solid var(--text-light);
+    border-radius: var(--border-radius);
     margin-bottom: 40px;
-    transform: rotate(1deg);
-    box-shadow: 8px 8px 0px var(--accent-secondary);
+    transform: var(--rotation-sm);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
   }
 
   .step-content-title {

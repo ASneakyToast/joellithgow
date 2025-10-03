@@ -112,11 +112,11 @@ const decorativeElements = [
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
       /* Single accent dot */
       radial-gradient(circle at 85% 15%, var(--gradient-secondary-medium) 3px, transparent 3px),
       /* Bold visible spiral */
-      conic-gradient(from 0deg at 85% 15%, 
+      conic-gradient(from 0deg at 85% 15%,
         transparent 0deg,
         var(--gradient-primary-medium) 45deg,
         transparent 90deg,
@@ -126,16 +126,22 @@ const decorativeElements = [
         transparent 270deg,
         var(--gradient-primary-dim) 315deg,
         transparent 360deg);
-    background-size: 
+    background-size:
       100% 100%,
       1000px 1000px;
-    background-position: 
+    background-position:
       0 0,
       top right;
     background-repeat: no-repeat;
     opacity: calc(1 - var(--scroll-progress, 0) * 0.8);
     animation: accentPulse 8s ease-in-out infinite, accentFloat 12s ease-in-out infinite;
     z-index: 2;
+  }
+
+  /* Hide accent spiral in minimal theme */
+  :global([data-theme="minimal"]) .hero::after {
+    display: none !important;
+    opacity: 0 !important;
   }
 
   /* Enhanced CSS Animations */

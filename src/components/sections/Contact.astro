@@ -259,21 +259,22 @@ const floatingElements = [
     padding: 40px 20px;
     text-decoration: none;
     transition: all 0.3s ease;
-    border: 3px solid var(--bg-dark);
-    transform: rotate(1deg);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    transform: var(--rotation-sm);
     display: block;
     text-align: center;
   }
 
   .contact-method:nth-child(2) {
     background: var(--accent-secondary);
-    transform: rotate(-1deg);
+    transform: var(--rotation-sm);
   }
 
   .contact-method:nth-child(3) {
     background: var(--accent-tertiary);
     color: var(--text-primary);
-    transform: rotate(2deg);
+    transform: var(--rotation-md);
   }
 
   /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
@@ -284,7 +285,7 @@ const floatingElements = [
 
   .contact-method:hover {
     transform: rotate(0deg) scale(1.05);
-    box-shadow: 8px 8px 0px var(--accent-primary);
+    box-shadow: var(--shadow-xl) var(--accent-primary);
   }
 
   .contact-label {
@@ -326,7 +327,7 @@ const floatingElements = [
     color: var(--text-light);
     user-select: none;
     border-radius: 6px;
-    box-shadow: 4px 4px 0px var(--accent-primary);
+    box-shadow: var(--shadow-md) var(--accent-primary);
   }
 
   /* Contact floating element positions - accounting for centered content */

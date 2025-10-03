@@ -174,7 +174,8 @@ if (limit && limit > 0) {
 
   .project-card {
     background: var(--bg-primary);
-    border: 3px solid var(--bg-dark);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
     transition: all 0.4s ease;
     cursor: pointer;
     position: relative;
@@ -257,16 +258,16 @@ if (limit && limit > 0) {
   }
 
   .project-card:nth-child(odd) {
-    transform: rotate(0.5deg);
+    transform: var(--rotation-sm);
   }
 
   .project-card:nth-child(even) {
-    transform: rotate(-0.5deg);
+    transform: var(--rotation-sm);
   }
 
   .project-card:hover {
     transform: scale(1.05);
-    box-shadow: 12px 12px 0px var(--accent-secondary);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
     z-index: 5;
   }
 
@@ -327,8 +328,9 @@ if (limit && limit > 0) {
     background: var(--accent-secondary);
     color: var(--text-light);
     padding: 15px;
-    transform: rotate(-1deg);
-    border: 2px solid var(--bg-dark);
+    transform: var(--rotation-sm);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
     margin-top: 15px;
   }
 

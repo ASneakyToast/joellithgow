@@ -124,9 +124,10 @@ const stats = [
     color: var(--text-primary);
     background: var(--bg-secondary);
     padding: 40px;
-    border: 3px solid var(--bg-dark);
-    transform: rotate(-1deg);
-    box-shadow: 8px 8px 0px var(--accent-primary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    transform: var(--rotation-sm);
+    box-shadow: var(--shadow-xl) var(--accent-primary);
   }
 
   .about-stats {
@@ -140,12 +141,13 @@ const stats = [
     color: var(--text-light);
     padding: 30px;
     text-align: center;
-    border: 3px solid var(--bg-dark);
-    transform: rotate(1deg);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    transform: var(--rotation-sm);
   }
 
   .stat-item:nth-child(even) {
-    transform: rotate(-2deg);
+    transform: var(--rotation-lg);
     background: var(--accent-secondary);
   }
 
@@ -215,13 +217,14 @@ const stats = [
 
   .skill-category {
     background: var(--bg-secondary);
-    border: 3px solid var(--bg-dark);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
     padding: 30px;
-    transform: rotate(0.5deg);
+    transform: var(--rotation-sm);
   }
 
   .skill-category:nth-child(even) {
-    transform: rotate(-0.5deg);
+    transform: var(--rotation-sm);
   }
 
   .skill-title {
