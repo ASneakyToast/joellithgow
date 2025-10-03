@@ -53,9 +53,16 @@ const navItems = isHomePage ? [
     background: var(--bg-secondary);
     border: 3px solid var(--accent-primary);
     padding: 20px;
-    transform: rotate(-1deg);
+    transform: rotate(-1deg) translateX(150px);
     box-shadow: 8px 8px 0px var(--accent-secondary);
     backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: all 0.5s ease;
+  }
+
+  .nav.visible {
+    opacity: 1;
+    transform: rotate(-1deg) translateX(0);
   }
 
   .nav-links {
@@ -94,13 +101,16 @@ const navItems = isHomePage ? [
   /* Responsive design */
   @media (max-width: 768px) {
     .nav {
-      position: relative;
-      top: 0;
-      right: 0;
-      transform: none;
-      margin: 20px;
-      width: calc(100% - 40px);
+      top: 20px;
+      right: 20px;
+      left: 20px;
+      width: auto;
       padding: 15px;
+      transform: translateY(-100px);
+    }
+
+    .nav.visible {
+      transform: translateY(0);
     }
 
     .nav-links {
@@ -126,8 +136,28 @@ const navItems = isHomePage ? [
       savedTheme = 'default';
       localStorage.setItem('portfolio-theme', 'default');
     }
-    
+
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Show/hide navigation based on scroll position (after hero section)
+    const nav = document.querySelector('.nav');
+    const heroSection = document.querySelector('.hero');
+
+    if (nav && heroSection) {
+      const showNav = () => {
+        const heroHeight = heroSection.offsetHeight;
+        if (window.scrollY > heroHeight * 0.8) {
+          nav.classList.add('visible');
+        } else {
+          nav.classList.remove('visible');
+        }
+      };
+
+      // Check on scroll
+      window.addEventListener('scroll', showNav);
+      // Check on load in case user refreshed mid-page
+      showNav();
+    }
 
     // Set active navigation based on current page
     const currentPath = window.location.pathname;

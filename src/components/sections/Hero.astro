@@ -18,41 +18,37 @@ const {
   ctaHref = '#work'
 } = Astro.props;
 
-// Floating elements configuration
-const floatingElements = [
+// Decorative geometric elements configuration
+const decorativeElements = [
   {
     id: 1,
-    text: 'currently: building the future',
-    class: 'floating-element-1'
+    class: 'decorative-element-1',
+    shape: 'circle'
   },
   {
     id: 2,
-    text: 'status: open to opportunities',
-    class: 'floating-element-2'
+    class: 'decorative-element-2',
+    shape: 'rect'
   },
   {
     id: 3,
-    text: 'location: everywhere',
-    class: 'floating-element-3'
+    class: 'decorative-element-3',
+    shape: 'line'
   }
 ];
 ---
 
 <section class="hero" aria-labelledby="hero-heading">
   <div class="hero-content">
-    <div class="hero-badge" aria-label="Professional role">{badgeText}</div>
     <h1 id="hero-heading" class="main-title">{title}</h1>
     <p class="subtitle">{subtitle}</p>
-    <div class="hero-description">
-      {description}
-    </div>
     <div class="hero-actions">
       <a href={ctaHref} class="cta-button" aria-describedby="work-cta-description">
         {ctaText}
       </a>
-      <button 
-        id="themeControl" 
-        class="theme-control" 
+      <button
+        id="themeControl"
+        class="theme-control"
         aria-label="Open theme selector"
         aria-expanded="false"
         aria-controls="themeModal"
@@ -68,26 +64,25 @@ const floatingElements = [
     </div>
   </div>
   
-  <!-- Floating Status Elements -->
-  <div class="floating-elements" aria-hidden="true">
-    {floatingElements.map((element) => (
-      <div class={`floating-element ${element.class}`}>
-        {element.text}
-      </div>
+  <!-- Decorative Geometric Elements -->
+  <div class="decorative-elements" aria-hidden="true">
+    {decorativeElements.map((element) => (
+      <div class={`decorative-element ${element.class}`} data-shape={element.shape}></div>
     ))}
   </div>
 </section>
 
 <style>
   .hero {
-    padding: 80px 20px;
-    min-height: 100vh;
+    padding: 4vh 20px;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
     background: var(--bg-primary);
     overflow: hidden;
+    box-sizing: border-box;
   }
 
   /* Clean Minimal Background Grid */
@@ -200,60 +195,33 @@ const floatingElements = [
   }
 
   .hero-content {
-    max-width: 1000px;
+    width: 80vw;
     margin: 0 auto;
     position: relative;
     z-index: 10;
   }
 
-  .hero-badge {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: 8px 16px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 2px solid var(--bg-dark);
-    transform: rotate(-2deg);
-    display: inline-block;
-    margin-bottom: 30px;
-    font-weight: bold;
-  }
-
   .main-title {
-    font-size: clamp(48px, 10vw, 140px);
+    font-size: clamp(40px, 8vw, 100px);
     font-weight: bold;
     line-height: 1;
-    margin: 40px 0;
+    margin: 2.5vh 0;
     color: var(--text-primary);
     text-shadow: 4px 4px 0px var(--accent-secondary);
     transform: skew(-1deg);
   }
 
   .subtitle {
-    font-size: 32px;
+    font-size: 1.75rem;
     color: var(--text-secondary);
-    margin-bottom: 50px;
+    margin-bottom: 7vh;
     transform: rotate(1deg);
     display: inline-block;
   }
 
-  .hero-description {
-    font-size: 18px;
-    line-height: 1.6;
-    color: var(--text-primary);
-    max-width: 600px;
-    margin-bottom: 40px;
-    background: var(--bg-secondary);
-    padding: 30px;
-    border: 3px solid var(--bg-dark);
-    transform: rotate(-1deg);
-    box-shadow: 6px 6px 0px var(--accent-tertiary);
-  }
-
   .hero-actions {
     display: flex;
-    gap: 30px;
+    gap: 1.5rem;
     align-items: flex-start;
     flex-wrap: wrap;
   }
@@ -312,8 +280,8 @@ const floatingElements = [
     font-size: 16px;
   }
 
-  /* Floating Elements Container - Positioned within hero section */
-  .floating-elements {
+  /* Decorative Elements Container */
+  .decorative-elements {
     position: absolute;
     top: 0;
     left: 0;
@@ -323,58 +291,67 @@ const floatingElements = [
     z-index: 10;
   }
 
-  .floating-element {
+  .decorative-element {
     position: absolute;
     pointer-events: none;
-    background: var(--accent-tertiary);
-    border: 2px solid var(--bg-dark);
-    padding: 12px 16px;
-    font-size: 11px;
-    font-weight: bold;
-    color: var(--text-primary);
     user-select: none;
-    border-radius: 6px;
-    box-shadow: 4px 4px 0px var(--accent-primary);
-    max-width: 200px;
-    word-wrap: break-word;
   }
 
-  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
-  [data-theme="neon"] .floating-element,
-  [data-theme="electric"] .floating-element {
-    color: var(--bg-dark);
-  }
-
-  /* Individual element styling */
-  .floating-element:nth-child(2) {
-    background: var(--accent-secondary);
-    color: var(--text-light);
-    box-shadow: 4px 4px 0px var(--accent-tertiary);
-  }
-
-  .floating-element:nth-child(3) {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    box-shadow: 4px 4px 0px var(--accent-secondary);
-  }
-
-  /* Simple positioning within hero section - avoiding nav menu overlap */
-  .floating-element-1 {
+  /* Circle - wireframe style */
+  .decorative-element-1 {
     top: 15%;
-    right: 23%;
+    right: 20%;
+    width: 200px;
+    height: 200px;
+    border: 4px dashed var(--accent-primary);
+    border-radius: 50%;
     transform: rotate(12deg);
+    opacity: 0.6;
   }
 
-  .floating-element-2 {
-    top: 60%;
-    left: 4%;
-    transform: rotate(-8deg);
+  /* Rectangle - split diagonal with contrasting sections */
+  .decorative-element-2 {
+    top: 55%;
+    left: 5%;
+    width: 140px;
+    height: 140px;
+    background: linear-gradient(135deg, var(--accent-secondary) 50%, transparent 50%);
+    opacity: 0.4;
+    transform: rotate(-15deg);
+    border: 3px solid var(--accent-secondary);
   }
 
-  .floating-element-3 {
-    bottom: 15%;
-    right: 8%;
-    transform: rotate(15deg);
+  /* Line element - diagonal line */
+  .decorative-element-3 {
+    bottom: 20%;
+    right: 10%;
+    width: 250px;
+    height: 4px;
+    background: var(--accent-tertiary);
+    transform: rotate(25deg);
+    opacity: 0.5;
+  }
+
+  .decorative-element-3::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent-tertiary);
+    opacity: 0.7;
+  }
+
+  .decorative-element-3::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 80%;
+    height: 4px;
+    background: var(--accent-tertiary);
+    opacity: 0.4;
   }
 
   /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
@@ -389,8 +366,8 @@ const floatingElements = [
       background-size: 60px 60px; /* Larger grid on mobile for better visibility */
     }
     
-    /* Hide all floating chips on mobile */
-    .floating-elements {
+    /* Hide decorative elements on mobile */
+    .decorative-elements {
       display: none;
     }
 
@@ -404,11 +381,6 @@ const floatingElements = [
 
     .subtitle {
       font-size: 24px;
-    }
-
-    .hero-description {
-      font-size: 16px;
-      padding: 20px;
     }
 
     .theme-control {
@@ -432,16 +404,6 @@ const floatingElements = [
     
     .cta-button:hover {
       transform: scale(1.02);
-    }
-    
-    .floating-element {
-      animation: none !important;
-    }
-    
-    .floating-element:hover,
-    .floating-element:focus {
-      transform: scale(1.05) !important;
-      animation: none !important;
     }
   }
 </style>
@@ -495,6 +457,5 @@ const floatingElements = [
       });
     }
 
-    // Floating elements are now purely decorative - no interactions needed
   });
 </script>
