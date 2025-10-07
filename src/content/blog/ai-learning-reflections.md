@@ -43,6 +43,12 @@ Over the past [TIME PERIOD], I've been deeply immersed in learning and working w
 - **What worked:** Streamlining content creation workflows and establishing better creative processes
 - **Key insight:** AI can help you think systematically about creative workflows, not just implement them
 
+### 5. Game Development & Rapid Prototyping
+**Project:** [Symbiotic Survival - Minecraft Mutualism Mod](https://github.com/ASneakyToast/minecraft-mutualisms-mod)
+- **What worked:** Vibe coding a complex game mod in hours using domain-specific AI workflows
+- **Key insight:** Claude adapts its approach based on domain—game dev gets incremental, placeholder-driven prototyping that prioritizes testing mechanics over polish
+- **Full story:** [Building a Minecraft Mutualism Mod Dev Journal](./minecraft-mutualism-mod-devlog.md)
+
 ---
 
 ## Technical Challenges & Solutions
@@ -166,6 +172,33 @@ Always specify to use only existing repository labels to avoid label creation at
 - **Before:** Feeling overwhelmed by big technical challenges
 - **After:** Naturally thinking in terms of step-by-step solutions
 
+### 4. Domain-Specific AI Behavior: Game Dev vs Web Dev
+**Surprise discovery:** Claude Code fundamentally adapts its coding approach based on the domain you're working in.
+
+**The Pattern I Noticed:**
+- **Web development:** Tends toward production-ready code with complete implementations
+- **Game development:** Incremental, placeholder-heavy, TODO-driven prototyping approach
+- **"Completion" means different things:** Web = done and polished. Games = working prototype, next chunk unlocked.
+
+**The Concrete Example:**
+While [building a Minecraft mutualism mod](./minecraft-mutualism-mod-devlog.md), I discovered leaves were withering away even though they were attached to wood blocks. Bug, right?
+
+Not exactly. Investigation revealed Claude had set up custom blocks using generic Minecraft block models—enough to get them rendering and testable in-game—but not properly inheriting from the specialized `PillarBlock` and `LeavesBlock` classes they needed for correct behavior.
+
+It was **intentionally halfway**. The blocks worked well enough to test core game mechanics, with the expectation of refactoring to proper specs later.
+
+**The Insight:** This is actually brilliant for game development. Game mechanics need to be *felt* and *tested* iteratively to know if they're even fun before you invest in polish. You don't need perfect pathfinding to test if "follow the bird to honey" is an engaging mechanic. You don't need optimized algorithms to validate whether "destroy nest → no fruit" feels right as a game consequence.
+
+**Key Lessons:**
+1. **Embrace domain-appropriate workflows** - What works for web doesn't always work for games, and vice versa
+2. **TODOs as creative scaffolding** - In rapid game prototyping, TODOs aren't tech debt—they're markers of "good enough to test the next idea"
+3. **Know when "done" means "done"** - Understand the difference between "works for testing" and "production ready"
+4. **Expect refactoring** - Halfway implementations to enable rapid iteration are a feature, not a bug
+
+**Real-world impact:** This realization changed how I approach creative prototyping. Instead of fighting the placeholder-heavy approach, I now lean into it during exploration phases—but with clear markers for what needs production-level implementation later.
+
+Read the full story: [Building a Minecraft Mutualism Mod Dev Journal](./minecraft-mutualism-mod-devlog.md)
+
 ---
 
 ## Common Pitfalls & How to Avoid Them
@@ -234,6 +267,7 @@ Always specify to use only existing repository labels to avoid label creation at
 - [Current Portfolio](CURRENT_PORTFOLIO_LINK) - Showcasing AI-assisted design and development
 - [Interactive Snake Game](SNAKE_GAME_LINK) - Creative collaboration between human and AI
 - [Artwork Gallery](ARTWORK_GALLERY_LINK) - AI-assisted content management implementation
+- [Symbiotic Survival Minecraft Mod](https://github.com/ASneakyToast/minecraft-mutualisms-mod) - Game development prototyping with domain-specific AI workflows ([dev journal](./minecraft-mutualism-mod-devlog.md))
 
 ### GitHub Issues & Discussions
 - [Wagtail Scheduling Version Confusion](https://github.com/cca/cca-edu/issues/71) - Documentation of version-specific challenges
@@ -247,7 +281,7 @@ Always specify to use only existing repository labels to avoid label creation at
 - **Learning Resources:** [TO BE ADDED - specific courses, books, communities]
 
 ### Recommended Reading
-- [TO BE ADDED - articles, books, resources that have been particularly valuable]
+- [The Call of the Honeyguide by Rob Dunn](https://www.goodreads.com/book/show/222139804-the-call-of-the-honeyguide) - Inspired the Minecraft mutualism mod; explores how mutualisms shape life and evolution
 
 ### Communities & Learning Networks
 - [TO BE ADDED - Discord servers, forums, meetups related to AI-assisted development]
@@ -264,7 +298,7 @@ Every challenge documented here, every success celebrated here, is part of a rap
 
 ---
 
-*This post was created as a living document and will be updated regularly with new insights, projects, and lessons learned. Last updated: January 2025*
+*This post was created as a living document and will be updated regularly with new insights, projects, and lessons learned. Last updated: October 2025*
 
 **Connect with me:** [Contact information or links to social profiles]
 
