@@ -1,0 +1,627 @@
+---
+// Magazine/Newspaper layout component for homepage
+import { getCollection } from 'astro:content';
+import ContentCard from '@components/ui/ContentCard.astro';
+
+// Get blog posts (exclude drafts, get featured)
+const allBlogPosts = await getCollection('blog', ({ data }) => {
+  return !data.draft;
+});
+
+// Sort by publish date (newest first)
+const sortedBlogPosts = allBlogPosts.sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+
+// Get featured blog posts
+const featuredBlogPosts = sortedBlogPosts.filter(post => post.data.featured);
+
+// Get all projects
+const allProjects = await getCollection('projects');
+const sortedProjects = allProjects.sort((a, b) => a.data.number - b.data.number);
+const featuredProjects = sortedProjects.filter(project => project.data.featured);
+
+// Hero item: Featured project or most recent featured blog post
+// Alternate between showing a project and blog post as hero
+const heroProject = featuredProjects[0];
+const heroPost = featuredBlogPosts[0];
+
+// Use project as hero if available, otherwise use blog post
+const heroType = heroProject ? 'project' : 'blog';
+const heroItem = heroProject || heroPost;
+
+// Sidebar featured item
+let sidebarItem, sidebarType;
+if (heroType === 'project') {
+  // If hero is project, show blog post in sidebar
+  sidebarItem = featuredBlogPosts[0];
+  sidebarType = 'blog';
+} else {
+  // If hero is blog, show project in sidebar
+  sidebarItem = featuredProjects[0] || featuredBlogPosts[1];
+  sidebarType = featuredProjects[0] ? 'project' : 'blog';
+}
+
+// Below the fold: Mix ALL remaining content
+// Get projects not used in hero/sidebar
+const usedProjectIds = [heroType === 'project' ? heroProject?.data.id : null, sidebarType === 'project' ? sidebarItem?.data.id : null].filter(Boolean);
+const belowFoldProjects = sortedProjects.filter(p => !usedProjectIds.includes(p.data.id));
+
+// Get posts not used in hero/sidebar
+const usedPostSlugs = [heroType === 'blog' ? heroPost?.slug : null, sidebarType === 'blog' ? sidebarItem?.slug : null].filter(Boolean);
+const belowFoldPosts = sortedBlogPosts.filter(post => !usedPostSlugs.includes(post.slug));
+
+// Interleave projects and posts for visual variety
+const belowFoldContent = [];
+let postIndex = 0;
+let projIndex = 0;
+
+// Create alternating pattern: post, project, post, project, etc.
+// Show more items since we're including all projects now (limit to 9)
+const maxBelowFoldItems = 9;
+for (let i = 0; i < maxBelowFoldItems; i++) {
+  if (i % 2 === 0 && postIndex < belowFoldPosts.length) {
+    belowFoldContent.push({ type: 'blog', data: belowFoldPosts[postIndex++] });
+  } else if (projIndex < belowFoldProjects.length) {
+    belowFoldContent.push({ type: 'project', data: belowFoldProjects[projIndex++] });
+  } else if (postIndex < belowFoldPosts.length) {
+    belowFoldContent.push({ type: 'blog', data: belowFoldPosts[postIndex++] });
+  }
+}
+---
+
+<section id="magazine" class="magazine-layout" aria-labelledby="magazine-heading">
+  <div class="magazine-container">
+    <header class="magazine-header">
+      <h2 id="magazine-heading" class="section-title">from the studio</h2>
+      <p class="section-subtitle">Projects, writing, and creative explorations</p>
+    </header>
+
+    {/* Above the fold section */}
+    <div class="above-fold">
+      {/* Hero section - Large featured content */}
+      {heroItem && (
+        <article class="hero-content">
+          {heroType === 'blog' ? (
+            <a href={`/blog/${heroItem.slug}`} class="hero-link">
+              <div class="hero-badge hero-badge-blog">
+                <span class="badge-text">Featured Post</span>
+              </div>
+              {heroItem.data.image && (
+                <div class="hero-image">
+                  <img src={heroItem.data.image.src} alt={heroItem.data.image.alt} loading="eager" />
+                </div>
+              )}
+              <div class="hero-text">
+                <h3 class="hero-title">{heroItem.data.title}</h3>
+                <p class="hero-description">{heroItem.data.description}</p>
+                <div class="hero-meta">
+                  <time datetime={heroItem.data.publishDate.toISOString()}>
+                    {heroItem.data.publishDate.toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </time>
+                  {heroItem.data.readingTime && (
+                    <span class="reading-time"> • {heroItem.data.readingTime} min read</span>
+                  )}
+                </div>
+                {heroItem.data.tags && heroItem.data.tags.length > 0 && (
+                  <div class="hero-tags">
+                    {heroItem.data.tags.slice(0, 4).map((tag) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </a>
+          ) : (
+            <div class="hero-link">
+              <div class="hero-badge hero-badge-project">
+                <span class="badge-text">Featured Project</span>
+              </div>
+              {heroItem.data.images && heroItem.data.images[0] && (
+                <div class={`hero-image ${heroItem.data.images[0].type === 'video' ? 'video-container' : ''}`}>
+                  {heroItem.data.images[0].type === 'video' ? (
+                    <video autoplay muted loop playsinline>
+                      <source src={heroItem.data.images[0].src} type="video/webm" />
+                    </video>
+                  ) : (
+                    <img src={heroItem.data.images[0].src} alt={heroItem.data.images[0].alt} loading="eager" />
+                  )}
+                </div>
+              )}
+              <div class="hero-text">
+                <h3 class="hero-title">{heroItem.data.title}</h3>
+                <p class="hero-description">{heroItem.data.description}</p>
+                {heroItem.data.technologies && heroItem.data.technologies.length > 0 && (
+                  <div class="hero-tags">
+                    {heroItem.data.technologies.slice(0, 4).map((tech) => (
+                      <span class="tag">{tech}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </article>
+      )}
+
+      {/* Sidebar section */}
+      <aside class="sidebar">
+        {/* Featured sidebar content */}
+        {sidebarItem && (
+          <article class="sidebar-featured">
+            {sidebarType === 'blog' ? (
+              <a href={`/blog/${sidebarItem.slug}`} class="sidebar-link">
+                <span class="sidebar-badge sidebar-badge-blog">Featured Writing</span>
+                <h4 class="sidebar-title">{sidebarItem.data.title}</h4>
+                <p class="sidebar-excerpt">{sidebarItem.data.description}</p>
+                <div class="sidebar-meta">
+                  <time datetime={sidebarItem.data.publishDate.toISOString()}>
+                    {sidebarItem.data.publishDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </time>
+                </div>
+              </a>
+            ) : (
+              <div class="sidebar-link">
+                <span class="sidebar-badge sidebar-badge-project">Featured Project</span>
+                <h4 class="sidebar-title">{sidebarItem.data.title}</h4>
+                <p class="sidebar-excerpt">{sidebarItem.data.description}</p>
+                {sidebarItem.data.technologies && (
+                  <div class="sidebar-tech">
+                    {sidebarItem.data.technologies.slice(0, 3).map((tech) => (
+                      <span class="tech-tag">{tech}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </article>
+        )}
+
+        {/* Quick links */}
+        <nav class="quick-links" aria-label="Quick navigation">
+          <h4 class="quick-links-title">Quick Links</h4>
+          <ul class="links-list">
+            <li><a href="/blog">View All Writing →</a></li>
+            <li><a href="#about">About Me →</a></li>
+            <li><a href="#contact">Get in Touch →</a></li>
+            <li><a href="#process">My Process →</a></li>
+          </ul>
+        </nav>
+      </aside>
+    </div>
+
+    {/* Below the fold - Multi-column grid */}
+    {belowFoldContent.length > 0 && (
+      <div class="below-fold">
+        <h3 class="below-fold-title">More to Explore</h3>
+        <div class="content-grid">
+          {belowFoldContent.map((item) => {
+            if (item.type === 'blog') {
+              const post = item.data;
+              return (
+                <ContentCard
+                  type="blog"
+                  title={post.data.title}
+                  description={post.data.description}
+                  tags={post.data.tags}
+                  image={post.data.image?.src}
+                  url={`/blog/${post.slug}`}
+                  date={post.data.publishDate}
+                  readingTime={post.data.readingTime}
+                />
+              );
+            } else {
+              const project = item.data;
+              return (
+                <ContentCard
+                  type="project"
+                  title={project.data.title}
+                  description={project.data.description}
+                  tags={project.data.technologies}
+                  image={project.data.images?.[0]?.src}
+                  imageType={project.data.images?.[0]?.type}
+                  url={`#work`}
+                />
+              );
+            }
+          })}
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .magazine-layout {
+    padding: 100px 0;
+    background: var(--bg-primary);
+    border-top: 5px solid var(--accent-secondary);
+    position: relative;
+  }
+
+  .magazine-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Section header */
+  .magazine-header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .section-title {
+    font-size: 48px;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    text-transform: lowercase;
+    transform: skew(-2deg);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-decoration-thickness: 4px;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Above the fold layout */
+  .above-fold {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 80px;
+  }
+
+  /* Hero content - Large featured item */
+  .hero-content {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transform: rotate(-0.5deg);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .hero-content:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: var(--shadow-xl) var(--accent-primary);
+  }
+
+  .hero-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .hero-badge {
+    color: var(--text-light);
+    padding: 10px 20px;
+    border-bottom: 3px solid var(--bg-dark);
+  }
+
+  .hero-badge-blog {
+    background: var(--accent-secondary);
+  }
+
+  .hero-badge-project {
+    background: var(--accent-primary);
+  }
+
+  .badge-text {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    border-bottom: 3px solid var(--bg-dark);
+  }
+
+  .hero-image img,
+  .hero-image video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .hero-content:hover .hero-image img,
+  .hero-content:hover .hero-image video {
+    transform: scale(1.05);
+  }
+
+  .hero-text {
+    padding: 30px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .hero-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+  }
+
+  .hero-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hero-tags .tag {
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 5px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--bg-dark);
+    font-weight: bold;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .sidebar-featured {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    transform: rotate(0.5deg);
+    transition: all 0.3s ease;
+  }
+
+  .sidebar-featured:hover {
+    transform: rotate(0deg);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .sidebar-link {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .sidebar-badge {
+    display: inline-block;
+    color: var(--text-light);
+    padding: 5px 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+    border: 2px solid var(--bg-dark);
+  }
+
+  .sidebar-badge-blog {
+    background: var(--accent-secondary);
+  }
+
+  .sidebar-badge-project {
+    background: var(--accent-primary);
+  }
+
+  .sidebar-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-excerpt {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sidebar-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  .sidebar-tech .tech-tag {
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 3px 6px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--bg-dark);
+    font-weight: bold;
+  }
+
+  /* Quick links */
+  .quick-links {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    border: var(--border-width) solid var(--accent-tertiary);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    transform: rotate(-0.5deg);
+  }
+
+  .quick-links-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-tertiary);
+  }
+
+  .links-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .links-list li {
+    margin-bottom: 12px;
+  }
+
+  .links-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  .links-list a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: inline-block;
+  }
+
+  .links-list a:hover {
+    color: var(--accent-tertiary);
+    transform: translateX(5px);
+  }
+
+  /* Below the fold */
+  .below-fold {
+    margin-top: 60px;
+  }
+
+  .below-fold-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--text-primary);
+    text-transform: lowercase;
+    transform: rotate(-1deg);
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    align-items: stretch;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .above-fold {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .sidebar {
+      flex-direction: row;
+    }
+
+    .sidebar-featured,
+    .quick-links {
+      flex: 1;
+    }
+
+    .content-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .magazine-layout {
+      padding: 60px 0;
+    }
+
+    .magazine-header {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 36px;
+    }
+
+    .sidebar {
+      flex-direction: column;
+    }
+
+    .hero-title {
+      font-size: 24px;
+    }
+
+    .hero-image {
+      height: 200px;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  /* Accessibility */
+  .hero-link:focus,
+  .sidebar-link:focus,
+  .links-list a:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-content:hover,
+    .sidebar-featured:hover {
+      transform: scale(1);
+    }
+
+    .hero-content:hover .hero-image img {
+      transform: scale(1);
+    }
+
+    .links-list a:hover {
+      transform: translateX(0);
+    }
+  }
+</style>
