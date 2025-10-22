@@ -1,5 +1,7 @@
 ---
 // Contact section component - exact original design
+import QuantumLattice from '../interactive/QuantumLattice.astro';
+
 export interface Props {
   title?: string;
   description?: string;
@@ -47,6 +49,9 @@ const contactMethods = [
 ---
 
 <section id="contact" class="contact" aria-labelledby="contact-heading">
+  <!-- WebGL Quantum Lattice Background (only visible in quantum theme) -->
+  <QuantumLattice variant="footer" />
+
   <div class="contact-content">
     <header>
       <h2 id="contact-heading" class="contact-title">{title}</h2>
@@ -54,12 +59,12 @@ const contactMethods = [
         {description}
       </p>
     </header>
-    
+
     <div class="contact-methods" role="group" aria-label="Contact methods">
       {contactMethods.map((method) => (
-        <a 
-          href={method.href} 
-          class="contact-method" 
+        <a
+          href={method.href}
+          class="contact-method"
           aria-describedby={`${method.id}-description`}
           target={method.external ? "_blank" : undefined}
           rel={method.external ? "noopener noreferrer" : undefined}
@@ -69,7 +74,7 @@ const contactMethods = [
         </a>
       ))}
     </div>
-    
+
     <!-- Hidden descriptions for screen readers -->
     <div class="sr-only">
       {contactMethods.map((method) => (

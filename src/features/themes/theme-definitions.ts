@@ -217,5 +217,32 @@ export const themes: Theme[] = [
       '--gradient-tertiary-light': 'rgba(255, 7, 58, 0.4)',
       '--gradient-tertiary-medium': 'rgba(255, 7, 58, 0.5)'
     }
+  },
+  {
+    name: 'quantum',
+    displayName: 'quantum',
+    description: '3D & fluid',
+    colors: ['#d97757', '#6a9bcc', '#788c5d'],
+    cssVariables: {
+      '--accent-primary': '#d97757',
+      '--accent-secondary': '#6a9bcc',
+      '--accent-tertiary': '#788c5d',
+      '--bg-primary': '#faf9f5',
+      '--bg-secondary': '#ffffff',
+      '--bg-dark': '#141413',
+      '--text-primary': '#141413',
+      '--text-secondary': '#b0aea5',
+      '--text-light': '#faf9f5',
+      '--gradient-primary-light': 'rgba(217, 119, 87, 0.25)',
+      '--gradient-primary-medium': 'rgba(217, 119, 87, 0.4)',
+      '--gradient-primary-dim': 'rgba(217, 119, 87, 0.3)',
+      '--gradient-primary-subtle': 'rgba(217, 119, 87, 0.15)',
+      '--gradient-secondary-medium': 'rgba(106, 155, 204, 0.6)',
+      '--gradient-secondary-light': 'rgba(106, 155, 204, 0.5)',
+      '--gradient-secondary-dim': 'rgba(106, 155, 204, 0.2)',
+      '--gradient-secondary-subtle': 'rgba(106, 155, 204, 0.15)',
+      '--gradient-tertiary-light': 'rgba(120, 140, 93, 0.4)',
+      '--gradient-tertiary-medium': 'rgba(120, 140, 93, 0.5)'
+    }
   }
 ];
