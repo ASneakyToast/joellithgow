@@ -57,7 +57,7 @@ const { variant = 'hero' } = Astro.props;
 
 <script>
   // ═══════════════════════════════════════════════════════════════════════
-  // QUANTUM LATTICE - OPTIMIZED WEBGL PARTICLE SYSTEM
+  // QUANTUM LATTICE - PURE WEBGL (Matching Original Artifact)
   // ═══════════════════════════════════════════════════════════════════════
 
   interface Particle {
@@ -73,10 +73,10 @@ const { variant = 'hero' } = Astro.props;
   class QuantumLattice {
     private canvas: HTMLCanvasElement;
     private gl: WebGL2RenderingContext | WebGLRenderingContext | null;
-    private width: number;
-    private height: number;
+    private width = 1200;
+    private height = 1200;
     private params = {
-      particleCount: 2000, // Reduced from 5000
+      particleCount: 10000,
       baseFreq: 1.5,
       phaseSpeed: 0.8,
       motionScale: 2.0,
@@ -98,18 +98,28 @@ const { variant = 'hero' } = Astro.props;
     private rng: Random;
     private isQuantumTheme = false;
 
+    // Adaptive quality
+    private targetFPS = 60;
+    private fpsHistory: number[] = [];
+    private fpsHistorySize = 30;
+    private adaptiveEnabled = true;
+    private lastAdaptiveCheck = 0;
+    private adaptiveCheckInterval = 60;
+    private activeParticleCount = 10000;
+    private minParticles = 400;
+    private maxParticles = 100000;
+    private lastFrameTime = performance.now();
+    private frameTimeSum = 0;
+    private frameTimeCount = 0;
+    private fps = 60;
+
     // Cached WebGL resources
     private quadBuffer: WebGLBuffer | null = null;
-    private circleBuffer: WebGLBuffer | null = null;
-    private posBuffer: WebGLBuffer | null = null;
-    private colorBuffer: WebGLBuffer | null = null;
-    private instanceExt: any = null;
+    private particleBuffer: WebGLBuffer | null = null;
 
     constructor(canvas: HTMLCanvasElement) {
       this.canvas = canvas;
       this.gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-      this.width = 800; // Fixed reasonable size
-      this.height = 800;
       this.rng = new Random(12345);
 
       if (!this.gl) {
@@ -121,7 +131,6 @@ const { variant = 'hero' } = Astro.props;
       this.setupCanvas();
       this.initWebGL();
       this.initializeSystem();
-
       this.observeThemeChanges();
 
       if (this.isQuantumTheme) {
@@ -153,7 +162,6 @@ const { variant = 'hero' } = Astro.props;
     }
 
     private setupCanvas() {
-      // Use fixed size for better performance
       this.canvas.width = this.width;
       this.canvas.height = this.height;
 
@@ -171,7 +179,7 @@ const { variant = 'hero' } = Astro.props;
       this.gl.shaderSource(shader, source);
       this.gl.compileShader(shader);
 
-      if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+      if (!this.gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
         this.gl.deleteShader(shader);
         return null;
@@ -206,10 +214,9 @@ const { variant = 'hero' } = Astro.props;
     private initWebGL() {
       if (!this.gl) return;
 
-      // Particle shaders
+      // Particle shaders (using GL_POINTS for soft circles)
       const particleVertexShader = `
         attribute vec2 aPosition;
-        attribute vec2 aParticlePos;
         attribute vec3 aColor;
 
         uniform vec2 uResolution;
@@ -217,11 +224,11 @@ const { variant = 'hero' } = Astro.props;
         varying vec3 vColor;
 
         void main() {
-          vec2 pos = aPosition * 3.0 + aParticlePos;
-          vec2 clipSpace = (pos / uResolution) * 2.0 - 1.0;
+          vec2 clipSpace = (aPosition / uResolution) * 2.0 - 1.0;
           clipSpace.y *= -1.0;
 
           gl_Position = vec4(clipSpace, 0.0, 1.0);
+          gl_PointSize = 6.0;
           vColor = aColor;
         }
       `;
@@ -231,7 +238,13 @@ const { variant = 'hero' } = Astro.props;
         varying vec3 vColor;
 
         void main() {
-          gl_FragColor = vec4(vColor, 0.6);
+          // Circular particles with soft edges
+          vec2 center = gl_PointCoord - 0.5;
+          float dist = length(center);
+          if (dist > 0.5) discard;
+
+          float alpha = 0.8 * (1.0 - dist * 2.0);
+          gl_FragColor = vec4(vColor, alpha);
         }
       `;
 
@@ -261,9 +274,6 @@ const { variant = 'hero' } = Astro.props;
       this.shaderProgram = this.createProgram(particleVertexShader, particleFragmentShader);
       this.trailProgram = this.createProgram(trailVertexShader, trailFragmentShader);
 
-      // Cache instancing extension
-      this.instanceExt = this.gl.getExtension('ANGLE_instanced_arrays');
-
       // Create reusable buffers
       this.quadBuffer = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadBuffer);
@@ -272,20 +282,7 @@ const { variant = 'hero' } = Astro.props;
         -1, 1,   1, -1,   1, 1
       ]), this.gl.STATIC_DRAW);
 
-      // Circle vertices
-      const circleVerts = [];
-      const segments = 8;
-      for (let i = 0; i < segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
-        circleVerts.push(Math.cos(angle), Math.sin(angle));
-      }
-      this.circleBuffer = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.circleBuffer);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(circleVerts), this.gl.STATIC_DRAW);
-
-      // Create particle data buffers
-      this.posBuffer = this.gl.createBuffer();
-      this.colorBuffer = this.gl.createBuffer();
+      this.particleBuffer = this.gl.createBuffer();
 
       // Create trail texture and framebuffer
       this.trailTexture = this.gl.createTexture();
@@ -313,12 +310,13 @@ const { variant = 'hero' } = Astro.props;
 
       this.generatePhaseField();
 
-      const gridSize = Math.ceil(Math.sqrt(this.params.particleCount));
+      const targetCount = this.adaptiveEnabled ? this.activeParticleCount : this.params.particleCount;
+      const gridSize = Math.ceil(Math.sqrt(targetCount));
       const spacing = this.width / (gridSize + 1);
 
       let count = 0;
-      for (let i = 0; i < gridSize && count < this.params.particleCount; i++) {
-        for (let j = 0; j < gridSize && count < this.params.particleCount; j++) {
+      for (let i = 0; i < gridSize && count < targetCount; i++) {
+        for (let j = 0; j < gridSize && count < targetCount; j++) {
           const x = (i + 1) * spacing + this.rng.range(-spacing * 0.1, spacing * 0.1);
           const y = (j + 1) * spacing + this.rng.range(-spacing * 0.1, spacing * 0.1);
           this.particles.push({
@@ -483,8 +481,63 @@ const { variant = 'hero' } = Astro.props;
       return [f(5), f(3), f(1)];
     }
 
+    private adaptiveQualityCheck() {
+      if (!this.adaptiveEnabled || this.fpsHistory.length === 0) return;
+
+      const avgFPS = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
+
+      if (avgFPS < this.targetFPS - 5 && this.activeParticleCount > this.minParticles) {
+        let newCount = Math.floor(this.activeParticleCount * 0.9);
+        newCount = Math.max(newCount, this.minParticles);
+
+        if (newCount !== this.activeParticleCount) {
+          this.activeParticleCount = newCount;
+          console.log('Adaptive Quality: Reducing to', this.activeParticleCount, 'particles (FPS:', Math.round(avgFPS), ')');
+          this.initializeSystem();
+        }
+      }
+      else if (avgFPS > this.targetFPS + 5 && this.activeParticleCount < this.params.particleCount && this.activeParticleCount < this.maxParticles) {
+        let newCount = Math.floor(this.activeParticleCount * 1.1);
+        newCount = Math.min(newCount, this.params.particleCount, this.maxParticles);
+
+        if (newCount !== this.activeParticleCount) {
+          this.activeParticleCount = newCount;
+          console.log('Adaptive Quality: Increasing to', this.activeParticleCount, 'particles (FPS:', Math.round(avgFPS), ')');
+          this.initializeSystem();
+        }
+      }
+
+      this.fpsHistory = [];
+    }
+
     private render() {
       if (!this.gl || !this.shaderProgram || !this.trailProgram || !this.trailFramebuffer || !this.trailTexture) return;
+
+      // FPS tracking
+      const currentTime = performance.now();
+      const deltaTime = currentTime - this.lastFrameTime;
+      this.lastFrameTime = currentTime;
+
+      this.frameTimeSum += deltaTime;
+      this.frameTimeCount++;
+
+      if (this.frameTimeCount >= 10) {
+        this.fps = Math.round(1000 / (this.frameTimeSum / this.frameTimeCount));
+
+        this.fpsHistory.push(this.fps);
+        if (this.fpsHistory.length > this.fpsHistorySize) {
+          this.fpsHistory.shift();
+        }
+
+        this.frameTimeSum = 0;
+        this.frameTimeCount = 0;
+      }
+
+      // Adaptive quality check
+      if (this.frameCount - this.lastAdaptiveCheck > this.adaptiveCheckInterval) {
+        this.adaptiveQualityCheck();
+        this.lastAdaptiveCheck = this.frameCount;
+      }
 
       this.time += 0.01;
       this.frameCount++;
@@ -516,62 +569,37 @@ const { variant = 'hero' } = Astro.props;
 
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
-      // Draw particles
+      // Draw particles using GL_POINTS
       this.gl.useProgram(this.shaderProgram);
 
-      // Update particle positions and colors
-      const positions = new Float32Array(this.particles.length * 2);
-      const colors = new Float32Array(this.particles.length * 3);
+      // Prepare particle data (positions and colors interleaved)
+      const particleData = new Float32Array(this.particles.length * 5);
 
       for (let i = 0; i < this.particles.length; i++) {
-        positions[i * 2] = this.particles[i].x;
-        positions[i * 2 + 1] = this.particles[i].y;
-
         const color = this.getParticleColor(this.particles[i]);
-        colors[i * 3] = color[0];
-        colors[i * 3 + 1] = color[1];
-        colors[i * 3 + 2] = color[2];
+        particleData[i * 5] = this.particles[i].x;
+        particleData[i * 5 + 1] = this.particles[i].y;
+        particleData[i * 5 + 2] = color[0];
+        particleData[i * 5 + 3] = color[1];
+        particleData[i * 5 + 4] = color[2];
       }
 
-      // Circle vertices
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.circleBuffer);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.particleBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, particleData, this.gl.DYNAMIC_DRAW);
+
       const aPosition = this.gl.getAttribLocation(this.shaderProgram, 'aPosition');
-      this.gl.enableVertexAttribArray(aPosition);
-      this.gl.vertexAttribPointer(aPosition, 2, this.gl.FLOAT, false, 0, 0);
-
-      // Particle positions
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.posBuffer);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.DYNAMIC_DRAW);
-      const aParticlePos = this.gl.getAttribLocation(this.shaderProgram, 'aParticlePos');
-      this.gl.enableVertexAttribArray(aParticlePos);
-      this.gl.vertexAttribPointer(aParticlePos, 2, this.gl.FLOAT, false, 0, 0);
-
-      if (this.instanceExt) {
-        this.instanceExt.vertexAttribDivisorANGLE(aParticlePos, 1);
-      }
-
-      // Particle colors
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, colors, this.gl.DYNAMIC_DRAW);
       const aColor = this.gl.getAttribLocation(this.shaderProgram, 'aColor');
-      this.gl.enableVertexAttribArray(aColor);
-      this.gl.vertexAttribPointer(aColor, 3, this.gl.FLOAT, false, 0, 0);
 
-      if (this.instanceExt) {
-        this.instanceExt.vertexAttribDivisorANGLE(aColor, 1);
-      }
+      this.gl.enableVertexAttribArray(aPosition);
+      this.gl.vertexAttribPointer(aPosition, 2, this.gl.FLOAT, false, 20, 0);
+
+      this.gl.enableVertexAttribArray(aColor);
+      this.gl.vertexAttribPointer(aColor, 3, this.gl.FLOAT, false, 20, 8);
 
       const resLoc = this.gl.getUniformLocation(this.shaderProgram, 'uResolution');
       this.gl.uniform2f(resLoc, this.width, this.height);
 
-      // Draw instanced
-      if (this.instanceExt) {
-        this.instanceExt.drawArraysInstancedANGLE(this.gl.TRIANGLE_FAN, 0, 8, this.particles.length);
-      } else {
-        for (let i = 0; i < this.particles.length; i++) {
-          this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 8);
-        }
-      }
+      this.gl.drawArrays(this.gl.POINTS, 0, this.particles.length);
 
       // Render to screen
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
