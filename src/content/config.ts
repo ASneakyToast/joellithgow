@@ -123,6 +123,30 @@ const artworkSchema = z.object({
   })).optional()
 });
 
+// Define creative coding schema for interactive artworks
+const creativeCodeSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  creationDate: z.string().transform((str) => new Date(str)),
+  technologies: z.array(z.string()),
+  image: z.object({
+    src: z.string(),
+    alt: z.string()
+  }).optional(),
+  // Creative details
+  concept: z.string().optional(),
+  technicalNotes: z.string().optional(),
+  inspiration: z.string().optional(),
+  // Organization and metadata
+  featured: z.boolean().default(false),
+  draft: z.boolean().default(false),
+  tags: z.array(z.string()).optional(),
+  category: z.enum(['webgl', 'canvas', 'svg', 'generative', 'interactive', 'shader']).optional(),
+  // Interactive page path (if standalone HTML)
+  pagePath: z.string().optional()
+});
+
 // Define collections
 export const collections = {
   'projects': defineCollection({
@@ -132,6 +156,10 @@ export const collections = {
   'blog': defineCollection({
     type: 'content',
     schema: blogSchema
+  }),
+  'creative-coding': defineCollection({
+    type: 'data',
+    schema: creativeCodeSchema
   })
 };
 
@@ -140,3 +168,4 @@ export type Project = z.infer<typeof projectSchema>;
 export type BlogPost = z.infer<typeof blogSchema>;
 export type Artwork = z.infer<typeof artworkSchema>;
 export type Link = z.infer<typeof linkSchema>;
+export type CreativeCoding = z.infer<typeof creativeCodeSchema>;
