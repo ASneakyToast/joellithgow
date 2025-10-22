@@ -1,0 +1,15 @@
+{
+  "id": "quantum-lattice",
+  "title": "Quantum Lattice",
+  "description": "An interactive WebGL particle system featuring phase-driven dynamics, instanced rendering, and adaptive quality control. Explore quantum-inspired lattice formations with real-time parameter controls.",
+  "creationDate": "2025-10-22",
+  "technologies": ["WebGL", "Pure JavaScript", "Instanced Rendering", "GLSL Shaders"],
+  "concept": "This piece explores the intersection of quantum physics concepts and visual computing. Particles move through a dynamic phase field, creating emergent patterns that evoke quantum lattice structures. The system uses multi-harmonic wave functions to generate complex, evolving behaviors from simple mathematical rules.",
+  "technicalNotes": "Built entirely with pure WebGL (no frameworks), featuring instanced rendering for efficient particle management, framebuffer-based trail effects, and adaptive quality control that maintains 60 FPS by dynamically adjusting particle count. The phase field uses bilinear interpolation for smooth gradient calculations.",
+  "inspiration": "Inspired by quantum field theory, the visualization of wave functions, and the beauty of emergent complexity in physical systems.",
+  "featured": true,
+  "draft": false,
+  "tags": ["webgl", "particles", "generative", "interactive", "quantum"],
+  "category": "webgl",
+  "pagePath": "/creative-coding/quantum-lattice"
+}

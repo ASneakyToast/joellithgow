@@ -1,0 +1,421 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Navigation from '@components/common/Navigation.astro';
+
+const allWorks = await getCollection('creative-coding', ({ data }) => {
+  return !data.draft;
+});
+
+// Sort by creation date (newest first)
+const sortedWorks = allWorks.sort(
+  (a, b) => b.data.creationDate.valueOf() - a.data.creationDate.valueOf()
+);
+
+const pageTitle = 'Creative Coding - Joel Lithgow';
+const pageDescription = 'Interactive artworks and generative experiments exploring the intersection of code, mathematics, and visual design.';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <!-- Skip to main content link for screen readers -->
+  <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
+
+  <!-- Navigation Component -->
+  <Navigation />
+
+  <!-- Main Content -->
+  <main id="main-content" class="creative-coding-main">
+    <!-- Header Section -->
+    <section class="creative-coding-header">
+      <div class="container">
+        <div class="badge">code as art</div>
+        <h1 class="creative-coding-title">creative coding</h1>
+        <p class="creative-coding-description">
+          {pageDescription}
+        </p>
+      </div>
+    </section>
+
+    <!-- Works Grid -->
+    <section class="works-content">
+      <div class="container">
+        {sortedWorks.length > 0 ? (
+          <div class="works-grid">
+            {sortedWorks.map((work) => (
+              <article class="work-card">
+                <div class="work-visual">
+                  {work.data.image ? (
+                    <img
+                      src={work.data.image.src}
+                      alt={work.data.image.alt}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="placeholder-visual">
+                      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="100" r="80" fill="var(--accent-primary)" opacity="0.2"/>
+                        <circle cx="100" cy="100" r="50" fill="var(--accent-secondary)" opacity="0.3"/>
+                        <circle cx="100" cy="100" r="20" fill="var(--accent-tertiary)" opacity="0.4"/>
+                      </svg>
+                    </div>
+                  )}
+                  {work.data.featured && (
+                    <span class="featured-badge" aria-label="Featured work">★</span>
+                  )}
+                  {work.data.category && (
+                    <span class="category-badge">{work.data.category}</span>
+                  )}
+                </div>
+
+                <div class="work-info">
+                  <h2 class="work-title">{work.data.title}</h2>
+
+                  <time
+                    datetime={work.data.creationDate.toISOString()}
+                    class="work-date"
+                  >
+                    {work.data.creationDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short'
+                    })}
+                  </time>
+
+                  <p class="work-description">{work.data.description}</p>
+
+                  {work.data.technologies && work.data.technologies.length > 0 && (
+                    <div class="work-technologies">
+                      {work.data.technologies.map((tech) => (
+                        <span class="tech-tag">{tech}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <a href={work.data.pagePath || `/creative-coding/${work.data.id}`} class="work-link">
+                    Explore Interactive →
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div class="empty-state">
+            <div class="empty-message">
+              <div class="badge">coming soon</div>
+              <p>No creative coding works published yet. Check back soon!</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .creative-coding-main {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding-top: 80px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .creative-coding-header {
+    padding: 60px 0;
+    margin-bottom: 60px;
+    text-align: center;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: lowercase;
+    transform: var(--rotation-sm);
+    margin-bottom: 1rem;
+    border: var(--border-width) solid var(--bg-dark);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .creative-coding-title {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    margin: 1rem 0;
+    text-transform: lowercase;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    transform: var(--rotation-sm);
+  }
+
+  .creative-coding-description {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .works-content {
+    padding-bottom: 100px;
+  }
+
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+  }
+
+  .work-card {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--accent-primary);
+    transform: var(--rotation-sm);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .work-card:nth-child(even) {
+    transform: rotate(0.5deg);
+  }
+
+  .work-card:nth-child(3n) {
+    transform: rotate(-0.8deg);
+  }
+
+  .work-card:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .work-visual {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    border-bottom: var(--border-width) solid var(--accent-primary);
+  }
+
+  .work-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .work-card:hover .work-visual img {
+    transform: scale(1.05);
+  }
+
+  .placeholder-visual {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg,
+      var(--gradient-primary-light),
+      var(--gradient-secondary-medium));
+  }
+
+  .placeholder-visual svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid var(--bg-dark);
+    box-shadow: var(--shadow-sm) var(--accent-primary);
+    transform: rotate(12deg);
+  }
+
+  .category-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 2px solid var(--bg-dark);
+    box-shadow: var(--shadow-sm) var(--accent-primary);
+    transform: rotate(-2deg);
+  }
+
+  .work-info {
+    padding: 25px;
+  }
+
+  .work-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    text-transform: lowercase;
+  }
+
+  .work-date {
+    display: inline-block;
+    background: var(--accent-tertiary);
+    color: var(--bg-dark);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-1deg);
+    margin-bottom: 1rem;
+    border: 2px solid var(--bg-dark);
+  }
+
+  .work-description {
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+  }
+
+  .work-technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tech-tag {
+    background: var(--gradient-primary-light);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    border: 2px solid var(--accent-secondary);
+    transform: rotate(-1deg);
+    font-weight: bold;
+  }
+
+  .work-link {
+    display: inline-block;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    border: var(--border-width) solid var(--bg-dark);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm) var(--accent-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+  }
+
+  .work-link:hover {
+    transform: rotate(1deg) scale(1.05);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+    background: var(--accent-secondary);
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 8px;
+    text-decoration: none;
+    border: var(--border-width) solid var(--accent-primary);
+    z-index: 1000;
+  }
+
+  .skip-link:focus {
+    top: 6px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    margin-top: 3rem;
+  }
+
+  .empty-message {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--accent-tertiary);
+    padding: 3rem;
+    transform: var(--rotation-sm);
+    box-shadow: var(--shadow-lg) var(--accent-primary);
+  }
+
+  .empty-message p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .creative-coding-main {
+      padding-top: 60px;
+    }
+
+    .creative-coding-header {
+      padding: 40px 0;
+      margin-bottom: 40px;
+    }
+
+    .creative-coding-title {
+      font-size: 2.5rem;
+    }
+
+    .creative-coding-description {
+      font-size: 1rem;
+    }
+
+    .works-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .work-card {
+      transform: rotate(0deg);
+    }
+
+    .work-card:nth-child(even),
+    .work-card:nth-child(3n) {
+      transform: rotate(0deg);
+    }
+
+    .work-card:hover {
+      transform: scale(1.01);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
