@@ -19,6 +19,10 @@
         <div class="theme-preview theme-preview-minimal"></div>
         <span>Minimal</span>
       </div>
+      <div class="theme-option" data-theme="quantum" onclick="setTheme('quantum')">
+        <div class="theme-preview theme-preview-quantum"></div>
+        <span>Quantum</span>
+      </div>
     </div>
   </div>
 </div>
@@ -152,6 +156,7 @@
   /* Theme Preview Colors */
   .theme-preview-default { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #ffe66d); }
   .theme-preview-minimal { background: linear-gradient(135deg, #000000, #333333, #666666); }
+  .theme-preview-quantum { background: linear-gradient(135deg, #d97757, #6a9bcc, #788c5d); }
 
   /* Case Study Modal */
   .modal-overlay {
@@ -726,7 +731,7 @@
   // Theme Management System
   class ThemeManager {
     constructor() {
-      this.themes = ['default', 'minimal'];
+      this.themes = ['default', 'minimal', 'quantum'];
       this.currentTheme = this.loadTheme();
       this.modal = null;
       this.init();
@@ -837,12 +842,12 @@
       let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
 
       // If the saved theme is invalid, reset to default
-      const validThemes = ['default', 'minimal'];
+      const validThemes = ['default', 'minimal', 'quantum'];
       if (!validThemes.includes(savedTheme)) {
         savedTheme = 'default';
         localStorage.setItem('portfolio-theme', 'default');
       }
-      
+
       return savedTheme;
     }
   }
