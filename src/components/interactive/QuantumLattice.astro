@@ -57,7 +57,7 @@ const { variant = 'hero' } = Astro.props;
 
 <script>
   // ═══════════════════════════════════════════════════════════════════════
-  // QUANTUM LATTICE - PURE WEBGL PARTICLE SYSTEM
+  // QUANTUM LATTICE - OPTIMIZED WEBGL PARTICLE SYSTEM
   // ═══════════════════════════════════════════════════════════════════════
 
   interface Particle {
@@ -65,8 +65,6 @@ const { variant = 'hero' } = Astro.props;
     y: number;
     vx: number;
     vy: number;
-    prevX: number;
-    prevY: number;
     maxSpeed: number;
     noiseOffsetX: number;
     noiseOffsetY: number;
@@ -78,7 +76,7 @@ const { variant = 'hero' } = Astro.props;
     private width: number;
     private height: number;
     private params = {
-      particleCount: 5000,
+      particleCount: 2000, // Reduced from 5000
       baseFreq: 1.5,
       phaseSpeed: 0.8,
       motionScale: 2.0,
@@ -98,14 +96,20 @@ const { variant = 'hero' } = Astro.props;
     private trailFramebuffer: WebGLFramebuffer | null = null;
     private trailTexture: WebGLTexture | null = null;
     private rng: Random;
-    private themeColors = { primary: '#d97757', secondary: '#6a9bcc', tertiary: '#788c5d' };
     private isQuantumTheme = false;
+
+    // Cached WebGL resources
+    private quadBuffer: WebGLBuffer | null = null;
+    private circleBuffer: WebGLBuffer | null = null;
+    private posBuffer: WebGLBuffer | null = null;
+    private colorBuffer: WebGLBuffer | null = null;
+    private instanceExt: any = null;
 
     constructor(canvas: HTMLCanvasElement) {
       this.canvas = canvas;
       this.gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-      this.width = canvas.width;
-      this.height = canvas.height;
+      this.width = 800; // Fixed reasonable size
+      this.height = 800;
       this.rng = new Random(12345);
 
       if (!this.gl) {
@@ -118,7 +122,6 @@ const { variant = 'hero' } = Astro.props;
       this.initWebGL();
       this.initializeSystem();
 
-      // Listen for theme changes
       this.observeThemeChanges();
 
       if (this.isQuantumTheme) {
@@ -150,28 +153,13 @@ const { variant = 'hero' } = Astro.props;
     }
 
     private setupCanvas() {
-      const container = this.canvas.parentElement;
-      if (!container) return;
+      // Use fixed size for better performance
+      this.canvas.width = this.width;
+      this.canvas.height = this.height;
 
-      const resizeCanvas = () => {
-        const rect = container.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-        this.width = rect.width;
-        this.height = rect.height;
-
-        this.canvas.width = this.width * dpr;
-        this.canvas.height = this.height * dpr;
-        this.canvas.style.width = `${this.width}px`;
-        this.canvas.style.height = `${this.height}px`;
-
-        if (this.gl) {
-          this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        }
-      };
-
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
+      if (this.gl) {
+        this.gl.viewport(0, 0, this.width, this.height);
+      }
     }
 
     private compileShader(source: string, type: number): WebGLShader | null {
@@ -273,36 +261,50 @@ const { variant = 'hero' } = Astro.props;
       this.shaderProgram = this.createProgram(particleVertexShader, particleFragmentShader);
       this.trailProgram = this.createProgram(trailVertexShader, trailFragmentShader);
 
+      // Cache instancing extension
+      this.instanceExt = this.gl.getExtension('ANGLE_instanced_arrays');
+
+      // Create reusable buffers
+      this.quadBuffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1,  1, -1,  -1, 1,
+        -1, 1,   1, -1,   1, 1
+      ]), this.gl.STATIC_DRAW);
+
+      // Circle vertices
+      const circleVerts = [];
+      const segments = 8;
+      for (let i = 0; i < segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        circleVerts.push(Math.cos(angle), Math.sin(angle));
+      }
+      this.circleBuffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.circleBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(circleVerts), this.gl.STATIC_DRAW);
+
+      // Create particle data buffers
+      this.posBuffer = this.gl.createBuffer();
+      this.colorBuffer = this.gl.createBuffer();
+
       // Create trail texture and framebuffer
       this.trailTexture = this.gl.createTexture();
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.trailTexture);
-      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.canvas.width, this.canvas.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
       this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
       this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
 
       this.trailFramebuffer = this.gl.createFramebuffer();
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.trailFramebuffer);
       this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.trailTexture, 0);
 
-      // Clear with theme background color
-      const bgColor = this.hexToRgb(getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim());
-      this.gl.clearColor(bgColor[0], bgColor[1], bgColor[2], 1.0);
+      // Clear with background color
+      this.gl.clearColor(250/255, 249/255, 245/255, 1.0);
       this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
       this.gl.enable(this.gl.BLEND);
       this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-    }
-
-    private hexToRgb(hex: string): [number, number, number] {
-      hex = hex.replace('#', '');
-      return [
-        parseInt(hex.substr(0, 2), 16) / 255,
-        parseInt(hex.substr(2, 2), 16) / 255,
-        parseInt(hex.substr(4, 2), 16) / 255
-      ];
     }
 
     private initializeSystem() {
@@ -324,8 +326,6 @@ const { variant = 'hero' } = Astro.props;
             y,
             vx: 0,
             vy: 0,
-            prevX: x,
-            prevY: y,
             maxSpeed: 2,
             noiseOffsetX: this.rng.next() * 1000,
             noiseOffsetY: this.rng.next() * 1000
@@ -402,10 +402,6 @@ const { variant = 'hero' } = Astro.props;
     }
 
     private noise(x: number, y: number, z: number): number {
-      const X = Math.floor(x) & 255;
-      const Y = Math.floor(y) & 255;
-      const Z = Math.floor(z) & 255;
-
       x -= Math.floor(x);
       y -= Math.floor(y);
       z -= Math.floor(z);
@@ -446,9 +442,6 @@ const { variant = 'hero' } = Astro.props;
         ax += nx * 0.2;
         ay += ny * 0.2;
       }
-
-      p.prevX = p.x;
-      p.prevY = p.y;
 
       p.vx += ax;
       p.vy += ay;
@@ -508,13 +501,7 @@ const { variant = 'hero' } = Astro.props;
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.trailFramebuffer);
       this.gl.useProgram(this.trailProgram);
 
-      const quadBuffer = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, quadBuffer);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
-        -1, -1,  1, -1,  -1, 1,
-        -1, 1,   1, -1,   1, 1
-      ]), this.gl.STATIC_DRAW);
-
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadBuffer);
       const posLoc = this.gl.getAttribLocation(this.trailProgram, 'aPosition');
       this.gl.enableVertexAttribArray(posLoc);
       this.gl.vertexAttribPointer(posLoc, 2, this.gl.FLOAT, false, 0, 0);
@@ -532,6 +519,7 @@ const { variant = 'hero' } = Astro.props;
       // Draw particles
       this.gl.useProgram(this.shaderProgram);
 
+      // Update particle positions and colors
       const positions = new Float32Array(this.particles.length * 2);
       const colors = new Float32Array(this.particles.length * 3);
 
@@ -545,63 +533,52 @@ const { variant = 'hero' } = Astro.props;
         colors[i * 3 + 2] = color[2];
       }
 
-      const circleVerts = [];
-      const segments = 8;
-      for (let i = 0; i < segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
-        circleVerts.push(Math.cos(angle), Math.sin(angle));
-      }
-
-      const circleBuffer = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, circleBuffer);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(circleVerts), this.gl.STATIC_DRAW);
-
+      // Circle vertices
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.circleBuffer);
       const aPosition = this.gl.getAttribLocation(this.shaderProgram, 'aPosition');
       this.gl.enableVertexAttribArray(aPosition);
       this.gl.vertexAttribPointer(aPosition, 2, this.gl.FLOAT, false, 0, 0);
 
-      const posBuffer = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, posBuffer);
+      // Particle positions
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.posBuffer);
       this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.DYNAMIC_DRAW);
-
       const aParticlePos = this.gl.getAttribLocation(this.shaderProgram, 'aParticlePos');
       this.gl.enableVertexAttribArray(aParticlePos);
       this.gl.vertexAttribPointer(aParticlePos, 2, this.gl.FLOAT, false, 0, 0);
 
-      const ext = this.gl.getExtension('ANGLE_instanced_arrays');
-      if (ext) {
-        ext.vertexAttribDivisorANGLE(aParticlePos, 1);
+      if (this.instanceExt) {
+        this.instanceExt.vertexAttribDivisorANGLE(aParticlePos, 1);
       }
 
-      const colorBuffer = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
+      // Particle colors
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
       this.gl.bufferData(this.gl.ARRAY_BUFFER, colors, this.gl.DYNAMIC_DRAW);
-
       const aColor = this.gl.getAttribLocation(this.shaderProgram, 'aColor');
       this.gl.enableVertexAttribArray(aColor);
       this.gl.vertexAttribPointer(aColor, 3, this.gl.FLOAT, false, 0, 0);
 
-      if (ext) {
-        ext.vertexAttribDivisorANGLE(aColor, 1);
+      if (this.instanceExt) {
+        this.instanceExt.vertexAttribDivisorANGLE(aColor, 1);
       }
 
       const resLoc = this.gl.getUniformLocation(this.shaderProgram, 'uResolution');
-      this.gl.uniform2f(resLoc, this.canvas.width, this.canvas.height);
+      this.gl.uniform2f(resLoc, this.width, this.height);
 
-      if (ext) {
-        ext.drawArraysInstancedANGLE(this.gl.TRIANGLE_FAN, 0, segments, this.particles.length);
+      // Draw instanced
+      if (this.instanceExt) {
+        this.instanceExt.drawArraysInstancedANGLE(this.gl.TRIANGLE_FAN, 0, 8, this.particles.length);
       } else {
         for (let i = 0; i < this.particles.length; i++) {
-          this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, segments);
+          this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 8);
         }
       }
 
       // Render to screen
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-      this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+      this.gl.viewport(0, 0, this.width, this.height);
 
       this.gl.useProgram(this.trailProgram);
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, quadBuffer);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadBuffer);
       this.gl.enableVertexAttribArray(posLoc);
       this.gl.vertexAttribPointer(posLoc, 2, this.gl.FLOAT, false, 0, 0);
 
