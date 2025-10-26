@@ -123,8 +123,11 @@ const processSteps = [
 </section>
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .process {
-    padding: 100px 20px;
+    padding: var(--space-5xl) var(--space-lg);
     background: var(--bg-dark);
     color: var(--text-light);
     border-top: 5px solid var(--accent-primary);
@@ -136,21 +139,21 @@ const processSteps = [
   }
 
   .process-header {
-    margin-bottom: 60px;
+    margin-bottom: var(--space-4xl);
   }
 
   .process-title {
-    font-size: 56px;
-    margin-bottom: 40px;
+    font-size: var(--heading-2xl);
+    margin-bottom: var(--space-3xl);
     color: var(--text-light);
     text-shadow: 4px 4px 0px var(--accent-primary);
     transform: skew(-1deg);
   }
 
   .process-description {
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 60px;
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-4xl);
     color: var(--text-light);
     opacity: 0.9;
   }
@@ -158,17 +161,17 @@ const processSteps = [
   .process-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
-    gap: 60px;
+    gap: var(--space-4xl);
     align-items: start;
   }
 
   .process-nav {
     position: sticky;
-    top: 100px;
+    top: var(--space-5xl);
     background: var(--bg-secondary);
     border: var(--border-width) solid var(--text-light);
     border-radius: var(--border-radius);
-    padding: 30px;
+    padding: var(--space-2xl);
     transform: var(--rotation-sm);
     box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
@@ -176,10 +179,10 @@ const processSteps = [
   .process-nav-item {
     display: flex;
     align-items: center;
-    padding: 20px 0;
+    padding: var(--space-lg) 0;
     border-bottom: 2px solid var(--bg-primary);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--duration-base) var(--ease-out);
     color: var(--text-primary);
   }
 
@@ -190,28 +193,28 @@ const processSteps = [
   .process-nav-item.active {
     background: var(--accent-primary);
     color: var(--text-light);
-    margin: 0 -10px;
-    padding: 20px 10px;
+    margin: 0 calc(var(--space-sm) * -1);
+    padding: var(--space-lg) var(--space-sm);
     transform: skew(-2deg);
   }
 
   .process-nav-item:hover {
     background: var(--bg-primary);
-    margin: 0 -10px;
-    padding: 20px 10px;
+    margin: 0 calc(var(--space-sm) * -1);
+    padding: var(--space-lg) var(--space-sm);
   }
 
   .nav-step-icon {
     background: var(--accent-tertiary);
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 15px;
+    margin-right: var(--space-md);
     border: 2px solid var(--bg-dark);
-    transition: all 0.3s ease;
+    transition: all var(--duration-base) var(--ease-out);
   }
 
   .nav-step-icon svg {
@@ -238,23 +241,23 @@ const processSteps = [
   }
 
   .nav-step-title {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
   }
 
   .process-content-area {
-    padding: 20px 0;
+    padding: var(--space-lg) 0;
   }
 
   .process-step-content {
     min-height: 100vh;
-    padding: 60px 0;
+    padding: var(--space-4xl) 0;
     opacity: 0.3;
-    transform: translateY(20px);
-    transition: all 0.6s ease;
-    margin-bottom: 100px;
+    transform: translateY(var(--space-lg));
+    transition: all var(--duration-slower) var(--ease-out);
+    margin-bottom: var(--space-5xl);
   }
 
   .process-step-content.active {
@@ -265,48 +268,48 @@ const processSteps = [
   .step-content-header {
     background: var(--bg-secondary);
     color: var(--text-primary);
-    padding: 40px;
+    padding: var(--space-3xl);
     border: var(--border-width) solid var(--text-light);
     border-radius: var(--border-radius);
-    margin-bottom: 40px;
+    margin-bottom: var(--space-3xl);
     transform: var(--rotation-sm);
     box-shadow: var(--shadow-xl) var(--accent-secondary);
   }
 
   .step-content-title {
-    font-size: 28px;
-    margin-bottom: 20px;
-    font-weight: bold;
+    font-size: var(--heading-md);
+    margin-bottom: var(--space-lg);
+    font-weight: var(--font-bold);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
   }
 
   .step-content-description {
-    font-size: 18px;
-    line-height: 1.7;
-    margin-bottom: 30px;
+    font-size: var(--text-lg);
+    line-height: var(--leading-loose);
+    margin-bottom: var(--space-2xl);
   }
 
   .step-content-example {
     background: var(--bg-secondary);
     border: 2px solid var(--accent-primary);
     border-left: 6px solid var(--accent-primary);
-    padding: 30px;
-    margin-top: 30px;
+    padding: var(--space-2xl);
+    margin-top: var(--space-2xl);
   }
 
   .step-content-example h4 {
-    font-size: 16px;
+    font-size: var(--text-base);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: var(--space-md);
     color: var(--accent-primary);
-    font-weight: bold;
+    font-weight: var(--font-bold);
   }
 
   .step-content-example p {
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
     margin: 0;
     color: var(--text-primary);
     opacity: 0.9;
@@ -315,52 +318,52 @@ const processSteps = [
   /* Responsive design */
   @media (max-width: 768px) {
     .process {
-      padding: 60px 20px;
+      padding: var(--space-4xl) var(--space-lg);
     }
 
     .process-title {
-      font-size: 36px;
+      font-size: var(--heading-lg);
     }
 
     .process-description {
-      font-size: 16px;
+      font-size: var(--text-base);
     }
 
     .process-layout {
       grid-template-columns: 1fr;
-      gap: 40px;
+      gap: var(--space-3xl);
     }
 
     .process-nav {
       position: relative;
       top: 0;
-      padding: 20px;
+      padding: var(--space-lg);
     }
 
     .step-content-header {
-      padding: 24px;
+      padding: var(--space-xl);
     }
 
     .step-content-title {
-      font-size: 24px;
+      font-size: var(--heading-sm);
     }
 
     .step-content-description {
-      font-size: 16px;
+      font-size: var(--text-base);
     }
 
     .step-content-example {
-      padding: 20px;
+      padding: var(--space-lg);
     }
   }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .process-step-content {
-      transition: opacity 0.2s ease;
+      transition: opacity var(--duration-fast) var(--ease-out);
       transform: none;
     }
-    
+
     .process-step-content.active {
       transform: none;
     }
