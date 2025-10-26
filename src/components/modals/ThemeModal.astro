@@ -45,13 +45,13 @@ import Card from '@components/primitives/Card.astro';
     gap: var(--space-md);
     padding: var(--space-lg);
     cursor: pointer;
-    border: 2px solid transparent;
+    border: var(--border-width) solid transparent;
     transition: all var(--duration-base) var(--ease-out);
   }
 
   .theme-option:hover {
     border-color: var(--accent-secondary);
-    transform: translateY(-3px);
+    transform: translateY(calc(var(--space-xs) * -1));
   }
 
   .theme-option.active {
