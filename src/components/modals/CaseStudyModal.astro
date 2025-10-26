@@ -1,0 +1,529 @@
+---
+// Case study modal for project details
+import Modal from '@components/primitives/Modal.astro';
+---
+
+<Modal id="caseStudyModal" title="case study" size="lg" closeButton={true}>
+  <div class="case-study-content">
+    <!-- Content will be populated dynamically via JavaScript -->
+  </div>
+</Modal>
+
+<style is:global>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Case Study Content Styles */
+  .case-hero {
+    padding: var(--space-3xl);
+    background: var(--bg-primary);
+    border-bottom: 2px solid var(--bg-dark);
+  }
+
+  .case-title {
+    font-size: var(--heading-lg);
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+    text-shadow: 2px 2px 0px var(--accent-primary);
+  }
+
+  .case-subtitle {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+  }
+
+  .case-overview {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .case-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .meta-item {
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-dark);
+    padding: var(--space-md);
+    transform: rotate(1deg);
+  }
+
+  .meta-item:nth-child(even) {
+    transform: rotate(-1deg);
+    background: var(--accent-tertiary);
+  }
+
+  .meta-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: var(--space-xs);
+    color: var(--text-secondary);
+  }
+
+  .meta-value {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  .case-section {
+    padding: var(--space-3xl);
+    border-bottom: 2px solid var(--bg-primary);
+  }
+
+  .case-section:nth-child(even) {
+    background: var(--bg-primary);
+  }
+
+  .case-section .section-title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+    text-transform: lowercase;
+    border-left: 4px solid var(--accent-primary);
+    padding-left: var(--space-md);
+  }
+
+  .section-content {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+  }
+
+  .insight-box {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: var(--space-lg);
+    margin: var(--space-lg) 0;
+    border: 2px solid var(--bg-dark);
+    transform: rotate(-1deg);
+    position: relative;
+  }
+
+  .insight-box::before {
+    content: '💡';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background: var(--accent-tertiary);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+    font-size: var(--text-sm);
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-lg) 0;
+  }
+
+  .metric-card {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-lg);
+    text-align: center;
+    border: 2px solid var(--bg-dark);
+    transform: rotate(1deg);
+  }
+
+  .metric-card:nth-child(even) {
+    transform: rotate(-2deg);
+    background: var(--accent-primary);
+  }
+
+  .metric-number {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-xs);
+  }
+
+  .metric-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .process-step-detailed {
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-dark);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+    transform: rotate(0.5deg);
+  }
+
+  .process-step-detailed:nth-child(even) {
+    transform: rotate(-0.5deg);
+  }
+
+  .step-number-detailed {
+    font-size: var(--heading-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .step-title-detailed {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
+  }
+
+  .step-description-detailed {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+  }
+
+  .case-image-gallery,
+  .image-grid {
+    margin: var(--space-lg) 0;
+  }
+
+  .case-image {
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .primary-image {
+    max-height: 500px;
+    object-fit: cover;
+  }
+
+  .image-caption {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+    text-align: center;
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .quote-block {
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-primary);
+    padding: var(--space-lg);
+    margin: var(--space-lg) 0;
+    font-style: italic;
+    font-size: var(--text-lg);
+  }
+
+  .live-link-container,
+  .live-links-container {
+    margin: var(--space-lg) 0;
+  }
+
+  .live-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: var(--font-bold);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .live-link-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+  }
+
+  .link-arrow {
+    font-size: var(--text-xl);
+  }
+
+  .live-link-description,
+  .live-links-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: var(--space-md) 0;
+  }
+
+  .live-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .case-hero,
+    .case-section {
+      padding: var(--space-xl);
+    }
+
+    .case-title {
+      font-size: var(--heading-md);
+    }
+
+    .case-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .image-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .meta-item,
+    .metric-card,
+    .process-step-detailed,
+    .insight-box {
+      transform: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Case Study Modal Management
+  class CaseStudyModal {
+    private modal: HTMLElement | null;
+    private content: HTMLElement | null;
+
+    constructor() {
+      this.modal = document.getElementById('caseStudyModal');
+      this.content = this.modal?.querySelector('.case-study-content') || null;
+    }
+
+    open(projectData: any) {
+      if (!this.modal || !this.content) return;
+
+      // Generate and populate content
+      const generatedContent = this.generateCaseStudyContent(projectData);
+      this.content.innerHTML = generatedContent;
+
+      // Open modal using global modal manager
+      (window as any).openModal?.('caseStudyModal');
+    }
+
+    generateCaseStudyContent(data: any): string {
+      return `
+        <div class="case-hero">
+            <div class="case-subtitle">${data.subtitle || data.type}</div>
+            <h1 class="case-title">${data.title}</h1>
+            <p class="case-overview">${data.overview || data.description}</p>
+
+            <div class="case-meta">
+                <div class="meta-item">
+                    <div class="meta-label">duration</div>
+                    <div class="meta-value">${data.duration || 'Ongoing'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">team</div>
+                    <div class="meta-value">${data.team || 'Solo project'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">role</div>
+                    <div class="meta-value">${data.role || 'Designer & Developer'}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">tools</div>
+                    <div class="meta-value">${data.tools || data.technologies?.join(', ') || ''}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="case-section">
+            <h2 class="section-title">the challenge</h2>
+            <div class="section-content">${data.problem || 'Challenge details coming soon...'}</div>
+            ${
+              data.insights && data.insights.length > 0
+                ? `
+                <div class="insight-box">
+                    <strong>key insight:</strong> ${data.insights[0]}
+                </div>
+            `
+                : ''
+            }
+        </div>
+
+        <div class="case-section">
+            <h2 class="section-title">the approach</h2>
+            <div class="section-content">${data.solution || 'Solution details coming soon...'}</div>
+            ${
+              data.images && data.images.length > 0
+                ? `
+                <div class="case-image-gallery">
+                    ${
+                      data.images[0].type === 'video'
+                        ? `
+                        <video class="case-image primary-image" autoplay muted loop playsinline controls>
+                            <source src="${data.images[0].src}" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    `
+                        : `
+                        <img src="${data.images[0].src}" alt="${data.images[0].alt}" class="case-image primary-image" loading="lazy">
+                    `
+                    }
+                    <div class="image-caption">${data.images[0].caption}</div>
+                </div>
+            `
+                : ''
+            }
+        </div>
+
+        ${
+          data.process && data.process.length > 0
+            ? `
+        <div class="case-section">
+            <h2 class="section-title">process deep dive</h2>
+            <div class="process-steps">
+                ${data.process
+                  .map(
+                    (step: any, index: number) => `
+                    <div class="process-step-detailed">
+                        <div class="step-number-detailed">${index + 1}</div>
+                        <div class="step-title-detailed">${step.title}</div>
+                        <div class="step-description-detailed">${step.description}</div>
+                    </div>
+                `
+                  )
+                  .join('')}
+            </div>
+        </div>
+        `
+            : ''
+        }
+
+        ${
+          data.images && data.images.length > 1
+            ? `
+            <div class="case-section">
+                <h2 class="section-title">visual documentation</h2>
+                <div class="image-grid">
+                    ${data.images
+                      .slice(1)
+                      .map(
+                        (image: any) => `
+                        <div class="image-item">
+                            <img src="${image.src}" alt="${image.alt}" class="case-image gallery-image" loading="lazy">
+                            <div class="image-caption">${image.caption}</div>
+                        </div>
+                    `
+                      )
+                      .join('')}
+                </div>
+            </div>
+        `
+            : ''
+        }
+
+        <div class="case-section">
+            <h2 class="section-title">key insights</h2>
+            ${
+              data.insights && data.insights.length > 0
+                ? data.insights
+                    .map(
+                      (insight: string) => `
+                <div class="quote-block">
+                    "${insight}"
+                </div>
+            `
+                    )
+                    .join('')
+                : '<p>Insights coming soon...</p>'
+            }
+        </div>
+
+        ${
+          data.metrics && data.metrics.length > 0
+            ? `
+        <div class="case-section">
+            <h2 class="section-title">impact & results</h2>
+            <div class="metric-grid">
+                ${data.metrics
+                  .map(
+                    (metric: any) => `
+                    <div class="metric-card">
+                        <div class="metric-number">${metric.number}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `
+                  )
+                  .join('')}
+            </div>
+        </div>
+        `
+            : ''
+        }
+
+        ${
+          data.liveLink
+            ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLink.title}</h2>
+            <div class="live-link-container">
+                <a href="${data.liveLink.url}" target="_blank" rel="noopener noreferrer" class="live-link-button">
+                    Visit Live Site
+                    <span class="link-arrow">→</span>
+                </a>
+                <p class="live-link-description">${data.liveLink.description}</p>
+            </div>
+        </div>
+        `
+            : ''
+        }
+
+        ${
+          data.liveLinks
+            ? `
+        <div class="case-section">
+            <h2 class="section-title">${data.liveLinks.title}</h2>
+            <div class="live-links-container">
+                <p class="live-links-description">${data.liveLinks.description}</p>
+                <div class="live-links-grid">
+                    ${data.liveLinks.links
+                      .map(
+                        (link: any) => `
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="live-link-button">
+                            ${link.title}
+                            <span class="link-arrow">→</span>
+                        </a>
+                    `
+                      )
+                      .join('')}
+                </div>
+            </div>
+        </div>
+        `
+            : ''
+        }
+      `;
+    }
+  }
+
+  // Initialize case study modal
+  const caseStudyModal = new CaseStudyModal();
+
+  // Export globally
+  (window as any).caseStudyModal = caseStudyModal;
+  (window as any).openCaseStudy = (projectData: any) => caseStudyModal.open(projectData);
+</script>
