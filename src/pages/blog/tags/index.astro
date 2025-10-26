@@ -1,6 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
 
 // Get all blog posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -27,18 +30,18 @@ const pageDescription = 'Explore blog posts by topic and tag.';
   <main class="tags-container">
     <div class="tags-wrapper">
       <header class="tags-header">
-        <div class="badge">explore by topic</div>
+        <Badge>explore by topic</Badge>
         <h1 class="tags-title">Tags</h1>
         <p class="tags-description">{pageDescription}</p>
-        <a href="/blog" class="back-link">← Back to Blog</a>
+        <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
       </header>
 
       <div class="tags-grid">
         {sortedTags.map(([tag, count]) => (
-          <a href={`/blog/tags/${tag}`} class="tag-card">
+          <Card variant="interactive" interactive href={`/blog/tags/${tag}`} class="tag-card">
             <span class="tag-name">#{tag}</span>
             <span class="tag-count">{count} {count === 1 ? 'post' : 'posts'}</span>
-          </a>
+          </Card>
         ))}
       </div>
     </div>
@@ -46,119 +49,84 @@ const pageDescription = 'Explore blog posts by topic and tag.';
 </BaseLayout>
 
 <style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
   .tags-container {
     min-height: 100vh;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: 3rem 2rem;
+    padding: var(--space-3xl) var(--space-xl);
   }
 
   .tags-wrapper {
-    max-width: 900px;
+    max-width: var(--content-wide);
     margin: 0 auto;
   }
 
   .tags-header {
     text-align: left;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-xl);
     border-bottom: 1px solid var(--gradient-primary-subtle);
   }
 
-  .badge {
-    display: inline-block;
-    background: var(--gradient-primary-subtle);
-    color: var(--accent-primary);
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-    border-radius: 4px;
+  .tags-header :global(.badge) {
+    margin-bottom: var(--space-md);
   }
 
   .tags-title {
-    font-size: clamp(2.5rem, 6vw, 3.5rem);
-    font-weight: 700;
-    margin: 0.5rem 0 1rem 0;
+    font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
+    margin: var(--space-sm) 0 var(--space-md) 0;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
   }
 
   .tags-description {
-    font-size: 1.125rem;
+    font-size: var(--text-lg);
     color: var(--text-secondary);
-    line-height: 1.7;
-    margin: 0 0 1rem 0;
-  }
-
-  .back-link {
-    display: inline-block;
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: color 0.2s ease;
-  }
-
-  .back-link:hover {
-    color: var(--accent-secondary);
+    line-height: var(--leading-relaxed);
+    margin: 0 0 var(--space-md) 0;
   }
 
   .tags-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
+    gap: var(--space-xl);
   }
 
   .tag-card {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    background: var(--bg-secondary);
-    border: 1px solid var(--gradient-primary-subtle);
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-
-  .tag-card:hover {
-    border-color: var(--gradient-primary-dim);
-    box-shadow: var(--shadow-lg) var(--accent-secondary);
-    transform: translateY(-2px);
+    gap: var(--space-sm);
   }
 
   .tag-name {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
     color: var(--accent-primary);
   }
 
   .tag-count {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
   }
 
   @media (max-width: 768px) {
     .tags-container {
-      padding: 2rem 1.5rem;
+      padding: var(--space-xl) var(--space-lg);
     }
 
     .tags-grid {
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 1rem;
-    }
-
-    .tag-card {
-      padding: 1.25rem;
+      gap: var(--space-md);
     }
   }
 
   @media (max-width: 480px) {
     .tags-container {
-      padding: 1.5rem 1rem;
+      padding: var(--space-lg) var(--space-md);
     }
 
     .tags-grid {
