@@ -335,6 +335,17 @@ const contactMethods = [
   [data-theme="minimal"] .contact::after {
     display: none !important;
   }
+
+  /* Hide all gradient backgrounds in quantum theme and set dark background */
+  [data-theme="quantum"] .contact {
+    background: rgb(8, 12, 20) !important;
+  }
+
+  [data-theme="quantum"] .contact::before,
+  [data-theme="quantum"] .contact::after {
+    display: none !important;
+    opacity: 0 !important;
+  }
 </style>
 
 <script>

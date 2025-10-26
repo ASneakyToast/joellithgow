@@ -149,6 +149,21 @@ const decorativeElements = [
     opacity: 0 !important;
   }
 
+  /* Hide all gradient backgrounds and decorative elements in quantum theme */
+  :global([data-theme="quantum"]) .hero {
+    background: rgb(8, 12, 20) !important;
+  }
+
+  :global([data-theme="quantum"]) .hero::before,
+  :global([data-theme="quantum"]) .hero::after {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  :global([data-theme="quantum"]) .decorative-elements {
+    display: none !important;
+  }
+
   /* Cleaner geometric shapes for minimal theme */
   :global([data-theme="minimal"]) .decorative-element-1 {
     border-style: solid;

@@ -98,6 +98,12 @@ const { variant = 'hero' } = Astro.props;
     private rng: Random;
     private isQuantumTheme = false;
 
+    // Mouse interaction
+    private mouseX = 0.5; // Normalized 0-1
+    private mouseY = 0.5; // Normalized 0-1
+    private targetHarmonics = 3;
+    private targetBaseFreq = 1.5;
+
     // Adaptive quality
     private targetFPS = 60;
     private fpsHistory: number[] = [];
@@ -132,6 +138,7 @@ const { variant = 'hero' } = Astro.props;
       this.initWebGL();
       this.initializeSystem();
       this.observeThemeChanges();
+      this.setupMouseInteraction();
 
       if (this.isQuantumTheme) {
         this.start();
@@ -161,6 +168,22 @@ const { variant = 'hero' } = Astro.props;
       });
     }
 
+    private setupMouseInteraction() {
+      // Track mouse position across the entire viewport
+      window.addEventListener('mousemove', (e) => {
+        // Normalize mouse position to 0-1 range
+        this.mouseX = e.clientX / window.innerWidth;
+        this.mouseY = e.clientY / window.innerHeight;
+
+        // Map X to harmonics (1-6 layers)
+        this.targetHarmonics = Math.floor(1 + this.mouseX * 5);
+
+        // Map Y to base frequency (0.5 - 3.0)
+        // Inverted: top = higher freq, bottom = lower freq
+        this.targetBaseFreq = 0.5 + (1 - this.mouseY) * 2.5;
+      });
+    }
+
     private setupCanvas() {
       this.canvas.width = this.width;
       this.canvas.height = this.height;
@@ -179,7 +202,7 @@ const { variant = 'hero' } = Astro.props;
       this.gl.shaderSource(shader, source);
       this.gl.compileShader(shader);
 
-      if (!this.gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
         console.error('Shader compile error:', this.gl.getShaderInfoLog(shader));
         this.gl.deleteShader(shader);
         return null;
@@ -228,7 +251,7 @@ const { variant = 'hero' } = Astro.props;
           clipSpace.y *= -1.0;
 
           gl_Position = vec4(clipSpace, 0.0, 1.0);
-          gl_PointSize = 6.0;
+          gl_PointSize = 4.0;
           vColor = aColor;
         }
       `;
@@ -238,12 +261,14 @@ const { variant = 'hero' } = Astro.props;
         varying vec3 vColor;
 
         void main() {
-          // Circular particles with soft edges
+          // Circular particles with soft edges, no glow
           vec2 center = gl_PointCoord - 0.5;
           float dist = length(center);
           if (dist > 0.5) discard;
 
-          float alpha = 0.8 * (1.0 - dist * 2.0);
+          // Simple alpha falloff from center to edge
+          float alpha = 0.7 * (1.0 - dist * 2.0);
+
           gl_FragColor = vec4(vColor, alpha);
         }
       `;
@@ -295,8 +320,8 @@ const { variant = 'hero' } = Astro.props;
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.trailFramebuffer);
       this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.trailTexture, 0);
 
-      // Clear with background color
-      this.gl.clearColor(250/255, 249/255, 245/255, 1.0);
+      // Clear with dark space-quantum background color
+      this.gl.clearColor(8/255, 12/255, 20/255, 1.0);
       this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
@@ -466,9 +491,11 @@ const { variant = 'hero' } = Astro.props;
       const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
       const phase = this.getPhaseAtPosition(p.x, p.y);
 
-      const hue = (phase * 30 + this.time * 10) % 360;
-      const brightness = 40 + (speed / p.maxSpeed) * 55;
-      const saturation = 30 + (speed / p.maxSpeed) * 50;
+      // Space-quantum color palette: cyan to blue-green with electric pop
+      // Hue range: 150-230 (cyan through blue to teal)
+      const hue = 150 + (phase * 10 + this.time * 5) % 80;
+      const brightness = 50 + (speed / p.maxSpeed) * 45; // Bright: 50-95 for pop
+      const saturation = 75 + (speed / p.maxSpeed) * 20; // High saturation: 75-95
 
       return this.hsbToRgb(hue, saturation, brightness);
     }
@@ -538,6 +565,13 @@ const { variant = 'hero' } = Astro.props;
         this.adaptiveQualityCheck();
         this.lastAdaptiveCheck = this.frameCount;
       }
+
+      // Smooth interpolation of mouse-controlled parameters
+      const lerpSpeed = 0.1;
+      this.params.harmonics = Math.floor(
+        this.params.harmonics + (this.targetHarmonics - this.params.harmonics) * lerpSpeed
+      );
+      this.params.baseFreq += (this.targetBaseFreq - this.params.baseFreq) * lerpSpeed;
 
       this.time += 0.01;
       this.frameCount++;
