@@ -2,6 +2,9 @@
 import { getCollection } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
 
 export const getStaticPaths = (async () => {
   const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -35,75 +38,71 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
   <main class="tag-posts-container">
     <div class="tag-posts-wrapper">
       <header class="tag-header">
-        <div class="badge">tag</div>
+        <Badge>tag</Badge>
         <h1 class="tag-title">#{tag}</h1>
         <p class="tag-description">
           {posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged with <strong>{tag}</strong>
         </p>
         <div class="nav-links">
-          <a href="/blog" class="back-link">← Back to Blog</a>
-          <a href="/blog/tags" class="back-link">View All Tags</a>
+          <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
+          <Button href="/blog/tags" variant="ghost" size="sm">View All Tags</Button>
         </div>
       </header>
 
       <div class="blog-posts">
         {posts.map((post) => (
-          <article class="blog-post-card">
-            <div class="post-content">
-              <time
-                datetime={post.data.publishDate.toISOString()}
-                class="post-date"
+          <Card variant="interactive" interactive as="article" class="blog-post-card">
+            <time
+              datetime={post.data.publishDate.toISOString()}
+              class="post-date"
+            >
+              {post.data.publishDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </time>
+
+            <h2 class="post-title">
+              <a
+                href={`/blog/${post.slug}`}
+                class="post-title-link"
               >
-                {post.data.publishDate.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </time>
+                {post.data.title}
+              </a>
+            </h2>
 
-              <h2 class="post-title">
-                <a
-                  href={`/blog/${post.slug}`}
-                  class="post-title-link"
-                >
-                  {post.data.title}
-                </a>
-              </h2>
+            <p class="post-excerpt">
+              {post.data.description}
+            </p>
 
-              <p class="post-excerpt">
-                {post.data.description}
-              </p>
-
-              {post.data.tags && post.data.tags.length > 0 && (
-                <div class="post-tags">
-                  {post.data.tags.map((postTag) => (
-                    <a
-                      href={`/blog/tags/${postTag}`}
-                      class={`tag ${postTag === tag ? 'tag-current' : ''}`}
-                    >
-                      #{postTag}
-                    </a>
-                  ))}
-                </div>
-              )}
-
-              <div class="post-meta">
-                <span class="post-author">
-                  By {post.data.author}
-                  {post.data.readingTime && (
-                    <span> • {post.data.readingTime} min read</span>
-                  )}
-                </span>
-
-                <a
-                  href={`/blog/${post.slug}`}
-                  class="read-more-btn"
-                >
-                  Read more →
-                </a>
+            {post.data.tags && post.data.tags.length > 0 && (
+              <div class="post-tags">
+                {post.data.tags.map((postTag) => (
+                  <Badge
+                    href={`/blog/tags/${postTag}`}
+                    variant={postTag === tag ? 'default' : 'secondary'}
+                    size="sm"
+                  >
+                    #{postTag}
+                  </Badge>
+                ))}
               </div>
+            )}
+
+            <div class="post-meta">
+              <span class="post-author">
+                By {post.data.author}
+                {post.data.readingTime && (
+                  <span> • {post.data.readingTime} min read</span>
+                )}
+              </span>
+
+              <Button href={`/blog/${post.slug}`} variant="ghost" size="sm">
+                Read more →
+              </Button>
             </div>
-          </article>
+          </Card>
         ))}
       </div>
     </div>
@@ -111,115 +110,84 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
 </BaseLayout>
 
 <style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
   .tag-posts-container {
     min-height: 100vh;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: 3rem 2rem;
+    padding: var(--space-3xl) var(--space-xl);
   }
 
   .tag-posts-wrapper {
-    max-width: 800px;
+    max-width: var(--content-normal);
     margin: 0 auto;
   }
 
   .tag-header {
     text-align: left;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-xl);
     border-bottom: 1px solid var(--gradient-primary-subtle);
   }
 
-  .badge {
-    display: inline-block;
-    background: var(--gradient-primary-subtle);
-    color: var(--accent-primary);
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-    border-radius: 4px;
+  .tag-header :global(.badge) {
+    margin-bottom: var(--space-md);
   }
 
   .tag-title {
-    font-size: clamp(2rem, 6vw, 3rem);
-    font-weight: 700;
-    margin: 0.5rem 0 1rem 0;
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin: var(--space-sm) 0 var(--space-md) 0;
     color: var(--accent-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
   }
 
   .tag-description {
-    font-size: 1.125rem;
+    font-size: var(--text-lg);
     color: var(--text-secondary);
-    line-height: 1.7;
-    margin: 0 0 1rem 0;
+    line-height: var(--leading-relaxed);
+    margin: 0 0 var(--space-md) 0;
   }
 
   .nav-links {
     display: flex;
-    gap: 1.5rem;
+    gap: var(--space-md);
     flex-wrap: wrap;
-  }
-
-  .back-link {
-    display: inline-block;
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: color 0.2s ease;
-  }
-
-  .back-link:hover {
-    color: var(--accent-secondary);
   }
 
   .blog-posts {
     display: grid;
-    gap: 2.5rem;
+    gap: var(--space-2xl);
   }
 
   .blog-post-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--gradient-primary-subtle);
-    border-radius: 12px;
-    padding: 2rem;
-    transition: all 0.3s ease;
-  }
-
-  .blog-post-card:hover {
-    border-color: var(--gradient-primary-dim);
-    box-shadow: var(--shadow-lg) var(--accent-secondary);
-  }
-
-  .post-content {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
   }
 
   .post-date {
     display: block;
     color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.02em;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    letter-spacing: var(--tracking-wide);
   }
 
   .post-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin: 0;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
   }
 
   .post-title-link {
     color: var(--text-primary);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--duration-base) var(--ease-out);
   }
 
   .post-title-link:hover {
@@ -228,109 +196,59 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
 
   .post-excerpt {
     color: var(--text-secondary);
-    font-size: 1rem;
-    line-height: 1.7;
-    margin-bottom: 1.25rem;
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: 0;
   }
 
   .post-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .tag {
-    background: var(--gradient-primary-subtle);
-    color: var(--accent-primary);
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-
-  .tag:hover {
-    background: var(--gradient-primary-dim);
-    transform: translateY(-1px);
-  }
-
-  .tag-current {
-    background: var(--accent-primary);
-    color: var(--text-light);
-  }
-
-  .tag-current:hover {
-    background: var(--accent-secondary);
+    gap: var(--space-sm);
   }
 
   .post-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
+    margin-top: var(--space-sm);
+    padding-top: var(--space-md);
     border-top: 1px solid var(--gradient-primary-subtle);
   }
 
   .post-author {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
-  }
-
-  .read-more-btn {
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-  }
-
-  .read-more-btn:hover {
-    color: var(--accent-secondary);
   }
 
   @media (max-width: 768px) {
     .tag-posts-container {
-      padding: 2rem 1.5rem;
+      padding: var(--space-xl) var(--space-lg);
     }
 
     .tag-header {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-    }
-
-    .blog-post-card {
-      padding: 1.5rem;
+      margin-bottom: var(--space-xl);
+      padding-bottom: var(--space-lg);
     }
 
     .post-meta {
       flex-direction: column;
       align-items: flex-start;
-      gap: 1rem;
-    }
-
-    .read-more-btn {
-      align-self: flex-start;
+      gap: var(--space-md);
     }
   }
 
   @media (max-width: 480px) {
     .tag-posts-container {
-      padding: 1.5rem 1rem;
-    }
-
-    .blog-post-card {
-      padding: 1.25rem;
+      padding: var(--space-lg) var(--space-md);
     }
 
     .post-title {
-      font-size: 1.5rem;
+      font-size: var(--text-xl);
     }
 
     .post-excerpt {
-      font-size: 0.95rem;
+      font-size: var(--text-sm);
     }
   }
 </style>
