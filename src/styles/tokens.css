@@ -1,0 +1,169 @@
+/**
+ * Design Tokens - Foundational design system values
+ *
+ * These tokens work WITH themes.css to provide consistent spacing,
+ * typography, and layout patterns across the site.
+ *
+ * Theme-specific tokens (colors, shadows) remain in themes.css
+ */
+
+:root {
+  /* ========================================
+     SPACING SCALE
+     Used for: margins, padding, gaps
+     ======================================== */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  --space-3xl: 4rem;      /* 64px */
+  --space-4xl: 6rem;      /* 96px */
+
+  /* ========================================
+     TYPOGRAPHY SCALE
+     Fluid typography using clamp() for responsiveness
+     ======================================== */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+
+  /* Fluid heading sizes */
+  --heading-sm: clamp(1.25rem, 3vw, 1.5rem);
+  --heading-md: clamp(1.5rem, 4vw, 2rem);
+  --heading-lg: clamp(2rem, 5vw, 2.5rem);
+  --heading-xl: clamp(2.5rem, 6vw, 3.5rem);
+  --heading-2xl: clamp(3rem, 8vw, 4.5rem);
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Letter spacing */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ========================================
+     BORDER RADIUS
+     Modern, flexible radius scale
+     ======================================== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========================================
+     LAYOUT
+     Container and breakpoint values
+     ======================================== */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* Content width constraints */
+  --content-narrow: 600px;
+  --content-normal: 800px;
+  --content-wide: 1000px;
+  --content-full: 1400px;
+
+  /* ========================================
+     Z-INDEX SCALE
+     Consistent layering
+     ======================================== */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 100;
+  --z-overlay: 1000;
+  --z-modal: 10000;
+  --z-popover: 10001;
+  --z-tooltip: 10002;
+
+  /* ========================================
+     TRANSITIONS
+     Standard timing functions
+     ======================================== */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ========================================
+     COMPONENT-SPECIFIC TOKENS
+     Common patterns extracted
+     ======================================== */
+
+  /* Card defaults */
+  --card-padding: var(--space-xl);
+  --card-radius: var(--radius-lg);
+  --card-gap: var(--space-lg);
+
+  /* Button defaults */
+  --button-padding-y: var(--space-sm);
+  --button-padding-x: var(--space-lg);
+  --button-radius: var(--radius-md);
+
+  /* Badge defaults */
+  --badge-padding-y: var(--space-xs);
+  --badge-padding-x: var(--space-sm);
+  --badge-radius: var(--radius-sm);
+  --badge-font-size: var(--text-xs);
+
+  /* Modal defaults */
+  --modal-padding: var(--space-2xl);
+  --modal-radius: var(--radius-xl);
+  --modal-max-width: 800px;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   Mobile-first approach
+   ======================================== */
+
+/* Tablet and up */
+@custom-media --tablet (min-width: 768px);
+
+/* Desktop and up */
+@custom-media --desktop (min-width: 1024px);
+
+/* Large desktop and up */
+@custom-media --wide (min-width: 1280px);
+
+/* ========================================
+   UTILITY: Reduced Motion
+   Respect user preferences
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}

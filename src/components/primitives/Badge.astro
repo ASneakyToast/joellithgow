@@ -1,0 +1,164 @@
+---
+/**
+ * Badge - Small label component
+ *
+ * Used for tags, status indicators, labels, and counts
+ *
+ * Usage:
+ *   <Badge>Featured</Badge>
+ *   <Badge variant="secondary" size="sm">New</Badge>
+ *   <Badge href="/tag/javascript">#javascript</Badge>
+ */
+
+export interface Props {
+  variant?: 'default' | 'secondary' | 'tertiary' | 'ghost' | 'success' | 'warning' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'default',
+  size = 'md',
+  href,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const Element = href ? 'a' : 'span';
+
+const classes = [
+  'badge',
+  `badge--${variant}`,
+  `badge--${size}`,
+  href && 'badge--link',
+  className,
+].filter(Boolean).join(' ');
+
+const linkProps = href ? {
+  href,
+  rel: href.startsWith('http') ? 'noopener noreferrer' : undefined,
+  target: href.startsWith('http') ? '_blank' : undefined,
+} : {};
+---
+
+<Element class={classes} {...linkProps} {...rest}>
+  <slot />
+</Element>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Base badge styles */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    white-space: nowrap;
+
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  /* Size variants */
+  .badge--sm {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  .badge--md {
+    padding: calc(var(--space-xs) + 1px) var(--space-sm);
+    font-size: var(--text-sm);
+    border-radius: var(--radius-sm);
+  }
+
+  .badge--lg {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--text-base);
+    border-radius: var(--radius-md);
+  }
+
+  /* Style variants */
+  .badge--default {
+    background: var(--gradient-primary-subtle);
+    color: var(--accent-primary);
+  }
+
+  .badge--secondary {
+    background: var(--gradient-secondary-subtle);
+    color: var(--accent-secondary);
+  }
+
+  .badge--tertiary {
+    background: var(--gradient-tertiary-light);
+    color: var(--accent-tertiary);
+  }
+
+  .badge--ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--gradient-primary-subtle);
+  }
+
+  .badge--success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+  }
+
+  .badge--warning {
+    background: rgba(251, 191, 36, 0.15);
+    color: #d97706;
+  }
+
+  .badge--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+  }
+
+  /* Link badge */
+  a.badge {
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .badge--link:hover {
+    background: var(--gradient-primary-dim);
+    transform: translateY(-1px);
+  }
+
+  .badge--default.badge--link:hover {
+    background: var(--gradient-primary-dim);
+  }
+
+  .badge--secondary.badge--link:hover {
+    background: var(--gradient-secondary-dim);
+  }
+
+  .badge--tertiary.badge--link:hover {
+    background: var(--gradient-tertiary-medium);
+  }
+
+  /* Focus states */
+  .badge:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .badge {
+      transition: none;
+    }
+
+    .badge--link:hover {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,181 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Button from '@components/primitives/Button.astro';
+import Badge from '@components/primitives/Badge.astro';
+
+const pageTitle = 'Design Primitives Test';
+const pageDescription = 'Testing design system primitives';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main style="padding: 3rem; max-width: 1200px; margin: 0 auto;">
+    <h1 style="margin-bottom: 3rem;">Design Primitives Test</h1>
+
+    {/* Buttons */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Buttons</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <Button variant="primary" size="sm">Primary Small</Button>
+        <Button variant="primary" size="md">Primary Medium</Button>
+        <Button variant="primary" size="lg">Primary Large</Button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="danger">Danger</Button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <Button href="/work">Link Button</Button>
+        <Button disabled>Disabled</Button>
+      </div>
+    </section>
+
+    {/* Badges */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Badges</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <Badge size="sm">Small</Badge>
+        <Badge size="md">Medium</Badge>
+        <Badge size="lg">Large</Badge>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <Badge variant="default">Default</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="tertiary">Tertiary</Badge>
+        <Badge variant="ghost">Ghost</Badge>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <Badge variant="success">Success</Badge>
+        <Badge variant="warning">Warning</Badge>
+        <Badge variant="danger">Danger</Badge>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <Badge href="/blog/tags/javascript">#javascript</Badge>
+        <Badge href="/blog/tags/astro">#astro</Badge>
+      </div>
+    </section>
+
+    {/* Cards */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Cards</h2>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Variants</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <Card variant="default">
+          <h4>Default Card</h4>
+          <p>Background with subtle border</p>
+        </Card>
+        <Card variant="outlined">
+          <h4>Outlined Card</h4>
+          <p>Transparent with visible border</p>
+        </Card>
+        <Card variant="elevated">
+          <h4>Elevated Card</h4>
+          <p>With shadow elevation</p>
+        </Card>
+        <Card variant="flat">
+          <h4>Flat Card</h4>
+          <p>No border or shadow</p>
+        </Card>
+      </div>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Interactive Cards</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <Card variant="interactive" interactive>
+          <h4>Interactive Card</h4>
+          <p>Hover to see effects</p>
+          <Badge>Featured</Badge>
+        </Card>
+        <Card variant="interactive" interactive href="/work">
+          <h4>Link Card</h4>
+          <p>This whole card is a link</p>
+          <Button variant="ghost" size="sm">View →</Button>
+        </Card>
+      </div>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Padding & Radius</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <Card padding="sm" radius="sm">
+          <h4>Small Padding</h4>
+          <p>Small radius</p>
+        </Card>
+        <Card padding="md" radius="md">
+          <h4>Medium Padding</h4>
+          <p>Medium radius</p>
+        </Card>
+        <Card padding="lg" radius="lg">
+          <h4>Large Padding</h4>
+          <p>Large radius (default)</p>
+        </Card>
+        <Card padding="xl" radius="xl">
+          <h4>XL Padding</h4>
+          <p>XL radius</p>
+        </Card>
+      </div>
+    </section>
+
+    {/* Real-world examples */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Real-World Examples</h2>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Blog Post Card</h3>
+      <Card variant="interactive" interactive as="article" style="max-width: 600px; margin-bottom: 2rem;">
+        <time style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem;">October 26, 2025</time>
+        <h4 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Design System Refactoring</h4>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+          How we modernized our component architecture and reduced code duplication by 60%.
+        </p>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <Badge href="/blog/tags/design">#design</Badge>
+          <Badge href="/blog/tags/refactoring">#refactoring</Badge>
+          <Badge href="/blog/tags/astro">#astro</Badge>
+        </div>
+      </Card>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Project Card</h3>
+      <Card variant="elevated" padding="xl" style="max-width: 600px;">
+        <Badge variant="success" style="margin-bottom: 1rem;">Featured</Badge>
+        <h4 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Homepage Redesign</h4>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Data-driven redesign achieving 33% reduction in user confusion.
+        </p>
+        <div style="display: flex; gap: 1rem;">
+          <Button variant="primary">View Case Study</Button>
+          <Button variant="ghost">Learn More →</Button>
+        </div>
+      </Card>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  @import '../styles/tokens.css';
+  @import '../styles/themes.css';
+
+  main {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: var(--heading-2xl);
+    color: var(--text-primary);
+  }
+
+  h2 {
+    font-size: var(--heading-lg);
+    color: var(--text-primary);
+  }
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+</style>
