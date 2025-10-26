@@ -1,0 +1,129 @@
+---
+/**
+ * GlobalHeader - Ultra-minimal centered header with scroll trigger
+ * Only appears after scrolling down, provides escape hatch back to home
+ */
+
+export interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<header class={`global-header ${className || ''}`}>
+  <a href="/" class="logo-link" aria-label="Return to home">
+    Joel Lithgow
+  </a>
+</header>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .global-header {
+    position: fixed;
+    top: var(--space-lg);
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px) var(--rotation-sm);
+    z-index: var(--z-sticky);
+
+    /* Pill styling matching Navigation component */
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--accent-primary);
+    border-radius: var(--border-radius);
+    padding: var(--space-sm) var(--space-lg);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    backdrop-filter: blur(10px);
+
+    /* Start hidden */
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-out),
+                transform var(--duration-slow) var(--ease-out);
+    pointer-events: none;
+  }
+
+  /* Visible state triggered by scroll */
+  .global-header.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) var(--rotation-sm);
+    pointer-events: auto;
+  }
+
+  .logo-link {
+    display: inline-block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    text-decoration: none;
+    text-transform: lowercase;
+    transition: all var(--duration-base) var(--ease-out);
+    padding: var(--space-2xs) var(--space-xs);
+  }
+
+  .logo-link:hover {
+    color: var(--accent-primary);
+    transform: scale(1.05);
+  }
+
+  .logo-link:focus-visible {
+    outline: var(--border-width) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .global-header {
+      top: var(--space-md);
+      padding: var(--space-xs) var(--space-md);
+    }
+
+    .logo-link {
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .global-header {
+      transition: opacity var(--duration-fast) ease;
+    }
+
+    .global-header.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .logo-link {
+      transition: none;
+    }
+
+    .logo-link:hover {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Show header after scrolling down
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('.global-header');
+    if (!header) return;
+
+    const showHeader = () => {
+      // Show after scrolling past 100vh or 800px (whichever is smaller)
+      const triggerPoint = Math.min(window.innerHeight, 800);
+
+      if (window.scrollY > triggerPoint) {
+        header.classList.add('visible');
+      } else {
+        header.classList.remove('visible');
+      }
+    };
+
+    // Check on scroll
+    window.addEventListener('scroll', showHeader);
+
+    // Check on load in case user refreshed mid-page
+    showHeader();
+  });
+</script>
