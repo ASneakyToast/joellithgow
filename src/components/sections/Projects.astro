@@ -88,7 +88,7 @@ if (limit && limit > 0) {
   @import '../../styles/themes.css';
 
   .projects {
-    padding: 100px 0;
+    padding: var(--space-5xl) 0;
     background: var(--bg-secondary);
     border-top: 5px solid var(--accent-primary);
     position: relative; /* Enable positioning context for gradients */
@@ -96,14 +96,14 @@ if (limit && limit > 0) {
 
   .section-header {
     max-width: 1000px;
-    margin: 0 auto 80px;
+    margin: 0 auto var(--space-5xl);
     text-align: center;
   }
 
   .section-title {
-    font-size: 48px;
+    font-size: var(--heading-xl);
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
     text-decoration: underline;
     text-decoration-color: var(--accent-primary);
     text-decoration-thickness: 4px;
@@ -111,10 +111,10 @@ if (limit && limit > 0) {
   }
 
   .section-subtitle {
-    font-size: 16px;
+    font-size: var(--text-base);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: var(--tracking-wider);
   }
 
   .projects-container {
@@ -126,27 +126,27 @@ if (limit && limit > 0) {
     overflow-y: hidden;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-    gap: 40px;
-    padding: 40px 20px; /* Increased top/bottom padding for scaled cards */
-    padding-right: 40px; /* Extra padding for last item */
-    scroll-padding-left: 20px;
+    gap: var(--space-3xl);
+    padding: var(--space-3xl) var(--space-lg); /* Increased top/bottom padding for scaled cards */
+    padding-right: var(--space-3xl); /* Extra padding for last item */
+    scroll-padding-left: var(--space-lg);
     position: relative;
   }
 
   /* Custom scrollbar styling */
   .projects-container::-webkit-scrollbar {
-    height: 8px;
+    height: var(--space-sm);
   }
 
   .projects-container::-webkit-scrollbar-track {
     background: var(--bg-secondary);
-    border-radius: 4px;
-    margin: 0 20px;
+    border-radius: var(--radius-sm);
+    margin: 0 var(--space-lg);
   }
 
   .projects-container::-webkit-scrollbar-thumb {
     background: var(--accent-primary);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     border: 2px solid var(--bg-secondary);
   }
 
@@ -161,7 +161,7 @@ if (limit && limit > 0) {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 40px;
+    width: var(--space-3xl);
     pointer-events: none;
     z-index: 10;
   }
@@ -180,7 +180,7 @@ if (limit && limit > 0) {
     background: var(--bg-primary);
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
-    transition: all 0.4s ease;
+    transition: all var(--duration-base) var(--ease-out);
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -194,7 +194,7 @@ if (limit && limit > 0) {
   .project-header {
     background: var(--bg-dark);
     color: var(--text-light);
-    padding: 20px;
+    padding: var(--space-lg);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -215,7 +215,7 @@ if (limit && limit > 0) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform var(--duration-base) var(--ease-out);
   }
 
   /* 9:5 aspect ratio for video containers */
@@ -255,7 +255,7 @@ if (limit && limit > 0) {
   }
 
   .project-content {
-    padding: 25px;
+    padding: var(--space-xl);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -276,31 +276,31 @@ if (limit && limit > 0) {
   }
 
   .project-number {
-    font-size: 14px;
+    font-size: var(--text-sm);
     background: var(--accent-primary);
-    padding: 6px 12px;
+    padding: var(--space-xs) var(--space-md);
     border: 2px solid var(--text-light);
-    font-weight: bold;
+    font-weight: var(--font-bold);
   }
 
   .project-type {
-    font-size: 12px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
     opacity: 0.8;
   }
 
   .project-title {
-    font-size: 24px;
-    margin-bottom: 15px;
+    font-size: var(--heading-sm);
+    margin-bottom: var(--space-md);
     color: var(--text-primary);
-    font-weight: bold;
+    font-weight: var(--font-bold);
   }
 
   .project-description {
-    font-size: 15px;
-    line-height: 1.5;
-    margin-bottom: 20px;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    margin-bottom: var(--space-lg);
     color: var(--text-secondary);
   }
 
@@ -314,48 +314,48 @@ if (limit && limit > 0) {
   .project-impact {
     background: var(--accent-secondary);
     color: var(--text-light);
-    padding: 15px;
+    padding: var(--space-md);
     transform: var(--rotation-sm);
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
-    margin-top: 15px;
+    margin-top: var(--space-md);
   }
 
   .impact-metric {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
   }
 
 
   .no-projects {
     text-align: center;
-    padding: 60px 20px;
+    padding: var(--space-4xl) var(--space-lg);
     color: var(--text-secondary);
-    font-size: 1.1rem;
+    font-size: var(--text-lg);
   }
 
   /* Responsive design */
   @media (max-width: 768px) {
     .projects {
-      padding: 60px 0;
+      padding: var(--space-4xl) 0;
     }
 
     .section-header {
-      margin-bottom: 40px;
-      padding: 0 20px;
+      margin-bottom: var(--space-3xl);
+      padding: 0 var(--space-lg);
     }
 
     .section-title {
-      font-size: 36px;
+      font-size: var(--heading-lg);
     }
 
     .projects-container {
       flex-direction: column;
       overflow-x: visible;
       scroll-snap-type: none;
-      padding: 20px;
+      padding: var(--space-lg);
     }
 
     .project-card {
@@ -375,31 +375,31 @@ if (limit && limit > 0) {
       scroll-behavior: auto;
       scroll-snap-type: none;
     }
-    
+
     .project-card {
       scroll-snap-align: none;
       scroll-snap-stop: normal;
     }
-    
+
     .project-card:hover {
       transform: scale(1.02);
     }
-    
+
     .project-link:hover {
-      transform: translateX(2px);
+      transform: translateX(var(--space-xs));
     }
   }
 
   /* Focus styles */
   .project-link:focus {
     outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline-offset: var(--space-xs);
+    border-radius: var(--radius-sm);
   }
 
   .tech-tag:focus {
     outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
+    outline-offset: var(--space-xs);
   }
 </style>
 
