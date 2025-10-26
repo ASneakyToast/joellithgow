@@ -80,8 +80,11 @@ const contactMethods = [
 </section>
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .contact {
-    padding: 100px 20px;
+    padding: var(--space-5xl) var(--space-lg);
     background: var(--bg-secondary);
     border-top: 5px solid var(--accent-primary);
     position: relative;
@@ -96,7 +99,7 @@ const contactMethods = [
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
       /* Grid pattern - different color for contact */
       linear-gradient(90deg, transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px),
       linear-gradient(transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px);
@@ -114,7 +117,7 @@ const contactMethods = [
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
       /* Connection dots scattered like network nodes */
       radial-gradient(circle 20px at 15% 25%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 70%, transparent 100%),
       radial-gradient(circle 18px at 75% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 70%, transparent 100%),
@@ -123,14 +126,14 @@ const contactMethods = [
       /* Curved connection paths */
       radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, var(--gradient-secondary-subtle) 40%, transparent 50%),
       radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, var(--gradient-primary-subtle) 45%, transparent 55%);
-    background-size: 
+    background-size:
       100% 100%,
       100% 100%,
       100% 100%,
       100% 100%,
       400px 400px,
       350px 350px;
-    background-position: 
+    background-position:
       0 0,
       0 0,
       0 0,
@@ -143,57 +146,57 @@ const contactMethods = [
   }
 
   @keyframes contactGridBreathe {
-    0%, 100% { 
+    0%, 100% {
       opacity: 1;
       transform: scale(1);
     }
-    50% { 
+    50% {
       opacity: 0.3;
       transform: scale(1.015);
     }
   }
 
   @keyframes contactGridDrift {
-    0% { 
+    0% {
       background-position: 0 0;
     }
-    25% { 
+    25% {
       background-position: -20px 20px;
     }
-    50% { 
+    50% {
       background-position: -40px -20px;
     }
-    75% { 
+    75% {
       background-position: 20px -40px;
     }
-    100% { 
+    100% {
       background-position: 0 0;
     }
   }
 
   @keyframes contactAccentPulse {
-    0%, 100% { 
+    0%, 100% {
       filter: brightness(1) saturate(1);
       transform: scale(1);
     }
-    50% { 
+    50% {
       filter: brightness(2) saturate(1.8);
       transform: scale(1.15);
     }
   }
 
   @keyframes contactAccentFloat {
-    0%, 100% { 
+    0%, 100% {
       transform: translateY(0) translateX(0) rotate(0deg);
     }
-    25% { 
-      transform: translateY(-10px) translateX(-8px) rotate(-1deg);
+    25% {
+      transform: translateY(calc(var(--space-sm) * -1)) translateX(calc(var(--space-sm) * -1)) rotate(-1deg);
     }
-    50% { 
-      transform: translateY(8px) translateX(10px) rotate(0.5deg);
+    50% {
+      transform: translateY(var(--space-sm)) translateX(var(--space-sm)) rotate(0.5deg);
     }
-    75% { 
-      transform: translateY(-6px) translateX(-12px) rotate(-0.8deg);
+    75% {
+      transform: translateY(calc(var(--space-xs) * -1)) translateX(calc(var(--space-md) * -1)) rotate(-0.8deg);
     }
   }
 
@@ -206,32 +209,32 @@ const contactMethods = [
   }
 
   .contact-title {
-    font-size: 56px;
-    margin-bottom: 40px;
+    font-size: var(--heading-2xl);
+    margin-bottom: var(--space-3xl);
     color: var(--text-primary);
     text-shadow: var(--text-shadow) var(--accent-secondary);
     transform: skew(-1deg);
   }
 
   .contact-description {
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 50px;
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-4xl);
     color: var(--text-secondary);
   }
 
   .contact-methods {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
+    gap: var(--space-2xl);
   }
 
   .contact-method {
     background: var(--bg-dark);
     color: var(--text-light);
-    padding: 40px 20px;
+    padding: var(--space-3xl) var(--space-lg);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all var(--duration-base) var(--ease-out);
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
     transform: var(--rotation-sm);
@@ -262,19 +265,19 @@ const contactMethods = [
   }
 
   .contact-label {
-    font-size: 12px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: var(--space-sm);
     opacity: 0.8;
   }
 
   .contact-text {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
     word-break: auto-phrase;
     overflow-wrap: break-word;
-    line-height: 1.4;
+    line-height: var(--leading-normal);
   }
 
   /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
@@ -282,24 +285,24 @@ const contactMethods = [
   /* Responsive design */
   @media (max-width: 768px) {
     .contact {
-      padding: 60px 20px;
+      padding: var(--space-4xl) var(--space-lg);
     }
 
     .contact-title {
-      font-size: 36px;
+      font-size: var(--heading-lg);
     }
 
     .contact-description {
-      font-size: 16px;
+      font-size: var(--text-base);
     }
 
     .contact-methods {
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: var(--space-lg);
     }
 
     .contact-method {
-      padding: 30px 20px;
+      padding: var(--space-2xl) var(--space-lg);
     }
   }
 
@@ -311,7 +314,7 @@ const contactMethods = [
       transform: none !important;
       filter: none !important;
     }
-    
+
     .contact-method:hover {
       transform: scale(1.02);
     }
