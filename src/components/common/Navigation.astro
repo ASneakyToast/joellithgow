@@ -6,23 +6,45 @@ export interface Props {
 
 // Detect current page to show appropriate navigation
 const currentPath = Astro.url.pathname;
-const isHomePage = currentPath === '/';
+const isLandingPage = currentPath === '/';
+const isWorkPage = currentPath.startsWith('/work');
 const isBlogPage = currentPath.startsWith('/blog');
 const isLinksPage = currentPath === '/links';
 const isArtworksPage = currentPath.startsWith('/artworks');
 
-// Navigation items
-const navItems = isHomePage ? [
-  { href: '#work', label: 'work', description: 'View my recent projects and case studies' },
-  { href: '#process', label: 'process', description: 'Learn about my design and development process' },
-  { href: '#about', label: 'about', description: 'Read about my background and skills' },
-  { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' }
-] : [
-  { href: '/', label: 'home', description: 'Return to the main portfolio page' },
-  { href: '/artworks', label: 'artworks', description: 'View my fine art and creative projects' }
-];
+// Don't show navigation on landing page (it has its own inline nav)
+const showNav = !isLandingPage;
+
+// Navigation items based on context
+let navItems = [];
+if (isWorkPage) {
+  // On work pages: anchor links to sections + blog link
+  navItems = [
+    { href: '#work', label: 'work', description: 'View my recent projects and case studies' },
+    { href: '#process', label: 'process', description: 'Learn about my design and development process' },
+    { href: '#about', label: 'about', description: 'Read about my background and skills' },
+    { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' },
+    { href: '/blog', label: 'blog', description: 'Read my writing and dev journals' }
+  ];
+} else if (isBlogPage) {
+  // On blog pages: blog, tags, work, home
+  navItems = [
+    { href: '/blog', label: 'blog', description: 'View all blog posts' },
+    { href: '/blog/tags', label: 'tags', description: 'Browse posts by tag' },
+    { href: '/work', label: 'work', description: 'View my professional portfolio' },
+    { href: '/', label: 'home', description: 'Return to the landing page' }
+  ];
+} else {
+  // Other pages (links, artworks, etc): just home and work
+  navItems = [
+    { href: '/', label: 'home', description: 'Return to the landing page' },
+    { href: '/work', label: 'work', description: 'View my professional portfolio' },
+    { href: '/blog', label: 'blog', description: 'Read my writing' }
+  ];
+}
 ---
 
+{showNav && (
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <div class="nav-links">
     {navItems.map((item) => (
@@ -43,6 +65,7 @@ const navItems = isHomePage ? [
     ))}
   </div>
 </nav>
+)}
 
 <style>
   .nav {

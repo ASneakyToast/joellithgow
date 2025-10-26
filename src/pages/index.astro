@@ -1,384 +1,317 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Navigation from '@components/common/Navigation.astro';
-import Hero from '@components/sections/Hero.astro';
-import Projects from '@components/sections/Projects.astro';
-import Process from '@components/sections/Process.astro';
-import About from '@components/sections/About.astro';
-import Contact from '@components/sections/Contact.astro';
-import InteractiveElements from '@components/interactive/InteractiveElements.astro';
-import UIInteractions from '@components/interactive/UIInteractions.astro';
-import SnakeEasterEgg from '@components/interactive/SnakeEasterEgg.astro';
-import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
-import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
-const pageDescription = 'I help people think visually. I turn abstract ideas into clear visuals through design thinking and technical expertise.';
+const pageDescription = 'Creative technologist who builds things and writes about them. View my professional work or read my writing.';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <!-- Skip to main content link for screen readers -->
-  <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
-  
-  <!-- Navigation Component -->
-  <Navigation />
+  <main class="landing-page">
+    <div class="landing-content">
+      <header class="landing-header">
+        <h1 class="name">Joel Lithgow</h1>
+        <p class="title">Creative Technologist</p>
+        <p class="tagline">I build things and write about them</p>
+      </header>
 
-  <!-- Main Content -->
-  <main id="main-content">
-    <!-- Hero Component -->
-    <Hero />
+      <nav class="landing-nav" aria-label="Main sections">
+        <a href="/work" class="nav-card work-card">
+          <span class="card-icon" aria-hidden="true">💼</span>
+          <span class="card-title">Work</span>
+          <span class="card-description">Portfolio & Projects</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </a>
 
-    <!-- Projects Component -->
-    <Projects />
+        <a href="/blog" class="nav-card writing-card">
+          <span class="card-icon" aria-hidden="true">✍️</span>
+          <span class="card-title">Writing</span>
+          <span class="card-description">Blog & Dev Journals</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </a>
+      </nav>
 
-    <!-- Process Component -->
-    <Process />
+      <footer class="landing-footer">
+        <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
+          LinkedIn
+        </a>
+        <span class="separator">·</span>
+        <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
+          GitHub
+        </a>
+      </footer>
+    </div>
 
-    <!-- About Component -->
-    <About />
-
-    <!-- Contact Component -->
-    <Contact />
+    <!-- Theme toggle (minimal, bottom corner) -->
+    <button
+      id="landingThemeControl"
+      class="theme-toggle-minimal"
+      onclick="window.openThemeModal && window.openThemeModal()"
+      aria-label="Change theme"
+      title="Change theme (Ctrl+T)"
+    >
+      <span aria-hidden="true">🎨</span>
+    </button>
   </main>
-
-  <!-- Interactive Elements (Modals, Floating Elements, Drag System) -->
-  <InteractiveElements />
-
-  <!-- Enhanced UI Interactions (Scroll animations, hover effects, parallax) -->
-  <UIInteractions />
-
-  <!-- Snake Easter Egg Component -->
-  <SnakeEasterEgg />
-
-  <!-- Keyboard Shortcuts and Accessibility -->
-  <KeyboardShortcuts />
-
-  <!-- Performance Optimization and Monitoring -->
-  <PerformanceOptimizer />
-  
-  <!-- Screen reader only content -->
-  <div class="sr-only">
-    <div>This website uses themes. Press Ctrl+T to cycle through available themes.</div>
-    <div>Some elements on this page are interactive and can be dragged around.</div>
-  </div>
 </BaseLayout>
 
 <style>
-  /* Import global themes */
   @import '../styles/themes.css';
-  
-  /* Global Reset and Body - matching original exactly */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
 
-  body {
-    font-family: var(--font-family);
-    line-height: 1.4;
-    overflow-x: hidden;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23ff6b6b" opacity="0.6"/></svg>'), auto;
-  }
-
-  /* Global accessibility styles - sr-only class is defined globally in BaseLayout */
-  
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: 8px;
-    text-decoration: none;
-    z-index: 100;
-  }
-  
-  .skip-link:focus {
-    top: 6px;
-  }
-  
-  /* Focus styles */
-  :focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-  }
-  
-  /* Page-specific styles for component integration */
-  main {
-    position: relative;
-  }
-  
-  /* Smooth scroll behavior */
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  /* Ensure components stack properly */
-  section {
-    position: relative;
-    z-index: 1;
-  }
-  
-  /* Navigation should be above other content */
-  nav {
-    position: relative;
-    z-index: 1000;
-  }
-
-  /* Section Spacing */
-  section {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Container Utilities */
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  .container-narrow {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  .container-wide {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  /* Flexbox Utilities */
-  .flex {
+  .landing-page {
+    min-height: 100vh;
     display: flex;
-  }
-
-  .flex-column {
-    flex-direction: column;
-  }
-
-  .flex-center {
     align-items: center;
     justify-content: center;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 2rem;
+    position: relative;
   }
 
-  .flex-between {
-    justify-content: space-between;
+  .landing-content {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.6s ease-out;
   }
 
-  .flex-around {
-    justify-content: space-around;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .flex-wrap {
-    flex-wrap: wrap;
+  .landing-header {
+    margin-bottom: 3rem;
   }
 
-  /* Grid Utilities */
-  .grid {
+  .name {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .title {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+  }
+
+  .tagline {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin: 0;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .landing-nav {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
   }
 
-  .grid-2 {
-    grid-template-columns: repeat(2, 1fr);
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 3rem 2rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--gradient-primary-subtle);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
 
-  .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
+  .nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--gradient-primary-subtle) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
-  .grid-4 {
-    grid-template-columns: repeat(4, 1fr);
+  .nav-card:hover::before {
+    opacity: 1;
   }
 
-  .grid-auto {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  .nav-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--gradient-primary-dim);
   }
 
-  .gap-sm {
-    gap: 10px;
+  .work-card:hover {
+    border-color: var(--accent-primary);
   }
 
-  .gap-md {
-    gap: 20px;
+  .writing-card:hover {
+    border-color: var(--accent-secondary);
   }
 
-  .gap-lg {
-    gap: 40px;
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
   }
 
-  .gap-xl {
-    gap: 60px;
+  .card-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    position: relative;
+    z-index: 1;
   }
 
-  /* Spacing Utilities */
-  .mb-sm { margin-bottom: 10px; }
-  .mb-md { margin-bottom: 20px; }
-  .mb-lg { margin-bottom: 40px; }
-  .mb-xl { margin-bottom: 60px; }
+  .card-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 1;
+  }
 
-  .mt-sm { margin-top: 10px; }
-  .mt-md { margin-top: 20px; }
-  .mt-lg { margin-top: 40px; }
-  .mt-xl { margin-top: 60px; }
+  .card-arrow {
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
 
-  .p-sm { padding: 10px; }
-  .p-md { padding: 20px; }
-  .p-lg { padding: 40px; }
-  .p-xl { padding: 60px; }
+  .nav-card:hover .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
 
-  /* Text Alignment */
-  .text-center { text-align: center; }
-  .text-left { text-align: left; }
-  .text-right { text-align: right; }
+  .landing-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 1rem;
+  }
 
-  /* Position Utilities */
-  .relative { position: relative; }
-  .absolute { position: absolute; }
-  .fixed { position: fixed; }
-  .sticky { position: sticky; }
+  .social-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 500;
+  }
 
-  /* Z-Index Layers */
-  .z-10 { z-index: 10; }
-  .z-100 { z-index: 100; }
-  .z-1000 { z-index: 1000; }
-  .z-10000 { z-index: 10000; }
+  .social-link:hover {
+    color: var(--accent-primary);
+  }
 
-  /* Reduced motion support */
+  .separator {
+    color: var(--text-secondary);
+  }
+
+  .theme-toggle-minimal {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--gradient-primary-subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+
+  .theme-toggle-minimal:hover {
+    border-color: var(--accent-primary);
+    transform: scale(1.1);
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .landing-page {
+      padding: 1.5rem;
+    }
+
+    .landing-header {
+      margin-bottom: 2rem;
+    }
+
+    .landing-nav {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .nav-card {
+      padding: 2rem 1.5rem;
+    }
+
+    .theme-toggle-minimal {
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .landing-page {
+      padding: 1rem;
+    }
+
+    .nav-card {
+      padding: 1.75rem 1.25rem;
+    }
+  }
+
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+    .landing-content {
+      animation: none;
+    }
+
+    .nav-card,
+    .card-arrow,
+    .theme-toggle-minimal {
+      transition: none;
+    }
+
+    .nav-card:hover {
+      transform: none;
     }
   }
 </style>
 
 <script>
-  // Global theme system integration and interactive functionality
-  document.addEventListener('DOMContentLoaded', () => {
-    // Load saved theme on page load - force reset to default if it's forest
-    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
-    
-    // If the saved theme is invalid, reset to default
-    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
-    if (!validThemes.includes(savedTheme)) {
-      savedTheme = 'default';
-      localStorage.setItem('portfolio-theme', 'default');
+  // Keyboard shortcut for theme toggle
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+      e.preventDefault();
+      const themeControl = document.getElementById('landingThemeControl');
+      if (themeControl) {
+        themeControl.click();
+      }
     }
-    
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Global keyboard shortcuts for theme switching
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-        e.preventDefault();
-        const themeControl = document.getElementById('themeControl');
-        if (themeControl) {
-          themeControl.click();
-        }
-      }
-    });
-    
-    // Smooth scroll enhancement for all anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', (e) => {
-        e.preventDefault();
-        const href = (anchor as HTMLAnchorElement).getAttribute('href');
-        if (href) {
-          const targetId = href.substring(1);
-          const targetElement = document.getElementById(targetId);
-          
-          if (targetElement) {
-            targetElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        }
-      });
-    });
-
-    // Removed parallax scrolling for floating elements to match original behavior
-    // Floating elements should remain fixed in space and not move with scroll
-
-    // Initialize scroll-based animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-        }
-      });
-    }, observerOptions);
-    
-    // Observe elements that should animate on scroll
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
-      observer.observe(el);
-    });
-
-    // Cursor trail animation
-    let trails = [];
-    const maxTrails = 5;
-    
-    function createTrail(x: number, y: number) {
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      trail.style.cssText = `
-        position: fixed;
-        width: 6px;
-        height: 6px;
-        background: var(--accent-primary);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9999;
-        left: ${x - 3}px;
-        top: ${y - 3}px;
-        opacity: 0.8;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-      `;
-      
-      document.body.appendChild(trail);
-      trails.push(trail);
-      
-      // Remove excess trails
-      if (trails.length > maxTrails) {
-        const oldTrail = trails.shift();
-        if (oldTrail && oldTrail.parentNode) {
-          oldTrail.parentNode.removeChild(oldTrail);
-        }
-      }
-      
-      // Animate trail
-      setTimeout(() => {
-        trail.style.opacity = '0';
-        trail.style.transform = 'scale(0)';
-      }, 50);
-      
-      setTimeout(() => {
-        if (trail.parentNode) {
-          trail.parentNode.removeChild(trail);
-        }
-      }, 350);
-    }
-    
-    let lastTime = 0;
-    document.addEventListener('mousemove', (e) => {
-      const now = Date.now();
-      if (now - lastTime > 50) { // Throttle to every 50ms
-        createTrail(e.clientX, e.clientY);
-        lastTime = now;
-      }
-    });
   });
 </script>
