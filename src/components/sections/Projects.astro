@@ -1,6 +1,7 @@
 ---
 // Projects section component using content collections
 import { getCollection } from 'astro:content';
+import Badge from '@components/primitives/Badge.astro';
 
 export interface Props {
   sectionTitle?: string;
@@ -64,7 +65,7 @@ if (limit && limit > 0) {
           <p class="project-description">{project.data.description}</p>
           <div class="project-tech">
             {project.data.technologies.map((tech) => (
-              <span class="tech-tag">{tech}</span>
+              <Badge variant="tertiary" size="sm">{tech}</Badge>
             ))}
           </div>
           <div class="project-impact">
@@ -83,6 +84,9 @@ if (limit && limit > 0) {
 </section>
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .projects {
     padding: 100px 0;
     background: var(--bg-secondary);
@@ -303,25 +307,8 @@ if (limit && limit > 0) {
   .project-tech {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .tech-tag {
-    background: var(--accent-tertiary);
-    color: var(--text-primary);
-    padding: 6px 12px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: 1px solid var(--bg-dark);
-    font-weight: bold;
-  }
-
-  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
-  [data-theme="neon"] .tech-tag,
-  [data-theme="electric"] .tech-tag {
-    color: var(--bg-dark);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
   }
 
   .project-impact {
