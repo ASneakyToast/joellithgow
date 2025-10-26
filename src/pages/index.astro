@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Button from '@components/primitives/Button.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
 const pageDescription = 'Creative technologist who builds things and writes about them. View my professional work or read my writing.';
@@ -15,19 +17,19 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       </header>
 
       <nav class="landing-nav" aria-label="Main sections">
-        <a href="/work" class="nav-card work-card">
+        <Card variant="interactive" interactive href="/work" class="nav-card">
           <span class="card-icon" aria-hidden="true">💼</span>
           <span class="card-title">Work</span>
           <span class="card-description">Portfolio & Projects</span>
           <span class="card-arrow" aria-hidden="true">→</span>
-        </a>
+        </Card>
 
-        <a href="/blog" class="nav-card writing-card">
+        <Card variant="interactive" interactive href="/blog" class="nav-card">
           <span class="card-icon" aria-hidden="true">✍️</span>
           <span class="card-title">Writing</span>
           <span class="card-description">Blog & Dev Journals</span>
           <span class="card-arrow" aria-hidden="true">→</span>
-        </a>
+        </Card>
       </nav>
 
       <footer class="landing-footer">
@@ -42,19 +44,22 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     </div>
 
     <!-- Theme toggle (minimal, bottom corner) -->
-    <button
+    <Button
+      variant="ghost"
+      size="md"
       id="landingThemeControl"
       class="theme-toggle-minimal"
       onclick="window.openThemeModal && window.openThemeModal()"
       aria-label="Change theme"
       title="Change theme (Ctrl+T)"
     >
-      <span aria-hidden="true">🎨</span>
-    </button>
+      🎨
+    </Button>
   </main>
 </BaseLayout>
 
 <style>
+  @import '../styles/tokens.css';
   @import '../styles/themes.css';
 
   .landing-page {
@@ -64,12 +69,12 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     justify-content: center;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: 2rem;
+    padding: var(--space-xl);
     position: relative;
   }
 
   .landing-content {
-    max-width: 600px;
+    max-width: var(--content-normal);
     width: 100%;
     text-align: center;
     animation: fadeIn 0.6s ease-out;
@@ -87,50 +92,45 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   }
 
   .landing-header {
-    margin-bottom: 3rem;
+    margin-bottom: var(--space-3xl);
   }
 
   .name {
-    font-size: clamp(2.5rem, 8vw, 4rem);
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    letter-spacing: -0.02em;
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-sm) 0;
+    letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
   }
 
   .title {
-    font-size: clamp(1.25rem, 4vw, 1.75rem);
-    font-weight: 500;
-    margin: 0 0 1rem 0;
+    font-size: var(--heading-md);
+    font-weight: var(--font-medium);
+    margin: 0 0 var(--space-md) 0;
     color: var(--text-secondary);
   }
 
   .tagline {
-    font-size: clamp(1rem, 3vw, 1.25rem);
+    font-size: var(--heading-sm);
     margin: 0;
     color: var(--text-secondary);
-    font-weight: 400;
+    font-weight: var(--font-normal);
   }
 
   .landing-nav {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-3xl);
   }
 
+  /* Custom nav card styling - extends Card primitive */
   .nav-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    padding: 3rem 2rem;
-    background: var(--bg-secondary);
-    border: 2px solid var(--gradient-primary-subtle);
-    border-radius: 12px;
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: all 0.3s ease;
+    gap: var(--space-sm);
+    padding: var(--space-3xl) var(--space-xl);
     position: relative;
     overflow: hidden;
   }
@@ -144,55 +144,42 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     bottom: 0;
     background: linear-gradient(135deg, var(--gradient-primary-subtle) 0%, transparent 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--duration-base) var(--ease-out);
   }
 
   .nav-card:hover::before {
     opacity: 1;
   }
 
-  .nav-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px var(--gradient-primary-dim);
-  }
-
-  .work-card:hover {
-    border-color: var(--accent-primary);
-  }
-
-  .writing-card:hover {
-    border-color: var(--accent-secondary);
-  }
-
   .card-icon {
     font-size: 3rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-sm);
     position: relative;
     z-index: 1;
   }
 
   .card-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-xs);
     position: relative;
     z-index: 1;
+    color: var(--text-primary);
   }
 
   .card-description {
-    font-size: 1rem;
+    font-size: var(--text-base);
     color: var(--text-secondary);
     position: relative;
     z-index: 1;
   }
 
   .card-arrow {
-    font-size: 1.5rem;
-    margin-top: 0.5rem;
+    font-size: var(--text-xl);
+    margin-top: var(--space-sm);
     opacity: 0;
     transform: translateX(-10px);
-    transition: all 0.3s ease;
+    transition: all var(--duration-base) var(--ease-out);
     position: relative;
     z-index: 1;
   }
@@ -206,15 +193,15 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    font-size: 1rem;
+    gap: var(--space-md);
+    font-size: var(--text-base);
   }
 
   .social-link {
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s ease;
-    font-weight: 500;
+    transition: color var(--duration-base) var(--ease-out);
+    font-weight: var(--font-medium);
   }
 
   .social-link:hover {
@@ -227,49 +214,36 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .theme-toggle-minimal {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
     width: 48px;
     height: 48px;
-    border-radius: 50%;
-    background: var(--bg-secondary);
-    border: 2px solid var(--gradient-primary-subtle);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    transition: all 0.3s ease;
-    z-index: 100;
-  }
-
-  .theme-toggle-minimal:hover {
-    border-color: var(--accent-primary);
-    transform: scale(1.1);
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
   }
 
   /* Mobile adjustments */
   @media (max-width: 768px) {
     .landing-page {
-      padding: 1.5rem;
+      padding: var(--space-lg);
     }
 
     .landing-header {
-      margin-bottom: 2rem;
+      margin-bottom: var(--space-xl);
     }
 
     .landing-nav {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
+      gap: var(--space-lg);
     }
 
     .nav-card {
-      padding: 2rem 1.5rem;
+      padding: var(--space-xl) var(--space-lg);
     }
 
     .theme-toggle-minimal {
-      bottom: 1.5rem;
-      right: 1.5rem;
+      bottom: var(--space-lg);
+      right: var(--space-lg);
       width: 44px;
       height: 44px;
     }
@@ -277,11 +251,11 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   @media (max-width: 480px) {
     .landing-page {
-      padding: 1rem;
+      padding: var(--space-md);
     }
 
     .nav-card {
-      padding: 1.75rem 1.25rem;
+      padding: var(--space-lg) var(--space-md);
     }
   }
 
@@ -291,14 +265,9 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       animation: none;
     }
 
-    .nav-card,
-    .card-arrow,
-    .theme-toggle-minimal {
+    .nav-card::before,
+    .card-arrow {
       transition: none;
-    }
-
-    .nav-card:hover {
-      transform: none;
     }
   }
 </style>
