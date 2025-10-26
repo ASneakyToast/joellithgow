@@ -2,6 +2,9 @@
 // Project Cards Component - Handles project display and case study modal integration
 // Enhanced with loading states, error handling, and accessibility features
 import { getCollection } from 'astro:content';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
 
 // Get project data from content collections
 let projects = [];
@@ -28,7 +31,7 @@ projects = projects.sort((a, b) => {
   <div class="projects-error hidden" role="alert" aria-live="assertive">
     <h3>Unable to load projects</h3>
     <p>Please check your connection and try again.</p>
-    <button class="retry-btn">Retry</button>
+    <Button class="retry-btn">Retry</Button>
   </div>
   
   <div class="projects-grid" role="grid" aria-label="Portfolio projects">
@@ -70,7 +73,7 @@ projects = projects.sort((a, b) => {
               {project.data.technologies && (
                 <div class="project-tech" role="list" aria-label="Technologies used">
                   {project.data.technologies.slice(0, 3).map((tech) => (
-                    <span class="tech-tag" role="listitem">{tech}</span>
+                    <Badge variant="secondary" size="sm" role="listitem">{tech}</Badge>
                   ))}
                   {project.data.technologies.length > 3 && (
                     <span class="tech-more">+{project.data.technologies.length - 3}</span>
@@ -86,6 +89,9 @@ projects = projects.sort((a, b) => {
 </div>
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .projects-container {
     position: relative;
     min-height: 300px;
@@ -128,29 +134,17 @@ projects = projects.sort((a, b) => {
   }
 
   .retry-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: var(--accent-primary);
-    color: var(--text-light);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .retry-btn:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
+    margin-top: var(--space-lg);
   }
 
   /* Projects grid */
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
-    padding: 20px 0;
+    gap: var(--space-2xl);
+    padding: var(--space-lg) 0;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: opacity var(--duration-slower) var(--ease-out);
   }
 
   .projects-container[data-projects-loaded="true"] .projects-grid {
@@ -255,18 +249,18 @@ projects = projects.sort((a, b) => {
 
   /* Project content */
   .project-content {
-    padding: 25px;
+    padding: var(--space-xl);
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: var(--space-md);
   }
 
   .project-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 15px;
+    gap: var(--space-md);
   }
 
   .project-title {
@@ -299,7 +293,7 @@ projects = projects.sort((a, b) => {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    gap: 15px;
+    gap: var(--space-md);
     margin-top: auto;
   }
 
@@ -312,18 +306,8 @@ projects = projects.sort((a, b) => {
   .project-tech {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--space-sm);
     align-items: center;
-  }
-
-  .tech-tag {
-    font-size: 11px;
-    background: var(--gradient-secondary-subtle);
-    color: var(--accent-secondary);
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    border: 1px solid var(--accent-secondary);
   }
 
   .tech-more {
@@ -352,7 +336,7 @@ projects = projects.sort((a, b) => {
   @media (max-width: 768px) {
     .projects-grid {
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: var(--space-lg);
     }
 
     .project-card {
@@ -364,19 +348,19 @@ projects = projects.sort((a, b) => {
     }
 
     .project-content {
-      padding: 20px;
+      padding: var(--space-lg);
     }
 
     .project-header {
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: var(--space-sm);
     }
 
     .project-meta {
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: var(--space-sm);
     }
   }
 
