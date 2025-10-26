@@ -1,10 +1,12 @@
 import { defineConfig } from 'astro/config';
 import { fileURLToPath, URL } from 'node:url';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
-  site: 'https://joellithgow.com', // Replace with actual site URL
+  site: 'https://joellithgow.com',
+  integrations: [sitemap()],
   build: {
     assets: 'assets',
     inlineStylesheets: 'auto',

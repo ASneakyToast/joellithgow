@@ -21,9 +21,52 @@ const { entry } = Astro.props;
 const { Content } = await entry.render();
 
 const { title, description, publishDate, author, tags, readingTime, image, links, category } = entry.data;
+
+// JSON-LD structured data for BlogPosting
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  author: {
+    '@type': 'Person',
+    name: author,
+    url: 'https://joellithgow.com',
+  },
+  datePublished: publishDate.toISOString(),
+  dateModified: publishDate.toISOString(),
+  keywords: tags?.join(', '),
+  url: `https://joellithgow.com/blog/${entry.slug}`,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `https://joellithgow.com/blog/${entry.slug}`,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Joel Lithgow',
+    url: 'https://joellithgow.com',
+  },
+};
+
+if (image) {
+  jsonLd['image'] = {
+    '@type': 'ImageObject',
+    url: new URL(image.src, Astro.url).href,
+    description: image.alt || title,
+  };
+}
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogType="article"
+  articlePublishedTime={publishDate.toISOString()}
+  articleAuthor={author}
+  articleTags={tags}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <main class="article-container">
     <div class="article-wrapper">
       {/* Back to blog link */}
