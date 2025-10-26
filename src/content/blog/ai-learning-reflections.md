@@ -49,6 +49,11 @@ Over the past [TIME PERIOD], I've been deeply immersed in learning and working w
 - **Key insight:** Claude adapts its approach based on domain—game dev gets incremental, placeholder-driven prototyping that prioritizes testing mechanics over polish
 - **Full story:** [Building a Minecraft Mutualism Mod Dev Journal](./minecraft-mutualism-mod-devlog.md)
 
+**Project:** He's Going the Distance - Minecraft Difficulty Scaling Mod
+- **What worked:** Building on knowledge from previous mod to create gameplay-focused mod even faster
+- **Key insight:** Playtesting with another person revealed the mod worked better as co-op, leading to real-time difficulty tuning—AI tools enable fast iteration on game feel
+- **Full story:** [Making a Distance-Based Difficulty Mod Dev Journal](./minecraft-distance-mod-devlog.md)
+
 ---
 
 ## Technical Challenges & Solutions
@@ -268,6 +273,7 @@ Read the full story: [Building a Minecraft Mutualism Mod Dev Journal](./minecraf
 - [Interactive Snake Game](SNAKE_GAME_LINK) - Creative collaboration between human and AI
 - [Artwork Gallery](ARTWORK_GALLERY_LINK) - AI-assisted content management implementation
 - [Symbiotic Survival Minecraft Mod](https://github.com/ASneakyToast/minecraft-mutualisms-mod) - Game development prototyping with domain-specific AI workflows ([dev journal](./minecraft-mutualism-mod-devlog.md))
+- [He's Going the Distance Minecraft Mod](./minecraft-distance-mod-devlog.md) - Fast-iteration gameplay mod development and co-op playtesting
 
 ### GitHub Issues & Discussions
 - [Wagtail Scheduling Version Confusion](https://github.com/cca/cca-edu/issues/71) - Documentation of version-specific challenges
