@@ -68,20 +68,23 @@ if (isWorkPage) {
 )}
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .nav {
     position: fixed;
-    top: 30px;
-    right: 30px;
+    top: var(--space-2xl);
+    right: var(--space-2xl);
     z-index: 1000;
     background: var(--bg-secondary);
     border: var(--border-width) solid var(--accent-primary);
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: var(--space-lg);
     transform: var(--rotation-sm) translateX(150px);
     box-shadow: var(--shadow-xl) var(--accent-secondary);
     backdrop-filter: blur(10px);
     opacity: 0;
-    transition: all 0.5s ease;
+    transition: all var(--duration-slow) var(--ease-out);
   }
 
   .nav.visible {
@@ -92,18 +95,18 @@ if (isWorkPage) {
   .nav-links {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-md);
     list-style: none;
   }
 
   .nav-link {
     color: var(--text-primary);
     text-decoration: none;
-    font-size: 13px;
-    font-weight: bold;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
     text-transform: lowercase;
-    transition: all 0.3s ease;
-    padding: 5px 8px;
+    transition: all var(--duration-base) var(--ease-out);
+    padding: var(--space-xs) var(--space-sm);
     border: 2px solid transparent;
   }
 
@@ -126,11 +129,11 @@ if (isWorkPage) {
   /* Responsive design */
   @media (max-width: 768px) {
     .nav {
-      top: 20px;
-      right: 20px;
-      left: 20px;
+      top: var(--space-lg);
+      right: var(--space-lg);
+      left: var(--space-lg);
       width: auto;
-      padding: 15px;
+      padding: var(--space-md);
       transform: translateY(-100px);
     }
 
@@ -142,7 +145,7 @@ if (isWorkPage) {
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 8px;
+      gap: var(--space-sm);
     }
 
   }
