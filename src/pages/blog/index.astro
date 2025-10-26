@@ -17,9 +17,42 @@ const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.data.li
 
 const pageTitle = "Blog";
 const pageDescription = "Reflections on web development, AI tools, creative projects, and lessons learned along the way.";
+
+// JSON-LD structured data for CollectionPage
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: pageTitle,
+  description: pageDescription,
+  url: 'https://joellithgow.com/blog',
+  author: {
+    '@type': 'Person',
+    name: 'Joel Lithgow',
+    url: 'https://joellithgow.com',
+  },
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://joellithgow.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: 'https://joellithgow.com/blog',
+      },
+    ],
+  },
+};
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <main class="blog-container">
     <div class="blog-wrapper">
       <header class="blog-header">
