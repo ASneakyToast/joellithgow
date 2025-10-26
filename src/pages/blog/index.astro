@@ -1,6 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
+import Navigation from '@components/common/Navigation.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import UIInteractions from '@components/interactive/UIInteractions.astro';
+import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
+import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
@@ -56,28 +61,36 @@ const jsonLd = {
 <BaseLayout title={pageTitle} description={pageDescription}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
+  <!-- Navigation Component -->
+  <Navigation />
+
   <main class="blog-container">
     <div class="blog-wrapper">
-      <header class="blog-header">
-        <Badge>reflections & insights</Badge>
-        <h1 class="blog-title">Blog</h1>
-        <p class="blog-description">{pageDescription}</p>
-      </header>
+      {/* Header Section */}
+      <section id="blog" class="blog-header-section">
+        <header class="blog-header">
+          <Badge>reflections & insights</Badge>
+          <h1 class="blog-title">Blog</h1>
+          <p class="blog-description">{pageDescription}</p>
+        </header>
 
-      {/* Links collection showcase */}
-      {totalLinks > 0 && (
-        <Card variant="outlined" class="links-showcase">
-          <div class="links-showcase-content">
-            <p class="links-showcase-text">
-              📎 {totalLinks} curated links from {linkCollectionPosts.length} collection{linkCollectionPosts.length !== 1 ? 's' : ''}
-            </p>
-            <Button href="/links" size="sm">
-              Browse Links →
-            </Button>
-          </div>
-        </Card>
-      )}
+        {/* Links collection showcase */}
+        {totalLinks > 0 && (
+          <Card variant="outlined" class="links-showcase">
+            <div class="links-showcase-content">
+              <p class="links-showcase-text">
+                📎 {totalLinks} curated links from {linkCollectionPosts.length} collection{linkCollectionPosts.length !== 1 ? 's' : ''}
+              </p>
+              <Button href="/links" size="sm">
+                Browse Links →
+              </Button>
+            </div>
+          </Card>
+        )}
+      </section>
 
+      {/* Recent Posts Section */}
+      <section id="recent-posts" class="recent-posts-section">
       {sortedPosts.length > 0 ? (
         <div class="blog-posts">
           {sortedPosts.map((post) => (
@@ -142,8 +155,34 @@ const jsonLd = {
           </div>
         </Card>
       )}
+      </section>
     </div>
   </main>
+
+  <!-- Theme Modal -->
+  <ThemeModal />
+
+  <!-- Enhanced UI Interactions -->
+  <UIInteractions />
+
+  <!-- Keyboard Shortcuts and Accessibility -->
+  <KeyboardShortcuts />
+
+  <!-- Performance Optimization and Monitoring -->
+  <PerformanceOptimizer />
+
+  <!-- Theme toggle button -->
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
 </BaseLayout>
 
 <style>
@@ -163,11 +202,22 @@ const jsonLd = {
     margin: 0 auto;
   }
 
+  /* Section Styles */
+  .blog-header-section {
+    position: relative;
+    padding: var(--space-2xl) 0;
+  }
+
+  .recent-posts-section {
+    position: relative;
+    padding: var(--space-xl) 0;
+  }
+
   .blog-header {
     text-align: left;
     margin-bottom: var(--space-3xl);
     padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--gradient-primary-subtle);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
   .blog-header :global(.badge) {
@@ -216,6 +266,18 @@ const jsonLd = {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
+    transform: var(--rotation-sm);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .blog-post-card:nth-child(even) {
+    transform: var(--rotation-sm);
+  }
+
+  .blog-post-card:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    z-index: 5;
   }
 
   .post-date {
@@ -267,7 +329,7 @@ const jsonLd = {
     align-items: center;
     margin-top: var(--space-sm);
     padding-top: var(--space-md);
-    border-top: 1px solid var(--gradient-primary-subtle);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
   .post-author {
@@ -334,6 +396,26 @@ const jsonLd = {
 
     .post-excerpt {
       font-size: var(--text-sm);
+    }
+  }
+
+  /* Theme toggle button */
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  @media (max-width: 768px) {
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 44px;
+      height: 44px;
     }
   }
 </style>

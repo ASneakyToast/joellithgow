@@ -156,17 +156,6 @@ if (isWorkPage) {
 <script>
   // Enhanced navigation functionality
   document.addEventListener('DOMContentLoaded', () => {
-    // Load saved theme
-    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
-    // If the saved theme is invalid, reset to default
-    const validThemes = ['default', 'minimal'];
-    if (!validThemes.includes(savedTheme)) {
-      savedTheme = 'default';
-      localStorage.setItem('portfolio-theme', 'default');
-    }
-
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
     // Show/hide navigation based on scroll position (after hero section)
     const nav = document.querySelector('.nav');
     const heroSection = document.querySelector('.hero');

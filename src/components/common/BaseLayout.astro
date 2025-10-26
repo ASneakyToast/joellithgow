@@ -81,55 +81,21 @@ const {
   
   <title>{title}</title>
   
-  <!-- Early theme system initialization to ensure functions are available for onclick handlers -->
+  <!-- Early theme loading to prevent flash - minimal code for performance -->
   <script is:inline>
-    // Global theme functions - available immediately for onclick handlers
-    window.openThemeModal = function() {
-      console.log('Early openThemeModal called');
-      const modal = document.getElementById('themeModal');
-      if (modal) {
-        console.log('Opening theme modal');
-        modal.classList.remove('hidden');
-        // Update active theme option
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
-        document.querySelectorAll('.theme-option').forEach(function(option) {
-          option.classList.toggle('active', option.dataset.theme === currentTheme);
-        });
-      } else {
-        console.error('Theme modal not found - will retry once DOM is loaded');
-        // Try again once DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-          const modalAfterLoad = document.getElementById('themeModal');
-          if (modalAfterLoad) {
-            console.log('Opening theme modal after DOM load');
-            modalAfterLoad.classList.remove('hidden');
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
-            document.querySelectorAll('.theme-option').forEach(function(option) {
-              option.classList.toggle('active', option.dataset.theme === currentTheme);
-            });
-          }
-        });
-      }
-    };
+    // Load saved theme immediately to prevent flash of wrong theme
+    (function() {
+      const themes = ['default', 'minimal'];
+      let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
 
-    window.closeThemeModal = function() {
-      const modal = document.getElementById('themeModal');
-      if (modal) {
-        modal.classList.add('hidden');
+      // Validate theme
+      if (!themes.includes(savedTheme)) {
+        savedTheme = 'default';
+        localStorage.setItem('portfolio-theme', 'default');
       }
-    };
 
-    window.setTheme = function(theme) {
-      console.log('Setting theme to:', theme);
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('portfolio-theme', theme);
-      // Update active theme option
-      document.querySelectorAll('.theme-option').forEach(function(option) {
-        option.classList.toggle('active', option.dataset.theme === theme);
-      });
-      // Close modal after selection
-      window.closeThemeModal();
-    };
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
   </script>
   
   <!-- Favicon -->
