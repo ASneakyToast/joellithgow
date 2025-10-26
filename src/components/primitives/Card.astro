@@ -1,0 +1,174 @@
+---
+/**
+ * Card - Universal card component
+ *
+ * A flexible card primitive that replaces all the various card implementations
+ * across the site (blog-post-card, project-card, tag-card, nav-card, etc.)
+ *
+ * Usage:
+ *   <Card variant="default" padding="lg" interactive>
+ *     <slot />
+ *   </Card>
+ */
+
+export interface Props {
+  variant?: 'default' | 'outlined' | 'elevated' | 'flat' | 'interactive';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  interactive?: boolean;
+  href?: string;
+  class?: string;
+  as?: 'div' | 'article' | 'section' | 'a';
+}
+
+const {
+  variant = 'default',
+  padding = 'lg',
+  radius = 'lg',
+  interactive = false,
+  href,
+  class: className = '',
+  as = href ? 'a' : 'div',
+} = Astro.props;
+
+const Element = as;
+
+// Build class string
+const classes = [
+  'card',
+  `card--${variant}`,
+  `card--padding-${padding}`,
+  `card--radius-${radius}`,
+  interactive && 'card--interactive',
+  className,
+].filter(Boolean).join(' ');
+
+// For links, add proper attributes
+const linkProps = href ? {
+  href,
+  rel: href.startsWith('http') ? 'noopener noreferrer' : undefined,
+  target: href.startsWith('http') ? '_blank' : undefined,
+} : {};
+---
+
+<Element class={classes} {...linkProps}>
+  <slot />
+</Element>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Base card styles */
+  .card {
+    display: block;
+    background: var(--bg-secondary);
+    border: 1px solid var(--gradient-primary-subtle);
+    transition: all var(--duration-base) var(--ease-out);
+    position: relative;
+  }
+
+  /* Padding variants */
+  .card--padding-none {
+    padding: 0;
+  }
+
+  .card--padding-sm {
+    padding: var(--space-md);
+  }
+
+  .card--padding-md {
+    padding: var(--space-lg);
+  }
+
+  .card--padding-lg {
+    padding: var(--space-xl);
+  }
+
+  .card--padding-xl {
+    padding: var(--space-2xl);
+  }
+
+  /* Radius variants */
+  .card--radius-none {
+    border-radius: var(--radius-none);
+  }
+
+  .card--radius-sm {
+    border-radius: var(--radius-sm);
+  }
+
+  .card--radius-md {
+    border-radius: var(--radius-md);
+  }
+
+  .card--radius-lg {
+    border-radius: var(--radius-lg);
+  }
+
+  .card--radius-xl {
+    border-radius: var(--radius-xl);
+  }
+
+  /* Style variants */
+  .card--default {
+    /* Already has background and border from base */
+  }
+
+  .card--outlined {
+    background: transparent;
+    border: 2px solid var(--gradient-primary-dim);
+  }
+
+  .card--elevated {
+    box-shadow: var(--shadow-md) var(--gradient-primary-subtle);
+  }
+
+  .card--flat {
+    border: none;
+    box-shadow: none;
+  }
+
+  .card--interactive {
+    border: 2px solid var(--gradient-primary-subtle);
+  }
+
+  /* Interactive states */
+  .card--interactive:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .card--interactive:active {
+    transform: translateY(0);
+  }
+
+  /* For link cards, remove default link styling */
+  a.card {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  a.card:hover {
+    text-decoration: none;
+  }
+
+  /* Focus states for accessibility */
+  .card:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .card {
+      transition: none;
+    }
+
+    .card--interactive:hover {
+      transform: none;
+    }
+  }
+</style>
