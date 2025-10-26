@@ -1,0 +1,180 @@
+---
+/**
+ * ThemeSelector - Semantic theme selection UI
+ *
+ * Modern theme selector using proper button elements with:
+ * - Accessibility (ARIA labels, keyboard nav)
+ * - View Transitions API for smooth changes
+ * - Integration with theme-manager utilities
+ */
+
+import { themes } from '@features/themes';
+
+export interface Props {
+  columns?: number;
+}
+
+const { columns = 3 } = Astro.props;
+---
+
+<div class="theme-selector" style={`--theme-columns: ${columns}`}>
+  {themes.map((theme) => (
+    <button
+      type="button"
+      class="theme-option"
+      data-theme={theme.name}
+      aria-label={`Switch to ${theme.displayName} theme: ${theme.description}`}
+    >
+      <div class="theme-preview">
+        {theme.colors.map((color) => (
+          <div
+            class="theme-color"
+            style={color.startsWith('linear-gradient')
+              ? `background: ${color}`
+              : `background-color: ${color}`
+            }
+          />
+        ))}
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">{theme.displayName}</span>
+        <span class="theme-description">{theme.description}</span>
+      </div>
+    </button>
+  ))}
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .theme-selector {
+    display: grid;
+    grid-template-columns: repeat(var(--theme-columns, 3), 1fr);
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+  }
+
+  .theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    cursor: pointer;
+    border: var(--border-width) solid transparent;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    transition: all var(--duration-base) var(--ease-out);
+    position: relative;
+  }
+
+  .theme-option:hover {
+    border-color: var(--accent-secondary);
+    transform: translateY(calc(var(--space-xs) * -1));
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .theme-option:focus-visible {
+    outline: var(--border-width) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
+  }
+
+  .theme-option.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .theme-option.active .theme-info {
+    color: var(--text-light);
+  }
+
+  .theme-option.active::after {
+    content: '✓';
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    color: var(--text-light);
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+  }
+
+  .theme-preview {
+    display: flex;
+    gap: 2px;
+    height: 60px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: var(--border-width) solid var(--bg-dark);
+  }
+
+  .theme-color {
+    flex: 1;
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .theme-option:hover .theme-color {
+    transform: scale(1.05);
+  }
+
+  .theme-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    text-align: center;
+  }
+
+  .theme-name {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    text-transform: lowercase;
+  }
+
+  .theme-description {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+
+  .theme-option.active .theme-description {
+    color: var(--text-light);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .theme-selector {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      padding: var(--space-lg);
+    }
+
+    .theme-option {
+      padding: var(--space-md);
+    }
+
+    .theme-preview {
+      height: 50px;
+    }
+
+    .theme-name {
+      font-size: var(--text-sm);
+    }
+
+    .theme-description {
+      font-size: var(--text-2xs);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .theme-option,
+    .theme-color {
+      transition: none;
+    }
+
+    .theme-option:hover {
+      transform: none;
+    }
+  }
+</style>

@@ -1,211 +1,149 @@
 ---
-// Theme selection modal using Modal primitive
+// Modern theme selection modal with View Transitions API
 import Modal from '@components/primitives/Modal.astro';
-import Card from '@components/primitives/Card.astro';
+import ThemeSelector from '@components/theme/ThemeSelector.astro';
 ---
 
-<Modal id="themeModal" title="Choose Your Theme" size="md">
-  <div class="theme-options-grid">
-    <Card
-      variant="interactive"
-      interactive
-      class="theme-option"
-      data-theme="default"
-    >
-      <div class="theme-preview theme-preview-default"></div>
-      <span class="theme-name">Default</span>
-    </Card>
-    <Card
-      variant="interactive"
-      interactive
-      class="theme-option"
-      data-theme="minimal"
-    >
-      <div class="theme-preview theme-preview-minimal"></div>
-      <span class="theme-name">Minimal</span>
-    </Card>
-  </div>
+<Modal id="themeModal" title="Choose Your Theme" size="lg">
+  <ThemeSelector columns={3} />
 </Modal>
 
 <style>
-  @import '../../styles/tokens.css';
-  @import '../../styles/themes.css';
-
-  .theme-options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: var(--space-lg);
-    padding: var(--space-xl);
-  }
-
-  .theme-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-lg);
-    cursor: pointer;
-    border: var(--border-width) solid transparent;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .theme-option:hover {
-    border-color: var(--accent-secondary);
-    transform: translateY(calc(var(--space-xs) * -1));
-  }
-
-  .theme-option.active {
-    background: var(--accent-primary);
-    border-color: var(--accent-primary);
-  }
-
-  .theme-option.active .theme-name {
-    color: var(--text-light);
-  }
-
-  .theme-preview {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-full);
-    position: relative;
-    overflow: hidden;
-    border: var(--border-width) solid currentColor;
-    transition: transform var(--duration-base) var(--ease-out);
-  }
-
-  .theme-option:hover .theme-preview {
-    transform: scale(1.1);
-  }
-
-  /* Theme preview colors */
-  .theme-preview-default {
-    background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #ffe66d);
-  }
-
-  .theme-preview-minimal {
-    background: linear-gradient(135deg, #000000, #333333, #666666);
-  }
-
-  .theme-name {
-    font-size: var(--text-base);
-    font-weight: var(--font-medium);
-    color: var(--text-primary);
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .theme-options-grid {
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: var(--space-md);
-      padding: var(--space-lg);
-    }
-
-    .theme-option {
-      padding: var(--space-md);
-    }
-
-    .theme-preview {
-      width: 60px;
-      height: 60px;
-    }
-
-    .theme-name {
-      font-size: var(--text-sm);
-    }
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .theme-option,
-    .theme-preview {
-      transition: none;
-    }
-  }
+  /* Minimal custom styles - ThemeSelector handles most styling */
 </style>
 
 <script>
-  // Theme Management System
-  class ThemeManager {
-    private themes: string[] = ['default', 'minimal'];
+  import { themes } from '@features/themes';
+
+  // Theme Management with View Transitions API
+  class ModernThemeManager {
+    private themes: string[];
     private currentTheme: string;
 
     constructor() {
+      this.themes = themes.map(t => t.name);
       this.currentTheme = this.loadTheme();
       this.init();
     }
 
     init() {
-      this.applyTheme(this.currentTheme);
+      this.applyTheme(this.currentTheme, false); // No transition on initial load
       this.setupEventListeners();
+      this.updateActiveButton();
     }
 
     setupEventListeners() {
-      // Theme option clicks
-      document.querySelectorAll('.theme-option').forEach((option) => {
-        const htmlOption = option as HTMLElement;
-        htmlOption.addEventListener('click', () => {
-          const theme = htmlOption.dataset.theme;
-          if (theme) {
-            this.setTheme(theme);
+      // Theme button clicks
+      document.querySelectorAll('.theme-option').forEach((button) => {
+        const htmlButton = button as HTMLElement;
+        htmlButton.addEventListener('click', async () => {
+          const theme = htmlButton.dataset.theme;
+          if (theme && theme !== this.currentTheme) {
+            await this.setTheme(theme);
             (window as any).closeModal?.('themeModal');
           }
         });
 
-        // Preview on hover
-        htmlOption.addEventListener('mouseenter', () => {
-          if (!htmlOption.classList.contains('active')) {
-            const theme = htmlOption.dataset.theme;
+        // Preview on hover (instant, no transition)
+        htmlButton.addEventListener('mouseenter', () => {
+          if (!htmlButton.classList.contains('active')) {
+            const theme = htmlButton.dataset.theme;
             if (theme) {
               this.previewTheme(theme);
             }
           }
         });
 
-        htmlOption.addEventListener('mouseleave', () => {
-          if (!htmlOption.classList.contains('active')) {
-            this.applyTheme(this.currentTheme);
+        htmlButton.addEventListener('mouseleave', () => {
+          if (!htmlButton.classList.contains('active')) {
+            this.applyTheme(this.currentTheme, false);
           }
         });
       });
 
-      // Global keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+      // Enhanced keyboard shortcuts
+      document.addEventListener('keydown', async (e) => {
+        // Ctrl/Cmd+T to cycle forward
+        if ((e.ctrlKey || e.metaKey) && e.key === 't' && !e.shiftKey) {
           e.preventDefault();
-          this.cycleTheme();
+          await this.cycleTheme(1);
+        }
+        // Ctrl/Cmd+Shift+T to cycle backward
+        if ((e.ctrlKey || e.metaKey) && e.key === 'T' && e.shiftKey) {
+          e.preventDefault();
+          await this.cycleTheme(-1);
         }
       });
     }
 
-    setTheme(theme: string) {
+    async setTheme(theme: string) {
       this.currentTheme = theme;
-      this.applyTheme(theme);
+      await this.applyTheme(theme, true);
       this.saveTheme(theme);
-      this.updateActiveOption();
+      this.updateActiveButton();
+      this.showToast(theme);
     }
 
     previewTheme(theme: string) {
-      this.applyTheme(theme);
+      this.applyTheme(theme, false);
     }
 
-    applyTheme(theme: string) {
-      document.documentElement.setAttribute('data-theme', theme);
+    async applyTheme(theme: string, withTransition: boolean = true) {
+      // Check for View Transitions API support
+      if (!withTransition || !document.startViewTransition) {
+        document.documentElement.setAttribute('data-theme', theme);
+        return;
+      }
+
+      // Modern smooth transition
+      await document.startViewTransition(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+      }).finished;
     }
 
-    cycleTheme() {
+    async cycleTheme(direction: number = 1) {
       const currentIndex = this.themes.indexOf(this.currentTheme);
-      const nextIndex = (currentIndex + 1) % this.themes.length;
-      this.setTheme(this.themes[nextIndex]);
+      let nextIndex = currentIndex + direction;
+
+      // Wrap around
+      if (nextIndex < 0) nextIndex = this.themes.length - 1;
+      if (nextIndex >= this.themes.length) nextIndex = 0;
+
+      await this.setTheme(this.themes[nextIndex]);
     }
 
-    updateActiveOption() {
-      document.querySelectorAll('.theme-option').forEach((option) => {
-        const htmlOption = option as HTMLElement;
-        htmlOption.classList.toggle(
+    updateActiveButton() {
+      document.querySelectorAll('.theme-option').forEach((button) => {
+        const htmlButton = button as HTMLElement;
+        htmlButton.classList.toggle(
           'active',
-          htmlOption.dataset.theme === this.currentTheme
+          htmlButton.dataset.theme === this.currentTheme
         );
       });
+    }
+
+    showToast(themeName: string) {
+      const theme = themes.find(t => t.name === themeName);
+      if (!theme) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'theme-toast';
+      toast.textContent = `${theme.displayName} theme`;
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+
+      document.body.appendChild(toast);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+      });
+
+      // Remove after animation
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
     }
 
     saveTheme(theme: string) {
@@ -216,8 +154,7 @@ import Card from '@components/primitives/Card.astro';
       let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
 
       // Validate theme
-      const validThemes = ['default', 'minimal'];
-      if (!validThemes.includes(savedTheme)) {
+      if (!this.themes.includes(savedTheme)) {
         savedTheme = 'default';
         localStorage.setItem('portfolio-theme', 'default');
       }
@@ -227,9 +164,75 @@ import Card from '@components/primitives/Card.astro';
   }
 
   // Initialize theme manager
-  const themeManager = new ThemeManager();
+  const themeManager = new ModernThemeManager();
 
   // Export globally
   (window as any).themeManager = themeManager;
   (window as any).openThemeModal = () => (window as any).openModal?.('themeModal');
 </script>
+
+<style is:global>
+  /* Toast notification styles */
+  .theme-toast {
+    position: fixed;
+    bottom: var(--space-3xl);
+    right: var(--space-3xl);
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-lg);
+    border: var(--border-width) solid var(--accent-primary);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: lowercase;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(var(--space-2xl));
+    transition: opacity var(--duration-base) var(--ease-out),
+                transform var(--duration-base) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .theme-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    .theme-toast {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      left: var(--space-lg);
+      text-align: center;
+    }
+  }
+
+  /* View Transitions API pseudo-elements for custom animations */
+  @supports (view-transition-name: auto) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 300ms;
+    }
+
+    ::view-transition-old(root) {
+      animation-name: fade-out;
+    }
+
+    ::view-transition-new(root) {
+      animation-name: fade-in;
+    }
+
+    @keyframes fade-out {
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+</style>
