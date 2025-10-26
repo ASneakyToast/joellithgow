@@ -1,5 +1,7 @@
 ---
 // About section component - exact original design
+import Badge from '@components/primitives/Badge.astro';
+
 export interface Props {
   sectionTitle?: string;
   bio?: string;
@@ -78,8 +80,15 @@ const stats = [
         <div class="skill-category">
           <h3 class="skill-title">{category.title}</h3>
           <div class="skill-list" role="list">
-            {category.skills.map((skill) => (
-              <span class="skill-item" role="listitem">{skill}</span>
+            {category.skills.map((skill, index) => (
+              <Badge
+                variant={index % 2 === 0 ? "secondary" : "tertiary"}
+                size="sm"
+                class="skill-item"
+                role="listitem"
+              >
+                {skill}
+              </Badge>
             ))}
           </div>
         </div>
@@ -89,8 +98,11 @@ const stats = [
 </section>
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .about {
-    padding: 100px 20px;
+    padding: var(--space-5xl) var(--space-lg);
     background: var(--bg-primary);
     position: relative;
   }
@@ -101,9 +113,9 @@ const stats = [
   }
 
   .section-title {
-    font-size: 48px;
+    font-size: var(--heading-xl);
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
     text-decoration: underline;
     text-decoration-color: var(--accent-primary);
     text-decoration-thickness: 4px;
@@ -113,17 +125,17 @@ const stats = [
   .about-intro {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    margin-bottom: 80px;
+    gap: var(--space-4xl);
+    margin-bottom: var(--space-5xl);
     align-items: center;
   }
 
   .about-text {
-    font-size: 20px;
-    line-height: 1.6;
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
     color: var(--text-primary);
     background: var(--bg-secondary);
-    padding: 40px;
+    padding: var(--space-3xl);
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
     transform: var(--rotation-sm);
@@ -133,13 +145,13 @@ const stats = [
   .about-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: var(--space-lg);
   }
 
   .stat-item {
     background: var(--accent-primary);
     color: var(--text-light);
-    padding: 30px;
+    padding: var(--space-2xl);
     text-align: center;
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
@@ -152,16 +164,16 @@ const stats = [
   }
 
   .stat-number {
-    font-size: 36px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
   }
 
   .stat-number.infinity {
-    font-size: 60px;
+    font-size: var(--heading-2xl);
     line-height: 1;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--duration-base) var(--ease-out);
     position: relative;
     display: inline-block;
   }
@@ -172,54 +184,54 @@ const stats = [
     transform: scale(1.2) !important;
     opacity: 1 !important;
     background: rgba(0, 255, 0, 0.1) !important;
-    border-radius: 10px !important;
+    border-radius: var(--radius-md) !important;
   }
 
   /* Snake-like slithering animation */
   @keyframes slither {
-    0%, 100% { 
+    0%, 100% {
       transform: scale(1.1) rotate(0deg) skewX(0deg);
     }
-    25% { 
+    25% {
       transform: scale(1.15) rotate(2deg) skewX(5deg);
     }
-    50% { 
+    50% {
       transform: scale(1.1) rotate(0deg) skewX(-3deg);
     }
-    75% { 
+    75% {
       transform: scale(1.15) rotate(-2deg) skewX(3deg);
     }
   }
 
   /* Glow effect like snake game */
   @keyframes glow-pulse {
-    0%, 100% { 
+    0%, 100% {
       opacity: 0.3;
       transform: translate(-50%, -50%) scale(1);
     }
-    50% { 
+    50% {
       opacity: 0.6;
       transform: translate(-50%, -50%) scale(1.2);
     }
   }
 
   .stat-label {
-    font-size: 12px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
   }
 
   .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 40px;
+    gap: var(--space-3xl);
   }
 
   .skill-category {
     background: var(--bg-secondary);
     border: var(--border-width) solid var(--bg-dark);
     border-radius: var(--border-radius);
-    padding: 30px;
+    padding: var(--space-2xl);
     transform: var(--rotation-sm);
   }
 
@@ -228,90 +240,71 @@ const stats = [
   }
 
   .skill-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-lg);
     color: var(--text-primary);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-wide);
   }
 
   .skill-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-sm);
   }
 
+  /* Remove custom styling since Badge primitive handles it */
   .skill-item {
-    background: var(--accent-tertiary);
-    color: var(--text-primary);
-    padding: 6px 12px;
-    font-size: 12px;
-    border: 1px solid var(--bg-dark);
-    font-weight: bold;
-  }
-
-  .skill-item:nth-child(odd) {
-    background: var(--accent-secondary);
-    color: var(--text-light);
-  }
-
-  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
-  [data-theme="neon"] .skill-item,
-  [data-theme="electric"] .skill-item {
-    color: var(--bg-dark);
-  }
-
-  [data-theme="neon"] .skill-item:nth-child(odd),
-  [data-theme="electric"] .skill-item:nth-child(odd) {
-    color: var(--text-light);
+    /* Transition for hover effects */
+    transition: transform var(--duration-base) var(--ease-out);
   }
 
   /* Responsive design */
   @media (max-width: 768px) {
     .about {
-      padding: 60px 20px;
+      padding: var(--space-4xl) var(--space-lg);
     }
 
     .section-title {
-      font-size: 36px;
+      font-size: var(--heading-lg);
     }
 
     .about-intro {
       grid-template-columns: 1fr;
-      gap: 40px;
-      margin-bottom: 60px;
+      gap: var(--space-3xl);
+      margin-bottom: var(--space-4xl);
     }
 
     .about-text {
-      font-size: 18px;
-      padding: 30px;
+      font-size: var(--text-lg);
+      padding: var(--space-2xl);
     }
 
     .about-stats {
       grid-template-columns: 1fr;
-      gap: 15px;
+      gap: var(--space-md);
     }
 
     .stat-item {
-      padding: 20px;
+      padding: var(--space-lg);
     }
 
     .stat-number {
-      font-size: 30px;
+      font-size: var(--heading-md);
     }
 
     .stat-number.infinity {
-      font-size: 50px;
+      font-size: var(--heading-xl);
     }
 
     .skills-grid {
       grid-template-columns: 1fr;
-      gap: 30px;
+      gap: var(--space-2xl);
     }
 
     .skill-category {
-      padding: 20px;
+      padding: var(--space-lg);
     }
   }
 
@@ -320,7 +313,7 @@ const stats = [
     .stat-number.infinity:hover {
       transform: scale(1.05) !important;
     }
-    
+
     .stat-number.infinity {
       animation: none !important;
     }
@@ -486,20 +479,6 @@ const stats = [
       this.style.animation = '';
     });
 
-    // Enhanced skill item interactions
-    const skillItems = document.querySelectorAll('.skill-item');
-    skillItems.forEach(item => {
-      item.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.1)';
-        this.style.background = 'var(--accent-primary)';
-        this.style.color = 'var(--text-light)';
-      });
-      
-      item.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1)';
-        this.style.background = '';
-        this.style.color = '';
-      });
-    });
+    // Enhanced skill item interactions - now handled by Badge primitive
   });
 </script>
