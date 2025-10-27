@@ -43,6 +43,11 @@
   --shadow-lg: 6px 6px 0px;
   --shadow-xl: 8px 8px 0px;
   --text-shadow: 4px 4px 0px;
+
+  /* Card alternating variant text colors */
+  --card-alt-text-1: white;       /* Card 1: white text on red */
+  --card-alt-text-2: white;       /* Card 2: white text on teal */
+  --card-alt-text-3: #333;        /* Card 3: dark text on yellow */
 }
 
 /* Theme: Minimal */
@@ -88,6 +93,11 @@
   --shadow-lg: 0 3px 6px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 4px 8px rgba(0, 0, 0, 0.1);
   --text-shadow: none;
+
+  /* Card alternating variant text colors - all need white text on dark backgrounds */
+  --card-alt-text-1: #ffffff;  /* Card 1: white text on black */
+  --card-alt-text-2: #ffffff;  /* Card 2: white text on dark gray */
+  --card-alt-text-3: #ffffff;  /* Card 3: white text on medium gray */
 }
 
 /* Custom scrollbar */
