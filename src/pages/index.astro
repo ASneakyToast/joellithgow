@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
 import Card from '@components/primitives/Card.astro';
 import Button from '@components/primitives/Button.astro';
+import Badge from '@components/primitives/Badge.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
 const pageDescription = 'Creative technologist who builds things and writes about them. View my professional work or read my writing.';
@@ -12,22 +14,36 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     <div class="landing-content">
       <header class="landing-header">
         <h1 class="name">Joel Lithgow</h1>
-        <p class="title">Creative Technologist</p>
-        <p class="tagline">I build things and write about them</p>
       </header>
 
       <nav class="landing-nav" aria-label="Main sections">
-        <Card variant="interactive" interactive href="/work" class="nav-card">
-          <span class="card-icon" aria-hidden="true">💼</span>
-          <span class="card-title">Work</span>
-          <span class="card-description">Portfolio & Projects</span>
+        <Card variant="alternating" href="/work" class="nav-card">
+          <span class="card-title">Portfolio</span>
+          <span class="card-description">What I do as a creative technologist</span>
           <span class="card-arrow" aria-hidden="true">→</span>
         </Card>
 
-        <Card variant="interactive" interactive href="/blog" class="nav-card">
-          <span class="card-icon" aria-hidden="true">✍️</span>
-          <span class="card-title">Writing</span>
-          <span class="card-description">Blog & Dev Journals</span>
+        <Card variant="alternating" href="/blog" class="nav-card">
+          <span class="card-title">Blog</span>
+          <span class="card-description">I guess this is my social media</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </Card>
+
+        <Card variant="alternating" href="/artworks" class="nav-card">
+          <span class="card-title">Artwork</span>
+          <span class="card-description">Things I make for myself</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </Card>
+
+        <Card variant="alternating" href="https://divebarn.com" class="nav-card">
+          <span class="card-title">Dive Barn</span>
+          <span class="card-description">An annual arts and music event I run</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </Card>
+
+        <Card variant="alternating" href="https://thisisahousegallery.com" class="nav-card">
+          <span class="card-title">This is a House Gallery</span>
+          <span class="card-description">This is also my house lol</span>
           <span class="card-arrow" aria-hidden="true">→</span>
         </Card>
       </nav>
@@ -56,6 +72,9 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       🎨
     </Button>
   </main>
+
+  <!-- Theme Modal -->
+  <ThemeModal />
 </BaseLayout>
 
 <style>
@@ -64,129 +83,104 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .landing-page {
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: var(--space-xl);
+    padding: var(--space-3xl) var(--space-xl);
     position: relative;
   }
 
   .landing-content {
     max-width: var(--content-normal);
+    margin: 0 auto;
     width: 100%;
-    text-align: center;
-    animation: fadeIn 0.6s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    padding-top: var(--space-4xl);
   }
 
   .landing-header {
-    margin-bottom: var(--space-3xl);
+    margin-bottom: var(--space-4xl);
   }
 
   .name {
-    font-size: var(--heading-2xl);
+    font-size: clamp(40px, 8vw, 100px);
     font-weight: var(--font-bold);
-    margin: 0 0 var(--space-sm) 0;
-    letter-spacing: var(--tracking-tight);
-    color: var(--text-primary);
-  }
-
-  .title {
-    font-size: var(--heading-md);
-    font-weight: var(--font-medium);
-    margin: 0 0 var(--space-md) 0;
-    color: var(--text-secondary);
-  }
-
-  .tagline {
-    font-size: var(--heading-sm);
+    line-height: 1;
     margin: 0;
-    color: var(--text-secondary);
-    font-weight: var(--font-normal);
+    color: var(--text-primary);
+    text-shadow: var(--text-shadow) var(--accent-secondary);
+    transform: var(--rotation-lg);
+    display: inline-block;
   }
 
   .landing-nav {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-xl);
     margin-bottom: var(--space-3xl);
   }
 
-  /* Custom nav card styling - extends Card primitive */
+  /* Custom nav card styling - brutalist design */
   .nav-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-3xl) var(--space-xl);
+    gap: var(--space-md);
+    padding: var(--space-2xl) var(--space-xl);
     position: relative;
-    overflow: hidden;
+    transform: var(--rotation-sm);
+    transition: all var(--duration-base) var(--ease-out);
   }
 
-  .nav-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, var(--gradient-primary-subtle) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity var(--duration-base) var(--ease-out);
+  .nav-card:nth-child(even) {
+    transform: rotate(1deg);
   }
 
-  .nav-card:hover::before {
-    opacity: 1;
+  .nav-card:hover {
+    transform: scale(1.02);
+    z-index: 5;
   }
 
-  .card-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-sm);
-    position: relative;
-    z-index: 1;
+  /* First 3 cards (primary) get more padding */
+  .nav-card:nth-child(1),
+  .nav-card:nth-child(2),
+  .nav-card:nth-child(3) {
+    padding: var(--space-3xl) var(--space-2xl);
   }
 
   .card-title {
-    font-size: var(--text-2xl);
+    display: block;
+    font-size: clamp(32px, 6vw, 60px);
     font-weight: var(--font-bold);
-    margin-bottom: var(--space-xs);
-    position: relative;
-    z-index: 1;
-    color: var(--text-primary);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    margin-bottom: var(--space-sm);
+  }
+
+  /* First 3 cards get huge titles like the main heading */
+  .nav-card:nth-child(1) .card-title,
+  .nav-card:nth-child(2) .card-title,
+  .nav-card:nth-child(3) .card-title {
+    font-size: clamp(40px, 8vw, 100px);
   }
 
   .card-description {
-    font-size: var(--text-base);
-    color: var(--text-secondary);
-    position: relative;
-    z-index: 1;
+    display: block;
+    font-size: clamp(1.125rem, 3vw, 1.875rem);
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-relaxed);
   }
 
   .card-arrow {
-    font-size: var(--text-xl);
-    margin-top: var(--space-sm);
-    opacity: 0;
-    transform: translateX(-10px);
+    position: absolute;
+    right: var(--space-2xl);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--text-3xl);
+    opacity: 0.7;
     transition: all var(--duration-base) var(--ease-out);
-    position: relative;
-    z-index: 1;
   }
 
   .nav-card:hover .card-arrow {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(-50%) translateX(8px);
   }
 
   .landing-footer {
@@ -220,25 +214,49 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     height: 48px;
     border-radius: var(--radius-full);
     z-index: var(--z-sticky);
+    border: var(--border-width) solid var(--accent-primary);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .theme-toggle-minimal:hover {
+    box-shadow: var(--shadow-lg) var(--accent-primary);
   }
 
   /* Mobile adjustments */
   @media (max-width: 768px) {
     .landing-page {
-      padding: var(--space-lg);
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    .landing-content {
+      padding-top: var(--space-2xl);
     }
 
     .landing-header {
-      margin-bottom: var(--space-xl);
+      margin-bottom: var(--space-2xl);
+    }
+
+    .name {
+      font-size: clamp(36px, 8vw, 80px);
     }
 
     .landing-nav {
-      grid-template-columns: 1fr;
       gap: var(--space-lg);
     }
 
     .nav-card {
       padding: var(--space-xl) var(--space-lg);
+    }
+
+    .nav-card:nth-child(1),
+    .nav-card:nth-child(2),
+    .nav-card:nth-child(3) {
+      padding: var(--space-2xl) var(--space-xl);
+    }
+
+    .nav-card:nth-child(even) {
+      transform: rotate(1deg);
     }
 
     .theme-toggle-minimal {
@@ -251,23 +269,46 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   @media (max-width: 480px) {
     .landing-page {
-      padding: var(--space-md);
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    .landing-content {
+      padding-top: var(--space-xl);
     }
 
     .nav-card {
       padding: var(--space-lg) var(--space-md);
     }
+
+    .nav-card:nth-child(1),
+    .nav-card:nth-child(2),
+    .nav-card:nth-child(3) {
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    .card-title {
+      font-size: clamp(28px, 6vw, 48px);
+    }
+
+    .nav-card:nth-child(1) .card-title,
+    .nav-card:nth-child(2) .card-title,
+    .nav-card:nth-child(3) .card-title {
+      font-size: clamp(36px, 8vw, 80px);
+    }
+
+    .card-arrow {
+      right: var(--space-lg);
+      font-size: var(--text-2xl);
+    }
   }
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .landing-content {
-      animation: none;
-    }
-
-    .nav-card::before,
+    .name,
+    .nav-card,
     .card-arrow {
       transition: none;
+      transform: none;
     }
   }
 </style>

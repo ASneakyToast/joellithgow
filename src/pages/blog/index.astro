@@ -23,7 +23,7 @@ const sortedPosts = allPosts.sort(
 const linkCollectionPosts = allPosts.filter(post => post.data.links && post.data.links.length > 0);
 const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.data.links?.length || 0), 0);
 
-const pageTitle = "Blog";
+const pageTitle = "joel's blog of half-finished thoughts";
 const pageDescription = "Reflections on web development, AI tools, creative projects, and lessons learned along the way.";
 
 // JSON-LD structured data for CollectionPage
@@ -70,7 +70,7 @@ const jsonLd = {
       <section id="blog" class="blog-header-section">
         <header class="blog-header">
           <Badge>reflections & insights</Badge>
-          <h1 class="blog-title">Blog</h1>
+          <h1 class="blog-title">joel's blog of half-finished thoughts</h1>
           <p class="blog-description">{pageDescription}</p>
         </header>
 
