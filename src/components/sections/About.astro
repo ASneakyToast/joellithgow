@@ -56,7 +56,7 @@ const stats = [
 
 <section id="about" class="about" aria-labelledby="about-heading">
   <div class="about-content">
-    <header>
+    <header class="section-header">
       <h2 id="about-heading" class="section-title">{sectionTitle}</h2>
     </header>
     
@@ -102,14 +102,20 @@ const stats = [
   @import '../../styles/themes.css';
 
   .about {
-    padding: var(--space-5xl) var(--space-lg);
+    padding: var(--space-5xl) var(--page-gutter);
     background: var(--bg-primary);
     position: relative;
   }
 
   .about-content {
-    max-width: 1000px;
+    max-width: var(--content-wide);
     margin: 0 auto;
+  }
+
+  /* Section header - unified underline pattern */
+  .section-header {
+    margin-bottom: var(--space-3xl);
+    text-align: center;
   }
 
   .section-title {
@@ -263,7 +269,7 @@ const stats = [
   /* Responsive design */
   @media (max-width: 768px) {
     .about {
-      padding: var(--space-4xl) var(--space-lg);
+      padding: var(--space-4xl) var(--page-gutter);
     }
 
     .section-title {

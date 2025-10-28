@@ -35,15 +35,15 @@ const pageDescription = 'Creative technologist who builds things and writes abou
           <span class="card-arrow" aria-hidden="true">→</span>
         </Card>
 
-        <Card variant="alternating" href="https://divebarn.com" class="nav-card">
-          <span class="card-title">Dive Barn</span>
-          <span class="card-description">An annual arts and music event I run</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
-
         <Card variant="alternating" href="https://thisisahousegallery.com" class="nav-card">
           <span class="card-title">This is a House Gallery</span>
           <span class="card-description">This is also my house lol</span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </Card>
+
+        <Card variant="alternating" href="https://divebarnranch.com" class="nav-card">
+          <span class="card-title">Dive Barn</span>
+          <span class="card-description">An arts and music event I ran</span>
           <span class="card-arrow" aria-hidden="true">→</span>
         </Card>
       </nav>
@@ -85,7 +85,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     min-height: 100vh;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: var(--space-3xl) var(--space-xl);
+    padding: var(--space-3xl) var(--page-gutter);
     position: relative;
   }
 
@@ -226,7 +226,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   /* Mobile adjustments */
   @media (max-width: 768px) {
     .landing-page {
-      padding: var(--space-xl) var(--space-lg);
+      padding: var(--space-xl) var(--page-gutter);
     }
 
     .landing-content {

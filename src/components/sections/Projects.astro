@@ -88,14 +88,15 @@ if (limit && limit > 0) {
   @import '../../styles/themes.css';
 
   .projects {
-    padding: var(--space-5xl) 0;
+    padding: var(--space-5xl) var(--page-gutter);
     background: var(--bg-secondary);
     border-top: 5px solid var(--accent-primary);
     position: relative; /* Enable positioning context for gradients */
   }
 
+  /* Section header - unified underline pattern */
   .section-header {
-    max-width: 1000px;
+    max-width: var(--content-wide);
     margin: 0 auto var(--space-5xl);
     text-align: center;
   }
@@ -120,6 +121,7 @@ if (limit && limit > 0) {
   .projects-container {
     width: 100%;
     margin: 0 auto;
+    margin-inline: calc(var(--page-gutter) * -1); /* Break out to full width */
     display: flex;
     align-items: flex-start;
     overflow-x: auto;
@@ -127,9 +129,9 @@ if (limit && limit > 0) {
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
     gap: var(--space-3xl);
-    padding: var(--space-3xl) var(--space-xl); /* Increased top/bottom padding for scaled cards */
+    padding: var(--space-3xl) var(--page-gutter); /* Add back horizontal padding for content */
     padding-right: var(--space-3xl); /* Extra padding for last item */
-    scroll-padding-left: var(--space-xl);
+    scroll-padding-left: var(--page-gutter);
     position: relative;
   }
 
@@ -339,12 +341,11 @@ if (limit && limit > 0) {
   /* Responsive design */
   @media (max-width: 768px) {
     .projects {
-      padding: var(--space-4xl) 0;
+      padding: var(--space-4xl) var(--page-gutter);
     }
 
     .section-header {
       margin-bottom: var(--space-3xl);
-      padding: 0 var(--space-lg);
     }
 
     .section-title {
