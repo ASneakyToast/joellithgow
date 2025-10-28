@@ -82,11 +82,22 @@
   --container-xl: 1280px;
   --container-2xl: 1536px;
 
-  /* Content width constraints */
+  /* Content width constraints
+   * Usage guide:
+   * --content-narrow (600px):  Forms, single-column text, focused content
+   * --content-normal (800px):  Blog posts, articles, reading content
+   * --content-wide (1000px):   Section headers, about sections, wider text blocks
+   * --content-container (1200px): Gallery grids, card layouts, wide content areas
+   * --content-full (1400px):   Maximum container width for very wide layouts
+   */
   --content-narrow: 600px;
   --content-normal: 800px;
   --content-wide: 1000px;
+  --content-container: 1200px;
   --content-full: 1400px;
+
+  /* Page-level horizontal spacing */
+  --page-gutter: var(--space-xl);  /* 2rem - consistent horizontal padding for all sections */
 
   /* ========================================
      Z-INDEX SCALE
@@ -153,6 +164,17 @@
 
 /* Large desktop and up */
 @custom-media --wide (min-width: 1280px);
+
+/* ========================================
+   RESPONSIVE: Page Gutter
+   Smaller on mobile devices
+   ======================================== */
+
+@media (max-width: 768px) {
+  :root {
+    --page-gutter: var(--space-lg);  /* 1.5rem on mobile */
+  }
+}
 
 /* ========================================
    UTILITY: Reduced Motion

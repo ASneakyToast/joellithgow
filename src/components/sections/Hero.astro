@@ -84,7 +84,7 @@ const decorativeElements = [
   @import '../../styles/themes.css';
 
   .hero {
-    padding: 4vh var(--space-xl);
+    padding: 4vh var(--page-gutter);
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -234,8 +234,9 @@ const decorativeElements = [
   }
 
   .hero-content {
-    width: 80vw;
+    max-width: var(--content-wide);
     margin: 0 auto;
+    text-align: center;
     position: relative;
     z-index: 10;
   }
@@ -263,6 +264,7 @@ const decorativeElements = [
     gap: var(--space-xl);
     align-items: flex-start;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
   /* Add quirky rotation to hero buttons */
@@ -361,7 +363,7 @@ const decorativeElements = [
   /* Responsive design */
   @media (max-width: 768px) {
     .hero {
-      padding: 60px var(--space-xl);
+      padding: 60px var(--page-gutter);
     }
 
     .hero::before {

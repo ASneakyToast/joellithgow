@@ -48,9 +48,9 @@ const contactMethods = [
 
 <section id="contact" class="contact" aria-labelledby="contact-heading">
   <div class="contact-content">
-    <header>
-      <h2 id="contact-heading" class="contact-title">{title}</h2>
-      <p class="contact-description">
+    <header class="section-header">
+      <h2 id="contact-heading" class="section-title">{title}</h2>
+      <p class="section-subtitle">
         {description}
       </p>
     </header>
@@ -84,7 +84,7 @@ const contactMethods = [
   @import '../../styles/themes.css';
 
   .contact {
-    padding: var(--space-5xl) var(--space-lg);
+    padding: var(--space-5xl) var(--page-gutter);
     background: var(--bg-secondary);
     border-top: 5px solid var(--accent-primary);
     position: relative;
@@ -201,22 +201,29 @@ const contactMethods = [
   }
 
   .contact-content {
-    max-width: 800px;
+    max-width: var(--content-normal);
     margin: 0 auto;
     text-align: center;
     position: relative;
     z-index: 10;
   }
 
-  .contact-title {
-    font-size: var(--heading-2xl);
-    margin-bottom: var(--space-3xl);
-    color: var(--text-primary);
-    text-shadow: var(--text-shadow) var(--accent-secondary);
-    transform: skew(-1deg);
+  /* Section header - unified underline pattern */
+  .section-header {
+    margin-bottom: var(--space-2xl);
   }
 
-  .contact-description {
+  .section-title {
+    font-size: var(--heading-xl);
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    transform: skew(-2deg);
+  }
+
+  .section-subtitle {
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     margin-bottom: var(--space-4xl);
@@ -285,14 +292,14 @@ const contactMethods = [
   /* Responsive design */
   @media (max-width: 768px) {
     .contact {
-      padding: var(--space-4xl) var(--space-lg);
+      padding: var(--space-4xl) var(--page-gutter);
     }
 
-    .contact-title {
+    .section-title {
       font-size: var(--heading-lg);
     }
 
-    .contact-description {
+    .section-subtitle {
       font-size: var(--text-base);
     }
 

@@ -72,9 +72,9 @@ const processSteps = [
 
 <section class="process" aria-labelledby="process">
   <div class="process-content">
-    <header class="process-header">
-      <h2 id="process" class="process-title">{sectionTitle}</h2>
-      <p class="process-description">
+    <header class="section-header">
+      <h2 id="process" class="section-title">{sectionTitle}</h2>
+      <p class="section-subtitle">
         {sectionSubtitle}
       </p>
     </header>
@@ -127,30 +127,34 @@ const processSteps = [
   @import '../../styles/themes.css';
 
   .process {
-    padding: var(--space-5xl) var(--space-lg);
+    padding: var(--space-5xl) var(--page-gutter);
     background: var(--bg-dark);
     color: var(--text-light);
     border-top: 5px solid var(--accent-primary);
   }
 
   .process-content {
-    max-width: 1200px;
+    max-width: var(--content-container);
     margin: 0 auto;
   }
 
-  .process-header {
+  /* Section header - unified underline pattern (adjusted for dark background) */
+  .section-header {
     margin-bottom: var(--space-4xl);
+    text-align: center;
   }
 
-  .process-title {
-    font-size: var(--heading-2xl);
-    margin-bottom: var(--space-3xl);
+  .section-title {
+    font-size: var(--heading-xl);
+    margin-bottom: var(--space-lg);
     color: var(--text-light);
-    text-shadow: 4px 4px 0px var(--accent-primary);
-    transform: skew(-1deg);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    transform: skew(-2deg);
   }
 
-  .process-description {
+  .section-subtitle {
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     margin-bottom: var(--space-4xl);
@@ -318,14 +322,14 @@ const processSteps = [
   /* Responsive design */
   @media (max-width: 768px) {
     .process {
-      padding: var(--space-4xl) var(--space-lg);
+      padding: var(--space-4xl) var(--page-gutter);
     }
 
-    .process-title {
+    .section-title {
       font-size: var(--heading-lg);
     }
 
-    .process-description {
+    .section-subtitle {
       font-size: var(--text-base);
     }
 
