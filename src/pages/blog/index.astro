@@ -64,7 +64,7 @@ const jsonLd = {
   <!-- Navigation Component -->
   <Navigation />
 
-  <main class="blog-container">
+  <main class="blog-container animated-bg bg-accent-editorial">
     <div class="blog-wrapper">
       {/* Header Section */}
       <section id="blog" class="blog-header-section">
@@ -188,6 +188,7 @@ const jsonLd = {
 <style>
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
+  @import '../../styles/backgrounds.css';
 
   /* Clean, traditional blog styling */
   .blog-container {
@@ -195,11 +196,15 @@ const jsonLd = {
     background: var(--bg-primary);
     color: var(--text-primary);
     padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden; /* Required for animated backgrounds */
   }
 
   .blog-wrapper {
     max-width: var(--content-normal);
     margin: 0 auto;
+    position: relative;
+    z-index: 10; /* Above animated backgrounds */
   }
 
   /* Section Styles */

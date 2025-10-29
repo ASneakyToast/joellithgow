@@ -10,7 +10,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={false}>
-  <main class="landing-page">
+  <main class="landing-page animated-bg bg-accent-spiral">
     <div class="landing-content">
       <header class="landing-header">
         <h1 class="name">Joel Lithgow</h1>
@@ -80,6 +80,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 <style>
   @import '../styles/tokens.css';
   @import '../styles/themes.css';
+  @import '../styles/backgrounds.css';
 
   .landing-page {
     min-height: 100vh;
@@ -87,6 +88,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     color: var(--text-primary);
     padding: var(--space-3xl) var(--page-gutter);
     position: relative;
+    overflow: hidden; /* Required for animated backgrounds */
   }
 
   .landing-content {
@@ -94,6 +96,8 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     margin: 0 auto;
     width: 100%;
     padding-top: var(--space-4xl);
+    position: relative;
+    z-index: 10; /* Above animated backgrounds */
   }
 
   .landing-header {
