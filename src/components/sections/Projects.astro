@@ -62,8 +62,6 @@ if (limit && limit > 0) {
         <article
           class={`project-section ${isEven ? 'media-left' : 'media-right'} ${!hasImages ? 'no-images' : ''}`}
           data-project-index={index}
-          data-project-id={project.data.id}
-          data-project-data={JSON.stringify(project.data)}
         >
           <div class="project-content-wrapper">
             <!-- Content Side -->
@@ -116,8 +114,7 @@ if (limit && limit > 0) {
                 <Button
                   variant="primary"
                   size="md"
-                  class="view-case-study-btn"
-                  data-project-id={project.data.id}
+                  href={`/work/${project.data.id}`}
                 >
                   view full story →
                 </Button>
@@ -137,11 +134,9 @@ if (limit && limit > 0) {
             <div class="project-media">
               {/* Hero Image/Video */}
               {project.data.images && project.data.images.length > 0 && (
-                <div
+                <a
+                  href={`/work/${project.data.id}`}
                   class="hero-media clickable-media"
-                  data-project-id={project.data.id}
-                  role="button"
-                  tabindex="0"
                   aria-label={`View full case study for ${project.data.title}`}
                 >
                   {project.data.images[0].type === 'video' ? (
@@ -157,18 +152,16 @@ if (limit && limit > 0) {
                       loading="lazy"
                     />
                   )}
-                </div>
+                </a>
               )}
 
               {/* Supporting Images */}
               {project.data.images && project.data.images.length > 1 && (
                 <div class="supporting-media">
                   {project.data.images.slice(1, 3).map((image) => (
-                    <div
+                    <a
+                      href={`/work/${project.data.id}`}
                       class="supporting-image clickable-media"
-                      data-project-id={project.data.id}
-                      role="button"
-                      tabindex="0"
                       aria-label={`View full case study for ${project.data.title}`}
                     >
                       <img
@@ -176,7 +169,7 @@ if (limit && limit > 0) {
                         alt={image.alt}
                         loading="lazy"
                       />
-                    </div>
+                    </a>
                   ))}
                 </div>
               )}
@@ -445,12 +438,14 @@ if (limit && limit > 0) {
   }
 
   .hero-media {
+    display: block;
     width: 100%;
     border-radius: var(--radius-lg);
     overflow: hidden;
     border: 4px solid var(--bg-dark);
     box-shadow: var(--shadow-xl) var(--accent-secondary);
     transition: all var(--duration-base) var(--ease-out);
+    text-decoration: none;
   }
 
   /* Clickable Media Styles */
@@ -488,11 +483,13 @@ if (limit && limit > 0) {
   }
 
   .supporting-image {
+    display: block;
     width: 100%;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 3px solid var(--bg-dark);
     transition: all var(--duration-base) var(--ease-out);
+    text-decoration: none;
   }
 
   .supporting-image img {
@@ -628,20 +625,9 @@ if (limit && limit > 0) {
 </style>
 
 <script>
-  // Type declarations for global functions
-  declare global {
-    interface Window {
-      caseStudyModal?: {
-        open: (projectData: any) => void;
-      };
-      openCaseStudy?: (projectData: any) => void;
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     const projectSections = document.querySelectorAll('.project-section');
     const progressDots = document.querySelectorAll('.progress-dot');
-    const viewCaseStudyBtns = document.querySelectorAll('.view-case-study-btn');
     const progressIndicator = document.querySelector('.progress-indicator');
     const projectsWrapper = document.querySelector('.projects-wrapper');
 
@@ -682,62 +668,6 @@ if (limit && limit > 0) {
     progressDots.forEach((dot, index) => {
       dot.addEventListener('click', () => {
         projectSections[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-
-    // Helper function to open modal
-    const openProjectModal = (projectId: string) => {
-      const section = document.querySelector(`[data-project-id="${projectId}"].project-section`);
-
-      if (section) {
-        const projectDataJson = section.getAttribute('data-project-data');
-        if (projectDataJson) {
-          try {
-            const projectData = JSON.parse(projectDataJson);
-
-            if (window.openCaseStudy) {
-              window.openCaseStudy(projectData);
-            } else if (window.caseStudyModal) {
-              window.caseStudyModal.open(projectData);
-            }
-          } catch (error) {
-            console.error('Error parsing project data:', error);
-          }
-        }
-      }
-    };
-
-    // Case study modal trigger (buttons)
-    viewCaseStudyBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const projectId = (btn as HTMLElement).getAttribute('data-project-id');
-        if (projectId) {
-          openProjectModal(projectId);
-        }
-      });
-    });
-
-    // Case study modal trigger (clickable images)
-    const clickableMediaElements = document.querySelectorAll('.clickable-media');
-    clickableMediaElements.forEach((media) => {
-      // Click handler
-      media.addEventListener('click', () => {
-        const projectId = (media as HTMLElement).getAttribute('data-project-id');
-        if (projectId) {
-          openProjectModal(projectId);
-        }
-      });
-
-      // Keyboard handler
-      media.addEventListener('keydown', (e) => {
-        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
-          e.preventDefault();
-          const projectId = (media as HTMLElement).getAttribute('data-project-id');
-          if (projectId) {
-            openProjectModal(projectId);
-          }
-        }
       });
     });
 
