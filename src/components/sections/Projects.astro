@@ -35,7 +35,11 @@ if (limit && limit > 0) {
     <h2 id="projects-heading" class="section-title">{sectionTitle}</h2>
     <p class="section-subtitle">{sectionSubtitle}</p>
   </header>
-  
+
+  <!-- Scroll fade indicators -->
+  <div class="scroll-fade scroll-fade-left" aria-hidden="true"></div>
+  <div class="scroll-fade scroll-fade-right" aria-hidden="true"></div>
+
   <div class="projects-container" role="list" aria-label="Project portfolio">
     {projects.map((project) => (
       <article class="project-card" role="listitem" data-project-id={project.data.id} data-project-data={JSON.stringify(project.data)}>
@@ -91,7 +95,8 @@ if (limit && limit > 0) {
     padding: var(--space-5xl) var(--page-gutter);
     background: var(--bg-secondary);
     border-top: 5px solid var(--accent-primary);
-    position: relative; /* Enable positioning context for gradients */
+    position: relative;
+    overflow: hidden; /* Required for scroll fade indicators */
   }
 
   /* Section header - unified underline pattern */
@@ -99,6 +104,8 @@ if (limit && limit > 0) {
     max-width: var(--content-wide);
     margin: 0 auto var(--space-5xl);
     text-align: center;
+    position: relative;
+    z-index: 10;
   }
 
   .section-title {
@@ -133,6 +140,7 @@ if (limit && limit > 0) {
     padding-right: var(--space-3xl); /* Extra padding for last item */
     scroll-padding-left: var(--page-gutter);
     position: relative;
+    z-index: 10;
   }
 
   /* Custom scrollbar styling */
@@ -156,24 +164,22 @@ if (limit && limit > 0) {
     background: var(--accent-secondary);
   }
 
-  /* Scroll fade indicators - positioned on parent section to stay fixed */
-  .projects::before,
-  .projects::after {
-    content: '';
+  /* Scroll fade indicators - DOM elements instead of pseudo-elements */
+  .scroll-fade {
     position: absolute;
     top: 0;
     bottom: 0;
     width: var(--space-3xl);
     pointer-events: none;
-    z-index: 10;
+    z-index: 15; /* Above content (z-index: 10) but below modals */
   }
 
-  .projects::before {
+  .scroll-fade-left {
     left: 0;
     background: linear-gradient(to right, var(--bg-secondary) 0%, transparent 100%);
   }
 
-  .projects::after {
+  .scroll-fade-right {
     right: 0;
     background: linear-gradient(to left, var(--bg-secondary) 0%, transparent 100%);
   }
@@ -364,8 +370,7 @@ if (limit && limit > 0) {
       width: 100%;
     }
 
-    .projects::before,
-    .projects::after {
+    .scroll-fade {
       display: none;
     }
   }

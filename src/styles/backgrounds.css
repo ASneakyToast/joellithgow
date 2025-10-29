@@ -1,0 +1,391 @@
+/**
+ * Animated Background System
+ *
+ * Provides a unified system for animated grid and accent backgrounds
+ * across all sections and pages.
+ *
+ * Usage:
+ * 1. Ensure section has: position: relative; overflow: hidden;
+ * 2. Add .animated-bg class to section
+ * 3. Add specific accent class (e.g., .bg-accent-spiral, .bg-accent-network)
+ * 4. Ensure content wrapper has: position: relative; z-index: 10;
+ */
+
+/* ========================================
+   BASE GRID PATTERN ANIMATIONS
+   ======================================== */
+
+@keyframes gridBreathe {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gridDrift {
+  0% {
+    background-position: 0 0;
+  }
+  25% {
+    background-position: 20px 20px;
+  }
+  50% {
+    background-position: 40px 0px;
+  }
+  75% {
+    background-position: 60px 40px;
+  }
+  100% {
+    background-position: 80px 80px;
+  }
+}
+
+/* Alternative grid drift for variety */
+@keyframes gridDriftAlt {
+  0% {
+    background-position: 0 0;
+  }
+  25% {
+    background-position: -20px 20px;
+  }
+  50% {
+    background-position: -40px -20px;
+  }
+  75% {
+    background-position: 20px -40px;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ========================================
+   ACCENT LAYER ANIMATIONS
+   ======================================== */
+
+@keyframes accentPulse {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+    transform: scale(1);
+  }
+  50% {
+    filter: brightness(1.15) saturate(1.1);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes accentFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) translateX(6px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-4px) translateX(-6px) rotate(-0.5deg);
+  }
+  75% {
+    transform: translateY(6px) translateX(8px) rotate(0.8deg);
+  }
+}
+
+/* Slower, more intense accent animation */
+@keyframes accentPulseStrong {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+    transform: scale(1);
+  }
+  50% {
+    filter: brightness(2) saturate(1.8);
+    transform: scale(1.15);
+  }
+}
+
+/* Gentler float for subtle sections */
+@keyframes accentFloatGentle {
+  0%, 100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(calc(var(--space-sm) * -1)) translateX(calc(var(--space-sm) * -1)) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(var(--space-sm)) translateX(var(--space-sm)) rotate(0.5deg);
+  }
+  75% {
+    transform: translateY(calc(var(--space-xs) * -1)) translateX(calc(var(--space-md) * -1)) rotate(-0.8deg);
+  }
+}
+
+/* ========================================
+   BASE GRID BACKGROUND
+   Apply to section::before
+   ======================================== */
+
+.animated-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    /* Subtle vertical lines */
+    linear-gradient(90deg, transparent 79px, var(--gradient-primary-light) 80px, var(--gradient-primary-light) 81px, transparent 82px),
+    /* Subtle horizontal lines */
+    linear-gradient(transparent 79px, var(--gradient-primary-light) 80px, var(--gradient-primary-light) 81px, transparent 82px);
+  background-size: 80px 80px;
+  background-position: 0 0;
+  animation: gridBreathe 4s ease-in-out infinite, gridDrift 12s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Grid variation for secondary sections */
+.animated-bg.bg-grid-secondary::before {
+  background-image:
+    linear-gradient(90deg, transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px),
+    linear-gradient(transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px);
+  animation: gridBreathe 5s ease-in-out infinite, gridDriftAlt 15s ease-in-out infinite;
+}
+
+/* Grid variation for tertiary sections */
+.animated-bg.bg-grid-tertiary::before {
+  background-image:
+    linear-gradient(90deg, transparent 79px, var(--gradient-tertiary-dim) 80px, var(--gradient-tertiary-dim) 81px, transparent 82px),
+    linear-gradient(transparent 79px, var(--gradient-tertiary-dim) 80px, var(--gradient-tertiary-dim) 81px, transparent 82px);
+  animation: gridBreathe 6s ease-in-out infinite, gridDrift 14s ease-in-out infinite;
+}
+
+/* ========================================
+   ACCENT PATTERNS
+   Apply to section::after
+   ======================================== */
+
+/* Base accent layer setup */
+.animated-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  z-index: 2;
+}
+
+/* SPIRAL ACCENT - Hero style */
+.animated-bg.bg-accent-spiral::after {
+  background-image:
+    /* Single accent dot */
+    radial-gradient(circle at 85% 15%, var(--gradient-secondary-medium) 3px, transparent 3px),
+    /* Bold visible spiral */
+    conic-gradient(from 0deg at 85% 15%,
+      transparent 0deg,
+      var(--gradient-primary-medium) 45deg,
+      transparent 90deg,
+      var(--gradient-secondary-light) 135deg,
+      transparent 180deg,
+      var(--gradient-tertiary-light) 225deg,
+      transparent 270deg,
+      var(--gradient-primary-dim) 315deg,
+      transparent 360deg);
+  background-size:
+    100% 100%,
+    1000px 1000px;
+  background-position:
+    0 0,
+    top right;
+  animation: accentPulse 8s ease-in-out infinite, accentFloat 12s ease-in-out infinite;
+}
+
+/* NETWORK ACCENT - Contact style */
+.animated-bg.bg-accent-network::after {
+  background-image:
+    /* Connection dots scattered like network nodes */
+    radial-gradient(circle 20px at 15% 25%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 70%, transparent 100%),
+    radial-gradient(circle 18px at 75% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 70%, transparent 100%),
+    radial-gradient(circle 22px at 25% 75%, var(--gradient-secondary-light) 0%, var(--gradient-secondary-light) 70%, transparent 100%),
+    radial-gradient(circle 19px at 85% 85%, var(--gradient-tertiary-light) 0%, var(--gradient-tertiary-light) 70%, transparent 100%),
+    /* Curved connection paths */
+    radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, var(--gradient-secondary-subtle) 40%, transparent 50%),
+    radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, var(--gradient-primary-subtle) 45%, transparent 55%);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    400px 400px,
+    350px 350px;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    center,
+    center;
+  animation: accentPulseStrong 4s ease-in-out infinite, accentFloatGentle 10s ease-in-out infinite;
+}
+
+/* GEOMETRIC ACCENT - Projects style */
+.animated-bg.bg-accent-geometric::after {
+  background-image:
+    /* Scattered geometric shapes */
+    radial-gradient(circle at 20% 30%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 40%, transparent 40%),
+    conic-gradient(from 45deg at 75% 25%,
+      var(--gradient-secondary-light) 0deg,
+      var(--gradient-secondary-light) 90deg,
+      transparent 90deg,
+      transparent 360deg),
+    linear-gradient(135deg, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 25%, transparent 25%, transparent 75%, var(--gradient-tertiary-medium) 75%),
+    radial-gradient(ellipse at 85% 70%, var(--gradient-primary-subtle) 0%, transparent 60%);
+  background-size:
+    60px 60px,
+    80px 80px,
+    100px 100px,
+    250px 150px;
+  background-position:
+    20% 30%,
+    75% 25%,
+    15% 80%,
+    85% 70%;
+  animation: accentPulse 7s ease-in-out infinite, accentFloat 11s ease-in-out infinite;
+}
+
+/* TIMELINE ACCENT - Process style */
+.animated-bg.bg-accent-timeline::after {
+  background-image:
+    /* Timeline dots */
+    radial-gradient(circle at 10% 20%, var(--gradient-primary-medium) 8px, transparent 8px),
+    radial-gradient(circle at 10% 50%, var(--gradient-secondary-medium) 8px, transparent 8px),
+    radial-gradient(circle at 10% 80%, var(--gradient-tertiary-medium) 8px, transparent 8px),
+    /* Connection lines */
+    linear-gradient(to bottom, transparent calc(20% + 8px), var(--gradient-primary-subtle) calc(20% + 8px), var(--gradient-primary-subtle) calc(50% - 8px), transparent calc(50% - 8px)),
+    linear-gradient(to bottom, transparent calc(50% + 8px), var(--gradient-secondary-subtle) calc(50% + 8px), var(--gradient-secondary-subtle) calc(80% - 8px), transparent calc(80% - 8px)),
+    /* Ambient glow */
+    radial-gradient(ellipse 300px 200px at 90% 50%, var(--gradient-tertiary-subtle) 0%, transparent 70%);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position: center;
+  animation: accentPulse 6s ease-in-out infinite, accentFloatGentle 9s ease-in-out infinite;
+}
+
+/* THOUGHT BUBBLES ACCENT - About style */
+.animated-bg.bg-accent-thoughts::after {
+  background-image:
+    /* Main thought bubbles */
+    radial-gradient(circle at 25% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-light) 30%, transparent 50%),
+    radial-gradient(circle at 70% 25%, var(--gradient-secondary-medium) 0%, var(--gradient-secondary-light) 25%, transparent 45%),
+    radial-gradient(circle at 80% 70%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-light) 35%, transparent 55%),
+    /* Small connector bubbles */
+    radial-gradient(circle 12px at 30% 40%, var(--gradient-primary-dim) 0%, transparent 100%),
+    radial-gradient(circle 10px at 35% 42%, var(--gradient-primary-dim) 0%, transparent 100%),
+    radial-gradient(circle 15px at 65% 30%, var(--gradient-secondary-dim) 0%, transparent 100%),
+    radial-gradient(circle 12px at 72% 33%, var(--gradient-secondary-dim) 0%, transparent 100%);
+  background-size:
+    180px 180px,
+    150px 150px,
+    200px 200px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position:
+    25% 35%,
+    70% 25%,
+    80% 70%,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
+  animation: accentPulse 5s ease-in-out infinite, accentFloat 13s ease-in-out infinite;
+}
+
+/* EDITORIAL ACCENT - Blog style */
+.animated-bg.bg-accent-editorial::after {
+  background-image:
+    /* Typographic elements - dashes, dots, quotes */
+    repeating-linear-gradient(45deg, transparent, transparent 50px, var(--gradient-primary-subtle) 50px, var(--gradient-primary-subtle) 60px, transparent 60px, transparent 110px),
+    radial-gradient(circle 4px at 85% 20%, var(--gradient-secondary-medium) 0%, transparent 100%),
+    radial-gradient(circle 4px at 15% 80%, var(--gradient-tertiary-medium) 0%, transparent 100%),
+    radial-gradient(circle 4px at 90% 75%, var(--gradient-primary-medium) 0%, transparent 100%),
+    /* Subtle corner accent */
+    conic-gradient(from 225deg at 5% 5%,
+      var(--gradient-secondary-light) 0deg,
+      var(--gradient-secondary-light) 45deg,
+      transparent 45deg);
+  background-size:
+    200px 200px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    150px 150px;
+  background-position:
+    top right,
+    0 0,
+    0 0,
+    0 0,
+    top left;
+  animation: accentPulse 9s ease-in-out infinite, accentFloat 14s ease-in-out infinite;
+}
+
+/* SCATTERED DOTS ACCENT - Generic versatile pattern */
+.animated-bg.bg-accent-scatter::after {
+  background-image:
+    radial-gradient(circle 3px at 15% 25%, var(--gradient-primary-medium) 0%, transparent 100%),
+    radial-gradient(circle 5px at 85% 35%, var(--gradient-secondary-medium) 0%, transparent 100%),
+    radial-gradient(circle 4px at 25% 65%, var(--gradient-tertiary-medium) 0%, transparent 100%),
+    radial-gradient(circle 3px at 75% 75%, var(--gradient-primary-light) 0%, transparent 100%),
+    radial-gradient(circle 6px at 50% 50%, var(--gradient-secondary-subtle) 0%, transparent 100%);
+  background-size: 100% 100%;
+  background-position: 0 0;
+  animation: accentPulse 8s ease-in-out infinite, accentFloat 12s ease-in-out infinite;
+}
+
+/* ========================================
+   THEME & ACCESSIBILITY OVERRIDES
+   ======================================== */
+
+/* Hide accent layers in minimal theme */
+:global([data-theme="minimal"]) .animated-bg::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Reduce grid opacity in minimal theme */
+:global([data-theme="minimal"]) .animated-bg::before {
+  opacity: 0.3;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animated-bg::before,
+  .animated-bg::after {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Reduce animations on mobile for performance */
+@media (max-width: 768px) {
+  .animated-bg::before {
+    background-size: 60px 60px; /* Larger grid on mobile for better visibility */
+  }
+
+  /* Simplify or hide complex accent patterns on mobile */
+  .animated-bg.bg-accent-network::after,
+  .animated-bg.bg-accent-geometric::after,
+  .animated-bg.bg-accent-timeline::after,
+  .animated-bg.bg-accent-thoughts::after {
+    opacity: 0.5;
+  }
+}
