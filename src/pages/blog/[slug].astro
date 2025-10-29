@@ -1,7 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Navigation from '@components/common/Navigation.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
@@ -73,9 +72,6 @@ if (image) {
   articleTags={tags}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-  <!-- Navigation Component -->
-  <Navigation />
 
   <main class="article-container">
     <div class="article-wrapper">

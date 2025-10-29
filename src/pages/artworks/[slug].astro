@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Navigation from '@components/common/Navigation.astro';
 import { getAllArtworks, getArtworkById } from '@features/artworks';
 import type { Artwork } from '@content/config';
 
@@ -26,9 +25,6 @@ const pageDescription = artwork.description;
 <BaseLayout title={pageTitle} description={pageDescription}>
   <!-- Skip to main content link for screen readers -->
   <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
-  
-  <!-- Navigation Component -->
-  <Navigation />
 
   <!-- Main Content -->
   <main id="main-content" class="artwork-detail-main">

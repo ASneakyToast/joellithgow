@@ -1,9 +1,7 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Navigation from '@components/common/Navigation.astro';
 import Hero from '@components/sections/Hero.astro';
 import Projects from '@components/sections/Projects.astro';
-import Process from '@components/sections/Process.astro';
 import About from '@components/sections/About.astro';
 import Contact from '@components/sections/Contact.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
@@ -21,9 +19,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
 <BaseLayout title={pageTitle} description={pageDescription}>
   <!-- Skip to main content link for screen readers -->
   <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
-  
-  <!-- Navigation Component -->
-  <Navigation />
 
   <!-- Main Content -->
   <main id="main-content">
@@ -32,9 +27,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
 
     <!-- Projects Component -->
     <Projects />
-
-    <!-- Process Component -->
-    <Process />
 
     <!-- About Component -->
     <About />
