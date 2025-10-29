@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Navigation from '@components/common/Navigation.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
@@ -60,9 +59,6 @@ const jsonLd = {
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-  <!-- Navigation Component -->
-  <Navigation />
 
   <main class="blog-container animated-bg bg-accent-editorial">
     <div class="blog-wrapper">
