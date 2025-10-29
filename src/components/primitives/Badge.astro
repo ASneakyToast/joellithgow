@@ -87,18 +87,18 @@ const linkProps = href ? {
 
   /* Style variants */
   .badge--default {
-    background: var(--gradient-primary-subtle);
-    color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: var(--text-light);
   }
 
   .badge--secondary {
-    background: var(--gradient-secondary-subtle);
-    color: var(--accent-secondary);
+    background: var(--accent-secondary);
+    color: var(--text-light);
   }
 
   .badge--tertiary {
-    background: var(--gradient-tertiary-light);
-    color: var(--accent-tertiary);
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
   }
 
   .badge--ghost {
@@ -134,15 +134,15 @@ const linkProps = href ? {
   }
 
   .badge--default.badge--link:hover {
-    background: var(--gradient-primary-dim);
+    opacity: 0.9;
   }
 
   .badge--secondary.badge--link:hover {
-    background: var(--gradient-secondary-dim);
+    opacity: 0.9;
   }
 
   .badge--tertiary.badge--link:hover {
-    background: var(--gradient-tertiary-medium);
+    opacity: 0.9;
   }
 
   /* Focus states */
