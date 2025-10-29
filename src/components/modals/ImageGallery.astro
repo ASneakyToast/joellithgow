@@ -1,0 +1,482 @@
+---
+// Image Gallery Modal - Lightbox for viewing project images
+---
+
+<div
+  id="imageGallery"
+  class="gallery-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Image gallery"
+>
+  <div class="gallery-container">
+    <!-- Close button -->
+    <button
+      type="button"
+      class="gallery-close"
+      aria-label="Close gallery"
+      id="galleryCloseBtn"
+    >
+      &times;
+    </button>
+
+    <!-- Navigation buttons -->
+    <button
+      type="button"
+      class="gallery-nav gallery-prev"
+      aria-label="Previous image"
+      id="galleryPrevBtn"
+    >
+      ←
+    </button>
+
+    <button
+      type="button"
+      class="gallery-nav gallery-next"
+      aria-label="Next image"
+      id="galleryNextBtn"
+    >
+      →
+    </button>
+
+    <!-- Image content -->
+    <div class="gallery-content">
+      <div class="gallery-image-wrapper">
+        <img
+          id="galleryImage"
+          class="gallery-image"
+          src=""
+          alt=""
+          loading="lazy"
+        />
+        <video
+          id="galleryVideo"
+          class="gallery-video hidden"
+          controls
+          muted
+          loop
+          playsinline
+        >
+          <source src="" type="video/webm" />
+        </video>
+      </div>
+      <div class="gallery-info">
+        <p id="galleryCaption" class="gallery-caption"></p>
+        <p id="galleryCounter" class="gallery-counter"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Gallery overlay */
+  .gallery-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--duration-base) var(--ease-out),
+                visibility var(--duration-base) var(--ease-out);
+  }
+
+  .gallery-overlay.show,
+  .gallery-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .gallery-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Close button */
+  .gallery-close {
+    position: fixed;
+    top: var(--space-xl);
+    right: var(--space-xl);
+    background: var(--accent-primary);
+    border: 2px solid var(--bg-dark);
+    color: var(--text-light);
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--duration-fast) var(--ease-out);
+    z-index: 10;
+    box-shadow: var(--shadow-lg) var(--bg-dark);
+  }
+
+  .gallery-close:hover {
+    background: var(--accent-secondary);
+    transform: scale(1.1) rotate(90deg);
+  }
+
+  .gallery-close:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 4px;
+  }
+
+  /* Navigation buttons */
+  .gallery-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent-primary);
+    border: 2px solid var(--bg-dark);
+    color: var(--text-light);
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--duration-fast) var(--ease-out);
+    z-index: 10;
+    box-shadow: var(--shadow-md) var(--bg-dark);
+  }
+
+  .gallery-nav:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .gallery-nav:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 4px;
+  }
+
+  .gallery-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .gallery-nav:disabled:hover {
+    background: var(--accent-primary);
+    transform: translateY(-50%);
+  }
+
+  .gallery-prev {
+    left: var(--space-xl);
+  }
+
+  .gallery-next {
+    right: var(--space-xl);
+  }
+
+  /* Image content */
+  .gallery-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 90vh;
+    gap: var(--space-lg);
+  }
+
+  .gallery-image-wrapper {
+    position: relative;
+    max-width: 100%;
+    max-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery-image,
+  .gallery-video {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    border: 4px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    object-fit: contain;
+  }
+
+  .gallery-video {
+    display: block;
+  }
+
+  .gallery-video.hidden {
+    display: none;
+  }
+
+  .gallery-info {
+    text-align: center;
+    max-width: 800px;
+    background: var(--bg-secondary);
+    padding: var(--space-lg) var(--space-xl);
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    transform: rotate(-1deg);
+  }
+
+  .gallery-caption {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  .gallery-counter {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .gallery-close {
+      top: var(--space-md);
+      right: var(--space-md);
+      width: 48px;
+      height: 48px;
+      font-size: var(--text-2xl);
+    }
+
+    .gallery-nav {
+      width: 48px;
+      height: 48px;
+      font-size: var(--text-xl);
+    }
+
+    .gallery-prev {
+      left: var(--space-md);
+    }
+
+    .gallery-next {
+      right: var(--space-md);
+    }
+
+    .gallery-content {
+      max-width: 95vw;
+    }
+
+    .gallery-image-wrapper {
+      max-height: 70vh;
+    }
+
+    .gallery-image,
+    .gallery-video {
+      max-height: 70vh;
+    }
+
+    .gallery-info {
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .gallery-caption {
+      font-size: var(--text-sm);
+    }
+
+    .gallery-counter {
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-overlay,
+    .gallery-close,
+    .gallery-nav {
+      transition: none;
+    }
+
+    .gallery-close:hover,
+    .gallery-nav:hover {
+      transform: none;
+    }
+
+    .gallery-info {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Image Gallery Manager
+  class ImageGallery {
+    private overlay: HTMLElement | null;
+    private imageEl: HTMLImageElement | null;
+    private videoEl: HTMLVideoElement | null;
+    private captionEl: HTMLElement | null;
+    private counterEl: HTMLElement | null;
+    private prevBtn: HTMLButtonElement | null;
+    private nextBtn: HTMLButtonElement | null;
+    private closeBtn: HTMLButtonElement | null;
+
+    private images: Array<{ src: string; alt: string; caption: string; type?: string }> = [];
+    private currentIndex: number = 0;
+
+    constructor() {
+      this.overlay = document.getElementById('imageGallery');
+      this.imageEl = document.getElementById('galleryImage') as HTMLImageElement;
+      this.videoEl = document.getElementById('galleryVideo') as HTMLVideoElement;
+      this.captionEl = document.getElementById('galleryCaption');
+      this.counterEl = document.getElementById('galleryCounter');
+      this.prevBtn = document.getElementById('galleryPrevBtn') as HTMLButtonElement;
+      this.nextBtn = document.getElementById('galleryNextBtn') as HTMLButtonElement;
+      this.closeBtn = document.getElementById('galleryCloseBtn') as HTMLButtonElement;
+
+      this.init();
+    }
+
+    init() {
+      // Close button
+      this.closeBtn?.addEventListener('click', () => this.close());
+
+      // Navigation buttons
+      this.prevBtn?.addEventListener('click', () => this.prev());
+      this.nextBtn?.addEventListener('click', () => this.next());
+
+      // Backdrop click
+      this.overlay?.addEventListener('click', (e) => {
+        if (e.target === this.overlay) {
+          this.close();
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (!this.overlay?.classList.contains('hidden')) {
+          if (e.key === 'Escape') {
+            this.close();
+          } else if (e.key === 'ArrowLeft') {
+            this.prev();
+          } else if (e.key === 'ArrowRight') {
+            this.next();
+          }
+        }
+      });
+    }
+
+    open(images: Array<{ src: string; alt: string; caption: string; type?: string }>, startIndex: number = 0) {
+      this.images = images;
+      this.currentIndex = startIndex;
+
+      this.overlay?.classList.remove('hidden');
+      this.overlay?.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      this.showImage();
+    }
+
+    close() {
+      this.overlay?.classList.add('hidden');
+      this.overlay?.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+
+      // Pause video if playing
+      if (this.videoEl && !this.videoEl.paused) {
+        this.videoEl.pause();
+      }
+    }
+
+    prev() {
+      if (this.currentIndex > 0) {
+        this.currentIndex--;
+        this.showImage();
+      }
+    }
+
+    next() {
+      if (this.currentIndex < this.images.length - 1) {
+        this.currentIndex++;
+        this.showImage();
+      }
+    }
+
+    showImage() {
+      const image = this.images[this.currentIndex];
+      if (!image) return;
+
+      // Handle video vs image
+      const isVideo = image.type === 'video';
+
+      if (isVideo) {
+        // Show video, hide image
+        if (this.videoEl && this.imageEl) {
+          this.videoEl.classList.remove('hidden');
+          this.imageEl.style.display = 'none';
+
+          const source = this.videoEl.querySelector('source');
+          if (source) {
+            source.src = image.src;
+          }
+          this.videoEl.load();
+        }
+      } else {
+        // Show image, hide video
+        if (this.imageEl && this.videoEl) {
+          this.imageEl.style.display = 'block';
+          this.videoEl.classList.add('hidden');
+
+          this.imageEl.src = image.src;
+          this.imageEl.alt = image.alt;
+        }
+      }
+
+      // Update caption and counter
+      if (this.captionEl) {
+        this.captionEl.textContent = image.caption;
+      }
+
+      if (this.counterEl) {
+        this.counterEl.textContent = `${this.currentIndex + 1} / ${this.images.length}`;
+      }
+
+      // Update navigation button states
+      if (this.prevBtn) {
+        this.prevBtn.disabled = this.currentIndex === 0;
+      }
+
+      if (this.nextBtn) {
+        this.nextBtn.disabled = this.currentIndex === this.images.length - 1;
+      }
+    }
+  }
+
+  // Initialize gallery
+  const imageGallery = new ImageGallery();
+
+  // Export globally
+  (window as any).imageGallery = imageGallery;
+  (window as any).openGallery = (
+    images: Array<{ src: string; alt: string; caption: string; type?: string }>,
+    startIndex: number = 0
+  ) => imageGallery.open(images, startIndex);
+</script>
