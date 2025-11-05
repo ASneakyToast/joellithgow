@@ -42,9 +42,11 @@ const bottomRowImages = allImages.slice(midpoint);
         <div class="gallery-row gallery-row-top">
           {topRowImages.map((image) => (
             <div class="gallery-item gallery-item-tall">
-              <img 
-                src={image.src}
+              <img
+                src={image.srcThumbnail || image.src}
                 alt={image.alt}
+                width={image.width || 300}
+                height={image.height || 350}
                 loading="lazy"
                 class="gallery-image"
               />
@@ -55,14 +57,16 @@ const bottomRowImages = allImages.slice(midpoint);
             </div>
           ))}
         </div>
-        
+
         <!-- Bottom Row - Shorter Images -->
         <div class="gallery-row gallery-row-bottom">
           {bottomRowImages.map((image) => (
             <div class="gallery-item gallery-item-short">
-              <img 
-                src={image.src}
+              <img
+                src={image.srcThumbnail || image.src}
                 alt={image.alt}
+                width={image.width || 280}
+                height={image.height || 220}
                 loading="lazy"
                 class="gallery-image"
               />

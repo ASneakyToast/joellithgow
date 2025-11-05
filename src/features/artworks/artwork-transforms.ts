@@ -14,16 +14,35 @@ export function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
     console.log(`⚠️ No images found for "${title}"`);
   }
 
-  // Transform images
+  // Transform images with rendition support
   const images = [];
+
+  // Helper function to get best rendition URL for a use case
+  const getImageUrl = (image: any, preferredSize: 'thumbnail' | 'web_optimized' | 'high_quality' = 'web_optimized'): string => {
+    return image.renditions?.[preferredSize]?.url || image.original_url;
+  };
+
+  // Helper function to get image dimensions from rendition
+  const getImageDimensions = (image: any, preferredSize: 'thumbnail' | 'web_optimized' | 'high_quality' = 'web_optimized') => {
+    const rendition = image.renditions?.[preferredSize];
+    return {
+      width: rendition?.width || image.width,
+      height: rendition?.height || image.height,
+    };
+  };
 
   // Add primary image
   if (apiArtwork.primary_image) {
+    const dims = getImageDimensions(apiArtwork.primary_image, 'web_optimized');
     images.push({
-      src: apiArtwork.primary_image.original_url,
+      src: getImageUrl(apiArtwork.primary_image, 'web_optimized'),
+      srcThumbnail: getImageUrl(apiArtwork.primary_image, 'thumbnail'),
+      srcLarge: getImageUrl(apiArtwork.primary_image, 'high_quality'),
       alt: apiArtwork.primary_image.alt || `${title} - main view`,
       caption: `Main view of ${title}`,
       type: 'main' as const,
+      width: dims.width,
+      height: dims.height,
     });
   }
 
@@ -34,11 +53,16 @@ export function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
         return; // Skip duplicate primary image
       }
 
+      const dims = getImageDimensions(img.image, 'web_optimized');
       images.push({
-        src: img.image.original_url,
+        src: getImageUrl(img.image, 'web_optimized'),
+        srcThumbnail: getImageUrl(img.image, 'thumbnail'),
+        srcLarge: getImageUrl(img.image, 'high_quality'),
         alt: img.image.alt || `${title} - view ${index + 1}`,
         caption: img.caption || `Additional view of ${title}`,
         type: 'detail' as const,
+        width: dims.width,
+        height: dims.height,
       });
     });
   }
@@ -47,11 +71,16 @@ export function transformAPIArtwork(apiArtwork: APIArtwork): Artwork {
   if (apiArtwork.artifacts) {
     apiArtwork.artifacts.forEach((artifact) => {
       if (artifact.type === 'image' && artifact.image) {
+        const dims = getImageDimensions(artifact.image, 'web_optimized');
         images.push({
-          src: artifact.image.original_url,
+          src: getImageUrl(artifact.image, 'web_optimized'),
+          srcThumbnail: getImageUrl(artifact.image, 'thumbnail'),
+          srcLarge: getImageUrl(artifact.image, 'high_quality'),
           alt: artifact.image.alt || `${title} - process documentation`,
           caption: artifact.caption || 'Process documentation',
           type: 'process' as const,
+          width: dims.width,
+          height: dims.height,
         });
       }
     });

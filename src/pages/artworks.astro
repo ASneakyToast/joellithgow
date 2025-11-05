@@ -54,11 +54,19 @@ const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exh
                 <article class="artwork-card" key={artwork.id}>
                   <div class="artwork-image">
                     {artwork.images && artwork.images.length > 0 ? (
-                      <img 
-                        src={artwork.images[0].src} 
-                        alt={artwork.images[0].alt}
-                        loading="lazy"
-                      />
+                      <picture>
+                        <source
+                          srcset={artwork.images[0].srcLarge}
+                          media="(min-width: 1200px)"
+                        />
+                        <img
+                          src={artwork.images[0].srcThumbnail || artwork.images[0].src}
+                          alt={artwork.images[0].alt}
+                          width={artwork.images[0].width || 400}
+                          height={artwork.images[0].height || 400}
+                          loading="lazy"
+                        />
+                      </picture>
                     ) : (
                       <div class="no-image-placeholder">No image available</div>
                     )}
