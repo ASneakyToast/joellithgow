@@ -9,9 +9,10 @@ export { transformAPIArtwork } from './artwork-transforms';
 
 /**
  * Get all artworks from API
+ * Results are cached so repeated calls are fast
  */
 export async function getAllArtworks(): Promise<Artwork[]> {
-  // Get API artworks
+  // Get API artworks (cached after first call)
   const apiArtworks = await fetchAPIArtworks();
   const artworkData = apiArtworks.map(transformAPIArtwork);
 
@@ -23,6 +24,8 @@ export async function getAllArtworks(): Promise<Artwork[]> {
 
 /**
  * Get a single artwork by ID
+ * Note: This uses getAllArtworks() which is cached, so it's efficient
+ * even when generating multiple pages
  */
 export async function getArtworkById(id: string): Promise<Artwork | null> {
   const allArtworks = await getAllArtworks();

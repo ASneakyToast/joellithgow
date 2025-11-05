@@ -98,9 +98,13 @@ const artworkSchema = z.object({
   dimensions: z.string().optional(),
   images: z.array(z.object({
     src: z.string(),
+    srcThumbnail: z.string().optional(),
+    srcLarge: z.string().optional(),
     alt: z.string(),
     caption: z.string(),
-    type: z.enum(['main', 'detail', 'process', 'context']).default('main')
+    type: z.enum(['main', 'detail', 'process', 'context']).default('main'),
+    width: z.number().optional(),
+    height: z.number().optional()
   })),
   // Artistic details
   materials: z.array(z.string()).optional(),

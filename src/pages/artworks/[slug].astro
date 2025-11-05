@@ -62,11 +62,23 @@ const pageDescription = artwork.description;
       <div class="container">
         {artwork.images && artwork.images.length > 0 ? (
           <div class="main-image">
-            <img 
-              src={artwork.images[0].src} 
-              alt={artwork.images[0].alt}
-              class="primary-image"
-            />
+            <picture>
+              <source
+                srcset={artwork.images[0].srcLarge}
+                media="(min-width: 1200px)"
+              />
+              <source
+                srcset={artwork.images[0].src}
+                media="(min-width: 768px)"
+              />
+              <img
+                src={artwork.images[0].srcThumbnail || artwork.images[0].src}
+                alt={artwork.images[0].alt}
+                width={artwork.images[0].width}
+                height={artwork.images[0].height}
+                class="primary-image"
+              />
+            </picture>
             <p class="image-caption">{artwork.images[0].caption}</p>
           </div>
         ) : (
@@ -74,18 +86,26 @@ const pageDescription = artwork.description;
             <div class="no-image-placeholder">No images available for this artwork</div>
           </div>
         )}
-        
+
         {artwork.images && artwork.images.length > 1 && (
           <div class="additional-images">
             <h3 class="section-title">Additional Views</h3>
             <div class="image-grid">
               {artwork.images.slice(1).map((image, index) => (
                 <div class="image-item" key={index}>
-                  <img 
-                    src={image.src} 
-                    alt={image.alt}
-                    loading="lazy"
-                  />
+                  <picture>
+                    <source
+                      srcset={image.src}
+                      media="(min-width: 768px)"
+                    />
+                    <img
+                      src={image.srcThumbnail || image.src}
+                      alt={image.alt}
+                      width={image.width || 400}
+                      height={image.height || 300}
+                      loading="lazy"
+                    />
+                  </picture>
                   <div class="image-info">
                     <span class="image-type">{image.type}</span>
                     <p class="image-caption">{image.caption}</p>
