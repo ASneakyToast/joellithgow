@@ -1,6 +1,7 @@
 ---
 title: "Full Circle: From Java Tutorials to Vibe Coding a Minecraft Mutualism Mod"
 description: "After years away, I'm back to where I started: making Minecraft mods. This time with Claude Code, a book about ecological partnerships, and a few hours of pure creative flow."
+excerpt: "<p>I got into programming because of Minecraft—not through CS classes, just YouTube tutorials and learning enough to make custom blocks. After years of professional web development, I'm back where I started. And it feels awesome.</p><p>Inspired by <em>The Call of the Honeyguide</em>, a book about ecological partnerships, I built <strong>Symbiotic Survival</strong>—a Minecraft mod that teaches mutualism through gameplay. Honeyguide birds lead you to honey. Pollinators keep trees producing fruit. Destroy the partnership, lose the resources. You learn by watching NPCs interact with the world, not through tutorial pop-ups.</p><p>The wildest part? I went from idea to working prototype in hours using Claude Code. It even generated all the pixel art assets. And I discovered something unexpected: Claude codes games <em>completely differently</em> than web apps—working incrementally, leaving TODOs as creative scaffolding rather than tech debt. For rapid prototyping, this approach is actually ideal.</p>"
 publishDate: 2025-10-06
 author: "Joel Lithgow"
 tags: ["minecraft", "modding", "dev-journal", "game-design", "ecology", "claude-code"]
