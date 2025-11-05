@@ -12,51 +12,57 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 <BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={false}>
   <main class="landing-page animated-bg bg-accent-spiral">
     <div class="landing-content">
-      <header class="landing-header">
-        <h1 class="name">Joel Lithgow</h1>
-      </header>
+      <div class="landing-grid">
+        <!-- Left Column: Name + Social Links -->
+        <div class="landing-left">
+          <header class="landing-header">
+            <h1 class="name">Joel Lithgow</h1>
+          </header>
 
-      <nav class="landing-nav" aria-label="Main sections">
-        <Card variant="alternating" href="/work" class="nav-card">
-          <span class="card-title">Portfolio</span>
-          <span class="card-description">What I do as a creative technologist</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
+          <footer class="landing-footer">
+            <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
+              LinkedIn
+            </a>
+            <span class="separator">·</span>
+            <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
+              GitHub
+            </a>
+          </footer>
+        </div>
 
-        <Card variant="alternating" href="/blog" class="nav-card">
-          <span class="card-title">Blog</span>
-          <span class="card-description">I guess this is my social media</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
+        <!-- Right Column: Navigation Cards -->
+        <nav class="landing-nav" aria-label="Main sections">
+          <Card variant="alternating" href="/work" class="nav-card">
+            <span class="card-title">Portfolio</span>
+            <span class="card-description">What I do as a creative technologist</span>
+            <span class="card-arrow" aria-hidden="true">→</span>
+          </Card>
 
-        <Card variant="alternating" href="/artworks" class="nav-card">
-          <span class="card-title">Artwork</span>
-          <span class="card-description">Things I make for myself</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
+          <Card variant="alternating" href="/blog" class="nav-card">
+            <span class="card-title">Blog</span>
+            <span class="card-description">I guess this is my social media</span>
+            <span class="card-arrow" aria-hidden="true">→</span>
+          </Card>
 
-        <Card variant="alternating" href="https://thisisahousegallery.com" class="nav-card">
-          <span class="card-title">This is a House Gallery</span>
-          <span class="card-description">This is also my house lol</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
+          <Card variant="alternating" href="/artworks" class="nav-card">
+            <span class="card-title">Artwork</span>
+            <span class="card-description">Things I make for myself</span>
+            <span class="card-arrow" aria-hidden="true">→</span>
+          </Card>
 
-        <Card variant="alternating" href="https://divebarnranch.com" class="nav-card">
-          <span class="card-title">Dive Barn</span>
-          <span class="card-description">An arts and music event I ran</span>
-          <span class="card-arrow" aria-hidden="true">→</span>
-        </Card>
-      </nav>
+          <Card variant="alternating" href="https://thisisahousegallery.com" class="nav-card">
+            <span class="card-title">This is a House Gallery</span>
+            <span class="card-description">This is also my house lol</span>
+            <span class="card-arrow" aria-hidden="true">→</span>
+          </Card>
 
-      <footer class="landing-footer">
-        <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
-          LinkedIn
-        </a>
-        <span class="separator">·</span>
-        <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
-          GitHub
-        </a>
-      </footer>
+          <Card variant="alternating" href="https://divebarnranch.com" class="nav-card">
+            <span class="card-title">Dive Barn</span>
+            <span class="card-description">An arts and music event I ran</span>
+            <span class="card-arrow" aria-hidden="true">→</span>
+          </Card>
+        </nav>
+      </div>
     </div>
 
     <!-- Theme toggle (minimal, bottom corner) -->
@@ -100,8 +106,23 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     z-index: 10; /* Above animated backgrounds */
   }
 
+  .landing-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4xl);
+  }
+
+  .landing-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    width: 100%;
+  }
+
   .landing-header {
-    margin-bottom: var(--space-4xl);
+    margin-bottom: 0;
+    width: 100%;
+    text-align: center;
   }
 
   .name {
@@ -119,7 +140,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-xl);
-    margin-bottom: var(--space-3xl);
   }
 
   /* Custom nav card styling - brutalist design */
@@ -237,10 +257,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       padding-top: var(--space-2xl);
     }
 
-    .landing-header {
-      margin-bottom: var(--space-2xl);
-    }
-
     .name {
       font-size: clamp(36px, 8vw, 80px);
     }
@@ -303,6 +319,93 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     .card-arrow {
       right: var(--space-lg);
       font-size: var(--text-2xl);
+    }
+  }
+
+  /* Desktop layout - Two columns */
+  @media (min-width: 1024px) {
+    .landing-page {
+      height: 100vh;
+      overflow: hidden;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .landing-content {
+      max-width: none;
+      padding: var(--space-3xl) 0 var(--space-3xl) var(--page-gutter);
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .landing-grid {
+      display: grid;
+      grid-template-columns: 35% 1fr;
+      gap: var(--space-4xl);
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .landing-left {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    .landing-header {
+      margin-bottom: 0;
+      text-align: left;
+    }
+
+    .landing-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-md);
+      margin-top: 0;
+    }
+
+    .social-link {
+      font-size: var(--text-lg);
+    }
+
+    .separator {
+      display: none;
+    }
+
+    .landing-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2xl);
+      overflow-y: auto;
+      padding: var(--space-3xl) var(--space-2xl);
+      min-height: 0;
+    }
+
+    /* Custom scrollbar styling for brutalist aesthetic */
+    .landing-nav::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .landing-nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .landing-nav::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: var(--radius-sm);
+    }
+
+    .landing-nav::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-secondary);
     }
   }
 
