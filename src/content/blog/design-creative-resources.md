@@ -8,6 +8,7 @@ draft: false
 featured: false
 category: "link-collection"
 readingTime: 2
+hasDetailPage: false
 links:
   - url: "https://marcards.me/"
     title: "Marcards - Design Portfolio"

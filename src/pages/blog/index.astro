@@ -245,7 +245,7 @@ const jsonLd = {
 
                     {post.data.hasDetailPage !== false && (
                       <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                        Continue reading →
+                        {post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
                       </Button>
                     )}
                   </div>
