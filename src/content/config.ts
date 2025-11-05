@@ -68,6 +68,7 @@ const linkSchema = z.object({
 const blogSchema = z.object({
   title: z.string(),
   description: z.string(),
+  excerpt: z.string().optional(),
   publishDate: z.date(),
   author: z.string().default('Joel Lithgow'),
   image: z.object({
