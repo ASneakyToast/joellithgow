@@ -1,7 +1,7 @@
 ---
 /**
- * GlobalHeader - Ultra-minimal centered header with scroll trigger
- * Only appears after scrolling down, provides escape hatch back to home
+ * GlobalHeader - Context-aware breadcrumb header with scroll trigger
+ * Shows breadcrumb navigation based on current section
  */
 
 export interface Props {
@@ -9,12 +9,47 @@ export interface Props {
 }
 
 const { class: className } = Astro.props;
+
+// Detect current page to show appropriate breadcrumb
+const currentPath = Astro.url.pathname;
+const isWorkPage = currentPath.startsWith('/work');
+const isBlogPage = currentPath.startsWith('/blog');
+const isArtworksPage = currentPath.startsWith('/artworks');
+
+// Build breadcrumb links based on section
+const breadcrumbs = [];
+if (isWorkPage) {
+  breadcrumbs.push(
+    { href: '/', label: 'joel lithgow' },
+    { href: '/work', label: 'portfolio' }
+  );
+} else if (isBlogPage) {
+  breadcrumbs.push(
+    { href: '/', label: 'joel lithgow' },
+    { href: '/blog', label: 'blog' }
+  );
+} else if (isArtworksPage) {
+  breadcrumbs.push(
+    { href: '/', label: 'joel lithgow' },
+    { href: '/artworks', label: 'artwork' }
+  );
+} else {
+  // Default: just home link
+  breadcrumbs.push({ href: '/', label: 'joel lithgow' });
+}
 ---
 
 <header class={`global-header ${className || ''}`}>
-  <a href="/" class="logo-link" aria-label="Return to home">
-    Joel Lithgow
-  </a>
+  <nav class="breadcrumb-nav">
+    {breadcrumbs.map((item, index) => (
+      <span class="breadcrumb-item">
+        <a href={item.href} class="logo-link" aria-label={`Go to ${item.label}`}>
+          {item.label}
+        </a>
+        {index < breadcrumbs.length - 1 && <span class="breadcrumb-separator">›</span>}
+      </span>
+    ))}
+  </nav>
 </header>
 
 <style>
@@ -48,6 +83,25 @@ const { class: className } = Astro.props;
     opacity: 1;
     transform: translateX(-50%) translateY(0) var(--rotation-sm);
     pointer-events: auto;
+  }
+
+  .breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .breadcrumb-separator {
+    color: var(--accent-primary);
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    user-select: none;
   }
 
   .logo-link {
