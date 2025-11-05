@@ -18,9 +18,54 @@ const sortedPosts = allPosts.sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
 );
 
+// Split into featured (first 3) and archive posts
+const FEATURED_COUNT = 3;
+const featuredPosts = sortedPosts.slice(0, FEATURED_COUNT);
+const archivePosts = sortedPosts.slice(FEATURED_COUNT);
+
+// Render markdown content for featured posts
+const featuredWithContent = await Promise.all(
+  featuredPosts.map(async (post) => {
+    const { Content } = await post.render();
+    return { post, Content };
+  })
+);
+
+// Helper function to truncate HTML content to first N paragraphs
+function truncateContent(html: string, maxParagraphs: number = 3): { content: string; isTruncated: boolean } {
+  const tempDiv = { innerHTML: html };
+  const paragraphs: string[] = [];
+  let pCount = 0;
+
+  // Simple regex-based approach to extract first few paragraphs
+  const pRegex = /<p[^>]*>.*?<\/p>/gs;
+  const matches = html.match(pRegex) || [];
+
+  const truncated = matches.slice(0, maxParagraphs).join('');
+  const isTruncated = matches.length > maxParagraphs;
+
+  return { content: truncated, isTruncated };
+}
+
 // Calculate link collection stats
 const linkCollectionPosts = allPosts.filter(post => post.data.links && post.data.links.length > 0);
 const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.data.links?.length || 0), 0);
+
+// Calculate tag counts
+const tagCounts = new Map<string, number>();
+allPosts.forEach(post => {
+  if (post.data.tags) {
+    post.data.tags.forEach(tag => {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    });
+  }
+});
+
+// Sort tags by count (descending) and get top tags
+const topTags = Array.from(tagCounts.entries())
+  .filter(([tag, count]) => count >= 2) // Only show tags with 2+ posts
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5); // Show top 5 tags
 
 const pageTitle = "joel's blog of half-finished thoughts";
 const pageDescription = "Reflections on web development, AI tools, creative projects, and lessons learned along the way.";
@@ -68,70 +113,90 @@ const jsonLd = {
         <section id="blog" class="blog-header-section">
           <header class="blog-header">
             <h1 class="blog-title">joel's blog of half-finished thoughts</h1>
-            <p class="blog-description">{pageDescription}</p>
+
+            {/* Tag cloud */}
+            {topTags.length > 0 && (
+              <div class="tag-cloud">
+                <span class="tag-cloud-label">On</span>
+                {topTags.map(([tag, count]) => (
+                  <a href={`/blog/tags/${tag}`} class="tag-cloud-item">
+                    {tag} <span class="tag-count">{count}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </header>
         </section>
 
-        {/* Recent Posts Section */}
-        <section id="recent-posts" class="recent-posts-section">
-          <h2 class="section-heading">recently posted</h2>
-        {sortedPosts.length > 0 ? (
-          <div class="blog-posts">
-            {sortedPosts.map((post) => (
-              <Card variant="interactive" interactive as="article" class="blog-post-card">
-                <time
-                  datetime={post.data.publishDate.toISOString()}
-                  class="post-date"
-                >
-                  {post.data.publishDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </time>
-
-                <h2 class="post-title">
-                  <a
-                    href={`/blog/${post.slug}`}
-                    class="post-title-link"
+        {/* Featured Posts Section */}
+        {featuredWithContent.length > 0 && (
+          <section id="featured-posts" class="featured-posts-section">
+            <h2 class="section-heading">recent posts</h2>
+            <div class="featured-posts">
+              {featuredWithContent.map(({ post, Content }) => (
+                <Card variant="interactive" interactive as="article" class="featured-post-card">
+                  <time
+                    datetime={post.data.publishDate.toISOString()}
+                    class="post-date"
                   >
-                    {post.data.title}
-                  </a>
-                  {post.data.category === 'link-collection' && (
-                    <Badge variant="tertiary" size="sm" class="link-collection-badge">
-                      {post.data.links?.length || 0} links
-                    </Badge>
-                  )}
-                </h2>
+                    {post.data.publishDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
 
-                <p class="post-excerpt">
-                  {post.data.description}
-                </p>
-
-                {post.data.tags && post.data.tags.length > 0 && (
-                  <div class="post-tags">
-                    {post.data.tags.map((tag) => (
-                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
-                    ))}
-                  </div>
-                )}
-
-                <div class="post-meta">
-                  <span class="post-author">
-                    By {post.data.author}
-                    {post.data.readingTime && (
-                      <span> • {post.data.readingTime} min read</span>
+                  <h2 class="post-title">
+                    <a
+                      href={`/blog/${post.slug}`}
+                      class="post-title-link"
+                    >
+                      {post.data.title}
+                    </a>
+                    {post.data.category === 'link-collection' && (
+                      <Badge variant="tertiary" size="sm" class="link-collection-badge">
+                        {post.data.links?.length || 0} links
+                      </Badge>
                     )}
-                  </span>
+                  </h2>
 
-                  <Button href={`/blog/${post.slug}`} variant="ghost" size="sm">
-                    Read more →
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
+                  <p class="post-description">
+                    {post.data.description}
+                  </p>
+
+                  {/* Render actual content preview */}
+                  <div class="post-content-preview">
+                    <Content />
+                  </div>
+
+                  {post.data.tags && post.data.tags.length > 0 && (
+                    <div class="post-tags">
+                      {post.data.tags.map((tag) => (
+                        <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  <div class="post-meta">
+                    <span class="post-author">
+                      By {post.data.author}
+                      {post.data.readingTime && (
+                        <span> • {post.data.readingTime} min read</span>
+                      )}
+                    </span>
+
+                    <Button href={`/blog/${post.slug}`} variant="primary" size="md">
+                      Continue reading →
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Empty state if no posts */}
+        {sortedPosts.length === 0 && (
           <Card class="empty-state">
             <div class="empty-message">
               <Badge>coming soon</Badge>
@@ -139,7 +204,6 @@ const jsonLd = {
             </div>
           </Card>
         )}
-        </section>
       </div>
 
       {/* Sidebar */}
@@ -225,12 +289,19 @@ const jsonLd = {
   /* Section Styles */
   .blog-header-section {
     position: relative;
-    padding: var(--space-2xl) 0;
+    margin: var(--space-2xl) 0;
   }
 
-  .recent-posts-section {
+  .featured-posts-section,
+  .archive-posts-section {
     position: relative;
-    padding: var(--space-xl) 0;
+    margin: var(--space-xl) 0;
+  }
+
+  .archive-posts-section {
+    margin-top: var(--space-3xl);
+    padding-top: var(--space-3xl);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
   .section-heading {
@@ -243,7 +314,6 @@ const jsonLd = {
 
   .blog-header {
     text-align: left;
-    margin-bottom: var(--space-3xl);
     padding-bottom: var(--space-xl);
     border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
   }
@@ -255,16 +325,68 @@ const jsonLd = {
   .blog-title {
     font-size: var(--heading-xl);
     font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-md) 0;
+    margin: var(--space-sm) 0 var(--space-lg) 0;
     color: var(--text-primary);
     letter-spacing: var(--tracking-tight);
   }
 
-  .blog-description {
+  /* Tag Cloud Styles */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .tag-cloud-label {
     font-size: var(--text-lg);
     color: var(--text-secondary);
-    line-height: var(--leading-relaxed);
-    margin: 0;
+    font-weight: var(--font-medium);
+    margin-right: var(--space-xs);
+  }
+
+  .tag-cloud-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: var(--space-sm) var(--space-md);
+    border: var(--border-width) solid var(--accent-primary);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    transition: all var(--duration-base) var(--ease-out);
+    box-shadow: var(--shadow-sm) var(--accent-secondary);
+  }
+
+  .tag-cloud-item:hover {
+    background: var(--accent-primary);
+    color: var(--text-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .tag-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 var(--space-xs);
+    background: var(--gradient-primary-light);
+    color: var(--text-primary);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    border: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .tag-cloud-item:hover .tag-count {
+    background: var(--accent-secondary);
+    color: var(--bg-dark);
   }
 
   /* Links showcase section */
@@ -285,12 +407,39 @@ const jsonLd = {
     font-size: var(--text-base);
   }
 
-  .blog-posts {
+  /* Featured Posts Styles */
+  .featured-posts {
     display: grid;
-    gap: var(--space-2xl);
+    gap: var(--space-3xl);
   }
 
-  .blog-post-card {
+  .featured-post-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    transform: var(--rotation-sm);
+    transition: all var(--duration-base) var(--ease-out);
+    padding: var(--space-2xl);
+  }
+
+  .featured-post-card:nth-child(even) {
+    transform: var(--rotation-sm);
+  }
+
+  .featured-post-card:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
+    z-index: 5;
+  }
+
+  /* Archive Posts Styles */
+  .archive-posts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .archive-post-card {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
@@ -298,11 +447,11 @@ const jsonLd = {
     transition: all var(--duration-base) var(--ease-out);
   }
 
-  .blog-post-card:nth-child(even) {
+  .archive-post-card:nth-child(even) {
     transform: var(--rotation-sm);
   }
 
-  .blog-post-card:hover {
+  .archive-post-card:hover {
     transform: scale(1.05);
     box-shadow: var(--shadow-xl) var(--accent-secondary);
     z-index: 5;
@@ -338,11 +487,108 @@ const jsonLd = {
     margin-left: var(--space-sm);
   }
 
+  .post-description {
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    font-style: italic;
+    border-left: 3px solid var(--accent-primary);
+    padding-left: var(--space-md);
+  }
+
   .post-excerpt {
     color: var(--text-secondary);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     margin: 0;
+  }
+
+  /* Content Preview Styles */
+  .post-content-preview {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: var(--space-lg) 0;
+    position: relative;
+    max-height: 400px;
+    overflow: hidden;
+  }
+
+  .post-content-preview::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--bg-secondary));
+    pointer-events: none;
+  }
+
+  /* Style markdown content in preview */
+  .post-content-preview :global(h1),
+  .post-content-preview :global(h2),
+  .post-content-preview :global(h3),
+  .post-content-preview :global(h4) {
+    color: var(--text-primary);
+    font-weight: var(--font-bold);
+    margin: var(--space-lg) 0 var(--space-sm) 0;
+    line-height: var(--leading-tight);
+  }
+
+  .post-content-preview :global(h2) {
+    font-size: var(--text-xl);
+    color: var(--accent-primary);
+  }
+
+  .post-content-preview :global(h3) {
+    font-size: var(--text-lg);
+  }
+
+  .post-content-preview :global(p) {
+    margin: var(--space-md) 0;
+  }
+
+  .post-content-preview :global(a) {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+  }
+
+  .post-content-preview :global(strong) {
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  .post-content-preview :global(em) {
+    font-style: italic;
+  }
+
+  .post-content-preview :global(ul),
+  .post-content-preview :global(ol) {
+    margin: var(--space-md) 0;
+    padding-left: var(--space-xl);
+  }
+
+  .post-content-preview :global(li) {
+    margin: var(--space-xs) 0;
+  }
+
+  .post-content-preview :global(code) {
+    background: var(--gradient-secondary-light);
+    color: var(--bg-dark);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+  }
+
+  .post-content-preview :global(pre) {
+    display: none; /* Hide code blocks in preview to keep it clean */
+  }
+
+  .post-content-preview :global(img) {
+    display: none; /* Hide images in preview */
   }
 
   .post-tags {
@@ -396,6 +642,12 @@ const jsonLd = {
     .links-showcase {
       margin-top: var(--space-2xl);
     }
+
+    /* Archive posts still 2 columns on tablet */
+    .archive-posts {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-lg);
+    }
   }
 
   @media (max-width: 768px) {
@@ -412,7 +664,16 @@ const jsonLd = {
       font-size: var(--heading-lg);
     }
 
-    .blog-description {
+    .tag-cloud {
+      gap: var(--space-sm);
+    }
+
+    .tag-cloud-item {
+      font-size: var(--text-sm);
+      padding: var(--space-xs) var(--space-sm);
+    }
+
+    .tag-cloud-label {
       font-size: var(--text-base);
     }
 
@@ -420,6 +681,20 @@ const jsonLd = {
       flex-direction: column;
       align-items: stretch;
       gap: var(--space-md);
+    }
+
+    /* Archive posts switch to single column on mobile */
+    .archive-posts {
+      grid-template-columns: 1fr;
+    }
+
+    .featured-post-card {
+      padding: var(--space-xl);
+    }
+
+    .post-content-preview {
+      max-height: 300px;
+      font-size: var(--text-sm);
     }
 
     .post-meta {
@@ -434,12 +709,28 @@ const jsonLd = {
       padding: var(--space-lg) var(--space-md);
     }
 
+    .featured-post-card {
+      padding: var(--space-lg);
+    }
+
     .post-title {
       font-size: var(--text-xl);
     }
 
+    .post-description {
+      font-size: var(--text-base);
+    }
+
     .post-excerpt {
       font-size: var(--text-sm);
+    }
+
+    .post-content-preview {
+      max-height: 250px;
+    }
+
+    .section-heading {
+      font-size: var(--heading-md);
     }
   }
 
