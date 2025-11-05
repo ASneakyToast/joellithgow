@@ -1,6 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import UIInteractions from '@components/interactive/UIInteractions.astro';
+import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
+import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
@@ -27,72 +31,135 @@ const pageDescription = 'Explore blog posts by topic and tag.';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <main class="tags-container">
-    <div class="tags-wrapper">
-      <header class="tags-header">
-        <Badge>explore by topic</Badge>
-        <h1 class="tags-title">Tags</h1>
-        <p class="tags-description">{pageDescription}</p>
-        <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
-      </header>
+  <main class="blog-container animated-bg bg-accent-editorial">
+    <div class="blog-wrapper">
+      {/* Main Content Column */}
+      <div class="main-content">
+        {/* Back navigation */}
+        <nav class="breadcrumb-nav">
+          <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
+        </nav>
 
-      <div class="tags-grid">
-        {sortedTags.map(([tag, count]) => (
-          <Card variant="interactive" interactive href={`/blog/tags/${tag}`} class="tag-card">
-            <span class="tag-name">#{tag}</span>
-            <span class="tag-count">{count} {count === 1 ? 'post' : 'posts'}</span>
-          </Card>
-        ))}
+        <header class="tags-header">
+          <h1 class="tags-title">All Tags</h1>
+        </header>
+
+        <section class="tags-section">
+          <h2 class="section-heading">{sortedTags.length} {sortedTags.length === 1 ? 'tag' : 'tags'}</h2>
+          <div class="tags-grid">
+            {sortedTags.map(([tag, count]) => (
+              <Card variant="flat" href={`/blog/tags/${tag}`} class="tag-card">
+                <span class="tag-name">#{tag}</span>
+                <span class="tag-count">{count} {count === 1 ? 'post' : 'posts'}</span>
+              </Card>
+            ))}
+          </div>
+        </section>
       </div>
+
+      {/* Sidebar */}
+      <aside class="sidebar">
+        {/* Could add tag-specific info here in the future */}
+      </aside>
     </div>
   </main>
+
+  <!-- Theme Modal -->
+  <ThemeModal />
+
+  <!-- Enhanced UI Interactions -->
+  <UIInteractions />
+
+  <!-- Keyboard Shortcuts and Accessibility -->
+  <KeyboardShortcuts />
+
+  <!-- Performance Optimization and Monitoring -->
+  <PerformanceOptimizer />
+
+  <!-- Theme toggle button -->
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
 </BaseLayout>
 
 <style>
   @import '../../../styles/tokens.css';
   @import '../../../styles/themes.css';
+  @import '../../../styles/backgrounds.css';
 
-  .tags-container {
+  /* Clean, traditional blog styling */
+  .blog-container {
     min-height: 100vh;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: var(--space-3xl) var(--space-xl);
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden; /* Required for animated backgrounds */
   }
 
-  .tags-wrapper {
-    max-width: var(--content-wide);
+  .blog-wrapper {
+    max-width: 1400px;
     margin: 0 auto;
+    position: relative;
+    z-index: 10; /* Above animated backgrounds */
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-3xl);
+    align-items: start;
+  }
+
+  .main-content {
+    min-width: 0; /* Prevents grid blowout */
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-3xl);
+  }
+
+  /* Breadcrumb navigation */
+  .breadcrumb-nav {
+    margin-bottom: var(--space-xl);
   }
 
   .tags-header {
     text-align: left;
-    margin-bottom: var(--space-3xl);
     padding-bottom: var(--space-xl);
     border-bottom: 1px solid var(--gradient-primary-subtle);
-  }
-
-  .tags-header :global(.badge) {
-    margin-bottom: var(--space-md);
   }
 
   .tags-title {
     font-size: var(--heading-xl);
     font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-md) 0;
-    color: var(--text-primary);
+    margin: var(--space-sm) 0;
+    color: var(--accent-primary);
     letter-spacing: var(--tracking-tight);
   }
 
-  .tags-description {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    line-height: var(--leading-relaxed);
-    margin: 0 0 var(--space-md) 0;
+  .tags-section {
+    position: relative;
+    margin: var(--space-xl) 0;
+  }
+
+  .section-heading {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xl) 0;
+    letter-spacing: var(--tracking-tight);
   }
 
   .tags-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: var(--space-xl);
   }
 
@@ -100,6 +167,13 @@ const pageDescription = 'Explore blog posts by topic and tag.';
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
+    padding: var(--space-xl);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .tag-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
 
   .tag-name {
@@ -111,26 +185,72 @@ const pageDescription = 'Explore blog posts by topic and tag.';
   .tag-count {
     font-size: var(--text-sm);
     color: var(--text-secondary);
+    font-weight: var(--font-medium);
+  }
+
+  /* Responsive design */
+  @media (max-width: 1024px) {
+    .blog-wrapper {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .sidebar {
+      position: relative;
+      top: 0;
+    }
   }
 
   @media (max-width: 768px) {
-    .tags-container {
-      padding: var(--space-xl) var(--space-lg);
+    .blog-container {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .tags-header {
+      padding-bottom: var(--space-lg);
+    }
+
+    .tags-title {
+      font-size: var(--heading-lg);
     }
 
     .tags-grid {
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: var(--space-md);
     }
+
+    .tag-card {
+      padding: var(--space-lg);
+    }
   }
 
   @media (max-width: 480px) {
-    .tags-container {
+    .blog-container {
       padding: var(--space-lg) var(--space-md);
     }
 
     .tags-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Theme toggle button */
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  @media (max-width: 768px) {
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 44px;
+      height: 44px;
     }
   }
 </style>
