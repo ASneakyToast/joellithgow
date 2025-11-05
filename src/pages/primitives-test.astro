@@ -115,6 +115,72 @@ const pageDescription = 'Testing design system primitives';
       </div>
     </section>
 
+    {/* Background Patterns */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Background Patterns</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Hover over each pattern to see the animation. Click the pattern name to copy the class.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="pattern-demo animated-bg bg-accent-spiral">
+          <div class="pattern-label">
+            <code>bg-accent-spiral</code>
+            <p>Hero style - Bold visible spiral</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-network">
+          <div class="pattern-label">
+            <code>bg-accent-network</code>
+            <p>Contact style - Network nodes</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-geometric">
+          <div class="pattern-label">
+            <code>bg-accent-geometric</code>
+            <p>Projects style - Scattered shapes</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-timeline">
+          <div class="pattern-label">
+            <code>bg-accent-timeline</code>
+            <p>Process style - Timeline dots</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-thoughts">
+          <div class="pattern-label">
+            <code>bg-accent-thoughts</code>
+            <p>About style - Thought bubbles</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-editorial">
+          <div class="pattern-label">
+            <code>bg-accent-editorial</code>
+            <p>Blog style - Typographic elements</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg bg-accent-scatter">
+          <div class="pattern-label">
+            <code>bg-accent-scatter</code>
+            <p>Generic - Scattered dots</p>
+          </div>
+        </div>
+
+        <div class="pattern-demo animated-bg">
+          <div class="pattern-label">
+            <code>animated-bg</code>
+            <p>Grid only - No accent</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     {/* Real-world examples */}
     <section style="margin-bottom: 4rem;">
       <h2 style="margin-bottom: 1.5rem;">Real-World Examples</h2>
@@ -152,6 +218,7 @@ const pageDescription = 'Testing design system primitives';
 <style>
   @import '../styles/tokens.css';
   @import '../styles/themes.css';
+  @import '../styles/backgrounds.css';
 
   main {
     background: var(--bg-primary);
@@ -178,4 +245,93 @@ const pageDescription = 'Testing design system primitives';
     margin: 0;
     line-height: var(--leading-relaxed);
   }
+
+  /* Background Pattern Demo Styles */
+  .pattern-demo {
+    position: relative;
+    min-height: 300px;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--accent-primary);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-xl);
+    background: var(--bg-primary);
+    transition: all var(--duration-base) var(--ease-out);
+    cursor: pointer;
+    isolation: isolate; /* Create a new stacking context for each demo */
+  }
+
+  .pattern-demo:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--accent-secondary);
+  }
+
+  /* Ensure backgrounds are contained within each demo */
+  .pattern-demo::before,
+  .pattern-demo::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pattern-label {
+    position: relative;
+    z-index: 20;
+    background: rgba(var(--bg-secondary-rgb, 255, 255, 255), 0.95);
+    backdrop-filter: blur(8px);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    border: var(--border-width) solid var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .pattern-label code {
+    display: block;
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin-bottom: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--gradient-primary-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .pattern-label code:hover {
+    background: var(--accent-primary);
+    color: var(--text-light);
+  }
+
+  .pattern-label p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+  }
 </style>
+
+<script>
+  // Copy class name on click
+  document.addEventListener('DOMContentLoaded', () => {
+    const codeElements = document.querySelectorAll('.pattern-label code');
+    codeElements.forEach(code => {
+      code.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const text = code.textContent || '';
+        await navigator.clipboard.writeText(text);
+
+        const originalText = code.textContent;
+        code.textContent = '✓ Copied!';
+        setTimeout(() => {
+          code.textContent = originalText;
+        }, 1500);
+      });
+    });
+  });
+</script>
