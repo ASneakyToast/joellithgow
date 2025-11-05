@@ -23,9 +23,13 @@ const FEATURED_COUNT = 10;
 const featuredPosts = sortedPosts.slice(0, FEATURED_COUNT);
 const archivePosts = sortedPosts.slice(FEATURED_COUNT);
 
-// Render markdown content for featured posts
+// Render markdown content for featured posts (only if no excerpt for performance)
 const featuredWithContent = await Promise.all(
   featuredPosts.map(async (post) => {
+    // Skip render if post has custom excerpt and a detail page
+    if (post.data.excerpt && post.data.hasDetailPage !== false) {
+      return { post, Content: null };
+    }
     const { Content } = await post.render();
     return { post, Content };
   })
@@ -168,10 +172,14 @@ const jsonLd = {
                     {post.data.description}
                   </p>
 
-                  {/* Render actual content preview */}
-                  <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
-                    <Content />
-                  </div>
+                  {/* Render excerpt or full content preview */}
+                  {post.data.excerpt && post.data.hasDetailPage !== false ? (
+                    <div class="post-excerpt-preview" set:html={post.data.excerpt} />
+                  ) : (
+                    <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
+                      <Content />
+                    </div>
+                  )}
 
                   {/* Link collection display for inline posts */}
                   {post.data.hasDetailPage === false && post.data.links && post.data.links.length > 0 && (
@@ -513,7 +521,7 @@ const jsonLd = {
   .post-title {
     font-size: var(--text-2xl);
     font-weight: var(--font-bold);
-    margin: 0;
+    margin: 0 0 var(--space-md) 0;
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
   }
@@ -564,6 +572,13 @@ const jsonLd = {
     overflow: hidden;
   }
 
+  .post-excerpt-preview {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: var(--space-lg) 0;
+  }
+
   .post-content-preview::after {
     content: '';
     position: absolute;
@@ -589,52 +604,66 @@ const jsonLd = {
   .post-content-preview :global(h1),
   .post-content-preview :global(h2),
   .post-content-preview :global(h3),
-  .post-content-preview :global(h4) {
+  .post-content-preview :global(h4),
+  .post-excerpt-preview :global(h1),
+  .post-excerpt-preview :global(h2),
+  .post-excerpt-preview :global(h3),
+  .post-excerpt-preview :global(h4) {
     color: var(--text-primary);
     font-weight: var(--font-bold);
     margin: var(--space-lg) 0 var(--space-sm) 0;
     line-height: var(--leading-tight);
   }
 
-  .post-content-preview :global(h2) {
+  .post-content-preview :global(h2),
+  .post-excerpt-preview :global(h2) {
     font-size: var(--text-xl);
     color: var(--accent-primary);
   }
 
-  .post-content-preview :global(h3) {
+  .post-content-preview :global(h3),
+  .post-excerpt-preview :global(h3) {
     font-size: var(--text-lg);
   }
 
-  .post-content-preview :global(p) {
+  .post-content-preview :global(p),
+  .post-excerpt-preview :global(p) {
     margin: var(--space-md) 0;
   }
 
-  .post-content-preview :global(a) {
+  .post-content-preview :global(a),
+  .post-excerpt-preview :global(a) {
     color: var(--accent-primary);
     text-decoration: underline;
     text-decoration-color: var(--accent-secondary);
   }
 
-  .post-content-preview :global(strong) {
+  .post-content-preview :global(strong),
+  .post-excerpt-preview :global(strong) {
     font-weight: var(--font-bold);
     color: var(--text-primary);
   }
 
-  .post-content-preview :global(em) {
+  .post-content-preview :global(em),
+  .post-excerpt-preview :global(em) {
     font-style: italic;
   }
 
   .post-content-preview :global(ul),
-  .post-content-preview :global(ol) {
+  .post-content-preview :global(ol),
+  .post-excerpt-preview :global(ul),
+  .post-excerpt-preview :global(ol) {
     margin: var(--space-md) 0;
     padding-left: var(--space-xl);
   }
 
-  .post-content-preview :global(li) {
+  .post-content-preview :global(li),
+  .post-excerpt-preview :global(li) {
     margin: var(--space-xs) 0;
   }
 
-  .post-content-preview :global(code) {
+  .post-content-preview :global(code),
+  .post-excerpt-preview :global(code) {
     background: var(--gradient-secondary-light);
     color: var(--bg-dark);
     padding: var(--space-xs) var(--space-sm);
@@ -642,11 +671,13 @@ const jsonLd = {
     font-size: var(--text-sm);
   }
 
-  .post-content-preview :global(pre) {
+  .post-content-preview :global(pre),
+  .post-excerpt-preview :global(pre) {
     display: none; /* Hide code blocks in preview to keep it clean */
   }
 
-  .post-content-preview :global(img) {
+  .post-content-preview :global(img),
+  .post-excerpt-preview :global(img) {
     display: none; /* Hide images in preview */
   }
 
@@ -927,6 +958,10 @@ const jsonLd = {
 
     .post-content-preview {
       max-height: 300px;
+      font-size: var(--text-sm);
+    }
+
+    .post-excerpt-preview {
       font-size: var(--text-sm);
     }
 
