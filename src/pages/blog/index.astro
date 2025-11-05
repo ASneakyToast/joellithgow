@@ -62,14 +62,88 @@ const jsonLd = {
 
   <main class="blog-container animated-bg bg-accent-editorial">
     <div class="blog-wrapper">
-      {/* Header Section */}
-      <section id="blog" class="blog-header-section">
-        <header class="blog-header">
-          <Badge>reflections & insights</Badge>
-          <h1 class="blog-title">joel's blog of half-finished thoughts</h1>
-          <p class="blog-description">{pageDescription}</p>
-        </header>
+      {/* Main Content Column */}
+      <div class="main-content">
+        {/* Header Section */}
+        <section id="blog" class="blog-header-section">
+          <header class="blog-header">
+            <h1 class="blog-title">joel's blog of half-finished thoughts</h1>
+            <p class="blog-description">{pageDescription}</p>
+          </header>
+        </section>
 
+        {/* Recent Posts Section */}
+        <section id="recent-posts" class="recent-posts-section">
+          <h2 class="section-heading">recently posted</h2>
+        {sortedPosts.length > 0 ? (
+          <div class="blog-posts">
+            {sortedPosts.map((post) => (
+              <Card variant="interactive" interactive as="article" class="blog-post-card">
+                <time
+                  datetime={post.data.publishDate.toISOString()}
+                  class="post-date"
+                >
+                  {post.data.publishDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
+
+                <h2 class="post-title">
+                  <a
+                    href={`/blog/${post.slug}`}
+                    class="post-title-link"
+                  >
+                    {post.data.title}
+                  </a>
+                  {post.data.category === 'link-collection' && (
+                    <Badge variant="tertiary" size="sm" class="link-collection-badge">
+                      {post.data.links?.length || 0} links
+                    </Badge>
+                  )}
+                </h2>
+
+                <p class="post-excerpt">
+                  {post.data.description}
+                </p>
+
+                {post.data.tags && post.data.tags.length > 0 && (
+                  <div class="post-tags">
+                    {post.data.tags.map((tag) => (
+                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+
+                <div class="post-meta">
+                  <span class="post-author">
+                    By {post.data.author}
+                    {post.data.readingTime && (
+                      <span> • {post.data.readingTime} min read</span>
+                    )}
+                  </span>
+
+                  <Button href={`/blog/${post.slug}`} variant="ghost" size="sm">
+                    Read more →
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card class="empty-state">
+            <div class="empty-message">
+              <Badge>coming soon</Badge>
+              <p>No blog posts published yet. Check back soon!</p>
+            </div>
+          </Card>
+        )}
+        </section>
+      </div>
+
+      {/* Sidebar */}
+      <aside class="sidebar">
         {/* Links collection showcase */}
         {totalLinks > 0 && (
           <Card variant="outlined" class="links-showcase">
@@ -83,75 +157,7 @@ const jsonLd = {
             </div>
           </Card>
         )}
-      </section>
-
-      {/* Recent Posts Section */}
-      <section id="recent-posts" class="recent-posts-section">
-      {sortedPosts.length > 0 ? (
-        <div class="blog-posts">
-          {sortedPosts.map((post) => (
-            <Card variant="interactive" interactive as="article" class="blog-post-card">
-              <time
-                datetime={post.data.publishDate.toISOString()}
-                class="post-date"
-              >
-                {post.data.publishDate.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </time>
-
-              <h2 class="post-title">
-                <a
-                  href={`/blog/${post.slug}`}
-                  class="post-title-link"
-                >
-                  {post.data.title}
-                </a>
-                {post.data.category === 'link-collection' && (
-                  <Badge variant="tertiary" size="sm" class="link-collection-badge">
-                    {post.data.links?.length || 0} links
-                  </Badge>
-                )}
-              </h2>
-
-              <p class="post-excerpt">
-                {post.data.description}
-              </p>
-
-              {post.data.tags && post.data.tags.length > 0 && (
-                <div class="post-tags">
-                  {post.data.tags.map((tag) => (
-                    <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
-                  ))}
-                </div>
-              )}
-
-              <div class="post-meta">
-                <span class="post-author">
-                  By {post.data.author}
-                  {post.data.readingTime && (
-                    <span> • {post.data.readingTime} min read</span>
-                  )}
-                </span>
-
-                <Button href={`/blog/${post.slug}`} variant="ghost" size="sm">
-                  Read more →
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card class="empty-state">
-          <div class="empty-message">
-            <Badge>coming soon</Badge>
-            <p>No blog posts published yet. Check back soon!</p>
-          </div>
-        </Card>
-      )}
-      </section>
+      </aside>
     </div>
   </main>
 
@@ -197,10 +203,23 @@ const jsonLd = {
   }
 
   .blog-wrapper {
-    max-width: var(--content-normal);
+    max-width: 1400px;
     margin: 0 auto;
     position: relative;
     z-index: 10; /* Above animated backgrounds */
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-3xl);
+    align-items: start;
+  }
+
+  .main-content {
+    min-width: 0; /* Prevents grid blowout */
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-3xl);
   }
 
   /* Section Styles */
@@ -212,6 +231,14 @@ const jsonLd = {
   .recent-posts-section {
     position: relative;
     padding: var(--space-xl) 0;
+  }
+
+  .section-heading {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xl) 0;
+    letter-spacing: var(--tracking-tight);
   }
 
   .blog-header {
@@ -242,7 +269,7 @@ const jsonLd = {
 
   /* Links showcase section */
   .links-showcase {
-    margin: 0 0 var(--space-3xl) 0;
+    margin: 0;
   }
 
   .links-showcase-content {
@@ -355,6 +382,22 @@ const jsonLd = {
   }
 
   /* Responsive design */
+  @media (max-width: 1024px) {
+    .blog-wrapper {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .sidebar {
+      position: relative;
+      top: 0;
+    }
+
+    .links-showcase {
+      margin-top: var(--space-2xl);
+    }
+  }
+
   @media (max-width: 768px) {
     .blog-container {
       padding: var(--space-xl) var(--page-gutter);
