@@ -80,7 +80,9 @@ const blogSchema = z.object({
   category: z.string().optional(),
   readingTime: z.number().optional(),
   // Link collection support
-  links: z.array(linkSchema).optional()
+  links: z.array(linkSchema).optional(),
+  // Page navigation
+  hasDetailPage: z.boolean().default(true)
 });
 
 // Define artwork schema for fine art portfolio

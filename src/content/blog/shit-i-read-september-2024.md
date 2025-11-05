@@ -8,6 +8,7 @@ draft: false
 featured: false
 category: "link-collection"
 readingTime: 2
+hasDetailPage: false
 links:
   - url: "https://news.ucsb.edu/2025/021723/long-term-effects-hollywood-blacklist"
     title: "The Long-Term Effects of the Hollywood Blacklist"
