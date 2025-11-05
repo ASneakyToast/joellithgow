@@ -9,14 +9,22 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
+import LinkCard from '@components/blog/LinkCard.astro';
 
 export const getStaticPaths = (async () => {
   const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 
-  // Get all unique tags
+  // Get all unique tags from posts
   const allTags = new Set<string>();
   allPosts.forEach((post) => {
     post.data.tags?.forEach((tag) => allTags.add(tag));
+  });
+
+  // Also get tags from links
+  allPosts.forEach((post) => {
+    post.data.links?.forEach((link) => {
+      link.tags?.forEach((tag: string) => allTags.add(tag));
+    });
   });
 
   // Create a path for each tag
@@ -25,14 +33,31 @@ export const getStaticPaths = (async () => {
       .filter((post) => post.data.tags?.includes(tag))
       .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 
+    // Get all links with this tag
+    const linksWithTag = allPosts
+      .flatMap((post) =>
+        post.data.links
+          ?.filter((link) => link.tags?.includes(tag))
+          .map((link) => ({
+            ...link,
+            sourcePost: {
+              title: post.data.title,
+              slug: post.slug,
+              publishDate: post.data.publishDate,
+              author: post.data.author,
+            },
+          })) || []
+      )
+      .sort((a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf());
+
     return {
       params: { tag },
-      props: { posts: postsWithTag, tag },
+      props: { posts: postsWithTag, links: linksWithTag, tag },
     };
   });
 }) satisfies GetStaticPaths;
 
-const { posts, tag } = Astro.props;
+const { posts, links, tag } = Astro.props;
 
 // Render markdown content for all posts
 const postsWithContent = await Promise.all(
@@ -61,7 +86,11 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
         </header>
 
         <section class="tag-posts-section">
-          <h2 class="section-heading">{posts.length} {posts.length === 1 ? 'post' : 'posts'}</h2>
+          <h2 class="section-heading">
+            {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+            {links.length > 0 && <span class="section-heading-separator">•</span>}
+            {links.length > 0 && <span>{links.length} {links.length === 1 ? 'link' : 'links'}</span>}
+          </h2>
           <div class="blog-posts">
         {postsWithContent.map(({ post, Content }) => (
           <Card variant="flat" as="article" class="blog-post-card">
@@ -113,37 +142,7 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
 
                 <div class="post-links-grid">
                   {post.data.links.map((link) => (
-                    <article class="post-link-card">
-                      <div class="post-link-header">
-                        {link.category && (
-                          <span class="post-link-category">{link.category}</span>
-                        )}
-                        <time class="post-link-date">
-                          {link.dateAdded.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </time>
-                      </div>
-
-                      <h4 class="post-link-title">
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" class="post-link-url">
-                          {link.title}
-                        </a>
-                      </h4>
-
-                      <p class="post-link-description">
-                        {link.description}
-                      </p>
-
-                      {link.tags && link.tags.length > 0 && (
-                        <div class="post-link-tags">
-                          {link.tags.map((linkTag) => (
-                            <span class="post-link-tag">#{linkTag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </article>
+                    <LinkCard link={link} variant="minimal" />
                   ))}
                 </div>
               </div>
@@ -181,6 +180,19 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
         ))}
           </div>
         </section>
+
+        {/* Links section */}
+        {links.length > 0 && (
+          <section class="tag-links-section">
+            <div class="links-grid">
+              {links.map((link) => (
+                <div class="link-item">
+                  <LinkCard link={link} variant="minimal" showSourceInfo={true} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Sidebar */}
@@ -281,6 +293,11 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
     color: var(--text-primary);
     margin: 0 0 var(--space-xl) 0;
     letter-spacing: var(--tracking-tight);
+  }
+
+  .section-heading-separator {
+    margin: 0 var(--space-sm);
+    color: var(--text-secondary);
   }
 
   .blog-posts {
@@ -512,109 +529,6 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
     gap: var(--space-lg);
   }
 
-  .post-link-card {
-    background: var(--gradient-primary-light);
-    border: var(--border-width) solid var(--accent-secondary);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    box-shadow: var(--shadow-md) var(--accent-primary);
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .post-link-card:nth-child(even) {
-    background: var(--gradient-secondary-light);
-    border-color: var(--accent-tertiary);
-  }
-
-  .post-link-card:hover {
-    transform: scale(1.02);
-    box-shadow: var(--shadow-lg) var(--accent-primary);
-  }
-
-  .post-link-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-md);
-  }
-
-  .post-link-category {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-xs) var(--space-sm);
-    font-size: var(--text-xs);
-    font-weight: var(--font-bold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    border: var(--border-width) solid var(--bg-dark);
-    border-radius: var(--border-radius);
-  }
-
-  .post-link-date {
-    background: var(--accent-tertiary);
-    color: var(--bg-dark);
-    padding: var(--space-xs) var(--space-sm);
-    font-size: var(--text-xs);
-    font-weight: var(--font-bold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    border: var(--border-width) solid var(--bg-dark);
-    border-radius: var(--border-radius);
-  }
-
-  .post-link-title {
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-sm);
-  }
-
-  .post-link-url {
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all var(--duration-base) var(--ease-out);
-    position: relative;
-  }
-
-  .post-link-url:hover {
-    color: var(--accent-primary);
-  }
-
-  .post-link-url::after {
-    content: "↗";
-    font-size: 0.8em;
-    margin-left: var(--space-xs);
-    opacity: 0.7;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .post-link-url:hover::after {
-    opacity: 1;
-    transform: translate(2px, -2px);
-  }
-
-  .post-link-description {
-    color: var(--text-secondary);
-    line-height: var(--leading-normal);
-    margin-bottom: var(--space-md);
-    font-size: var(--text-sm);
-  }
-
-  .post-link-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-  }
-
-  .post-link-tag {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    padding: var(--space-xs) var(--space-sm);
-    font-size: var(--text-xs);
-    border: var(--border-width) solid var(--accent-secondary);
-    border-radius: var(--border-radius);
-    font-weight: var(--font-bold);
-  }
-
   .post-tags {
     display: flex;
     flex-wrap: wrap;
@@ -633,6 +547,32 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
   .post-author {
     font-size: var(--text-sm);
     color: var(--text-secondary);
+  }
+
+  /* Links section */
+  .tag-links-section {
+    position: relative;
+    margin: var(--space-3xl) 0;
+    padding-top: var(--space-3xl);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .links-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .link-item {
+    position: relative;
+  }
+
+  .link-item::before {
+    content: '🔗';
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    font-size: var(--text-lg);
+    z-index: 1;
   }
 
   /* Responsive design */
