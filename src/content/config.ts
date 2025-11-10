@@ -60,8 +60,7 @@ const linkSchema = z.object({
   title: z.string(),
   description: z.string(),
   tags: z.array(z.string()).optional(),
-  dateAdded: z.date(),
-  category: z.string().optional()
+  dateAdded: z.date()
 });
 
 // Define blog schema for future use
@@ -78,7 +77,6 @@ const blogSchema = z.object({
   tags: z.array(z.string()).optional(),
   draft: z.boolean().default(false),
   featured: z.boolean().default(false),
-  category: z.string().optional(),
   readingTime: z.number().optional(),
   // Link collection support
   links: z.array(linkSchema).optional(),
