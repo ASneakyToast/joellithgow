@@ -78,10 +78,34 @@ const blogSchema = z.object({
   draft: z.boolean().default(false),
   featured: z.boolean().default(false),
   readingTime: z.number().optional(),
+  /**
+   * Content type classification
+   * - 'article': Full-length post with detail page (default)
+   * - 'thought': Short-form post displayed inline without detail page
+   * - 'link-collection': Curated links with commentary
+   */
+  type: z.enum(['article', 'thought', 'link-collection']).default('article'),
   // Link collection support
   links: z.array(linkSchema).optional(),
-  // Page navigation
-  hasDetailPage: z.boolean().default(true)
+  /**
+   * Controls navigation behavior
+   * - true: Post has dedicated detail page at /blog/[slug]
+   * - false: Post content displayed fully inline on blog index
+   *
+   * When not explicitly set, automatically derived from type:
+   * - 'article' → true
+   * - 'thought' → false
+   * - 'link-collection' → false
+   */
+  hasDetailPage: z.boolean().optional(),
+  // Legacy category field (deprecated in favor of type)
+  category: z.string().optional()
+}).transform((data) => {
+  // Auto-derive hasDetailPage from type if not explicitly set
+  if (data.hasDetailPage === undefined) {
+    data.hasDetailPage = data.type === 'article';
+  }
+  return data;
 });
 
 // Define artwork schema for fine art portfolio

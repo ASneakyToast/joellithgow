@@ -4,9 +4,9 @@ description: "A comprehensive reflection on everything I've learned so far about
 publishDate: 2025-01-02
 author: "Joel Lithgow"
 tags: ["ai", "learning", "web-development", "tools", "reflection", "lessons-learned"]
+type: "article"
 draft: false
 featured: true
-category: "reflection"
 readingTime: 15
 ---
 

@@ -5,9 +5,9 @@ excerpt: "<p>I got into programming because of Minecraft—not through CS classe
 publishDate: 2025-10-06
 author: "Joel Lithgow"
 tags: ["minecraft", "modding", "dev-journal", "game-design", "ecology", "claude-code"]
+type: "article"
 draft: false
 featured: true
-category: "dev-journal"
 readingTime: 10
 links:
   - url: "https://www.goodreads.com/book/show/222139804-the-call-of-the-honeyguide"

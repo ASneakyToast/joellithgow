@@ -152,10 +152,12 @@ const jsonLd = {
         {/* Featured Posts Section */}
         {featuredWithContent.length > 0 && (
           <section id="featured-posts" class="featured-posts-section">
-            <h2 class="section-heading">recent posts</h2>
+            <div class="posts-header">
+              <h2 class="section-heading">recent posts</h2>
+            </div>
             <div class="featured-posts">
               {featuredWithContent.map(({ post, Content }) => (
-                <Card variant="flat" as="article" class="featured-post-card">
+                <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.data.type}>
                   <time
                     datetime={post.data.publishDate.toISOString()}
                     class="post-date"
@@ -178,7 +180,7 @@ const jsonLd = {
                     ) : (
                       <span class="post-title-text">{post.data.title}</span>
                     )}
-                    {post.data.category === 'link-collection' && (
+                    {post.data.type === 'link-collection' && (
                       <Badge variant="tertiary" size="sm" class="link-collection-badge">
                         {post.data.links?.length || 0} links
                       </Badge>
@@ -493,6 +495,11 @@ const jsonLd = {
     gap: var(--space-lg);
   }
 
+  /* Posts Header */
+  .posts-header {
+    margin-bottom: var(--space-xl);
+  }
+
   /* Featured Posts Styles */
   .featured-posts {
     display: grid;
@@ -509,6 +516,12 @@ const jsonLd = {
 
   .featured-post-card:nth-child(even) {
     transform: var(--rotation-sm);
+  }
+
+  /* Thought Posts - subtle visual distinction */
+  .featured-post-card[data-post-type="thought"] {
+    border-left: 3px solid var(--accent-primary);
+    padding-left: calc(var(--space-2xl) - 3px); /* Maintain alignment */
   }
 
   /* Archive Posts Styles */
@@ -961,3 +974,4 @@ const jsonLd = {
     }
   }
 </style>
+
