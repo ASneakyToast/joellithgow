@@ -3,9 +3,41 @@ import BaseLayout from '@components/common/BaseLayout.astro';
 import Card from '@components/primitives/Card.astro';
 import Button from '@components/primitives/Button.astro';
 import Badge from '@components/primitives/Badge.astro';
+import LinkCard from '@components/blog/LinkCard.astro';
 
 const pageTitle = 'Design Primitives Test';
 const pageDescription = 'Testing design system primitives';
+
+// Sample link data for LinkCard examples
+const sampleLinks = [
+  {
+    url: 'https://astro.build',
+    title: 'Astro Documentation',
+    description: 'The official documentation for Astro, the all-in-one web framework designed for speed.',
+    tags: ['documentation', 'astro', 'web-framework'],
+    dateAdded: new Date('2024-01-15'),
+  },
+  {
+    url: 'https://developer.mozilla.org',
+    title: 'MDN Web Docs',
+    description: 'Resources for developers, by developers. Comprehensive documentation for web technologies.',
+    tags: ['reference', 'documentation', 'web-standards'],
+    dateAdded: new Date('2024-02-20'),
+  },
+  {
+    url: 'https://github.com',
+    title: 'GitHub',
+    description: 'Where the world builds software. Collaborate on code with version control and project management.',
+    tags: ['tools', 'development', 'version-control'],
+    dateAdded: new Date('2024-03-10'),
+    sourcePost: {
+      title: 'My Favorite Development Tools',
+      slug: 'favorite-dev-tools',
+      publishDate: new Date('2024-03-01'),
+      author: 'Joel Lithgow'
+    }
+  }
+];
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
@@ -211,6 +243,28 @@ const pageDescription = 'Testing design system primitives';
           <Button variant="ghost">Learn More →</Button>
         </div>
       </Card>
+    </section>
+
+    {/* LinkCard Examples */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">Link Cards</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Reusable link card component for displaying curated links across the site.
+      </p>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Minimal Variant (Blog Pages)</h3>
+      <div style="display: grid; gap: 1.5rem; margin-bottom: 3rem; max-width: 800px;">
+        {sampleLinks.slice(0, 2).map((link) => (
+          <LinkCard link={link} variant="minimal" />
+        ))}
+      </div>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Playful Variant (Links Page)</h3>
+      <div style="display: grid; gap: 1.5rem; max-width: 800px;">
+        {sampleLinks.map((link) => (
+          <LinkCard link={link} variant="playful" showSourceInfo={!!link.sourcePost} />
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>

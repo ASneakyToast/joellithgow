@@ -13,15 +13,13 @@ links:
   - url: "https://www.goodreads.com/book/show/222139804-the-call-of-the-honeyguide"
     title: "The Call of the Honeyguide by Rob Dunn"
     description: "Explores how mutualisms—reciprocal relationships between species—shape life and evolution. The inspiration behind the Symbiotic Survival mod."
-    tags: ["ecology", "mutualism", "science", "biology", "inspiration"]
+    tags: ["books", "ecology", "mutualism", "science", "biology", "inspiration"]
     dateAdded: 2025-10-06
-    category: "Books"
   - url: "https://github.com/ASneakyToast/minecraft-mutualisms-mod"
     title: "Symbiotic Survival - Minecraft Mod"
     description: "The Minecraft mod itself - teaching ecological mutualism through gameplay. Built with Claude Code using the Fabric mod loader for Minecraft Java 1.21+."
-    tags: ["minecraft", "modding", "open-source", "game-development", "fabric"]
+    tags: ["projects", "minecraft", "modding", "open-source", "game-development", "fabric"]
     dateAdded: 2025-10-06
-    category: "Projects"
 ---
 
 ## Where It Started
