@@ -4,9 +4,9 @@ description: "A curated collection of design portfolios and creative collective 
 publishDate: 2025-01-22
 author: "Joel Lithgow"
 tags: ["design", "portfolio", "creative", "resources", "links"]
+type: "link-collection"
 draft: false
 featured: false
-category: "link-collection"
 readingTime: 2
 hasDetailPage: false
 links:

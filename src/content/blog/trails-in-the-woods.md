@@ -4,9 +4,9 @@ description: "Starting to think about 'trail-making'...more to come..."
 publishDate: 2025-10-25
 author: "Joel Lithgow"
 tags: ["art", "land-art", "installation", "nature"]
+type: "article"
 draft: true
 featured: false
-category: "artwork"
 readingTime: 1
 ---
 

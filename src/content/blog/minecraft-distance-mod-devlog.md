@@ -5,9 +5,9 @@ excerpt: "<p>I was coding when \"The Distance\" by Cake came on. <em>He's going 
 publishDate: 2025-10-25
 author: "Joel Lithgow"
 tags: ["minecraft", "modding", "dev-journal", "game-design", "multiplayer", "claude-code"]
+type: "article"
 draft: false
 featured: true
-category: "dev-journal"
 readingTime: 8
 ---
 

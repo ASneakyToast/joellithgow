@@ -4,9 +4,9 @@ description: "A curated collection of interesting links, resources, and discover
 publishDate: 2024-09-15
 author: "Joel Lithgow"
 tags: ["links", "resources", "art", "diy", "bay-area"]
+type: "link-collection"
 draft: false
 featured: false
-category: "link-collection"
 readingTime: 2
 hasDetailPage: false
 links:
