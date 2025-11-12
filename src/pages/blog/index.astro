@@ -88,8 +88,8 @@ const topTags = Array.from(tagCounts.entries())
   .sort((a, b) => b[1] - a[1])
   .slice(0, 5); // Show top 5 tags
 
-const pageTitle = "joel's blog of half-finished thoughts";
-const pageDescription = "Reflections on web development, AI tools, creative projects, and lessons learned along the way.";
+const pageTitle = "Joel > Blog";
+const pageDescription = "Silly ideas, shiny objects, and more things I share digitally.";
 
 // JSON-LD structured data for CollectionPage
 const jsonLd = {
@@ -133,7 +133,12 @@ const jsonLd = {
         {/* Header Section */}
         <section id="blog" class="blog-header-section">
           <header class="blog-header">
-            <h1 class="blog-title">joel's blog of half-finished thoughts</h1>
+            <h1 class="blog-title">
+              <a href="/" class="breadcrumb-link">Joel</a>
+              <span class="breadcrumb-separator">/</span>
+              <span class="breadcrumb-current">Blog</span>
+            </h1>
+            <p class="blog-subtitle">{pageDescription}</p>
 
             {/* Tag cloud */}
             {topTags.length > 0 && (
@@ -391,9 +396,42 @@ const jsonLd = {
   .blog-title {
     font-size: var(--heading-xl);
     font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-lg) 0;
+    margin: var(--space-sm) 0 var(--space-md) 0;
     color: var(--text-primary);
     letter-spacing: var(--tracking-tight);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .breadcrumb-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-underline-offset: 3px;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--accent-primary);
+    text-decoration-color: var(--accent-primary);
+  }
+
+  .breadcrumb-separator {
+    color: var(--text-secondary);
+    font-weight: var(--font-normal);
+  }
+
+  .breadcrumb-current {
+    color: var(--text-primary);
+  }
+
+  .blog-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg) 0;
+    font-style: italic;
+    line-height: var(--leading-relaxed);
   }
 
   /* Tag Cloud Styles */
@@ -865,6 +903,10 @@ const jsonLd = {
       font-size: var(--heading-lg);
     }
 
+    .blog-subtitle {
+      font-size: var(--text-base);
+    }
+
     .tag-cloud {
       gap: var(--space-sm);
     }
@@ -927,6 +969,10 @@ const jsonLd = {
   @media (max-width: 480px) {
     .blog-container {
       padding: var(--space-lg) var(--space-md);
+    }
+
+    .blog-subtitle {
+      font-size: var(--text-sm);
     }
 
     .featured-post-card {
