@@ -63,6 +63,28 @@ const jsonLd = {
         <h1 class="case-title">{data.title}</h1>
         <p class="case-overview">{data.overview || data.description}</p>
 
+        {/* Hero Image - immediate visual impact */}
+        {data.images && data.images.length > 0 && (
+          <div class="case-image-gallery hero-image">
+            {data.images[0].type === 'video' ? (
+              <video class="case-image primary-image" autoplay muted loop playsinline controls>
+                <source src={data.images[0].src} type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img
+                src={data.images[0].src}
+                alt={data.images[0].alt}
+                class="case-image primary-image"
+                loading="eager"
+              />
+            )}
+            {data.images[0].caption && (
+              <div class="image-caption">{data.images[0].caption}</div>
+            )}
+          </div>
+        )}
+
         <div class="case-meta">
           <div class="meta-item">
             <div class="meta-label">duration</div>
@@ -98,24 +120,6 @@ const jsonLd = {
       <div class="case-section">
         <h2 class="section-title">the approach</h2>
         <div class="section-content">{data.solution || 'Solution details coming soon...'}</div>
-        {data.images && data.images.length > 0 && (
-          <div class="case-image-gallery">
-            {data.images[0].type === 'video' ? (
-              <video class="case-image primary-image" autoplay muted loop playsinline controls>
-                <source src={data.images[0].src} type="video/webm" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img
-                src={data.images[0].src}
-                alt={data.images[0].alt}
-                class="case-image primary-image"
-                loading="lazy"
-              />
-            )}
-            <div class="image-caption">{data.images[0].caption}</div>
-          </div>
-        )}
       </div>
 
       {/* Process Deep Dive */}
@@ -304,7 +308,7 @@ const jsonLd = {
 
   .case-meta {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
   }
 
@@ -388,7 +392,7 @@ const jsonLd = {
   /* Metrics */
   .metric-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
     margin: var(--space-lg) 0;
   }
@@ -456,6 +460,17 @@ const jsonLd = {
     margin: var(--space-lg) 0;
   }
 
+  .hero-image {
+    margin: var(--space-2xl) 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero-image .primary-image {
+    border-radius: var(--radius-lg);
+  }
+
   .case-image {
     width: 100%;
     height: auto;
@@ -477,7 +492,7 @@ const jsonLd = {
 
   .image-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-lg);
   }
 
@@ -527,7 +542,7 @@ const jsonLd = {
 
   .live-links-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
   }
 
@@ -538,19 +553,10 @@ const jsonLd = {
     background: var(--bg-primary);
   }
 
-  /* Responsive */
-  @media (max-width: 768px) {
-    .case-hero,
-    .case-section {
-      padding: var(--space-xl) var(--page-gutter);
-    }
-
-    .case-title {
-      font-size: var(--heading-lg);
-    }
-
+  /* Mobile-first responsive breakpoints */
+  @media (min-width: 600px) {
     .case-meta {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
     }
 
     .metric-grid {
@@ -558,7 +564,29 @@ const jsonLd = {
     }
 
     .image-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .live-links-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .case-meta {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .image-grid {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .live-links-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
   }
 

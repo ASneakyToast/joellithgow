@@ -74,6 +74,31 @@ if (limit && limit > 0) {
 
               <h3 class="project-title">{project.data.title}</h3>
 
+              {/* Mobile Hero Image - shown only on mobile after title */}
+              {project.data.images && project.data.images.length > 0 && (
+                <div
+                  class="hero-media mobile-hero clickable-media gallery-trigger"
+                  data-image-index="0"
+                  role="button"
+                  tabindex="0"
+                  aria-label={`View image: ${project.data.images[0].caption}`}
+                >
+                  {project.data.images[0].type === 'video' ? (
+                    <video class="media-element" autoplay muted loop playsinline>
+                      <source src={project.data.images[0].src} type="video/webm" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={project.data.images[0].src}
+                      alt={project.data.images[0].alt}
+                      class="media-element"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+              )}
+
               {/* Metrics */}
               {metrics.length > 0 && (
                 <div class="project-metrics">
@@ -132,10 +157,10 @@ if (limit && limit > 0) {
 
             <!-- Media Side -->
             <div class="project-media" data-project-images={JSON.stringify(project.data.images)}>
-              {/* Hero Image/Video */}
+              {/* Hero Image/Video - desktop only */}
               {project.data.images && project.data.images.length > 0 && (
                 <div
-                  class="hero-media clickable-media gallery-trigger"
+                  class="hero-media desktop-hero clickable-media gallery-trigger"
                   data-image-index="0"
                   role="button"
                   tabindex="0"
@@ -288,27 +313,34 @@ if (limit && limit > 0) {
     max-width: 1400px;
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-5xl);
+    grid-template-columns: 1fr;
+    gap: var(--space-3xl);
     align-items: center;
-    padding: 0 var(--space-xl);
+    padding: 0 var(--space-lg);
   }
 
-  /* Alternating Layouts */
+  /* Mobile-first: Show mobile hero, hide desktop hero */
+  .mobile-hero {
+    display: block;
+    margin: var(--space-xl) 0;
+  }
+
+  .desktop-hero {
+    display: none;
+  }
+
+  /* Mobile: Hide supporting images */
+  .supporting-media {
+    display: none;
+  }
+
+  /* Alternating Layouts - will be activated on larger screens */
   .media-right .project-content-wrapper {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .media-left .project-content-wrapper {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .media-left .project-content {
-    order: 2;
-  }
-
-  .media-left .project-media {
-    order: 1;
+    grid-template-columns: 1fr;
   }
 
   /* No Images State */
@@ -526,17 +558,57 @@ if (limit && limit > 0) {
   }
 
   /* Responsive Design */
-  @media (max-width: 1024px) {
+  /* Mobile-first responsive breakpoints */
+  @media (min-width: 769px) {
+    .project-content-wrapper {
+      gap: var(--space-4xl);
+      padding: 0 var(--space-2xl);
+    }
+  }
+
+  @media (min-width: 1025px) {
     .project-section {
-      padding: var(--space-4xl) var(--space-3xl);
+      padding: var(--space-5xl) var(--space-4xl);
     }
 
     .project-content-wrapper {
-      grid-template-columns: 1fr;
-      gap: var(--space-3xl);
-      padding: 0;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5xl);
+      padding: 0 var(--space-xl);
     }
 
+    .media-right .project-content-wrapper {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .media-left .project-content-wrapper {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Desktop: hide mobile hero, show desktop hero */
+    .mobile-hero {
+      display: none;
+    }
+
+    .desktop-hero {
+      display: block;
+    }
+
+    /* Show supporting images on desktop */
+    .supporting-media {
+      display: grid;
+    }
+
+    /* Desktop: media-right shows content on left, media on right */
+    .media-right .project-content {
+      order: 1;
+    }
+
+    .media-right .project-media {
+      order: 2;
+    }
+
+    /* Desktop: media-left shows media on left, content on right */
     .media-left .project-content {
       order: 2;
     }
@@ -546,7 +618,7 @@ if (limit && limit > 0) {
     }
 
     .progress-indicator {
-      right: var(--space-md);
+      right: var(--space-lg);
     }
   }
 
