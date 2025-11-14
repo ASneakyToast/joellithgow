@@ -168,6 +168,20 @@
   --modal-padding: var(--space-2xl);
   --modal-radius: var(--radius-xl);
   --modal-max-width: 800px;
+
+  /* ========================================
+     LAYOUT SPACING PATTERNS
+     Semantic tokens for consistent spacing
+     ======================================== */
+
+  /* Section spacing */
+  --section-spacing: var(--space-5xl);      /* 128px - Between major sections */
+  --section-spacing-compact: var(--space-4xl); /* 96px - Between related sections */
+
+  /* Content spacing */
+  --heading-spacing: var(--space-lg);       /* 24px - After headings */
+  --paragraph-spacing: var(--space-xl);     /* 32px - Between paragraphs */
+  --element-spacing: var(--space-md);       /* 16px - Between related elements */
 }
 
 /* ========================================
