@@ -83,7 +83,7 @@ if (image) {
         </Button>
       </nav>
 
-      <article class="blog-article">
+      <article class:list={['blog-article', { 'blog-article--collection': entry.data.type === 'collection' }]}>
         {/* Hero-style header with featured image */}
         {image && (
           <div class="article-hero">
@@ -97,8 +97,13 @@ if (image) {
         )}
 
         {/* Article header */}
-        <header class="article-header">
+        <header class:list={['article-header', { 'article-header--collection': entry.data.type === 'collection' }]}>
           <div class="article-meta-top">
+            {entry.data.type === 'collection' && (
+              <Badge variant="secondary" size="md" class="collection-type-badge">
+                Collection
+              </Badge>
+            )}
             <time
               datetime={publishDate.toISOString()}
               class="article-date"
@@ -142,9 +147,11 @@ if (image) {
 
         {/* Link collection display */}
         {links && links.length > 0 && (
-          <section class="links-section">
+          <section class:list={['links-section', { 'links-section--collection': entry.data.type === 'collection' }]}>
             <div class="links-header">
-              <h2 class="links-title">Links from this collection</h2>
+              <h2 class="links-title">
+                {entry.data.type === 'collection' ? 'All Links in Collection' : 'Links from this collection'}
+              </h2>
               <div class="links-meta">
                 <span class="links-count">{links.length} link{links.length !== 1 ? 's' : ''}</span>
               </div>
@@ -156,11 +163,13 @@ if (image) {
               ))}
             </div>
 
-            <div class="links-footer">
-              <p class="links-note">
-                Curated links and resources from this post.
-              </p>
-            </div>
+            {entry.data.type === 'collection' && (
+              <div class="links-footer">
+                <p class="links-note">
+                  A curated collection of {links.length} resources I find valuable.
+                </p>
+              </div>
+            )}
           </section>
         )}
       </article>
@@ -605,6 +614,36 @@ if (image) {
     font-size: var(--text-sm);
   }
 
+  /* Collection-specific styling */
+  .collection-type-badge {
+    margin-right: var(--space-md);
+  }
+
+  .article-header--collection {
+    border-bottom: 3px solid var(--accent-secondary);
+    background: linear-gradient(to bottom, var(--gradient-primary-subtle), transparent);
+  }
+
+  .blog-article--collection {
+    border: 2px solid var(--accent-secondary);
+    box-shadow: var(--shadow-2xl) var(--accent-tertiary);
+  }
+
+  .links-section--collection {
+    background: var(--gradient-primary-subtle);
+    padding: var(--space-3xl);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--accent-secondary);
+  }
+
+  .links-section--collection .links-title {
+    font-size: var(--heading-xl);
+    color: var(--accent-secondary);
+  }
+
+  .links-section--collection .links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
   .article-footer {
     margin-top: var(--space-3xl);
@@ -719,6 +758,14 @@ if (image) {
 
     .links-section {
       padding: var(--space-2xl) var(--space-md) 0;
+    }
+
+    .links-section--collection {
+      padding: var(--space-lg);
+    }
+
+    .links-section--collection .links-grid {
+      grid-template-columns: 1fr;
     }
 
     .article-title {

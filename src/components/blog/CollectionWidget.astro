@@ -1,0 +1,199 @@
+---
+/**
+ * CollectionWidget - Sidebar widget for displaying link collections
+ *
+ * Compact component for showing a preview of a link collection in the blog sidebar.
+ * Displays collection title, limited links, and a "View all" action.
+ *
+ * Usage:
+ *   <CollectionWidget
+ *     title="Developer Blogs"
+ *     links={collectionLinks}
+ *     linkLimit={4}
+ *     viewAllHref="/blog/links?collection=developer-blogs"
+ *   />
+ */
+
+import Card from '@components/primitives/Card.astro';
+import Button from '@components/primitives/Button.astro';
+
+export interface LinkData {
+  url: string;
+  title: string;
+  description?: string;
+  author?: string;
+  tags?: string[];
+  dateAdded?: Date;
+}
+
+export interface Props {
+  title: string;
+  description?: string;
+  links: LinkData[];
+  linkLimit?: number;
+  viewAllHref?: string;
+  class?: string;
+}
+
+const {
+  title,
+  description,
+  links,
+  linkLimit = 4,
+  viewAllHref,
+  class: className = '',
+} = Astro.props;
+
+// Limit links to display
+const displayLinks = links.slice(0, linkLimit);
+const hasMore = links.length > linkLimit;
+---
+
+<Card variant="outlined" padding="lg" class={`collection-widget ${className}`}>
+  <h3 class="widget-title">
+    {viewAllHref ? (
+      <a href={viewAllHref} class="widget-title-link">
+        {title}
+        {hasMore && <span class="link-count">({links.length})</span>}
+      </a>
+    ) : (
+      title
+    )}
+  </h3>
+
+  {description && <p class="widget-description">{description}</p>}
+
+  <ul class="widget-links">
+    {displayLinks.map((link) => (
+      <li class="widget-link-item">
+        <a href={link.url} class="widget-link" rel="noopener noreferrer" target="_blank">
+          <span class="link-title">{link.title}</span>
+          {link.author && <span class="link-author">by {link.author}</span>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</Card>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .widget-title {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+  }
+
+  .widget-title-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .widget-title-link:hover {
+    color: var(--accent-primary);
+    text-decoration-color: var(--accent-primary);
+  }
+
+  .link-count {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-left: var(--space-xs);
+  }
+
+  .widget-description {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-normal);
+  }
+
+  /* Links list */
+  .widget-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .widget-link-item {
+    position: relative;
+    padding-left: var(--space-md);
+  }
+
+  /* Bullet point */
+  .widget-link-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accent-secondary);
+    font-weight: var(--font-bold);
+  }
+
+  .widget-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .widget-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .link-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .widget-link:hover .link-title {
+    color: var(--accent-primary);
+  }
+
+  /* External link indicator */
+  .link-title::after {
+    content: " ↗";
+    font-size: 0.75em;
+    opacity: 0.5;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+
+  .widget-link:hover .link-title::after {
+    opacity: 1;
+  }
+
+  .link-author {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .collection-widget {
+      /* On tablet and below, widgets stack full-width */
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .widget-link,
+    .link-title,
+    .link-title::after {
+      transition: none;
+    }
+  }
+</style>
