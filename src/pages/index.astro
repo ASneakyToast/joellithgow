@@ -13,21 +13,20 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   <main class="landing-page animated-bg bg-accent-network">
     <div class="landing-content">
       <div class="landing-grid">
-        <!-- Left Column: Name + Social Links -->
+        <!-- Left Column: Name + Bio -->
         <div class="landing-left">
           <header class="landing-header">
             <h1 class="name">Joel Lithgow</h1>
           </header>
 
-          <footer class="landing-footer">
-            <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
-              LinkedIn
+          <div class="bio-section">
+            <p class="bio-text">
+              A 26-year-old Australian-American nerd with a BFA in Art and Design from California College of the Arts.
+            </p>
+            <a href="/about" class="about-link">
+              Learn more about me →
             </a>
-            <span class="separator">·</span>
-            <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link">
-              GitHub
-            </a>
-          </footer>
+          </div>
         </div>
 
         <!-- Right Column: Navigation Cards -->
@@ -115,7 +114,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   .landing-left {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-sm);
     width: 100%;
   }
 
@@ -132,7 +131,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     margin: 0;
     color: var(--text-primary);
     text-shadow: var(--text-shadow) var(--accent-secondary);
-    transform: var(--rotation-lg);
     display: inline-block;
   }
 
@@ -207,27 +205,35 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     transform: translateY(-50%) translateX(8px);
   }
 
-  .landing-footer {
+  .bio-section {
     display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
     align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
+    text-align: center;
+    margin-top: var(--space-xl);
+  }
+
+  .bio-text {
     font-size: var(--text-base);
-  }
-
-  .social-link {
+    line-height: var(--leading-relaxed);
     color: var(--text-secondary);
-    text-decoration: none;
-    transition: color var(--duration-base) var(--ease-out);
-    font-weight: var(--font-medium);
+    margin: 0;
+    max-width: 400px;
   }
 
-  .social-link:hover {
+  .about-link {
+    font-size: var(--text-sm);
     color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: var(--font-medium);
+    transition: color var(--duration-base) var(--ease-out);
+    display: inline-block;
   }
 
-  .separator {
-    color: var(--text-secondary);
+  .about-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
   }
 
   .theme-toggle-minimal {
@@ -349,7 +355,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: var(--space-lg);
+      gap: var(--space-sm);
       overflow: hidden;
       justify-content: flex-start;
       padding: var(--space-4xl) 0 var(--space-4xl) var(--page-gutter);
@@ -360,20 +366,14 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       text-align: left;
     }
 
-    .landing-footer {
-      display: flex;
-      flex-direction: column;
+    .bio-section {
       align-items: flex-start;
-      gap: var(--space-md);
-      margin-top: 0;
+      text-align: left;
+      margin-top: var(--space-xl);
     }
 
-    .social-link {
+    .bio-text {
       font-size: var(--text-lg);
-    }
-
-    .separator {
-      display: none;
     }
 
     .landing-nav {

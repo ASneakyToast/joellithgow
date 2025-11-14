@@ -15,6 +15,7 @@ const currentPath = Astro.url.pathname;
 const isWorkPage = currentPath.startsWith('/work');
 const isBlogPage = currentPath.startsWith('/blog');
 const isArtworksPage = currentPath.startsWith('/artworks');
+const isAboutPage = currentPath.startsWith('/about');
 
 // Build breadcrumb links based on section
 const breadcrumbs = [];
@@ -32,6 +33,11 @@ if (isWorkPage) {
   breadcrumbs.push(
     { href: '/', label: 'joel lithgow' },
     { href: '/artworks', label: 'artwork' }
+  );
+} else if (isAboutPage) {
+  breadcrumbs.push(
+    { href: '/', label: 'joel lithgow' },
+    { href: '/about', label: 'about' }
   );
 } else {
   // Default: just home link

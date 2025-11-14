@@ -1,0 +1,236 @@
+---
+/**
+ * Footer - Reusable site footer with navigation and branding
+ */
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer" aria-labelledby="footer-heading">
+  <div class="footer-content">
+    <!-- Footer Top - Name and Navigation -->
+    <div class="footer-top">
+      <div class="footer-branding">
+        <h2 id="footer-heading" class="footer-name">
+          <a href="/" class="footer-name-link">Joel Lithgow</a>
+        </h2>
+        <p class="footer-tagline">Creative Technologist</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="/work" class="footer-nav-chip footer-nav-chip--red">Portfolio</a>
+        <a href="/blog" class="footer-nav-chip footer-nav-chip--teal">Blog</a>
+        <a href="/artworks" class="footer-nav-chip footer-nav-chip--yellow">Artwork</a>
+      </nav>
+    </div>
+
+    <!-- Footer Bottom - Meta Info -->
+    <div class="footer-bottom">
+      <div class="footer-meta">
+        <p class="copyright">© {currentYear} Joel Lithgow</p>
+        <span class="separator">·</span>
+        <p class="built-with">Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="footer-link">Astro.js</a> and <a href="https://claude.ai/claude-code" target="_blank" rel="noopener noreferrer" class="footer-link">Claude Code</a></p>
+      </div>
+
+      <div class="footer-social">
+        <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="footer-social-link">
+          LinkedIn
+        </a>
+        <span class="separator">·</span>
+        <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="footer-social-link">
+          GitHub
+        </a>
+        <span class="separator">·</span>
+        <a href="https://instagram.com/joellithgow" target="_blank" rel="noopener noreferrer" class="footer-social-link">
+          Instagram
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .site-footer {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-2xl) var(--page-gutter) var(--space-xl);
+  }
+
+  .footer-content {
+    max-width: var(--content-wide);
+    margin: 0 auto;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: var(--border-width) solid rgba(255, 255, 255, 0.1);
+  }
+
+  .footer-branding {
+    text-align: center;
+  }
+
+  .footer-name {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin: 0;
+    line-height: var(--leading-tight);
+  }
+
+  .footer-name-link {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .footer-name-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .footer-tagline {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .footer-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-nav-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-xs) var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--bg-dark);
+    transition: all var(--duration-base) var(--ease-out);
+    transform: var(--rotation-sm);
+  }
+
+  .footer-nav-chip:nth-child(2) {
+    transform: rotate(1deg);
+  }
+
+  .footer-nav-chip:nth-child(3) {
+    transform: rotate(-1deg);
+  }
+
+  .footer-nav-chip--red {
+    background: var(--accent-primary);
+    color: var(--text-light);
+  }
+
+  .footer-nav-chip--red:hover {
+    transform: scale(1.05) var(--rotation-sm);
+    box-shadow: var(--shadow-md) var(--accent-primary);
+  }
+
+  .footer-nav-chip--teal {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+  }
+
+  .footer-nav-chip--teal:hover {
+    transform: scale(1.05) rotate(1deg);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .footer-nav-chip--yellow {
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+  }
+
+  .footer-nav-chip--yellow:hover {
+    transform: scale(1.05) rotate(-1deg);
+    box-shadow: var(--shadow-md) var(--accent-tertiary);
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .footer-meta,
+  .footer-social {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-meta p {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .footer-link,
+  .footer-social-link {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .footer-link:hover,
+  .footer-social-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .separator {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    font-size: var(--text-xs);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .site-footer {
+      padding: var(--space-xl) var(--page-gutter) var(--space-lg);
+    }
+
+    .footer-top {
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-md);
+    }
+
+    .footer-name {
+      font-size: var(--text-lg);
+    }
+
+    .footer-nav-chip {
+      padding: var(--space-xs) var(--space-md);
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .footer-nav-chip {
+      transform: none;
+    }
+
+    .footer-nav-chip:hover {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,472 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Button from '@components/primitives/Button.astro';
+import Footer from '@components/common/Footer.astro';
+
+const pageTitle = 'About - Joel Lithgow';
+const pageDescription = 'Learn more about Joel Lithgow - a creative technologist who builds things and writes about them.';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={true}>
+  <main class="about-page">
+    <!-- Extended Bio Section -->
+    <section class="extended-bio" aria-labelledby="bio-heading">
+      <div class="section-content">
+        <div class="bio-header">
+          <div class="avatar">JL</div>
+          <h1 class="name-heading">
+            <a href="/" class="name-link">Joel Lithgow</a>
+          </h1>
+          <h2 id="bio-heading" class="story-subheading">
+            My <span class="markup-annotation">^life</span> Story
+          </h2>
+        </div>
+        <div class="bio-content">
+          <h3 class="bio-subheading">Childhood moves</h3>
+          <p>
+            I was born in Australia but moved when I was 5 (that's why I don't have the accent, but I still have an Aussie passport). I then lived in Seattle, Washington for 2 years, New York City for 2 years, then upstate New York for two years, and then moved to California and swapped houses for a few more "2 more years" lol, until finally the house we were at now (TODO: edit this, since my parents just moved! still nearby, but new house technically).
+          </p>
+
+          <h3 class="bio-subheading">The highschool years</h3>
+          <p>
+            Early on I discovered AutoCAD and started learning technical drawing, which opened my eyes to how design and technology could work together. But it was when I stumbled into the Graphic Design studio and fell in love with Adobe Illustrator and the vinyl cutter that I found my real passion. Around the same time, I got curious about glassblowing and started taking flameworking classes outside of school—honestly, I thought I wanted to make bongs.
+          </p>
+          <p>
+            I also got into coding because I wanted to make Minecraft mods. I was learning Java on YouTube (shout out to <a href="https://www.youtube.com/playlist?list=PL484D73FA74A11AC9" target="_blank" rel="noopener noreferrer" class="bio-link">Bucky's Java Tutorials</a>) and even helped a friend with her computational science homework. I tried to enroll in the computer science class, but when I asked the teacher, he looked at my grades and told me I was too dumb to be in it. That stung, but I kept teaching myself anyway.
+          </p>
+
+          <h3 class="bio-subheading">Getting a Fine Arts Degree as a techie</h3>
+          <p>
+            I showed up at California College of the Arts ready to be a Graphic Design major, but I didn't get placed into any GD classes my first semester. Instead, I found myself in a Glass Intro class, continuing what I'd started in high school. I loved working with my hands, but something felt off. I thought maybe I was "more of a problem solver" than an artist, so I pivoted to Industrial Design. But after a year of ID classes, I realized I was missing the creative experimentation of glass and printmaking. A screen printing class changed everything—seeing people's identities reflected in their work and being in a space that encouraged exploring yourself through craft made me realize what I'd been looking for. I ended up in the Interdisciplinary program, where the conceptual flexibility meant I wasn't limited to one material or process—I could finally merge computational work and printmedia.
+          </p>
+
+          <h3 class="bio-subheading">From work-study to web developer</h3>
+          <p>
+            After graduating, I ended up getting a job with the Marketing and Communications team at CCA—actually, I'd been working for their web team since undergrad, doing QA for the internal portal. When their designer left, I started picking up design tasks, and eventually moved into more and more web design work. I basically got my interaction design experience through this work-study job rather than the classroom.
+          </p>
+          <p>
+            Two and a half years later, I'm still at CCA, and my role has grown significantly. I came in as an Interaction Designer but have evolved into being the primary developer for the school's public facing site, cca.edu. I've gotten comfortable with analytics (extremely confident with Google Analytics now), support our senior integration engineer with cloud run work, and have learned a ton about cloud engineering. Going from coding for fun on personal projects to developing professionally for the school—and being taken seriously doing it—feels incredibly rewarding, especially after that high school teacher told me I was too dumb for comp sci.
+          </p>
+
+          <h3 class="bio-subheading">Keeping the studio practice alive</h3>
+          <p>
+            The fine art and printmedia world from undergrad feels like a separate universe from my professional web dev work, but I've found ways to keep both alive. Right after graduating, my friend Joseph Blake and I got a place together. We'd shared a studio our senior year and it went so well—using each other's resources, making messes, cleaning up, living and working in there together all the time—that we wanted to keep that going.
+          </p>
+          <p>
+            We turned our living room into a studio: tarps, chairs, paint everywhere, always a mess. It was awesome. About a year in, we decided to clean it up, paint the walls white, install track lights, and have a show. Since then, it's alternated between being our studio and being <a href="https://thisisahousegallery.com" target="_blank" rel="noopener noreferrer" class="bio-link">This is a House Gallery</a>. We've been doing this for about two and a half years now.
+          </p>
+
+          <h3 class="bio-subheading">What I'm doing now</h3>
+          <p>
+            These days, I'm still at CCA developing for cca.edu, but I've been playing around with AI a lot—both for work projects and personal experiments (like this entire website!). The house gallery is still going strong; we continue to have shows and the living room still transforms back and forth between chaotic studio and clean gallery space.
+          </p>
+          <p>
+            Outside of work and art, I spend a lot of time with my dog Naru, who's probably the best studio assistant I could ask for (even if he doesn't help clean up the paint tarps). I've also been playing guitar and practicing music more and more—it's become another creative outlet that balances out the screen time. It's a good rhythm—coding during the day, making things at night, music and walks with Naru to reset in between.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section class="contact-section" aria-labelledby="contact-heading">
+      <div class="section-content">
+        <h2 id="contact-heading" class="section-title">Get in Touch</h2>
+        <p class="contact-intro">
+          Have a project in mind or just want to say hello? Drop me a message!
+        </p>
+
+        <!-- Social Links as Chips -->
+        <div class="social-chips">
+          <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-chip">
+            💼 LinkedIn
+          </a>
+          <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-chip">
+            💻 GitHub
+          </a>
+          <a href="https://instagram.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-chip">
+            📸 Instagram
+          </a>
+        </div>
+
+        <form
+          name="contact"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          class="contact-form"
+        >
+          <!-- Hidden fields for Netlify Forms -->
+          <input type="hidden" name="form-name" value="contact" />
+          <p class="hidden">
+            <label>
+              Don't fill this out if you're human: <input name="bot-field" />
+            </label>
+          </p>
+
+          <div class="form-group">
+            <label for="name" class="form-label">Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              class="form-input"
+              placeholder="Your name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="form-input"
+              placeholder="your.email@example.com"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="subject" class="form-label">Subject</label>
+            <input
+              type="text"
+              id="subject"
+              name="subject"
+              required
+              class="form-input"
+              placeholder="What's this about?"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="message" class="form-label">Message</label>
+            <textarea
+              id="message"
+              name="message"
+              required
+              rows="6"
+              class="form-input form-textarea"
+              placeholder="Your message..."
+            ></textarea>
+          </div>
+
+          <Button type="submit" variant="primary" size="lg" class="submit-button">
+            Send Message
+          </Button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <Footer />
+</BaseLayout>
+
+<style>
+  @import '../styles/tokens.css';
+  @import '../styles/themes.css';
+
+  .about-page {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .section-content {
+    max-width: var(--content-wide);
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    color: var(--text-primary);
+    margin-bottom: var(--heading-spacing);
+    text-align: center;
+    font-weight: var(--font-bold);
+  }
+
+  /* Extended Bio Section */
+  .extended-bio {
+    padding-top: var(--section-spacing);
+    padding-bottom: var(--space-xl);
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+    background: var(--bg-secondary);
+  }
+
+  .bio-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--heading-spacing);
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    border: var(--border-width) solid var(--bg-dark);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .name-heading {
+    margin: 0;
+    font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
+    text-align: center;
+  }
+
+  .name-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    text-underline-offset: 4px;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .name-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .story-subheading {
+    margin: 0;
+    margin-top: var(--space-3xl);
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    text-align: center;
+    position: relative;
+  }
+
+  .markup-annotation {
+    font-size: var(--text-3xl);
+    color: var(--accent-secondary);
+    font-weight: var(--font-medium);
+    position: absolute;
+    top: -1em;
+    left: 40%;
+    transform: translateX(-50%) rotate(-2deg);
+    white-space: nowrap;
+  }
+
+  .bio-content {
+    max-width: var(--content-normal);
+    margin: 0 auto;
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  .bio-subheading {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-md);
+    text-transform: capitalize;
+  }
+
+  .bio-subheading:first-of-type {
+    margin-top: 0;
+  }
+
+  .bio-content p {
+    margin-bottom: var(--paragraph-spacing);
+  }
+
+  .bio-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .bio-link {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .bio-link:hover {
+    color: var(--accent-secondary);
+  }
+
+  /* Social Links as Chips */
+  .social-chips {
+    display: flex;
+    gap: var(--element-spacing);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-3xl);
+  }
+
+  .social-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--bg-primary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    transition: all var(--duration-base) var(--ease-out);
+    transform: var(--rotation-sm);
+  }
+
+  .social-chip:nth-child(2) {
+    transform: rotate(1deg);
+  }
+
+  .social-chip:nth-child(3) {
+    transform: rotate(-1deg);
+  }
+
+  .social-chip:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-light);
+    transform: scale(1.05);
+  }
+
+  /* Contact Form Section */
+  .contact-section {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--section-spacing);
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+    background: var(--bg-secondary);
+  }
+
+  .contact-intro {
+    text-align: center;
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+    max-width: var(--content-narrow);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .contact-form {
+    max-width: var(--content-narrow);
+    margin: 0 auto;
+    background: var(--bg-primary);
+    padding: var(--space-3xl);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    transform: var(--rotation-sm);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .form-group {
+    margin-bottom: var(--space-xl);
+  }
+
+  .form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .form-input {
+    width: 100%;
+    padding: var(--space-md);
+    font-size: var(--text-base);
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--border-radius);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-dim);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 150px;
+  }
+
+  .submit-button {
+    width: 100%;
+    transform: var(--rotation-sm);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  .submit-button:hover {
+    transform: var(--rotation-sm) scale(1.02);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .about-page {
+      padding-top: var(--space-3xl);
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      font-size: var(--text-2xl);
+    }
+
+    .name-heading {
+      font-size: var(--heading-lg);
+    }
+
+    .story-subheading {
+      font-size: var(--heading-md);
+      margin-top: var(--space-lg);
+    }
+
+    .section-title {
+      font-size: var(--heading-md);
+    }
+
+    .bio-content {
+      font-size: var(--text-base);
+    }
+
+    .contact-form {
+      padding: var(--space-xl);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .social-chip,
+    .contact-form,
+    .submit-button {
+      transform: none;
+      transition: none;
+    }
+
+    .social-chip:hover,
+    .submit-button:hover {
+      transform: none;
+    }
+  }
+</style>
