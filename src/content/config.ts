@@ -61,7 +61,8 @@ const linkSchema = z.object({
   description: z.string(),
   author: z.string().optional(), // Blogger/creator name
   tags: z.array(z.string()).optional(),
-  dateAdded: z.date()
+  dateAdded: z.date(),
+  collections: z.array(z.string()).optional() // Which collection slugs this link should appear in
 });
 
 // Define blog schema for future use

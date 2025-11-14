@@ -15,11 +15,13 @@ links:
     description: "A beautiful design portfolio showcasing thoughtful and creative design work. Clean presentation with a focus on visual storytelling and user experience."
     tags: ["design-portfolio", "design", "portfolio", "visual-design", "ux"]
     dateAdded: 2025-01-22
+    collections: ["design-creative-resources"]
   - url: "https://qualitytime.fun/"
     title: "Quality Time - Design Collective"
     description: "A design collective focusing on community-driven creative projects. Collaborative design work with an emphasis on fun, experimentation, and quality craft."
     tags: ["design-collective", "design", "collective", "community", "creative-direction"]
     dateAdded: 2025-01-22
+    collections: ["design-creative-resources"]
 ---
 
 Starting a collection of inspiring design portfolios and creative collectives. These represent thoughtful approaches to design practice - from individual portfolios that showcase beautiful work to collectives that prioritize community and collaboration.
