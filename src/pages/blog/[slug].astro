@@ -5,6 +5,7 @@ import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
 import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
+import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
@@ -74,118 +75,201 @@ if (image) {
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <main class="article-container">
-    <div class="article-wrapper">
-      {/* Back to blog link */}
-      <nav class="article-nav">
-        <Button href="/blog" variant="secondary" size="md" class="nav-back-btn">
-          ← Back to blog
-        </Button>
-      </nav>
-
-      <article class:list={['blog-article', { 'blog-article--collection': entry.data.type === 'collection' }]}>
-        {/* Hero-style header with featured image */}
-        {image && (
-          <div class="article-hero">
-            <img
-              src={image.src}
-              alt={image.alt}
-              class="hero-image"
-            />
-            <div class="hero-overlay"></div>
-          </div>
-        )}
-
-        {/* Article header */}
-        <header class:list={['article-header', { 'article-header--collection': entry.data.type === 'collection' }]}>
-          <div class="article-meta-top">
-            {entry.data.type === 'collection' && (
-              <Badge variant="secondary" size="md" class="collection-type-badge">
-                Collection
-              </Badge>
-            )}
-            <time
-              datetime={publishDate.toISOString()}
-              class="article-date"
-            >
-              {publishDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </time>
-          </div>
-
-          <h1 class="article-title">{title}</h1>
-
-          <p class="article-description">
-            {description}
-          </p>
-
-          <div class="article-meta">
-            <div class="author-info">
-              <span>By {author}</span>
-              {readingTime && (
-                <span> • {readingTime} min read</span>
-              )}
-            </div>
-
-            {tags && tags.length > 0 && (
-              <div class="article-tags">
-                {tags.map((tag) => (
-                  <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Article content */}
-        <div class="article-content">
-          <Content />
-        </div>
-
-        {/* Link collection display */}
-        {links && links.length > 0 && (
-          <section class:list={['links-section', { 'links-section--collection': entry.data.type === 'collection' }]}>
-            <div class="links-header">
-              <h2 class="links-title">
-                {entry.data.type === 'collection' ? 'All Links in Collection' : 'Links from this collection'}
-              </h2>
-              <div class="links-meta">
-                <span class="links-count">{links.length} link{links.length !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
-
-            <div class="links-grid">
-              {links.map((link) => (
-                <LinkCard link={link} variant="minimal" />
-              ))}
-            </div>
-
-            {entry.data.type === 'collection' && (
-              <div class="links-footer">
-                <p class="links-note">
-                  A curated collection of {links.length} resources I find valuable.
-                </p>
-              </div>
-            )}
-          </section>
-        )}
-      </article>
-
-      {/* Footer navigation */}
-      <footer class="article-footer">
-        <nav class="footer-nav">
-          <Button href="/blog" variant="tertiary" size="md" class="footer-nav-btn footer-nav-back">
-            ← Back to all posts
-          </Button>
-
-          <Button href="/" variant="tertiary" size="md" class="footer-nav-btn footer-nav-home">
-            Home →
+  <main class:list={['article-container', { 'blog-container animated-bg bg-accent-editorial': entry.data.type === 'collection' }]}>
+    <div class:list={['article-wrapper', { 'blog-wrapper': entry.data.type === 'collection' }]}>
+      {/* Main content column (for collections) or article (for regular posts) */}
+      <div class={entry.data.type === 'collection' ? 'main-content' : ''}>
+        {/* Back to blog link */}
+        <nav class:list={['article-nav', { 'breadcrumb-nav': entry.data.type === 'collection' }]}>
+          <Button href="/blog" variant={entry.data.type === 'collection' ? 'ghost' : 'secondary'} size={entry.data.type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
+            ← Back to {entry.data.type === 'collection' ? 'Blog' : 'blog'}
           </Button>
         </nav>
-      </footer>
+
+        {/* COLLECTION LAYOUT */}
+        {entry.data.type === 'collection' ? (
+          <>
+            {/* Collection header - matches tag/links page style */}
+            <header class="collection-header">
+              <h1 class="collection-title">{title}</h1>
+              <p class="collection-description">{description}</p>
+              <div class="collection-stats">
+                <div class="stat-item">
+                  <span class="stat-number">{links?.length || 0}</span>
+                  <span class="stat-label">links</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">{tags?.length || 0}</span>
+                  <span class="stat-label">tags</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-date">
+                    {publishDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              </div>
+            </header>
+
+            {/* Collection content section - simple card */}
+            <section class="collection-content-section">
+              <Card variant="flat" as="article" class="collection-content-card">
+                <div class="collection-intro">
+                  <Content />
+                </div>
+              </Card>
+            </section>
+
+            {/* Collection links display */}
+            {links && links.length > 0 && (
+              <section class="collection-links-section">
+                <h2 class="section-heading">
+                  Links in this Collection
+                  <span class="links-count-badge">{links.length}</span>
+                </h2>
+                <div class="links-grid">
+                  {links.map((link) => (
+                    <LinkCard link={link} variant="minimal" />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        ) : (
+          /* REGULAR ARTICLE LAYOUT */
+          <article class="blog-article">
+            {/* Hero-style header with featured image */}
+            {image && (
+              <div class="article-hero">
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  class="hero-image"
+                />
+                <div class="hero-overlay"></div>
+              </div>
+            )}
+
+            {/* Article header */}
+            <header class="article-header">
+              <div class="article-meta-top">
+                <time
+                  datetime={publishDate.toISOString()}
+                  class="article-date"
+                >
+                  {publishDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
+              </div>
+
+              <h1 class="article-title">{title}</h1>
+
+              <p class="article-description">
+                {description}
+              </p>
+
+              <div class="article-meta">
+                <div class="author-info">
+                  <span>By {author}</span>
+                  {readingTime && (
+                    <span> • {readingTime} min read</span>
+                  )}
+                </div>
+
+                {tags && tags.length > 0 && (
+                  <div class="article-tags">
+                    {tags.map((tag) => (
+                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </header>
+
+            {/* Article content */}
+            <div class="article-content">
+              <Content />
+            </div>
+
+            {/* Link collection display (for non-collections with links) */}
+            {links && links.length > 0 && (
+              <section class="links-section">
+                <div class="links-header">
+                  <h2 class="links-title">Links from this collection</h2>
+                  <div class="links-meta">
+                    <span class="links-count">{links.length} link{links.length !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+
+                <div class="links-grid">
+                  {links.map((link) => (
+                    <LinkCard link={link} variant="minimal" />
+                  ))}
+                </div>
+              </section>
+            )}
+          </article>
+        )}
+      </div>
+
+      {/* Sidebar for collections */}
+      {entry.data.type === 'collection' && (
+        <aside class="sidebar">
+          <Card variant="outlined" padding="lg" class="sidebar-widget">
+            <h3 class="widget-title">Collection Info</h3>
+            <div class="widget-meta">
+              <div class="meta-item">
+                <span class="meta-label">Created</span>
+                <time datetime={publishDate.toISOString()} class="meta-value">
+                  {publishDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </time>
+              </div>
+              {author && (
+                <div class="meta-item">
+                  <span class="meta-label">Curator</span>
+                  <span class="meta-value">{author}</span>
+                </div>
+              )}
+              {tags && tags.length > 0 && (
+                <div class="meta-item">
+                  <span class="meta-label">Tags</span>
+                  <div class="meta-tags">
+                    {tags.map((tag) => (
+                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </aside>
+      )}
+
+        {/* Footer navigation (only for non-collections) */}
+        {entry.data.type !== 'collection' && (
+          <footer class="article-footer">
+            <nav class="footer-nav">
+              <Button href="/blog" variant="tertiary" size="md" class="footer-nav-btn footer-nav-back">
+                ← Back to all posts
+              </Button>
+
+              <Button href="/" variant="tertiary" size="md" class="footer-nav-btn footer-nav-home">
+                Home →
+              </Button>
+            </nav>
+          </footer>
+        )}
+      </div>
     </div>
   </main>
 
@@ -228,14 +312,97 @@ if (image) {
     position: relative;
   }
 
+  /* Blog container for collections - matches tag/links pages */
+  .blog-container {
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden;
+  }
+
   .article-wrapper {
     max-width: var(--content-normal);
     margin: 0 auto;
     position: relative;
   }
 
+  /* Blog wrapper for collections - 2-column grid layout */
+  .blog-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-3xl);
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .main-content {
+    min-width: 0; /* Prevent grid blowout */
+  }
+
   .article-nav {
     margin-bottom: var(--space-2xl);
+  }
+
+  /* Breadcrumb nav for collections */
+  .breadcrumb-nav {
+    margin-bottom: var(--space-xl);
+  }
+
+  /* Collection header - matches tag/links pages */
+  .collection-header {
+    text-align: left;
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+    margin-bottom: var(--space-3xl);
+  }
+
+  .collection-title {
+    font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    letter-spacing: var(--tracking-tight);
+    margin: 0 0 var(--space-md) 0;
+    line-height: var(--leading-tight);
+  }
+
+  .collection-description {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin: 0 0 var(--space-lg) 0;
+  }
+
+  .collection-stats {
+    display: flex;
+    gap: var(--space-xl);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .stat-number {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .stat-date {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
   }
 
   .blog-article {
@@ -614,7 +781,109 @@ if (image) {
     font-size: var(--text-sm);
   }
 
-  /* Collection-specific styling */
+  /* Collection content section */
+  .collection-content-section {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .collection-content-card {
+    padding: var(--space-2xl);
+  }
+
+  .collection-intro {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+  }
+
+  .collection-intro :global(p) {
+    margin: var(--space-lg) 0;
+  }
+
+  /* Collection links section */
+  .collection-links-section {
+    margin-top: var(--space-2xl);
+  }
+
+  .section-heading {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xl) 0;
+    letter-spacing: var(--tracking-tight);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .links-count-badge {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    background: var(--gradient-primary-subtle);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+  }
+
+  .collection-links-section .links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  /* Sidebar styles */
+  .sidebar {
+    position: sticky;
+    top: var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .sidebar-widget {
+    /* Additional styling via Card component */
+  }
+
+  .widget-title {
+    margin: 0 0 var(--space-lg) 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+  }
+
+  .widget-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .meta-label {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-weight: var(--font-semibold);
+  }
+
+  .meta-value {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  /* Legacy collection-specific styling (for non-collection posts with links) */
   .collection-type-badge {
     margin-right: var(--space-md);
   }
@@ -658,9 +927,41 @@ if (image) {
   }
 
   /* Responsive design */
+  @media (max-width: 1024px) {
+    .blog-wrapper {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .sidebar {
+      position: relative;
+      top: 0;
+    }
+
+    .collection-links-section .links-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   @media (max-width: 768px) {
     .article-container {
       padding: var(--space-xl) var(--space-md);
+    }
+
+    .blog-container {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .collection-header {
+      padding-bottom: var(--space-lg);
+    }
+
+    .collection-title {
+      font-size: var(--heading-lg);
+    }
+
+    .collection-stats {
+      gap: var(--space-lg);
     }
 
     .article-hero {
@@ -741,6 +1042,26 @@ if (image) {
   @media (max-width: 480px) {
     .article-container {
       padding: var(--space-lg) var(--space-sm);
+    }
+
+    .blog-container {
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    .collection-title {
+      font-size: var(--heading-md);
+    }
+
+    .collection-description {
+      font-size: var(--text-base);
+    }
+
+    .collection-stats {
+      gap: var(--space-md);
+    }
+
+    .stat-number {
+      font-size: var(--text-xl);
     }
 
     .article-hero {
