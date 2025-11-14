@@ -15,11 +15,13 @@ links:
     description: "Politico investigation into leaked private communications, raising questions about how journalists access and verify this kind of information."
     tags: ["journalism", "politics", "investigation"]
     dateAdded: 2025-01-13
+    collections: ["shit-i-read"]
   - url: "https://gralhix.com/blog-entries/"
     title: "Sofia Santos - OSINT Blog"
     description: "Open Source Intelligence techniques and investigative journalism. A fascinating look at how publicly available information can be used for accountability work."
     tags: ["osint", "journalism", "investigation", "tech"]
     dateAdded: 2025-01-13
+    collections: ["developer-blogs-i-follow"]
 ---
 
 I read the Politico article about the leaked Young Republicans chat and got curious: how do journalists actually do this kind of investigative work? That curiosity led me to Sofia Santos' blog on OSINT (Open Source Intelligence), and now I'm wondering if my tech literacy could be a way to contribute to this kind of accountability work someday.

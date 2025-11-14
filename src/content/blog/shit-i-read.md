@@ -15,6 +15,7 @@ links:
     description: "UCSB research examining the lasting impact of the Hollywood blacklist on the film industry, exploring how political persecution affected careers and creative output in entertainment."
     tags: ["film-and-politics", "hollywood", "blacklist", "film-history", "politics", "research"]
     dateAdded: 2024-09-15
+    collections: ["shit-i-read"]
 ---
 
 Starting a collection of DIY art spaces in the Bay Area. These are community-focused spaces that prioritize access and experimentation over traditional institutional models.
