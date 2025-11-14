@@ -1,5 +1,5 @@
 ---
-title: "Shit I Read - September 2024"
+title: "Shit I read on the internet"
 description: "A curated collection of interesting links, resources, and discoveries from around the web. This month: film history research and political analysis."
 publishDate: 2024-09-15
 author: "Joel Lithgow"
@@ -14,11 +14,6 @@ links:
     title: "The Long-Term Effects of the Hollywood Blacklist"
     description: "UCSB research examining the lasting impact of the Hollywood blacklist on the film industry, exploring how political persecution affected careers and creative output in entertainment."
     tags: ["film-and-politics", "hollywood", "blacklist", "film-history", "politics", "research"]
-    dateAdded: 2024-09-15
-  - url: "https://simonwillison.net/"
-    title: "Simon Willison's Weblog"
-    description: "Excellent developer blog covering AI, Python, databases, and web development. Thoughtful analysis of emerging tech trends with practical insights and code examples."
-    tags: ["developer-blogs", "development", "ai", "python", "databases", "tech-blog"]
     dateAdded: 2024-09-15
 ---
 
