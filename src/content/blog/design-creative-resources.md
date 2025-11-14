@@ -4,11 +4,11 @@ description: "A curated collection of design portfolios and creative collective 
 publishDate: 2025-01-22
 author: "Joel Lithgow"
 tags: ["design", "portfolio", "creative", "resources", "links"]
-type: "link-collection"
+type: "collection"
 draft: false
 featured: false
 readingTime: 2
-hasDetailPage: false
+hasDetailPage: true
 links:
   - url: "https://marcards.me/"
     title: "Marcards - Design Portfolio"

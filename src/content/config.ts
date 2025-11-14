@@ -59,6 +59,7 @@ const linkSchema = z.object({
   url: z.string().url(),
   title: z.string(),
   description: z.string(),
+  author: z.string().optional(), // Blogger/creator name
   tags: z.array(z.string()).optional(),
   dateAdded: z.date()
 });
@@ -82,9 +83,9 @@ const blogSchema = z.object({
    * Content type classification
    * - 'article': Full-length post with detail page (default)
    * - 'thought': Short-form post displayed inline without detail page
-   * - 'link-collection': Curated links with commentary
+   * - 'collection': Curated links with commentary and dedicated detail page
    */
-  type: z.enum(['article', 'thought', 'link-collection']).default('article'),
+  type: z.enum(['article', 'thought', 'collection']).default('article'),
   // Link collection support
   links: z.array(linkSchema).optional(),
   /**
@@ -95,7 +96,7 @@ const blogSchema = z.object({
    * When not explicitly set, automatically derived from type:
    * - 'article' → true
    * - 'thought' → false
-   * - 'link-collection' → false
+   * - 'collection' → true
    */
   hasDetailPage: z.boolean().optional(),
   // Legacy category field (deprecated in favor of type)
@@ -103,7 +104,7 @@ const blogSchema = z.object({
 }).transform((data) => {
   // Auto-derive hasDetailPage from type if not explicitly set
   if (data.hasDetailPage === undefined) {
-    data.hasDetailPage = data.type === 'article';
+    data.hasDetailPage = data.type === 'article' || data.type === 'collection';
   }
   return data;
 });

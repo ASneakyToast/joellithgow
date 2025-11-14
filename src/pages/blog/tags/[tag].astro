@@ -116,8 +116,8 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
               ) : (
                 <span class="post-title-text">{post.data.title}</span>
               )}
-              {post.data.category === 'link-collection' && (
-                <Badge variant="tertiary" size="sm" class="link-collection-badge">
+              {post.data.type === 'collection' && (
+                <Badge variant="tertiary" size="sm" class="collection-badge">
                   {post.data.links?.length || 0} links
                 </Badge>
               )}
@@ -342,7 +342,7 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
     color: var(--text-primary);
   }
 
-  .link-collection-badge {
+  .collection-badge {
     margin-left: var(--space-sm);
   }
 

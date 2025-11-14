@@ -23,6 +23,7 @@ export interface LinkData {
   url: string;
   title: string;
   description: string;
+  author?: string;
   dateAdded: Date;
   tags?: string[];
   sourcePost?: SourcePost;
@@ -80,6 +81,12 @@ const cardClasses = [
     <p class="link-description">
       {link.description}
     </p>
+
+    {link.author && (
+      <p class="link-author">
+        by {link.author}
+      </p>
+    )}
 
     {link.tags && link.tags.length > 0 && (
       <div class="link-tags-wrapper">
@@ -190,6 +197,14 @@ const cardClasses = [
     line-height: var(--leading-normal);
     margin: 0;
     font-size: var(--text-sm);
+  }
+
+  /* Author */
+  .link-author {
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    font-style: italic;
+    margin: 0;
   }
 
   /* Minimal variant - clean and subtle with hover state */

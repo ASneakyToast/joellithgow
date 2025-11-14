@@ -4,11 +4,11 @@ description: "A curated collection of interesting links, resources, and discover
 publishDate: 2024-09-15
 author: "Joel Lithgow"
 tags: ["links", "resources", "art", "diy", "bay-area"]
-type: "link-collection"
+type: "collection"
 draft: false
 featured: false
 readingTime: 2
-hasDetailPage: false
+hasDetailPage: true
 links:
   - url: "https://news.ucsb.edu/2025/021723/long-term-effects-hollywood-blacklist"
     title: "The Long-Term Effects of the Hollywood Blacklist"
