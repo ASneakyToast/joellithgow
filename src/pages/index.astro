@@ -325,39 +325,34 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   /* Desktop layout - Two columns */
   @media (min-width: 1024px) {
     .landing-page {
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .landing-content {
       max-width: none;
-      padding: var(--space-3xl) 0 var(--space-3xl) var(--page-gutter);
-      height: 100vh;
+      padding: var(--space-3xl) 0 var(--space-3xl) 0;
       width: 100%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      min-height: 100vh;
     }
 
     .landing-grid {
-      display: grid;
-      grid-template-columns: 35% 1fr;
-      gap: var(--space-4xl);
-      align-items: stretch;
-      flex: 1;
-      min-height: 0;
+      display: block;
+      min-height: 100vh;
     }
 
     .landing-left {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 35%;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       gap: var(--space-lg);
       overflow: hidden;
-      justify-content: center;
+      justify-content: flex-start;
+      padding: var(--space-4xl) 0 var(--space-4xl) var(--page-gutter);
     }
 
     .landing-header {
@@ -382,30 +377,12 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     }
 
     .landing-nav {
+      margin-left: 35%;
       display: flex;
       flex-direction: column;
       gap: var(--space-2xl);
-      overflow-y: auto;
-      padding: var(--space-3xl) var(--space-2xl);
-      min-height: 0;
-    }
-
-    /* Custom scrollbar styling for brutalist aesthetic */
-    .landing-nav::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .landing-nav::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .landing-nav::-webkit-scrollbar-thumb {
-      background: var(--accent-primary);
-      border-radius: var(--radius-sm);
-    }
-
-    .landing-nav::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-secondary);
+      padding: var(--space-3xl) var(--page-gutter) var(--space-3xl) var(--space-4xl);
+      min-height: 100vh;
     }
   }
 
