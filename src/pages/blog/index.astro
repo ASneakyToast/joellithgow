@@ -301,7 +301,14 @@ const jsonLd = {
 
       {/* Sidebar */}
       <aside class="sidebar">
-        <h2 class="sidebar-heading">Related Links</h2>
+        <h2 class="sidebar-heading">
+          Related Links
+          {totalLinks > 0 && (
+            <a href="/blog/links" class="browse-all-link">
+              (Browse all {totalLinks} →)
+            </a>
+          )}
+        </h2>
 
         {/* Dynamic Collection Widgets */}
         {collectionPosts.map((collection) => (
@@ -315,20 +322,6 @@ const jsonLd = {
             />
           )
         ))}
-
-        {/* Links collection showcase */}
-        {totalLinks > 0 && (
-          <Card variant="outlined" class="links-showcase">
-            <div class="links-showcase-content">
-              <p class="links-showcase-text">
-                📎 {totalLinks} curated links from {linkCollectionPosts.length} collection{linkCollectionPosts.length !== 1 ? 's' : ''}
-              </p>
-              <Button href="/blog/links" size="sm">
-                Browse Links →
-              </Button>
-            </div>
-          </Card>
-        )}
       </aside>
     </div>
   </main>
@@ -543,22 +536,19 @@ const jsonLd = {
     color: var(--bg-dark);
   }
 
-  /* Links showcase section */
-  .links-showcase {
-    margin: 0;
-  }
-
-  .links-showcase-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-md);
-  }
-
-  .links-showcase-text {
+  /* Browse all links */
+  .browse-all-link {
+    font-size: var(--text-sm);
+    font-weight: 400;
     color: var(--text-secondary);
-    margin: 0;
-    font-size: var(--text-base);
+    text-decoration: none;
+    margin-left: var(--space-sm);
+    transition: color 0.2s ease;
+  }
+
+  .browse-all-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
   }
 
   /* Featured Links Section */
@@ -928,10 +918,6 @@ const jsonLd = {
       top: 0;
     }
 
-    .links-showcase {
-      margin-top: var(--space-2xl);
-    }
-
     /* Archive posts still 2 columns on tablet */
     .archive-posts {
       grid-template-columns: repeat(2, 1fr);
@@ -968,12 +954,6 @@ const jsonLd = {
 
     .tag-cloud-label {
       font-size: var(--text-base);
-    }
-
-    .links-showcase-content {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-md);
     }
 
     /* Archive posts switch to single column on mobile */
