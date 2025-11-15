@@ -54,17 +54,6 @@ const decorativeElements = [
       >
         {ctaText}
       </Button>
-      <Button
-        id="themeControl"
-        variant="secondary"
-        size="lg"
-        class="theme-control"
-        aria-label="Open theme selector"
-        aria-controls="themeModal"
-        title="Press Ctrl+T to cycle themes"
-      >
-        <span aria-hidden="true">⚙</span> themes
-      </Button>
       <div id="work-cta-description" class="sr-only">
         Explore my recent projects and case studies
       </div>
@@ -276,14 +265,6 @@ const decorativeElements = [
     transform: var(--rotation-md) scale(1.05);
   }
 
-  .theme-control {
-    transform: var(--rotation-md);
-  }
-
-  .theme-control:hover {
-    transform: var(--rotation-md) scale(1.05);
-  }
-
   /* Decorative Elements Container */
   .decorative-elements {
     position: absolute;
@@ -415,38 +396,12 @@ const decorativeElements = [
           e.preventDefault();
           const targetId = href.substring(1);
           const targetElement = document.getElementById(targetId);
-          
+
           if (targetElement) {
             targetElement.scrollIntoView({
               behavior: 'smooth',
               block: 'start'
             });
-          }
-        }
-      });
-    }
-
-    // Theme control button
-    const themeControl = document.getElementById('themeControl');
-    if (themeControl) {
-      themeControl.addEventListener('click', () => {
-        console.log('Theme control clicked');
-        // Check if global function exists
-        if (typeof (window as any).openThemeModal === 'function') {
-          (window as any).openThemeModal();
-        } else {
-          console.log('openThemeModal not available, trying direct modal access');
-          const modal = document.getElementById('themeModal');
-          if (modal) {
-            modal.classList.remove('hidden');
-            // Update active theme option
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'default';
-            document.querySelectorAll('.theme-option').forEach(option => {
-              const htmlOption = option as HTMLElement;
-              htmlOption.classList.toggle('active', htmlOption.dataset.theme === currentTheme);
-            });
-          } else {
-            console.error('Theme modal not found');
           }
         }
       });
