@@ -1,0 +1,87 @@
+{
+  "id": "sonic-identity",
+  "number": 4,
+  "type": "interactive prototype",
+  "title": "Sonic Identity: Interactive Headphone Brand Experience",
+  "description": "exploratory prototype for a headphone brand's digital identity, featuring 3D product visualization and real-time audio EQ theming that communicates sonic profiles through web-based visualization",
+  "technologies": [
+    "three.js",
+    "javascript (es6+)",
+    "vite",
+    "3d web graphics"
+  ],
+  "impact": "demonstrated interactive brand experience capabilities through working prototype",
+  "images": [
+    {
+      "src": "/assets/images/projects/sonic-identity-hero--processed.png",
+      "alt": "Sonic Identity interactive prototype showing 3D headphone model with theme visualization",
+      "caption": "Interactive landing page featuring 3D product model and theme-based visual identity system"
+    },
+    {
+      "src": "/assets/images/projects/sonic-identity-demo.webm",
+      "alt": "Demo video showing theme switching and 3D interaction",
+      "caption": "Demonstration of four sound profile themes with corresponding visual changes and camera controls",
+      "type": "video"
+    },
+    {
+      "src": "/assets/images/projects/sonic-identity-bass-theme--processed.png",
+      "alt": "Bass-heavy theme with warm colors and bold visual treatment",
+      "caption": "Bass-heavy theme featuring warm color palette and prominent visual emphasis"
+    },
+    {
+      "src": "/assets/images/projects/sonic-identity-balanced-theme--processed.png",
+      "alt": "Balanced theme with neutral colors and even visual distribution",
+      "caption": "Balanced theme with neutral aesthetic and harmonious visual composition"
+    },
+    {
+      "src": "/assets/images/projects/sonic-identity-treble-theme--processed.png",
+      "alt": "Treble-focused theme with cool colors and crisp visual treatment",
+      "caption": "Treble-focused theme featuring cool color palette and refined visual presentation"
+    }
+  ],
+  "subtitle": "interactive prototype",
+  "overview": "A speculative client project that became a working prototype exploring how brands can communicate sonic identity through interactive web experiences. While the commercial project didn't materialize, I developed a fully functional prototype featuring 3D headphone models and multiple sound profile themes—demonstrating how interactive experiences can communicate product value propositions more effectively than static marketing.",
+  "duration": "1-2 weeks (exploratory prototype)",
+  "team": "solo project (speculative client work)",
+  "role": "creative technologist (design + development)",
+  "tools": "three.js, vite, javascript",
+  "problem": "How do you communicate a headphone brand's sonic identity through digital experience? A friend's headphone startup needed a landing page that went beyond traditional product photography and marketing copy. The brand's core differentiator was customizable sound profiles ('theme settings'), but static images couldn't demonstrate this auditory experience. We needed a way to translate sonic identity into visual, interactive form.",
+  "solution": "I built an interactive prototype that lets users experience the brand's sound profiles visually before ever putting on headphones. The experience features a 3D-rendered headphone model that users can rotate and explore, paired with a theme-based visual system that changes aesthetic and mood for different sound profiles (bass-heavy, balanced, treble-focused, vocal-forward). Each theme transforms the visual presentation, creating a multisensory brand experience entirely in the browser.",
+  "process": [
+    {
+      "title": "concept exploration",
+      "description": "Collaborated with founder on brand identity and sonic themes. Sketched interaction concepts that could translate audio profiles into visual language accessible without sound."
+    },
+    {
+      "title": "technical prototyping",
+      "description": "Built proof-of-concept with Three.js for 3D rendering and camera controls. Tested performance across devices to ensure smooth 60fps interactions and responsive behavior."
+    },
+    {
+      "title": "visual theming system",
+      "description": "Designed four distinct visual themes corresponding to sound profiles, using color palettes, lighting, and visual treatments to create cohesive brand expressions."
+    },
+    {
+      "title": "interactive refinement",
+      "description": "Iterated on 3D model interactions, camera controls, and theme transitions based on user testing with colleagues and friends to ensure intuitive, engaging experience."
+    }
+  ],
+  "insights": [
+    "Speculative work creates space for technical exploration without client constraints—this prototype became a learning ground for Three.js performance optimization and 3D interaction patterns",
+    "Interactive brand experiences can communicate product differentiators (like sound profiles) more effectively than traditional marketing copy or static product photography",
+    "Browser-based 3D visualization is now performant enough for production use—opening new possibilities for creative brand experiences on the web",
+    "Even when commercial projects don't materialize, the prototypes built during exploration become portfolio pieces that demonstrate capabilities for future opportunities"
+  ],
+  "metrics": [
+    { "number": "60fps", "label": "3D render performance" },
+    { "number": "4", "label": "sound profile themes" },
+    { "number": "100%", "label": "browser-based (no plugins)" },
+    { "number": "<3s", "label": "initial load time" }
+  ],
+  "liveLink": {
+    "title": "try the prototype",
+    "url": "DEPLOYMENT_URL_PLACEHOLDER",
+    "description": "Explore the interactive 3D headphone experience and sound profile themes"
+  },
+  "featured": true,
+  "tags": ["creative-coding", "3d-web", "brand-experience", "interactive-design"]
+}
