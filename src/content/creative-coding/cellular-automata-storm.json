@@ -1,0 +1,15 @@
+{
+  "id": "cellular-automata-storm",
+  "title": "Cellular Automata Storm",
+  "description": "Conway's Game of Life meets particle physics in this dynamic visualization where cellular birth and death events emit beautiful particle storms. Each seed generates unique parameters and color palettes.",
+  "creationDate": "2025-10-22",
+  "technologies": ["WebGL", "Cellular Automata", "Pure JavaScript", "Procedural Generation"],
+  "concept": "This piece merges the deterministic beauty of cellular automata with chaotic particle systems. Every cell birth emits energetic particles while deaths create gentle dispersions. The system uses Conway's Game of Life rules but visualizes state changes through emergent particle dynamics, creating a bridge between discrete and continuous phenomena.",
+  "technicalNotes": "Features seed-based procedural generation that determines not just initial conditions but all system parameters and color palettes. The visualization uses instanced rendering for particle efficiency and framebuffer-based trails. Each seed produces one of 10 themed color palettes (warm, cool, neon, pastel, monochrome, sunset, ocean, forest, fire, ice) with spatial and temporal color variation.",
+  "inspiration": "Inspired by Conway's Game of Life, emergence theory, and the visual language of particle physics. The piece explores how simple rules can generate complex, beautiful behaviors when visualized through a different lens.",
+  "featured": true,
+  "draft": false,
+  "tags": ["cellular-automata", "particles", "generative", "procedural", "game-of-life"],
+  "category": "webgl",
+  "pagePath": "/creative-coding/cellular-automata-storm"
+}

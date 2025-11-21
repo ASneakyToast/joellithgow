@@ -10,6 +10,7 @@ const isHomePage = currentPath === '/';
 const isBlogPage = currentPath.startsWith('/blog');
 const isLinksPage = currentPath === '/links';
 const isArtworksPage = currentPath.startsWith('/artworks');
+const isCreativeCodingPage = currentPath.startsWith('/creative-coding');
 
 // Navigation items
 const navItems = isHomePage ? [
@@ -19,7 +20,8 @@ const navItems = isHomePage ? [
   { href: '#contact', label: 'contact', description: 'Get in touch for collaboration opportunities' }
 ] : [
   { href: '/', label: 'home', description: 'Return to the main portfolio page' },
-  { href: '/artworks', label: 'artworks', description: 'View my fine art and creative projects' }
+  { href: '/artworks', label: 'artworks', description: 'View my fine art and creative projects' },
+  { href: '/creative-coding', label: 'creative coding', description: 'Explore interactive code-based artworks' }
 ];
 ---
 
@@ -169,7 +171,8 @@ const navItems = isHomePage ? [
           (currentPath === '/' && href === '#work') ||
           (currentPath.startsWith('/blog') && href === '/blog') ||
           (currentPath === '/links' && href === '/links') ||
-          (currentPath.startsWith('/artworks') && href === '/artworks')) {
+          (currentPath.startsWith('/artworks') && href === '/artworks') ||
+          (currentPath.startsWith('/creative-coding') && href === '/creative-coding')) {
         link.classList.add('active');
       }
     });

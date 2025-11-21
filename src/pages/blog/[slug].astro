@@ -441,6 +441,49 @@ const { title, description, publishDate, author, tags, readingTime, image, links
     display: block;
   }
 
+  .article-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 2rem auto;
+    border: 3px solid var(--accent-primary);
+    box-shadow: 8px 8px 0px var(--accent-secondary);
+    transform: rotate(-0.5deg);
+    transition: all 0.3s ease;
+  }
+
+  .article-content :global(img:hover) {
+    transform: rotate(0.5deg) scale(1.02);
+    box-shadow: 10px 10px 0px var(--accent-secondary);
+  }
+
+  .article-content :global(.image-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .article-content :global(.image-grid img) {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .article-content :global(.image-row) {
+    display: flex;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+
+  .article-content :global(.image-row img) {
+    margin: 0;
+    flex: 1;
+    min-width: 250px;
+  }
+
   .article-content :global(hr) {
     border: none;
     height: 3px;
@@ -725,6 +768,23 @@ const { title, description, publishDate, author, tags, readingTime, image, links
       font-size: 1.5rem;
     }
 
+    .article-content :global(img) {
+      transform: rotate(0deg);
+      margin: 1.5rem auto;
+    }
+
+    .article-content :global(.image-row) {
+      flex-direction: column;
+    }
+
+    .article-content :global(.image-row img) {
+      min-width: 100%;
+    }
+
+    .article-content :global(.image-grid) {
+      grid-template-columns: 1fr;
+    }
+
     .links-header {
       flex-direction: column;
       align-items: stretch;
@@ -771,6 +831,11 @@ const { title, description, publishDate, author, tags, readingTime, image, links
 
     .article-content {
       font-size: 0.95rem;
+    }
+
+    .article-content :global(img) {
+      margin: 1rem auto;
+      box-shadow: 4px 4px 0px var(--accent-secondary);
     }
 
     .links-title {

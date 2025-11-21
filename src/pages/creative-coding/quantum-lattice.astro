@@ -1,0 +1,1111 @@
+---
+// Quantum Lattice - Pure WebGL Interactive Artwork
+const pageTitle = 'Quantum Lattice - Creative Coding';
+const pageDescription = 'An interactive WebGL particle system featuring phase-driven dynamics, instanced rendering, and adaptive quality control.';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription}>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Anthropic Brand Colors */
+        :root {
+            --anthropic-dark: #141413;
+            --anthropic-light: #faf9f5;
+            --anthropic-mid-gray: #b0aea5;
+            --anthropic-light-gray: #e8e6dc;
+            --anthropic-orange: #d97757;
+            --anthropic-blue: #6a9bcc;
+            --anthropic-green: #788c5d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--anthropic-light) 0%, #f5f3ee 100%);
+            min-height: 100vh;
+            color: var(--anthropic-dark);
+        }
+
+        /* Back to Gallery Link */
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1100;
+            background: var(--anthropic-dark);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(20, 20, 19, 0.2);
+        }
+
+        .back-link:hover {
+            background: #2a2a27;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20, 20, 19, 0.3);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar h1 {
+            font-family: 'Lora', serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--anthropic-dark);
+            margin-bottom: 8px;
+        }
+
+        .sidebar .subtitle {
+            color: var(--anthropic-mid-gray);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        /* Control Sections */
+        .control-section {
+            margin-bottom: 32px;
+        }
+
+        .control-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--anthropic-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-section h3::before {
+            content: '•';
+            color: var(--anthropic-orange);
+            font-weight: bold;
+        }
+
+        /* Seed Controls */
+        .seed-input {
+            width: 100%;
+            background: var(--anthropic-light);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--anthropic-light-gray);
+            text-align: center;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--anthropic-orange);
+            box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1);
+            background: white;
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Parameter Controls */
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--anthropic-dark);
+            margin-bottom: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--anthropic-light-gray);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--anthropic-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #c86641;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--anthropic-orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--anthropic-mid-gray);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Buttons */
+        .button {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--anthropic-dark);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .button:hover {
+            background: #2a2a27;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(20, 20, 19, 0.2);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #canvas-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .fps-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(20, 20, 19, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            #canvas-container canvas {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .back-link {
+                top: 10px;
+                left: 10px;
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/creative-coding" class="back-link">← Back to Gallery</a>
+
+    <div class="container">
+        <!-- Sidebar Controls -->
+        <div class="sidebar">
+            <h1>Quantum Lattice</h1>
+            <p class="subtitle">Pure WebGL • Instanced Rendering</p>
+
+            <!-- Seed Section -->
+            <div class="control-section">
+                <h3>Seed</h3>
+                <input type="text" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button" onclick="previousSeed()">← Prev</button>
+                    <button class="button" onclick="nextSeed()">Next →</button>
+                </div>
+                <button class="button" onclick="randomSeedAndUpdate()">Random Seed</button>
+            </div>
+
+            <!-- Parameters Section -->
+            <div class="control-section">
+                <h3>Parameters</h3>
+
+                <!-- Adaptive Quality Toggle -->
+                <div class="control-group">
+                    <label style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Adaptive Quality (60 FPS)</span>
+                        <input type="checkbox" id="adaptiveToggle" checked onchange="toggleAdaptiveQuality(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
+                    </label>
+                    <p style="font-size: 11px; color: var(--anthropic-mid-gray); margin-top: 4px; line-height: 1.3;">
+                        Automatically adjusts particle count to maintain smooth 60 FPS
+                    </p>
+                </div>
+
+                <!-- Particle Count -->
+                <div class="control-group">
+                    <label>Lattice Density</label>
+                    <div class="slider-container">
+                        <input type="range" id="particleCount" min="400" max="100000" step="500" value="10000" oninput="updateParam('particleCount', this.value)">
+                        <span class="value-display" id="particleCount-value">10000</span>
+                    </div>
+                </div>
+
+                <!-- Base Frequency -->
+                <div class="control-group">
+                    <label>Base Frequency</label>
+                    <div class="slider-container">
+                        <input type="range" id="baseFreq" min="0.5" max="4.0" step="0.1" value="1.5" oninput="updateParam('baseFreq', this.value)">
+                        <span class="value-display" id="baseFreq-value">1.5</span>
+                    </div>
+                </div>
+
+                <!-- Phase Speed -->
+                <div class="control-group">
+                    <label>Phase Evolution</label>
+                    <div class="slider-container">
+                        <input type="range" id="phaseSpeed" min="0.1" max="3.0" step="0.1" value="0.8" oninput="updateParam('phaseSpeed', this.value)">
+                        <span class="value-display" id="phaseSpeed-value">0.8</span>
+                    </div>
+                </div>
+
+                <!-- Motion Scale -->
+                <div class="control-group">
+                    <label>Motion Scale</label>
+                    <div class="slider-container">
+                        <input type="range" id="motionScale" min="0.5" max="5.0" step="0.1" value="2.0" oninput="updateParam('motionScale', this.value)">
+                        <span class="value-display" id="motionScale-value">2.0</span>
+                    </div>
+                </div>
+
+                <!-- Trail Fade -->
+                <div class="control-group">
+                    <label>Trail Persistence</label>
+                    <div class="slider-container">
+                        <input type="range" id="trailFade" min="0.90" max="0.99" step="0.01" value="0.96" oninput="updateParam('trailFade', this.value)">
+                        <span class="value-display" id="trailFade-value">0.96</span>
+                    </div>
+                </div>
+
+                <!-- Harmonic Count -->
+                <div class="control-group">
+                    <label>Harmonic Layers</label>
+                    <div class="slider-container">
+                        <input type="range" id="harmonics" min="1" max="5" step="1" value="3" oninput="updateParam('harmonics', this.value)">
+                        <span class="value-display" id="harmonics-value">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="button-row">
+                    <button class="button" onclick="resetParameters()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <canvas id="glCanvas" width="1200" height="1200"></canvas>
+                <div class="fps-counter" id="fps-counter">FPS: --</div>
+            </div>
+        </div>
+    </div>
+
+    <script is:inline>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PURE WEBGL QUANTUM LATTICE - NO P5.JS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+
+        if (!gl) {
+            alert('WebGL not supported in your browser');
+        }
+
+        // Parameters
+        let params = {
+            seed: 12345,
+            particleCount: 10000,
+            baseFreq: 1.5,
+            phaseSpeed: 0.8,
+            motionScale: 2.0,
+            trailFade: 0.96,
+            harmonics: 3
+        };
+
+        let defaultParams = {...params};
+
+        // System state
+        let particles = [];
+        let time = 0;
+        let phaseField = [];
+        let fieldRes = 40;
+        let fieldCols, fieldRows;
+        let width = 1200, height = 1200;
+
+        // FPS tracking
+        let fps = 60;
+        let frameTimeSum = 0;
+        let frameTimeCount = 0;
+        let lastFrameTime = performance.now();
+
+        // Adaptive quality
+        let targetFPS = 60;
+        let fpsHistory = [];
+        let fpsHistorySize = 30;
+        let adaptiveEnabled = true;
+        let lastAdaptiveCheck = 0;
+        let adaptiveCheckInterval = 60;
+        let activeParticleCount = 10000;
+        let minParticles = 400;
+        let maxParticles = 100000;
+
+        // WebGL resources
+        let shaderProgram;
+        let trailProgram;
+        let particleBuffer;
+        let trailFramebuffer;
+        let trailTexture;
+        let frameCount = 0;
+
+        // Vertex shader for particles (instanced rendering)
+        const particleVertexShader = `
+            attribute vec2 aPosition;
+            attribute vec2 aParticlePos;
+            attribute vec3 aColor;
+
+            uniform vec2 uResolution;
+
+            varying vec3 vColor;
+
+            void main() {
+                // Scale particle to screen space
+                vec2 pos = aPosition * 3.0 + aParticlePos;
+                vec2 clipSpace = (pos / uResolution) * 2.0 - 1.0;
+                clipSpace.y *= -1.0;
+
+                gl_Position = vec4(clipSpace, 0.0, 1.0);
+                vColor = aColor;
+            }
+        `;
+
+        // Fragment shader for particles
+        const particleFragmentShader = `
+            precision mediump float;
+            varying vec3 vColor;
+
+            void main() {
+                // Circular particles with soft edges
+                vec2 center = gl_PointCoord - 0.5;
+                float dist = length(center);
+                if (dist > 0.5) discard;
+
+                float alpha = 0.8 * (1.0 - dist * 2.0);
+                gl_FragColor = vec4(vColor, alpha);
+            }
+        `;
+
+        // Vertex shader for trail fade
+        const trailVertexShader = `
+            attribute vec2 aPosition;
+            varying vec2 vTexCoord;
+
+            void main() {
+                gl_Position = vec4(aPosition, 0.0, 1.0);
+                vTexCoord = aPosition * 0.5 + 0.5;
+            }
+        `;
+
+        // Fragment shader for trail fade
+        const trailFragmentShader = `
+            precision mediump float;
+            uniform sampler2D uTexture;
+            uniform float uFade;
+            varying vec2 vTexCoord;
+
+            void main() {
+                vec4 color = texture2D(uTexture, vTexCoord);
+                gl_FragColor = vec4(color.rgb * uFade, color.a * uFade);
+            }
+        `;
+
+        // Compile shader
+        function compileShader(source, type) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+
+            return shader;
+        }
+
+        // Create shader program
+        function createProgram(vertSource, fragSource) {
+            const vertShader = compileShader(vertSource, gl.VERTEX_SHADER);
+            const fragShader = compileShader(fragSource, gl.FRAGMENT_SHADER);
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vertShader);
+            gl.attachShader(program, fragShader);
+            gl.linkProgram(program);
+
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program link error:', gl.getProgramInfoLog(program));
+                return null;
+            }
+
+            return program;
+        }
+
+        // Simple PRNG (seeded random)
+        class Random {
+            constructor(seed) {
+                this.seed = seed;
+            }
+
+            next() {
+                this.seed = (this.seed * 9301 + 49297) % 233280;
+                return this.seed / 233280;
+            }
+
+            range(min, max) {
+                return min + this.next() * (max - min);
+            }
+        }
+
+        let rng = new Random(params.seed);
+
+        // Noise function (simplified Perlin-like)
+        function noise(x, y, z) {
+            const X = Math.floor(x) & 255;
+            const Y = Math.floor(y) & 255;
+            const Z = Math.floor(z) & 255;
+
+            x -= Math.floor(x);
+            y -= Math.floor(y);
+            z -= Math.floor(z);
+
+            const u = fade(x);
+            const v = fade(y);
+            const w = fade(z);
+
+            return lerp(w, lerp(v, lerp(u, 0.5, 0.6), lerp(u, 0.4, 0.7)),
+                           lerp(v, lerp(u, 0.3, 0.8), lerp(u, 0.6, 0.5)));
+        }
+
+        function fade(t) {
+            return t * t * t * (t * (t * 6 - 15) + 10);
+        }
+
+        function lerp(t, a, b) {
+            return a + t * (b - a);
+        }
+
+        // Particle class
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.prevX = x;
+                this.prevY = y;
+                this.maxSpeed = 2;
+                this.noiseOffsetX = rng.next() * 1000;
+                this.noiseOffsetY = rng.next() * 1000;
+            }
+
+            update() {
+                const dx = fieldRes;
+                const phaseRight = getPhaseAtPosition(this.x + dx, this.y);
+                const phaseLeft = getPhaseAtPosition(this.x - dx, this.y);
+                const phaseUp = getPhaseAtPosition(this.x, this.y - dx);
+                const phaseDown = getPhaseAtPosition(this.x, this.y + dx);
+
+                const gradX = (phaseRight - phaseLeft) / (2 * dx);
+                const gradY = (phaseDown - phaseUp) / (2 * dx);
+
+                const forceScale = params.motionScale * 0.1;
+                let ax = gradX * forceScale;
+                let ay = gradY * forceScale;
+
+                if (frameCount % 2 === 0) {
+                    const nx = noise(this.x * 0.003 + this.noiseOffsetX, this.y * 0.003, time) - 0.5;
+                    const ny = noise(this.x * 0.003 + this.noiseOffsetY, this.y * 0.003, time) - 0.5;
+                    ax += nx * 0.2;
+                    ay += ny * 0.2;
+                }
+
+                this.prevX = this.x;
+                this.prevY = this.y;
+
+                this.vx += ax;
+                this.vy += ay;
+
+                const speedSq = this.vx * this.vx + this.vy * this.vy;
+                const maxSpeedSq = this.maxSpeed * this.maxSpeed;
+
+                if (speedSq > maxSpeedSq) {
+                    const speed = Math.sqrt(speedSq);
+                    this.vx = (this.vx / speed) * this.maxSpeed;
+                    this.vy = (this.vy / speed) * this.maxSpeed;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x += width;
+                else if (this.x > width) this.x -= width;
+                if (this.y < 0) this.y += height;
+                else if (this.y > height) this.y -= height;
+            }
+
+            getColor() {
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                const phase = getPhaseAtPosition(this.x, this.y);
+
+                let hue = (phase * 30 + time * 10) % 360;
+                const brightness = 40 + (speed / this.maxSpeed) * 55;
+                const saturation = 30 + (speed / this.maxSpeed) * 50;
+
+                // Convert HSB to RGB
+                return hsbToRgb(hue, saturation, brightness);
+            }
+        }
+
+        function hsbToRgb(h, s, b) {
+            s /= 100;
+            b /= 100;
+            const k = (n) => (n + h / 60) % 6;
+            const f = (n) => b * (1 - s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
+            return [f(5), f(3), f(1)];
+        }
+
+        // Phase field functions
+        function generatePhaseField() {
+            fieldCols = Math.ceil(width / fieldRes);
+            fieldRows = Math.ceil(height / fieldRes);
+
+            for (let i = 0; i < fieldCols; i++) {
+                if (!phaseField[i]) phaseField[i] = [];
+                for (let j = 0; j < fieldRows; j++) {
+                    const x = i * fieldRes;
+                    const y = j * fieldRes;
+                    phaseField[i][j] = calculatePhaseAtPoint(x, y);
+                }
+            }
+        }
+
+        function calculatePhaseAtPoint(x, y) {
+            let phase = 0;
+            const harmonics = params.harmonics;
+            const baseFreq = params.baseFreq;
+            const phaseSpeed = params.phaseSpeed;
+
+            if (harmonics >= 1) {
+                const freq = baseFreq * 0.5;
+                const timeOffset = time * phaseSpeed;
+                phase += Math.sin(x * 0.01 * freq + timeOffset);
+                phase += Math.sin(y * 0.01 * freq + timeOffset * 1.1);
+                phase += Math.sin((x + y) * 0.007 * freq + timeOffset * 0.9);
+                phase += Math.sin((x - y) * 0.007 * freq + timeOffset * 1.2);
+            }
+
+            if (harmonics >= 2) {
+                const freq = baseFreq * 1.0;
+                const timeOffset = time * phaseSpeed * 1.3;
+                phase += Math.sin(x * 0.01 * freq + timeOffset);
+                phase += Math.sin(y * 0.01 * freq + timeOffset * 1.1);
+            }
+
+            if (harmonics >= 3) {
+                const freq = baseFreq * 1.5;
+                const timeOffset = time * phaseSpeed * 1.6;
+                phase += Math.sin(x * 0.01 * freq + timeOffset);
+                phase += Math.sin(y * 0.01 * freq + timeOffset * 1.1);
+            }
+
+            if (harmonics >= 4) {
+                const freq = baseFreq * 2.0;
+                const timeOffset = time * phaseSpeed * 1.9;
+                phase += Math.sin((x + y) * 0.007 * freq + timeOffset * 0.9);
+            }
+
+            if (harmonics >= 5) {
+                const freq = baseFreq * 2.5;
+                const timeOffset = time * phaseSpeed * 2.2;
+                phase += Math.sin((x - y) * 0.007 * freq + timeOffset * 1.2);
+            }
+
+            return phase;
+        }
+
+        function getPhaseAtPosition(x, y) {
+            const col = Math.floor(x / fieldRes);
+            const row = Math.floor(y / fieldRes);
+
+            if (col < 0 || col >= fieldCols - 1 || row < 0 || row >= fieldRows - 1) {
+                return 0;
+            }
+
+            const xLerp = (x - col * fieldRes) / fieldRes;
+            const yLerp = (y - row * fieldRes) / fieldRes;
+
+            const p00 = phaseField[col][row];
+            const p10 = phaseField[col + 1][row];
+            const p01 = phaseField[col][row + 1];
+            const p11 = phaseField[col + 1][row + 1];
+
+            const p0 = p00 + (p10 - p00) * xLerp;
+            const p1 = p01 + (p11 - p01) * xLerp;
+
+            return p0 + (p1 - p0) * yLerp;
+        }
+
+        // Initialize WebGL
+        function initWebGL() {
+            // Create shader programs
+            shaderProgram = createProgram(particleVertexShader, particleFragmentShader);
+            trailProgram = createProgram(trailVertexShader, trailFragmentShader);
+
+            // Create trail framebuffer and texture
+            trailTexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, trailTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            trailFramebuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, trailFramebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, trailTexture, 0);
+
+            // Clear the trail texture
+            gl.clearColor(250/255, 249/255, 245/255, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            // Enable blending
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        }
+
+        // Initialize particles
+        function initializeSystem() {
+            rng = new Random(params.seed);
+            particles = [];
+            time = 0;
+
+            generatePhaseField();
+
+            const targetCount = adaptiveEnabled ? activeParticleCount : params.particleCount;
+            const gridSize = Math.ceil(Math.sqrt(targetCount));
+            const spacing = width / (gridSize + 1);
+
+            let count = 0;
+            for (let i = 0; i < gridSize && count < targetCount; i++) {
+                for (let j = 0; j < gridSize && count < targetCount; j++) {
+                    const x = (i + 1) * spacing + rng.range(-spacing * 0.1, spacing * 0.1);
+                    const y = (j + 1) * spacing + rng.range(-spacing * 0.1, spacing * 0.1);
+                    particles.push(new Particle(x, y));
+                    count++;
+                }
+            }
+
+            // Clear trail texture
+            gl.bindFramebuffer(gl.FRAMEBUFFER, trailFramebuffer);
+            gl.clearColor(250/255, 249/255, 245/255, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
+
+        // Adaptive quality check
+        function adaptiveQualityCheck() {
+            if (!adaptiveEnabled || fpsHistory.length === 0) return;
+
+            const avgFPS = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length;
+
+            if (avgFPS < targetFPS - 5 && activeParticleCount > minParticles) {
+                let newCount = Math.floor(activeParticleCount * 0.9);
+                newCount = Math.max(newCount, minParticles);
+
+                if (newCount !== activeParticleCount) {
+                    activeParticleCount = newCount;
+                    console.log('Adaptive Quality: Reducing to', activeParticleCount, 'particles (FPS:', Math.round(avgFPS), ')');
+                    initializeSystem();
+                }
+            }
+            else if (avgFPS > targetFPS + 5 && activeParticleCount < params.particleCount && activeParticleCount < maxParticles) {
+                let newCount = Math.floor(activeParticleCount * 1.1);
+                newCount = Math.min(newCount, params.particleCount, maxParticles);
+
+                if (newCount !== activeParticleCount) {
+                    activeParticleCount = newCount;
+                    console.log('Adaptive Quality: Increasing to', activeParticleCount, 'particles (FPS:', Math.round(avgFPS), ')');
+                    initializeSystem();
+                }
+            }
+
+            fpsHistory = [];
+        }
+
+        // Render loop
+        function render() {
+            // FPS tracking
+            const currentTime = performance.now();
+            const deltaTime = currentTime - lastFrameTime;
+            lastFrameTime = currentTime;
+
+            frameTimeSum += deltaTime;
+            frameTimeCount++;
+
+            if (frameTimeCount >= 10) {
+                fps = Math.round(1000 / (frameTimeSum / frameTimeCount));
+
+                let fpsText = 'FPS: ' + fps;
+                if (adaptiveEnabled && activeParticleCount !== params.particleCount) {
+                    fpsText += ' (' + activeParticleCount + 'p)';
+                }
+                document.getElementById('fps-counter').textContent = fpsText;
+
+                fpsHistory.push(fps);
+                if (fpsHistory.length > fpsHistorySize) {
+                    fpsHistory.shift();
+                }
+
+                frameTimeSum = 0;
+                frameTimeCount = 0;
+            }
+
+            // Adaptive quality check
+            if (frameCount - lastAdaptiveCheck > adaptiveCheckInterval) {
+                adaptiveQualityCheck();
+                lastAdaptiveCheck = frameCount;
+            }
+
+            time += 0.01;
+            frameCount++;
+
+            // Update phase field every 3 frames
+            if (frameCount % 3 === 0) {
+                generatePhaseField();
+            }
+
+            // Update particles
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+
+            // Apply trail fade
+            gl.bindFramebuffer(gl.FRAMEBUFFER, trailFramebuffer);
+            gl.useProgram(trailProgram);
+
+            // Set up quad for full-screen fade
+            const quadBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1,  1, -1,  -1, 1,
+                -1, 1,   1, -1,   1, 1
+            ]), gl.STATIC_DRAW);
+
+            const posLoc = gl.getAttribLocation(trailProgram, 'aPosition');
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            const texLoc = gl.getUniformLocation(trailProgram, 'uTexture');
+            const fadeLoc = gl.getUniformLocation(trailProgram, 'uFade');
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, trailTexture);
+            gl.uniform1i(texLoc, 0);
+            gl.uniform1f(fadeLoc, params.trailFade);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // Draw particles onto trail texture
+            gl.useProgram(shaderProgram);
+
+            // Prepare particle data
+            const positions = new Float32Array(particles.length * 2);
+            const colors = new Float32Array(particles.length * 3);
+
+            for (let i = 0; i < particles.length; i++) {
+                positions[i * 2] = particles[i].x;
+                positions[i * 2 + 1] = particles[i].y;
+
+                const color = particles[i].getColor();
+                colors[i * 3] = color[0];
+                colors[i * 3 + 1] = color[1];
+                colors[i * 3 + 2] = color[2];
+            }
+
+            // Circle vertices (reused for instancing)
+            const circleVerts = [];
+            const segments = 8;
+            for (let i = 0; i < segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                circleVerts.push(Math.cos(angle), Math.sin(angle));
+            }
+
+            const circleBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, circleBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(circleVerts), gl.STATIC_DRAW);
+
+            const aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
+            gl.enableVertexAttribArray(aPosition);
+            gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+            // Instance positions
+            const posBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+
+            const aParticlePos = gl.getAttribLocation(shaderProgram, 'aParticlePos');
+            gl.enableVertexAttribArray(aParticlePos);
+            gl.vertexAttribPointer(aParticlePos, 2, gl.FLOAT, false, 0, 0);
+
+            if (gl.vertexAttribDivisor) {
+                gl.vertexAttribDivisor(aParticlePos, 1);
+            }
+
+            // Instance colors
+            const colorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
+
+            const aColor = gl.getAttribLocation(shaderProgram, 'aColor');
+            gl.enableVertexAttribArray(aColor);
+            gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 0, 0);
+
+            if (gl.vertexAttribDivisor) {
+                gl.vertexAttribDivisor(aColor, 1);
+            }
+
+            const resLoc = gl.getUniformLocation(shaderProgram, 'uResolution');
+            gl.uniform2f(resLoc, width, height);
+
+            // Draw instanced
+            if (gl.drawArraysInstanced) {
+                gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, segments, particles.length);
+            } else {
+                // Fallback for non-instanced rendering
+                for (let i = 0; i < particles.length; i++) {
+                    gl.drawArrays(gl.TRIANGLE_FAN, 0, segments);
+                }
+            }
+
+            // Render to screen
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, width, height);
+
+            // Draw the trail texture
+            gl.useProgram(trailProgram);
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, trailTexture);
+            gl.uniform1i(texLoc, 0);
+            gl.uniform1f(fadeLoc, 1.0);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            requestAnimationFrame(render);
+        }
+
+        // UI Functions
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(paramName + '-value').textContent = value;
+
+            if (paramName === 'particleCount') {
+                activeParticleCount = parseFloat(value);
+                fpsHistory = [];
+                initializeSystem();
+            }
+        }
+
+        function toggleAdaptiveQuality(enabled) {
+            adaptiveEnabled = enabled;
+            fpsHistory = [];
+
+            if (!enabled) {
+                activeParticleCount = params.particleCount;
+                console.log('Adaptive Quality: Disabled, using', activeParticleCount, 'particles');
+                initializeSystem();
+            } else {
+                console.log('Adaptive Quality: Enabled, starting with', activeParticleCount, 'particles');
+            }
+        }
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            const input = document.getElementById('seed-input');
+            const newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                initializeSystem();
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function resetParameters() {
+            params = {...defaultParams};
+            activeParticleCount = defaultParams.particleCount;
+            adaptiveEnabled = true;
+            fpsHistory = [];
+
+            document.getElementById('adaptiveToggle').checked = true;
+            document.getElementById('particleCount').value = params.particleCount;
+            document.getElementById('particleCount-value').textContent = params.particleCount;
+            document.getElementById('baseFreq').value = params.baseFreq;
+            document.getElementById('baseFreq-value').textContent = params.baseFreq;
+            document.getElementById('phaseSpeed').value = params.phaseSpeed;
+            document.getElementById('phaseSpeed-value').textContent = params.phaseSpeed;
+            document.getElementById('motionScale').value = params.motionScale;
+            document.getElementById('motionScale-value').textContent = params.motionScale;
+            document.getElementById('trailFade').value = params.trailFade;
+            document.getElementById('trailFade-value').textContent = params.trailFade;
+            document.getElementById('harmonics').value = params.harmonics;
+            document.getElementById('harmonics-value').textContent = params.harmonics;
+
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        // Initialize and start
+        initWebGL();
+        initializeSystem();
+        updateSeedDisplay();
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>
