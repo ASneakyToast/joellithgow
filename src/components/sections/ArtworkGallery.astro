@@ -10,7 +10,7 @@ const { artworks } = Astro.props;
 // Collect all images from all artworks
 const allImages = artworks.flatMap(artwork => {
   if (!artwork.images || artwork.images.length === 0) return [];
-  
+
   return artwork.images.map(image => ({
     ...image,
     artworkTitle: artwork.title,
@@ -30,18 +30,18 @@ const bottomRowImages = allImages.slice(midpoint);
 ---
 
 {allImages.length > 0 && (
-  <section class="artwork-gallery">
-    <div class="container">
+  <section class="artwork-gallery animate-on-scroll">
+    <div class="gallery-container">
       <h2 class="gallery-title">Gallery Overview</h2>
       <p class="gallery-description">
         A visual journey through all artworks in the collection
       </p>
-      
+
       <div class="gallery-wrapper">
         <!-- Top Row - Taller Images -->
         <div class="gallery-row gallery-row-top">
           {topRowImages.map((image) => (
-            <div class="gallery-item gallery-item-tall">
+            <a href={`/artworks/${image.artworkId}`} class="gallery-item gallery-item-tall">
               <img
                 src={image.srcThumbnail || image.src}
                 alt={image.alt}
@@ -54,14 +54,14 @@ const bottomRowImages = allImages.slice(midpoint);
                 <span class="artwork-title">{image.artworkTitle}</span>
                 <span class="image-caption">{image.caption}</span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
         <!-- Bottom Row - Shorter Images -->
         <div class="gallery-row gallery-row-bottom">
           {bottomRowImages.map((image) => (
-            <div class="gallery-item gallery-item-short">
+            <a href={`/artworks/${image.artworkId}`} class="gallery-item gallery-item-short">
               <img
                 src={image.srcThumbnail || image.src}
                 alt={image.alt}
@@ -74,7 +74,7 @@ const bottomRowImages = allImages.slice(midpoint);
                 <span class="artwork-title">{image.artworkTitle}</span>
                 <span class="image-caption">{image.caption}</span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -83,51 +83,55 @@ const bottomRowImages = allImages.slice(midpoint);
 )}
 
 <style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
   .artwork-gallery {
-    padding: 80px 0;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    margin-bottom: 40px;
+    padding: var(--space-4xl) 0;
+    background: var(--bg-secondary);
+    margin: var(--space-2xl) 0;
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
-  .container {
-    max-width: var(--content-container);
+  .gallery-container {
+    max-width: var(--content-full);
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 var(--page-gutter);
   }
 
   .gallery-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 15px;
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md) 0;
     text-align: center;
-    background: linear-gradient(135deg, #2c3e50, #3498db);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
+    letter-spacing: var(--tracking-tight);
   }
 
   .gallery-description {
-    font-size: 1.1rem;
-    color: #666;
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
     text-align: center;
-    margin-bottom: 50px;
+    margin: 0 auto var(--space-2xl) auto;
     max-width: var(--content-narrow);
-    margin-left: auto;
-    margin-right: auto;
+    font-style: italic;
   }
 
   .gallery-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--space-xl);
   }
 
   .gallery-row {
     display: flex;
-    gap: 20px;
+    gap: var(--space-xl);
     overflow-x: auto;
-    padding: 10px 0;
+    padding: var(--space-md) 0;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) var(--bg-primary);
   }
 
   .gallery-row::-webkit-scrollbar {
@@ -135,32 +139,35 @@ const bottomRowImages = allImages.slice(midpoint);
   }
 
   .gallery-row::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-full);
   }
 
   .gallery-row::-webkit-scrollbar-thumb {
-    background: rgba(52, 152, 219, 0.6);
-    border-radius: 4px;
+    background: var(--accent-primary);
+    border-radius: var(--radius-full);
   }
 
   .gallery-row::-webkit-scrollbar-thumb:hover {
-    background: rgba(52, 152, 219, 0.8);
+    background: var(--accent-secondary);
   }
 
   .gallery-item {
     position: relative;
     flex-shrink: 0;
-    border-radius: 12px;
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+    transition: all var(--duration-base) var(--ease-out);
     cursor: pointer;
+    text-decoration: none;
   }
 
   .gallery-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg) var(--accent-primary);
+    border-color: var(--accent-primary);
   }
 
   .gallery-item-tall {
@@ -177,7 +184,7 @@ const bottomRowImages = allImages.slice(midpoint);
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform var(--duration-slow) var(--ease-out);
   }
 
   .gallery-item:hover .gallery-image {
@@ -189,14 +196,14 @@ const bottomRowImages = allImages.slice(midpoint);
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-    color: white;
-    padding: 20px 15px 15px;
+    background: linear-gradient(transparent, var(--bg-dark));
+    color: var(--text-light);
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
     transform: translateY(100%);
-    transition: transform 0.3s ease;
+    transition: transform var(--duration-base) var(--ease-out);
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--space-xs);
   }
 
   .gallery-item:hover .image-overlay {
@@ -204,31 +211,37 @@ const bottomRowImages = allImages.slice(midpoint);
   }
 
   .artwork-title {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: var(--font-bold);
+    font-size: var(--text-base);
+    color: var(--text-light);
   }
 
   .image-caption {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
+    color: var(--text-light);
     opacity: 0.9;
   }
 
   /* Mobile Responsive */
   @media (max-width: 768px) {
     .artwork-gallery {
-      padding: 60px 0;
+      padding: var(--space-3xl) 0;
     }
 
     .gallery-title {
-      font-size: 2rem;
+      font-size: var(--heading-md);
+    }
+
+    .gallery-description {
+      font-size: var(--text-base);
     }
 
     .gallery-wrapper {
-      gap: 15px;
+      gap: var(--space-lg);
     }
 
     .gallery-row {
-      gap: 15px;
+      gap: var(--space-lg);
     }
 
     .gallery-item-tall {
@@ -241,6 +254,7 @@ const bottomRowImages = allImages.slice(midpoint);
       height: 180px;
     }
 
+    /* Show overlay by default on mobile for discoverability */
     .image-overlay {
       transform: translateY(0);
       background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
@@ -248,6 +262,10 @@ const bottomRowImages = allImages.slice(midpoint);
   }
 
   @media (max-width: 480px) {
+    .artwork-gallery {
+      padding: var(--space-2xl) 0;
+    }
+
     .gallery-item-tall {
       width: 200px;
       height: 250px;
@@ -256,6 +274,10 @@ const bottomRowImages = allImages.slice(midpoint);
     .gallery-item-short {
       width: 180px;
       height: 150px;
+    }
+
+    .gallery-row {
+      gap: var(--space-md);
     }
   }
 </style>
