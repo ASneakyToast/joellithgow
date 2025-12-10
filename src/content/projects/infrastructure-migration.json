@@ -1,53 +1,48 @@
 {
   "id": "infrastructure-migration",
-  "number": 3,
-  "type": "infrastructure migration",
-  "title": "kubernetes to cloud run migration",
-  "description": "modernizing deployment infrastructure by migrating from complex kubernetes setup to streamlined cloud run with automated ci/cd pipeline",
-  "technologies": [
-    "kubernetes",
-    "cloud run",
-    "docker",
-    "ci/cd pipeline"
-  ],
-  "impact": "zero-downtime migration with 70% faster deployments",
+  "number": 4,
+  "type": "technical growth / collaboration",
+  "title": "learning cloud infrastructure through contribution",
+  "description": "strategically seeking out learning opportunities by contributing to cca.edu's cloud run migration, building the development workflow and deployment pipeline alongside a senior developer",
+  "impact": "gained cloud infrastructure proficiency",
   "images": [],
-  "subtitle": "infrastructure migration",
-  "overview": "A comprehensive infrastructure modernization project that transformed a complex Kubernetes deployment into a streamlined Cloud Run solution, demonstrating adaptability in learning new cloud technologies.",
-  "duration": "3 weeks",
-  "team": "solo project with stakeholder collaboration",
-  "role": "full-stack developer",
-  "tools": "kubernetes, google cloud run, docker, github actions",
-  "problem": "Existing Kubernetes infrastructure was complex to maintain, slow to deploy, and required specialized knowledge that created bottlenecks. Team needed a more accessible and efficient deployment solution.",
-  "solution": "Migrated to Google Cloud Run with containerized applications and automated CI/CD pipeline, prioritizing simplicity and developer experience while maintaining performance and reliability.",
+  "subtitle": "technical growth",
+  "overview": "When Ngoc, a senior integrations developer and mentor of mine, began modernizing CCA's infrastructure from Kubernetes to Cloud Run, I recognized an opportunity. By joining the project as a key contributor, I helped build the development workflow and deployment pipeline while gaining hands-on cloud infrastructure experience.",
+  "duration": "dec 2024 – feb 2025 (~2.5 months)",
+  "team": "Ngoc (project lead, senior integrations developer) + Joel (contributor)",
+  "role": "contributor (build pipeline & deployment)",
+  "tools": "google cloud run, docker, docker compose, webpack, cloud build",
+  "problem": "My marketing team needed deployment autonomy, but I lacked the cloud infrastructure skills to make that happen. When Ngoc began leading the Cloud Run migration for CCA.edu, I recognized this as an opportunity to learn by doing—contributing to a real migration rather than just studying documentation.",
+  "solution": "I asked Ngoc if I could contribute to the CCA.edu Cloud Run migration. Starting from zero Google Cloud Platform experience, I took ownership of the local development workflow and helped refactor the production deployment pipeline. Working alongside a senior developer accelerated my learning while delivering real value to the project.",
   "process": [
     {
-      "title": "learning phase",
-      "description": "Deep dive into Cloud Run documentation and best practices, coming from zero prior experience with Google Cloud Platform."
+      "title": "recognizing the opportunity",
+      "description": "Saw Ngoc's Cloud Run migration as a chance to gain skills my team needed. Rather than waiting to be assigned, I asked to get involved and contribute where I could."
     },
     {
-      "title": "migration strategy",
-      "description": "Developed step-by-step migration plan to minimize downtime and risk, including rollback procedures and testing protocols."
+      "title": "building the dev workflow",
+      "description": "Set up webpack dev server with docker compose for live-reloading, making local development smooth. Organized configs into local-dev vs stage-build separation for clarity."
     },
     {
-      "title": "containerization",
-      "description": "Dockerized applications and optimized container builds for Cloud Run's specific requirements and constraints."
+      "title": "restructuring the architecture",
+      "description": "Refactored Dockerfiles with client builder pattern, reorganized directory structure, and aligned volume bindings with cloud build requirements."
     },
     {
-      "title": "ci/cd automation",
-      "description": "Implemented GitHub Actions pipeline for automated testing, building, and deployment to Cloud Run services."
+      "title": "production deployment",
+      "description": "Refactored the prod build/deploy script and created the migrate job for database migrations. Implemented CORS configuration for production launch."
     }
   ],
   "insights": [
-    "Cloud-native solutions can dramatically simplify operations when chosen thoughtfully for the specific use case",
-    "Learning new technologies requires systematic documentation and experimentation approach",
-    "Understanding static file handling in containerized environments is crucial for successful cloud deployments"
+    "The best way to learn complex technical skills is by contributing to real systems with real stakes, not just tutorials",
+    "Strategic skill-building means recognizing which opportunities will unlock future capabilities for you and your team",
+    "Working alongside senior developers accelerates learning—you absorb architecture decisions and best practices through collaboration",
+    "Taking ownership of specific pieces (like the dev workflow) lets you contribute meaningfully while learning the broader system"
   ],
   "metrics": [
-    { "number": "0min", "label": "deployment downtime" },
-    { "number": "70%", "label": "faster deployments" },
-    { "number": "90%", "label": "reduced manual steps" }
+    { "number": "32", "label": "infrastructure commits" },
+    { "number": "2.5mo", "label": "active contribution" },
+    { "number": "0→1", "label": "GCP proficiency" }
   ],
-  "featured": true,
-  "tags": ["infrastructure", "cloud-migration", "devops"]
+  "featured": false,
+  "tags": ["cloud run", "docker", "webpack", "cloud build", "technical-growth", "collaboration", "mentorship"]
 }
