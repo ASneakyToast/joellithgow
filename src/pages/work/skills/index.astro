@@ -7,8 +7,8 @@ import { getCollection } from 'astro:content';
 const pageTitle = 'Skills - Joel Lithgow';
 const pageDescription = 'Browse projects by skill and technology';
 
-// Get all projects
-const allProjects = await getCollection('projects');
+// Get all projects (exclude drafts)
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 
 // Extract and count all tags/skills
 const skillCounts = new Map<string, number>();

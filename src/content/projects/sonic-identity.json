@@ -77,5 +77,6 @@
     "description": "Explore the interactive 3D headphone experience and sound profile themes"
   },
   "featured": true,
+  "draft": true,
   "tags": ["three.js", "javascript", "vite", "3d web graphics", "creative-coding", "3d-web", "brand-experience", "interactive-design"]
 }
