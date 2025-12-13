@@ -4,13 +4,8 @@
   "type": "creative webpages",
   "title": "multimedia digital storytelling",
   "description": "creating unique digital web experiences for the CCA editorial newsroom through innovative design and multimedia storytelling, delivering custom editorial content experiences",
-  "technologies": [
-    "rapid prototyping",
-    "figma",
-    "vev.design",
-    "multimedia storytelling"
-  ],
   "impact": "unique web experiences for editorial content",
+  "technologies": ["vev.design", "multimedia storytelling", "web design"],
   "images": [
     {
       "src": "/assets/images/projects/vev-studio_forward-thumbnail.webm",
@@ -69,5 +64,5 @@
     ]
   },
   "featured": true,
-  "tags": ["multimedia", "storytelling", "editorial-design"]
+  "tags": ["rapid prototyping", "figma", "vev.design", "multimedia storytelling", "multimedia", "storytelling", "editorial-design"]
 }

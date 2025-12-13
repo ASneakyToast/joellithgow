@@ -7,9 +7,9 @@ const projectSchema = z.object({
   type: z.string(),
   title: z.string(),
   description: z.string(),
-  technologies: z.array(z.string()),
   impact: z.string(),
   url: z.string().optional(),
+  technologies: z.array(z.string()).optional(),
   images: z.array(z.object({
     src: z.string(),
     alt: z.string(),

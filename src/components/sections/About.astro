@@ -12,20 +12,11 @@ const {
   bio = "I'm passionate about creating digital experiences that feel both innovative and human. My journey spans from visual design to full-stack development, giving me a unique perspective on how to bridge the gap between what's possible and what's meaningful."
 } = Astro.props;
 
-// Skills configuration - matching original exactly
-const skillCategories = [
-  {
-    title: 'design',
-    skills: ['figma', 'sketch', 'adobe cc', 'prototyping', 'user research', 'design systems']
-  },
-  {
-    title: 'development',
-    skills: ['javascript', 'typescript', 'react', 'node.js', 'python', 'docker']
-  },
-  {
-    title: 'emerging tech',
-    skills: ['claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js']
-  }
+// Flattened skills list - all skills in one array
+const allSkills = [
+  'figma', 'sketch', 'adobe cc', 'prototyping', 'user research', 'design systems',
+  'javascript', 'typescript', 'react', 'node.js', 'python', 'docker',
+  'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
 ];
 
 // Stats configuration - matching original exactly
@@ -75,24 +66,19 @@ const stats = [
       </div>
     </div>
     
-    <div class="skills-grid" role="group" aria-label="Technical skills">
-      {skillCategories.map((category) => (
-        <div class="skill-category">
-          <h3 class="skill-title">{category.title}</h3>
-          <div class="skill-list" role="list">
-            {category.skills.map((skill, index) => (
-              <Badge
-                variant={index % 2 === 0 ? "secondary" : "tertiary"}
-                size="sm"
-                class="skill-item"
-                role="listitem"
-              >
-                {skill}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      ))}
+    <div class="skills-container" role="group" aria-label="Technical skills">
+      <div class="skills-list" role="list">
+        {allSkills.map((skill) => (
+          <Badge
+            variant="secondary"
+            size="sm"
+            role="listitem"
+            href={`/work/skills/${skill}`}
+          >
+            #{skill}
+          </Badge>
+        ))}
+      </div>
     </div>
   </div>
 </section>
@@ -102,9 +88,10 @@ const stats = [
   @import '../../styles/themes.css';
 
   .about {
-    padding: var(--space-5xl) var(--page-gutter);
+    padding: var(--space-4xl) var(--page-gutter) var(--space-5xl);
     background: var(--bg-primary);
     position: relative;
+    border-top: 1px solid var(--border-secondary);
   }
 
   .about-content {
@@ -112,20 +99,18 @@ const stats = [
     margin: 0 auto;
   }
 
-  /* Section header - unified underline pattern */
+  /* Section header - softer, more personal */
   .section-header {
     margin-bottom: var(--space-3xl);
     text-align: center;
   }
 
   .section-title {
-    font-size: var(--heading-xl);
+    font-size: var(--heading-lg);
     color: var(--text-primary);
     margin-bottom: var(--space-lg);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-primary);
-    text-decoration-thickness: 4px;
-    transform: skew(-2deg);
+    text-transform: lowercase;
+    font-weight: var(--font-bold);
   }
 
   .about-intro {
@@ -227,43 +212,15 @@ const stats = [
     letter-spacing: var(--tracking-wide);
   }
 
-  .skills-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-3xl);
+  .skills-container {
+    margin-top: var(--space-4xl);
   }
 
-  .skill-category {
-    background: var(--bg-secondary);
-    border: var(--border-width) solid var(--bg-dark);
-    border-radius: var(--border-radius);
-    padding: var(--space-2xl);
-    transform: var(--rotation-sm);
-  }
-
-  .skill-category:nth-child(even) {
-    transform: var(--rotation-sm);
-  }
-
-  .skill-title {
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-lg);
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .skill-list {
+  .skills-list {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
-  }
-
-  /* Remove custom styling since Badge primitive handles it */
-  .skill-item {
-    /* Transition for hover effects */
-    transition: transform var(--duration-base) var(--ease-out);
+    justify-content: center;
   }
 
   /* Responsive design */
@@ -304,13 +261,8 @@ const stats = [
       font-size: var(--heading-xl);
     }
 
-    .skills-grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xl);
-    }
-
-    .skill-category {
-      padding: var(--space-lg);
+    .skills-list {
+      justify-content: flex-start;
     }
   }
 
