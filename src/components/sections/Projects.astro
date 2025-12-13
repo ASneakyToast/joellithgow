@@ -18,8 +18,8 @@ const {
   limit
 } = Astro.props;
 
-// Get projects from content collection
-const allProjects = await getCollection('projects');
+// Get projects from content collection (exclude drafts)
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 let projects = featuredOnly ? allProjects.filter(project => project.data.featured) : allProjects;
 
 // Sort by number (ascending)

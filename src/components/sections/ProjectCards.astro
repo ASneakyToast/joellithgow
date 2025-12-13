@@ -6,10 +6,10 @@ import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 
-// Get project data from content collections
+// Get project data from content collections (exclude drafts)
 let projects = [];
 try {
-  projects = await getCollection('projects');
+  projects = await getCollection('projects', ({ data }) => !data.draft);
 } catch (error) {
   console.error('Error loading projects:', error);
 }

@@ -9,7 +9,7 @@ import Button from '@components/primitives/Button.astro';
 import Badge from '@components/primitives/Badge.astro';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
 
   return projects.map(project => ({
     params: { slug: project.data.id },
