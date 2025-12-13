@@ -4,13 +4,8 @@
   "type": "homepage redesign",
   "title": "CCA homepage redesign",
   "description": "data-driven redesign that solved user confusion about institutional identity, achieving a 33% reduction in confusion-driven navigation while improving conversion paths and engagement metrics",
-  "technologies": [
-    "user research",
-    "google analytics",
-    "stakeholder interviews",
-    "conversion optimization"
-  ],
   "impact": "33% reduction in confusion-driven navigation",
+  "technologies": ["figma", "google analytics", "looker studio", "ux research"],
   "images": [
     {
       "src": "/assets/videos/homepage-scroll-720.webm",
@@ -80,5 +75,5 @@
     "description": "Visit the live CCA homepage to experience the redesigned user flow"
   },
   "featured": true,
-  "tags": ["ux-design", "analytics", "conversion-optimization"]
+  "tags": ["user research", "google analytics", "stakeholder interviews", "conversion optimization", "ux-design", "analytics", "figma"]
 }

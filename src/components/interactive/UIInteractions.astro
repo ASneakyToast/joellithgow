@@ -29,13 +29,6 @@
     scroll-behavior: smooth;
   }
 
-  /* Enhanced focus styles */
-  :global(*:focus) {
-    outline: 3px solid var(--accent-primary);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
   /* Interactive element hover effects */
   :global(.interactive-hover) {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -60,41 +53,7 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  /* Tech tag interactions */
-  :global(.tech-tag) {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  :global(.tech-tag:hover) {
-    transform: scale(1.1);
-    background: var(--accent-secondary);
-    color: var(--text-light);
-  }
-
-  /* Skill item interactions */
-  :global(.skill-item) {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  :global(.skill-item:hover) {
-    transform: scale(1.1);
-    background: var(--accent-primary);
-    color: var(--text-light);
-  }
-
-  /* Contact method interactions */
-  :global(.contact-method) {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  :global(.contact-method:hover) {
-    transform: scale(1.05) rotate(0deg);
-  }
-
-  /* Project card hover effects */
+  /* Project card hover effects - only for ProjectCards component */
   :global(.project-card) {
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
@@ -105,24 +64,6 @@
     box-shadow: 
       0 25px 50px rgba(0, 0, 0, 0.1),
       0 0 0 1px var(--accent-primary);
-  }
-
-  /* Process section interactions */
-  :global(.process-nav-item) {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  :global(.process-nav-item:hover) {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    transform: translateX(5px);
-  }
-
-  :global(.process-nav-item.active) {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    transform: translateX(5px);
   }
 
   /* Loading states */
@@ -154,11 +95,7 @@
     .animate-on-scroll,
     .cursor-trail,
     :global(.interactive-hover),
-    :global(.tech-tag),
-    :global(.skill-item),
-    :global(.contact-method),
-    :global(.project-card),
-    :global(.process-nav-item) {
+    :global(.project-card) {
       animation: none !important;
       transition: none !important;
     }
@@ -359,52 +296,8 @@
     }
 
     initInteractiveElements() {
-      // Tech tags
-      document.querySelectorAll('.tech-tag').forEach(tag => {
-        tag.addEventListener('mouseenter', () => {
-          tag.style.transform = 'scale(1.1)';
-          tag.style.background = 'var(--accent-secondary)';
-          tag.style.color = 'var(--text-light)';
-        });
-        
-        tag.addEventListener('mouseleave', () => {
-          tag.style.transform = 'scale(1)';
-          tag.style.background = '';
-          tag.style.color = '';
-        });
-      });
-
-      // Skill items
-      document.querySelectorAll('.skill-item').forEach(item => {
-        item.addEventListener('mouseenter', () => {
-          item.style.transform = 'scale(1.1)';
-          item.style.background = 'var(--accent-primary)';
-          item.style.color = 'var(--text-light)';
-        });
-        
-        item.addEventListener('mouseleave', () => {
-          item.style.transform = 'scale(1)';
-          item.style.background = '';
-          item.style.color = '';
-        });
-      });
-
-      // Contact methods
-      document.querySelectorAll('.contact-method').forEach(method => {
-        method.addEventListener('mouseenter', () => {
-          method.style.transform = 'scale(1.05) rotate(0deg)';
-        });
-        
-        method.addEventListener('mouseleave', () => {
-          const transform = method.style.transform;
-          const currentRotation = transform.match(/rotate\(([^)]+)\)/);
-          const rotation = currentRotation ? currentRotation[1] : '1deg';
-          method.style.transform = `rotate(${rotation})`;
-        });
-      });
-
-      // Process navigation is handled by Process.astro component
-      // this.initProcessSection();
+      // All interactive elements now handled by their respective components
+      // Components should manage their own hover states and interactions
     }
 
     // Process section functionality moved to Process.astro component to avoid conflicts

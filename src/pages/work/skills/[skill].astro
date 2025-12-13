@@ -1,0 +1,223 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async () => {
+  const allProjects = await getCollection('projects');
+
+  // Get all unique tags/skills from projects
+  const allSkills = new Set<string>();
+  allProjects.forEach((project) => {
+    project.data.tags?.forEach((tag) => allSkills.add(tag));
+  });
+
+  // Create a path for each skill
+  return Array.from(allSkills).map((skill) => {
+    const projectsWithSkill = allProjects
+      .filter((project) => project.data.tags?.includes(skill))
+      .sort((a, b) => a.data.number - b.data.number); // Sort by project number
+
+    return {
+      params: { skill },
+      props: { projects: projectsWithSkill, skill },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { projects, skill } = Astro.props;
+
+const pageTitle = `${skill} - Skills`;
+const pageDescription = `Projects featuring ${skill}`;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="skill-page">
+    <div class="skill-header">
+      <Button
+        variant="ghost"
+        size="sm"
+        href="/work/skills"
+        class="back-button"
+      >
+        ← all skills
+      </Button>
+
+      <h1 class="page-title">#{skill}</h1>
+      <p class="page-description">
+        {projects.length} {projects.length === 1 ? 'project' : 'projects'} featuring this skill
+      </p>
+    </div>
+
+    <div class="projects-grid">
+      {projects.map((project) => (
+        <Card variant="interactive" href={`/work/${project.data.id}`}>
+          <div class="project-header">
+            <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
+            <span class="project-type">{project.data.type}</span>
+          </div>
+
+          <h2 class="project-title">{project.data.title}</h2>
+          <p class="project-description">{project.data.description}</p>
+
+          {/* Impact */}
+          {project.data.impact && (
+            <div class="project-impact">
+              <span class="impact-label">impact:</span>
+              <span class="impact-value">{project.data.impact}</span>
+            </div>
+          )}
+
+          {/* Tags - highlight current skill */}
+          {project.data.tags && project.data.tags.length > 0 && (
+            <div class="project-tags">
+              {project.data.tags.slice(0, 5).map((tag) => (
+                <Badge
+                  variant={tag === skill ? "primary" : "secondary"}
+                  size="sm"
+                  href={`/work/skills/${tag}`}
+                >
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </Card>
+      ))}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .skill-page {
+    min-height: 100vh;
+    background: var(--bg-secondary);
+    padding: var(--space-4xl) var(--page-gutter);
+  }
+
+  .skill-header {
+    max-width: var(--content-normal);
+    margin: 0 auto var(--space-4xl);
+    text-align: center;
+  }
+
+  .back-button {
+    margin-bottom: var(--space-xl);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 4px;
+    transform: skew(-2deg);
+  }
+
+  .page-description {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .projects-grid {
+    max-width: var(--content-wide);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  @media (min-width: 768px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Project Card Content */
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .project-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .project-number {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+
+  .project-type {
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+  }
+
+  .project-title {
+    font-size: var(--text-xl);
+    line-height: 1.3;
+    color: var(--text-primary);
+    font-weight: var(--font-bold);
+    margin: 0;
+  }
+
+  .project-description {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+
+  .project-impact {
+    display: flex;
+    gap: var(--space-xs);
+    padding: var(--space-sm) 0;
+    border-top: 1px solid var(--border-secondary);
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .impact-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-tertiary);
+    font-weight: var(--font-bold);
+  }
+
+  .impact-value {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  @media (max-width: 768px) {
+    .skill-page {
+      padding: var(--space-3xl) var(--page-gutter);
+    }
+
+    .page-title {
+      font-size: var(--heading-xl);
+    }
+
+    .projects-grid {
+      gap: var(--space-xl);
+    }
+  }
+</style>

@@ -1,15 +1,9 @@
 {
   "id": "sonic-identity",
-  "number": 4,
+  "number": 3,
   "type": "interactive prototype",
   "title": "Sonic Identity: Interactive Headphone Brand Experience",
   "description": "exploratory prototype for a headphone brand's digital identity, featuring 3D product visualization and real-time audio EQ theming that communicates sonic profiles through web-based visualization",
-  "technologies": [
-    "three.js",
-    "javascript (es6+)",
-    "vite",
-    "3d web graphics"
-  ],
   "impact": "demonstrated interactive brand experience capabilities through working prototype",
   "images": [
     {
@@ -83,5 +77,5 @@
     "description": "Explore the interactive 3D headphone experience and sound profile themes"
   },
   "featured": true,
-  "tags": ["creative-coding", "3d-web", "brand-experience", "interactive-design"]
+  "tags": ["three.js", "javascript", "vite", "3d web graphics", "creative-coding", "3d-web", "brand-experience", "interactive-design"]
 }
