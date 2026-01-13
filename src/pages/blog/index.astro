@@ -307,20 +307,19 @@ const jsonLd = {
                     </div>
                   )}
 
-                  <div class="post-meta">
-                    <span class="post-author">
-                      By {post.data.author}
+                  {(post.data.readingTime || post.data.hasDetailPage !== false) && (
+                    <div class="post-meta">
                       {post.data.readingTime && (
-                        <span> • {post.data.readingTime} min read</span>
+                        <span class="post-reading-time">{post.data.readingTime} min read</span>
                       )}
-                    </span>
 
-                    {post.data.hasDetailPage !== false && (
-                      <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                        {post.data.type === 'collection' ? 'View full collection →' : post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
-                      </Button>
-                    )}
-                  </div>
+                      {post.data.hasDetailPage !== false && (
+                        <Button href={`/blog/${post.slug}`} variant="primary" size="md">
+                          {post.data.type === 'collection' ? 'View full collection →' : post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>
@@ -968,7 +967,7 @@ const jsonLd = {
     border-top: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
-  .post-author {
+  .post-reading-time {
     font-size: var(--text-sm);
     color: var(--text-secondary);
   }
