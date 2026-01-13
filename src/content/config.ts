@@ -74,7 +74,9 @@ const blogSchema = z.object({
   author: z.string().default('Joel Lithgow'),
   image: z.object({
     src: z.string(),
-    alt: z.string()
+    alt: z.string(),
+    /** Optional URL to link the hero image to (opens in new tab). If not set, links to detail page for articles. */
+    link: z.string().url().optional()
   }).optional(),
   tags: z.array(z.string()).optional(),
   draft: z.boolean().default(false),

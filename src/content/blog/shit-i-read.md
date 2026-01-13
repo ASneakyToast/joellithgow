@@ -10,6 +10,12 @@ featured: false
 readingTime: 2
 hasDetailPage: true
 links:
+  - url: "https://news.vanderbilt.edu/2026/01/13/vanderbilt-university-to-establish-full-time-academic-campus-in-san-francisco/"
+    title: "Vanderbilt University to Establish Full-Time Academic Campus in San Francisco"
+    description: "Vanderbilt announces acquisition of CCA, establishing a full-time academic campus in San Francisco."
+    tags: ["education", "cca", "bay-area"]
+    dateAdded: 2026-01-13
+    collections: ["shit-i-read"]
   - url: "https://news.ucsb.edu/2025/021723/long-term-effects-hollywood-blacklist"
     title: "The Long-Term Effects of the Hollywood Blacklist"
     description: "UCSB research examining the lasting impact of the Hollywood blacklist on the film industry, exploring how political persecution affected careers and creative output in entertainment."

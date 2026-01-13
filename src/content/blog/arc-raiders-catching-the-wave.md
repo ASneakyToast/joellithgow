@@ -1,6 +1,7 @@
 ---
 title: "Catching the Wave: Arc Raiders and the Organic Spread of Gaming Moments"
 description: "Reflecting on a rare gaming moment where I'm inside the wave instead of watching it pass by, and what it means to be part of something as it spreads through your community"
+excerpt: "<p>I bought Arc Raiders on a Tuesday because I'd been itching for a dumb FPS to zone out on. Two weeks later, everyone I know is playing it. So much fun.</p>"
 publishDate: 2025-11-18
 author: "Joel Lithgow"
 tags: ["gaming", "arc-raiders", "cultural-moments", "reflection"]
