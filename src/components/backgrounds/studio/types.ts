@@ -6,6 +6,41 @@
 import type { NoiseType, WebGLBackgroundColors } from '../types';
 
 /**
+ * CSS blend modes for layer compositing
+ */
+export type BlendMode =
+  | 'normal'
+  | 'multiply'
+  | 'screen'
+  | 'overlay'
+  | 'darken'
+  | 'lighten'
+  | 'color-dodge'
+  | 'color-burn'
+  | 'hard-light'
+  | 'soft-light'
+  | 'difference'
+  | 'exclusion';
+
+/**
+ * Available blend modes for the dropdown
+ */
+export const BLEND_MODES: { value: BlendMode; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'multiply', label: 'Multiply' },
+  { value: 'screen', label: 'Screen' },
+  { value: 'overlay', label: 'Overlay' },
+  { value: 'darken', label: 'Darken' },
+  { value: 'lighten', label: 'Lighten' },
+  { value: 'color-dodge', label: 'Color Dodge' },
+  { value: 'color-burn', label: 'Color Burn' },
+  { value: 'hard-light', label: 'Hard Light' },
+  { value: 'soft-light', label: 'Soft Light' },
+  { value: 'difference', label: 'Difference' },
+  { value: 'exclusion', label: 'Exclusion' },
+];
+
+/**
  * Configuration for a single layer in the studio
  */
 export interface LayerConfig {
@@ -33,6 +68,10 @@ export interface LayerPatternConfig {
   animated: boolean;
   animationAngle: number;
   colors: Required<WebGLBackgroundColors>;
+
+  // Layer compositing (studio mode)
+  opacity: number;
+  blendMode: BlendMode;
 
   // FBM parameters (perlin, simplex, turbulence, ridged, marble)
   octaves?: number;
@@ -85,6 +124,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     octaves: 4,
     lacunarity: 2.0,
     gain: 0.5,
@@ -98,6 +139,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     octaves: 5,
     lacunarity: 2.0,
     gain: 0.5,
@@ -111,6 +154,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     cellScale: 2.0,
     cellAnimSpeed: 0.3,
     invert: true
@@ -122,6 +167,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     cellScale: 2.0,
     edgeThickness: 0.15,
     cellAnimSpeed: 0.2
@@ -133,6 +180,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     octaves: 5,
     lacunarity: 2.0,
     gain: 0.5,
@@ -145,6 +194,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     octaves: 5,
     lacunarity: 2.0,
     gain: 0.5,
@@ -158,6 +209,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     warpStrength: 4.0,
     warpLayers: 2
   },
@@ -168,6 +221,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     waveCount: 3,
     waveFrequency: 8.0,
     waveSharpness: 1.5,
@@ -180,6 +235,8 @@ export const PATTERN_DEFAULTS: Record<NoiseType, LayerPatternConfig> = {
     animated: true,
     animationAngle: 315,
     colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+    opacity: 1,
+    blendMode: 'normal',
     octaves: 4,
     lacunarity: 2.0,
     gain: 0.5,

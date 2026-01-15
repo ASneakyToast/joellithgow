@@ -167,6 +167,45 @@ const isMarble = isStudioMode || patternSlug === 'marble';
             <span class="value-display" data-for="direction-slider">{defaults.animationAngle ?? 315}°</span>
           </div>
         </div>
+
+        {/* Layer Compositing Controls (Studio Mode Only) */}
+        {isStudioMode && (
+          <>
+            <div class="control-group">
+              <label for="opacity-slider">Layer Opacity</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="opacity-slider"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={defaults.opacity ?? 1}
+                  data-prop="opacity"
+                />
+                <span class="value-display" data-for="opacity-slider">{(defaults.opacity ?? 1).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="blend-mode-select">Blend Mode</label>
+              <select id="blend-mode-select" class="select-control" data-prop="blendMode">
+                <option value="normal" selected={defaults.blendMode === 'normal'}>Normal</option>
+                <option value="multiply" selected={defaults.blendMode === 'multiply'}>Multiply</option>
+                <option value="screen" selected={defaults.blendMode === 'screen'}>Screen</option>
+                <option value="overlay" selected={defaults.blendMode === 'overlay'}>Overlay</option>
+                <option value="darken" selected={defaults.blendMode === 'darken'}>Darken</option>
+                <option value="lighten" selected={defaults.blendMode === 'lighten'}>Lighten</option>
+                <option value="color-dodge" selected={defaults.blendMode === 'color-dodge'}>Color Dodge</option>
+                <option value="color-burn" selected={defaults.blendMode === 'color-burn'}>Color Burn</option>
+                <option value="hard-light" selected={defaults.blendMode === 'hard-light'}>Hard Light</option>
+                <option value="soft-light" selected={defaults.blendMode === 'soft-light'}>Soft Light</option>
+                <option value="difference" selected={defaults.blendMode === 'difference'}>Difference</option>
+                <option value="exclusion" selected={defaults.blendMode === 'exclusion'}>Exclusion</option>
+              </select>
+            </div>
+          </>
+        )}
       </section>
 
       <!-- Fractal Tab (FBM patterns only) -->
@@ -949,6 +988,46 @@ const isMarble = isStudioMode || patternSlug === 'marble';
     font-weight: 500;
   }
 
+  /* Select dropdowns */
+  .select-control {
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.06);
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+
+  :global([data-theme="dark"]) .select-control,
+  :global([data-theme="neon"]) .select-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  }
+
+  .select-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-primary, #FF6B6B);
+  }
+
+  .select-control option {
+    background: white;
+    color: #333;
+  }
+
+  :global([data-theme="dark"]) .select-control option,
+  :global([data-theme="neon"]) .select-control option {
+    background: #2a2a30;
+    color: #fff;
+  }
+
   /* Color pickers */
   .color-row {
     display: flex;
@@ -1096,6 +1175,7 @@ const isMarble = isStudioMode || patternSlug === 'marble';
       this.setupSliders();
       this.setupToggles();
       this.setupColorPickers();
+      this.setupSelects();
       this.setupButtons();
       this.loadTabState();
 
@@ -1275,10 +1355,20 @@ const isMarble = isStudioMode || patternSlug === 'marble';
           }
         });
       }
+
+      // Update selects (blend mode)
+      const selects = this.panel.querySelectorAll('select.select-control');
+      selects.forEach(select => {
+        const prop = select.dataset.prop;
+        const value = config[prop];
+        if (value !== undefined) {
+          select.value = value;
+        }
+      });
     }
 
     setControlsEnabled(enabled) {
-      const inputs = this.panel.querySelectorAll('input, button:not(.tab-btn)');
+      const inputs = this.panel.querySelectorAll('input, select, button:not(.tab-btn)');
       inputs.forEach(input => {
         if (enabled) {
           input.removeAttribute('disabled');
@@ -1427,6 +1517,20 @@ const isMarble = isStudioMode || patternSlug === 'marble';
       });
     }
 
+    setupSelects() {
+      const selects = this.panel.querySelectorAll('select.select-control');
+
+      selects.forEach(select => {
+        const prop = select.dataset.prop;
+
+        select.addEventListener('change', (e) => {
+          const value = e.target.value;
+          this.currentValues[prop] = value;
+          this.updateBackground({ [prop]: value });
+        });
+      });
+    }
+
     setupButtons() {
       const resetBtn = this.panel.querySelector('#reset-btn');
       const copyBtn = this.panel.querySelector('#copy-btn');
@@ -1486,6 +1590,16 @@ const isMarble = isStudioMode || patternSlug === 'marble';
           if (valueDisplay) {
             valueDisplay.textContent = this.defaults.colors[child].toUpperCase();
           }
+        }
+      });
+
+      // Reset selects
+      const selects = this.panel.querySelectorAll('select.select-control');
+      selects.forEach(select => {
+        const prop = select.dataset.prop;
+        const defaultValue = this.defaults[prop];
+        if (defaultValue !== undefined) {
+          select.value = defaultValue;
         }
       });
 
