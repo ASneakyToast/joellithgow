@@ -10,6 +10,8 @@ export interface Props {
   patternName: string;
   patternDescription: string;
   patternSlug: NoiseType;
+  /** Mode: 'single' for standalone pages, 'studio' for Background Studio */
+  mode?: 'single' | 'studio';
   defaults: {
     // General
     speed: number;
@@ -54,23 +56,27 @@ export interface Props {
   };
 }
 
-const { patternName, patternDescription, patternSlug, defaults } = Astro.props;
+const { patternName, patternDescription, patternSlug, mode = 'single', defaults } = Astro.props;
+
+// Studio mode renders all pattern controls (shown/hidden via JS)
+const isStudioMode = mode === 'studio';
 
 // Check if this pattern supports FBM
-const hasFBM = FBM_PATTERNS.includes(patternSlug);
+const hasFBM = isStudioMode || FBM_PATTERNS.includes(patternSlug);
 
 // Determine which pattern-specific controls to show
-const isPerlinSimplex = patternSlug === 'perlin' || patternSlug === 'simplex';
-const isWorley = patternSlug === 'worley';
-const isVoronoiEdge = patternSlug === 'voronoiEdge';
-const isTurbulence = patternSlug === 'turbulence';
-const isRidged = patternSlug === 'ridged';
-const isDomainWarp = patternSlug === 'domainWarp';
-const isCaustics = patternSlug === 'caustics';
-const isMarble = patternSlug === 'marble';
+// In studio mode, render ALL controls (visibility controlled by JS)
+const isPerlinSimplex = isStudioMode || patternSlug === 'perlin' || patternSlug === 'simplex';
+const isWorley = isStudioMode || patternSlug === 'worley';
+const isVoronoiEdge = isStudioMode || patternSlug === 'voronoiEdge';
+const isTurbulence = isStudioMode || patternSlug === 'turbulence';
+const isRidged = isStudioMode || patternSlug === 'ridged';
+const isDomainWarp = isStudioMode || patternSlug === 'domainWarp';
+const isCaustics = isStudioMode || patternSlug === 'caustics';
+const isMarble = isStudioMode || patternSlug === 'marble';
 ---
 
-<aside class="properties-panel" id="properties-panel" data-pattern={patternSlug} data-has-fbm={hasFBM}>
+<aside class="properties-panel" id="properties-panel" data-pattern={patternSlug} data-has-fbm={hasFBM} data-mode={mode}>
   <div class="panel-content">
     <header class="panel-header">
       <div class="pattern-indicator"></div>
@@ -219,7 +225,7 @@ const isMarble = patternSlug === 'marble';
       <!-- Pattern-Specific Tab -->
       <section class="tab-panel" data-tab="pattern">
         {isPerlinSimplex && (
-          <>
+          <div data-pattern-group="perlin-simplex" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="timescalex-slider">Time Scale X</label>
               <div class="slider-row">
@@ -251,11 +257,11 @@ const isMarble = patternSlug === 'marble';
                 <span class="value-display" data-for="timescaley-slider">{(defaults.timeScaleY ?? 0.7).toFixed(1)}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isWorley && (
-          <>
+          <div data-pattern-group="worley" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="cellscale-slider">Cell Scale</label>
               <div class="slider-row">
@@ -301,24 +307,24 @@ const isMarble = patternSlug === 'marble';
                 <span class="toggle-label">{defaults.invert !== false ? 'On' : 'Off'}</span>
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {isVoronoiEdge && (
-          <>
+          <div data-pattern-group="voronoiEdge" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
-              <label for="cellscale-slider">Cell Scale</label>
+              <label for="cellscale-voronoi-slider">Cell Scale</label>
               <div class="slider-row">
                 <input
                   type="range"
-                  id="cellscale-slider"
+                  id="cellscale-voronoi-slider"
                   min="0.5"
                   max="5"
                   step="0.1"
                   value={defaults.cellScale ?? 2.0}
                   data-prop="cellScale"
                 />
-                <span class="value-display" data-for="cellscale-slider">{(defaults.cellScale ?? 2.0).toFixed(1)}</span>
+                <span class="value-display" data-for="cellscale-voronoi-slider">{(defaults.cellScale ?? 2.0).toFixed(1)}</span>
               </div>
             </div>
 
@@ -339,43 +345,45 @@ const isMarble = patternSlug === 'marble';
             </div>
 
             <div class="control-group">
-              <label for="cellanimspeed-slider">Cell Anim Speed</label>
+              <label for="cellanimspeed-voronoi-slider">Cell Anim Speed</label>
               <div class="slider-row">
                 <input
                   type="range"
-                  id="cellanimspeed-slider"
+                  id="cellanimspeed-voronoi-slider"
                   min="0"
                   max="1"
                   step="0.1"
                   value={defaults.cellAnimSpeed ?? 0.2}
                   data-prop="cellAnimSpeed"
                 />
-                <span class="value-display" data-for="cellanimspeed-slider">{(defaults.cellAnimSpeed ?? 0.2).toFixed(1)}</span>
+                <span class="value-display" data-for="cellanimspeed-voronoi-slider">{(defaults.cellAnimSpeed ?? 0.2).toFixed(1)}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isTurbulence && (
-          <div class="control-group">
-            <label for="sharpness-slider">Sharpness</label>
-            <div class="slider-row">
-              <input
-                type="range"
-                id="sharpness-slider"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={defaults.sharpness ?? 1.0}
-                data-prop="sharpness"
-              />
-              <span class="value-display" data-for="sharpness-slider">{(defaults.sharpness ?? 1.0).toFixed(1)}</span>
+          <div data-pattern-group="turbulence" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="sharpness-slider">Sharpness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="sharpness-slider"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={defaults.sharpness ?? 1.0}
+                  data-prop="sharpness"
+                />
+                <span class="value-display" data-for="sharpness-slider">{(defaults.sharpness ?? 1.0).toFixed(1)}</span>
+              </div>
             </div>
           </div>
         )}
 
         {isRidged && (
-          <>
+          <div data-pattern-group="ridged" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="ridgesharpness-slider">Ridge Sharpness</label>
               <div class="slider-row">
@@ -407,11 +415,11 @@ const isMarble = patternSlug === 'marble';
                 <span class="value-display" data-for="ridgetimescale-slider">{(defaults.ridgeTimeScale ?? 0.5).toFixed(1)}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isDomainWarp && (
-          <>
+          <div data-pattern-group="domainWarp" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="warpstrength-slider">Warp Strength</label>
               <div class="slider-row">
@@ -443,11 +451,11 @@ const isMarble = patternSlug === 'marble';
                 <span class="value-display" data-for="warplayers-slider">{defaults.warpLayers ?? 2}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isCaustics && (
-          <>
+          <div data-pattern-group="caustics" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="wavecount-slider">Wave Count</label>
               <div class="slider-row">
@@ -511,11 +519,11 @@ const isMarble = patternSlug === 'marble';
                 <span class="value-display" data-for="detailamount-slider">{(defaults.detailAmount ?? 0.15).toFixed(2)}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isMarble && (
-          <>
+          <div data-pattern-group="marble" style={isStudioMode ? 'display: none' : ''}>
             <div class="control-group">
               <label for="linefrequency-slider">Line Frequency</label>
               <div class="slider-row">
@@ -563,7 +571,7 @@ const isMarble = patternSlug === 'marble';
                 <span class="value-display" data-for="detailblend-slider">{(defaults.detailBlend ?? 0.3).toFixed(1)}</span>
               </div>
             </div>
-          </>
+          </div>
         )}
       </section>
 
@@ -621,7 +629,7 @@ const isMarble = patternSlug === 'marble';
       </button>
     </footer>
 
-    <a href="/backgrounds" class="back-link">← Back to Gallery</a>
+    {!isStudioMode && <a href="/backgrounds" class="back-link">← Back to Gallery</a>}
   </div>
 
   <!-- Vertical Tab Bar -->
@@ -1068,7 +1076,7 @@ const isMarble = patternSlug === 'marble';
   }
 </style>
 
-<script define:vars={{ patternSlug, defaults }}>
+<script define:vars={{ patternSlug, defaults, mode }}>
   class PropertiesPanelController {
     constructor() {
       this.panel = document.getElementById('properties-panel');
@@ -1076,6 +1084,9 @@ const isMarble = patternSlug === 'marble';
       this.currentValues = { ...defaults };
       this.patternSlug = patternSlug;
       this.activeTab = 'general';
+      this.mode = mode || 'single';
+      this.layerManager = null;
+      this.selectedLayerId = null;
 
       this.init();
     }
@@ -1087,6 +1098,194 @@ const isMarble = patternSlug === 'marble';
       this.setupColorPickers();
       this.setupButtons();
       this.loadTabState();
+
+      // Studio mode: listen for layer manager and selection events
+      if (this.mode === 'studio') {
+        this.setupStudioMode();
+      }
+    }
+
+    setupStudioMode() {
+      // Hide pattern-specific controls initially in studio mode
+      this.hideAllPatternControls();
+
+      // Listen for LayerManager to be ready
+      document.addEventListener('layer-manager-ready', (e) => {
+        this.layerManager = e.detail;
+        this.setupLayerManagerListeners();
+      });
+
+      // Also check if already available via window global
+      if (window.__studioLayerManager) {
+        this.layerManager = window.__studioLayerManager;
+        this.setupLayerManagerListeners();
+      }
+    }
+
+    setupLayerManagerListeners() {
+      if (!this.layerManager) return;
+
+      this.layerManager.addEventListener('layer-selected', (e) => {
+        const { id, layer } = e.detail;
+        this.selectedLayerId = id;
+        this.onLayerSelected(layer);
+      });
+
+      this.layerManager.addEventListener('layer-updated', (e) => {
+        const { id, config } = e.detail;
+        // If the updated layer is currently selected, refresh controls
+        if (id === this.selectedLayerId) {
+          const layer = this.layerManager.getLayer(id);
+          if (layer) {
+            this.updateControlsFromLayer(layer);
+          }
+        }
+      });
+    }
+
+    onLayerSelected(layer) {
+      if (!layer) {
+        // No layer selected - show disabled state
+        this.updateHeader('No Layer Selected', 'Select or add a layer to edit');
+        this.hideAllPatternControls();
+        this.setControlsEnabled(false);
+        return;
+      }
+
+      // Update header with layer info
+      const patternNames = {
+        perlin: 'Perlin Noise',
+        simplex: 'Simplex Noise',
+        worley: 'Worley Noise',
+        voronoiEdge: 'Voronoi Edge',
+        turbulence: 'Turbulence',
+        ridged: 'Ridged',
+        domainWarp: 'Domain Warp',
+        caustics: 'Caustics',
+        marble: 'Marble'
+      };
+      this.updateHeader(layer.name, patternNames[layer.patternType] || layer.patternType);
+
+      // Show relevant controls for this pattern type
+      this.showPatternControls(layer.patternType);
+
+      // Update current pattern slug for copy code functionality
+      this.patternSlug = layer.patternType;
+
+      // Update all control values from layer config
+      this.updateControlsFromLayer(layer);
+
+      // Enable controls
+      this.setControlsEnabled(true);
+    }
+
+    updateHeader(name, description) {
+      const header = this.panel.querySelector('.panel-header');
+      if (header) {
+        const h2 = header.querySelector('h2');
+        const p = header.querySelector('p');
+        if (h2) h2.textContent = name;
+        if (p) p.textContent = description;
+      }
+    }
+
+    hideAllPatternControls() {
+      // Hide FBM tab
+      const fbmTab = this.panel.querySelector('.tab-btn[data-tab="fractal"]');
+      if (fbmTab) fbmTab.style.display = 'none';
+
+      // Hide all pattern-specific control groups
+      const patternGroups = this.panel.querySelectorAll('[data-pattern-group]');
+      patternGroups.forEach(group => group.style.display = 'none');
+    }
+
+    showPatternControls(patternType) {
+      // First hide all
+      this.hideAllPatternControls();
+
+      // FBM patterns
+      const fbmPatterns = ['perlin', 'simplex', 'turbulence', 'ridged', 'marble'];
+      if (fbmPatterns.includes(patternType)) {
+        const fbmTab = this.panel.querySelector('.tab-btn[data-tab="fractal"]');
+        if (fbmTab) fbmTab.style.display = '';
+      }
+
+      // Show pattern-specific groups
+      const groups = this.panel.querySelectorAll(`[data-pattern-group="${patternType}"]`);
+      groups.forEach(group => group.style.display = '');
+
+      // Some patterns share controls
+      if (patternType === 'perlin' || patternType === 'simplex') {
+        const sharedGroups = this.panel.querySelectorAll('[data-pattern-group="perlin-simplex"]');
+        sharedGroups.forEach(group => group.style.display = '');
+      }
+    }
+
+    updateControlsFromLayer(layer) {
+      const config = layer.config;
+      this.currentValues = { ...config };
+      this.defaults = { ...config }; // Update defaults for reset
+
+      // Update all sliders
+      const sliders = this.panel.querySelectorAll('input[type="range"]');
+      sliders.forEach(slider => {
+        const prop = slider.dataset.prop;
+        const value = config[prop];
+        if (value !== undefined) {
+          slider.value = value;
+          const display = this.panel.querySelector(`[data-for="${slider.id}"]`);
+          if (display) {
+            const step = parseFloat(slider.step);
+            if (step >= 1) {
+              display.textContent = Math.round(value).toString();
+            } else if (step >= 0.1) {
+              display.textContent = value.toFixed(1);
+            } else {
+              display.textContent = value.toFixed(2);
+            }
+          }
+        }
+      });
+
+      // Update toggles
+      const toggles = this.panel.querySelectorAll('.toggle-button');
+      toggles.forEach(toggle => {
+        const prop = toggle.dataset.prop;
+        const value = config[prop];
+        if (value !== undefined) {
+          toggle.dataset.active = value.toString();
+          toggle.setAttribute('aria-pressed', value.toString());
+          const label = toggle.querySelector('.toggle-label');
+          if (label) label.textContent = value ? 'On' : 'Off';
+        }
+      });
+
+      // Update colors
+      if (config.colors) {
+        const colorInputs = this.panel.querySelectorAll('input[type="color"]');
+        colorInputs.forEach(input => {
+          const prop = input.dataset.prop;
+          const [parent, child] = prop.split('.');
+          if (parent === 'colors' && config.colors[child]) {
+            input.value = config.colors[child];
+            const valueDisplay = input.parentElement.querySelector('.color-value');
+            if (valueDisplay) {
+              valueDisplay.textContent = config.colors[child].toUpperCase();
+            }
+          }
+        });
+      }
+    }
+
+    setControlsEnabled(enabled) {
+      const inputs = this.panel.querySelectorAll('input, button:not(.tab-btn)');
+      inputs.forEach(input => {
+        if (enabled) {
+          input.removeAttribute('disabled');
+        } else {
+          input.setAttribute('disabled', 'true');
+        }
+      });
     }
 
     setupTabs() {
@@ -1130,11 +1329,22 @@ const isMarble = patternSlug === 'marble';
     }
 
     getBackgroundManager() {
+      // In studio mode, get manager from LayerManager for selected layer
+      if (this.mode === 'studio' && this.layerManager && this.selectedLayerId) {
+        return this.layerManager.getLayerManager(this.selectedLayerId);
+      }
+      // Single mode: query DOM directly
       const container = document.querySelector('.noise-texture');
       return container?._webglManager;
     }
 
     updateBackground(props) {
+      // In studio mode, update via LayerManager
+      if (this.mode === 'studio' && this.layerManager && this.selectedLayerId) {
+        this.layerManager.updateLayerConfig(this.selectedLayerId, props);
+        return;
+      }
+      // Single mode: update manager directly
       const manager = this.getBackgroundManager();
       if (manager && typeof manager.updateUniforms === 'function') {
         manager.updateUniforms(props);

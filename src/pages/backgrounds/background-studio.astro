@@ -1,0 +1,198 @@
+---
+/**
+ * Background Studio
+ * Multi-layer background composition tool with real-time controls
+ */
+import BaseLayout from '@components/common/BaseLayout.astro';
+import LayersPanel from '@components/backgrounds/LayersPanel.astro';
+import PropertiesPanel from '@components/backgrounds/PropertiesPanel.astro';
+
+const pageTitle = 'Background Studio';
+const pageDescription = 'Create custom layered backgrounds with multiple noise patterns';
+
+// Default config for PropertiesPanel (will be updated when layer is selected)
+const defaultConfig = {
+  speed: 0.5,
+  intensity: 0.5,
+  noiseScale: 2.0,
+  animated: true,
+  animationAngle: 315,
+  colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+  // Include all possible defaults
+  octaves: 4,
+  lacunarity: 2.0,
+  gain: 0.5,
+  timeScaleX: 1.0,
+  timeScaleY: 0.7,
+  cellScale: 2.0,
+  cellAnimSpeed: 0.3,
+  invert: true,
+  edgeThickness: 0.15,
+  sharpness: 1.0,
+  ridgeSharpness: 2.0,
+  ridgeTimeScale: 0.5,
+  warpStrength: 4.0,
+  warpLayers: 2,
+  waveCount: 3,
+  waveFrequency: 8.0,
+  waveSharpness: 1.5,
+  detailAmount: 0.15,
+  lineFrequency: 8.0,
+  noiseInfluence: 6.0,
+  detailBlend: 0.3
+};
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="studio-page">
+    <!-- Layers Panel (Left) -->
+    <LayersPanel />
+
+    <!-- Canvas Container (Center - full viewport behind panels) -->
+    <div class="canvas-container" id="canvas-container">
+      <!-- Layer canvases dynamically added by LayerManager -->
+    </div>
+
+    <!-- Properties Panel (Right) -->
+    <PropertiesPanel
+      mode="studio"
+      patternName="No Layer Selected"
+      patternDescription="Select or add a layer to edit"
+      patternSlug="simplex"
+      defaults={defaultConfig}
+    />
+
+    <!-- Back to Gallery link -->
+    <a href="/backgrounds" class="studio-back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to Gallery
+    </a>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  /* Full page studio layout */
+  .studio-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-primary, #1a1a2e);
+  }
+
+  /* Canvas container - holds all layer canvases */
+  .canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* Layer canvases stack with z-index */
+  .canvas-container .layer-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .canvas-container .webgl-background-container {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Studio back link */
+  .studio-back-link {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    color: rgba(0, 0, 0, 0.7);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 1000;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .studio-back-link:hover {
+    background: rgba(255, 255, 255, 1);
+    color: rgba(0, 0, 0, 0.9);
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .studio-back-link svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  [data-theme="dark"] .studio-back-link,
+  [data-theme="neon"] .studio-back-link {
+    background: rgba(30, 30, 35, 0.9);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  [data-theme="dark"] .studio-back-link:hover,
+  [data-theme="neon"] .studio-back-link:hover {
+    background: rgba(40, 40, 45, 1);
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .studio-back-link {
+      bottom: auto;
+      top: 12px;
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+  }
+</style>
+
+<script>
+  import { LayerManager } from '@components/backgrounds/studio/LayerManager';
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('canvas-container');
+    if (!container) {
+      console.error('Canvas container not found');
+      return;
+    }
+
+    // Create the LayerManager
+    const layerManager = new LayerManager(container);
+
+    // Store global reference for cross-component access
+    window.__studioLayerManager = layerManager;
+
+    // Dispatch event to notify panels that LayerManager is ready
+    document.dispatchEvent(new CustomEvent('layer-manager-ready', {
+      detail: layerManager
+    }));
+
+    // Add a default layer to get started
+    setTimeout(() => {
+      layerManager.addLayer('simplex');
+    }, 100);
+  });
+</script>
