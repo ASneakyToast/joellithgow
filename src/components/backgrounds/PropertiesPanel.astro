@@ -16,6 +16,7 @@ export interface Props {
     intensity: number;
     noiseScale: number;
     animated: boolean;
+    animationAngle?: number;
     colors: {
       primary: string;
       secondary: string;
@@ -143,6 +144,22 @@ const isMarble = patternSlug === 'marble';
             <span class="toggle-indicator"></span>
             <span class="toggle-label">{defaults.animated ? 'On' : 'Off'}</span>
           </button>
+        </div>
+
+        <div class="control-group">
+          <label for="direction-slider">Direction</label>
+          <div class="slider-row">
+            <input
+              type="range"
+              id="direction-slider"
+              min="0"
+              max="360"
+              step="15"
+              value={defaults.animationAngle ?? 315}
+              data-prop="animationAngle"
+            />
+            <span class="value-display" data-for="direction-slider">{defaults.animationAngle ?? 315}°</span>
+          </div>
         </div>
       </section>
 
@@ -1344,7 +1361,8 @@ const isMarble = patternSlug === 'marble';
   speed={${this.currentValues.speed}}
   intensity={${this.currentValues.intensity}}
   noiseScale={${this.currentValues.noiseScale}}
-  animated={${this.currentValues.animated}}${patternProps}
+  animated={${this.currentValues.animated}}
+  animationAngle={${this.currentValues.animationAngle ?? 315}}${patternProps}
   colors={{
     primary: "${this.currentValues.colors?.primary || this.defaults.colors.primary}",
     secondary: "${this.currentValues.colors?.secondary || this.defaults.colors.secondary}",
