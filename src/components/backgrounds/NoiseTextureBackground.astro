@@ -1,0 +1,1083 @@
+---
+/**
+ * NoiseTextureBackground - WebGL animated noise-based textures
+ * Renders organic Perlin, Simplex, or Worley noise patterns
+ */
+import type { NoiseTextureProps } from './types';
+
+export interface Props extends NoiseTextureProps {}
+
+const {
+  speed = 1.0,
+  intensity = 0.5,
+  colors,
+  noiseScale = 2.0,
+  noiseType = 'simplex',
+  animated = true,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `noise-texture-${Math.random().toString(36).substr(2, 9)}`,
+  // FBM parameters
+  octaves = 4,
+  lacunarity = 2.0,
+  gain = 0.5,
+  // Perlin/Simplex parameters
+  timeScaleX = 1.0,
+  timeScaleY = 0.7,
+  // Worley/Voronoi parameters
+  cellScale = 2.0,
+  cellAnimSpeed = 0.3,
+  invert = true,
+  edgeThickness = 0.15,
+  // Turbulence parameters
+  sharpness = 1.0,
+  // Ridged parameters
+  ridgeSharpness = 2.0,
+  ridgeTimeScale = 0.5,
+  // Domain Warp parameters
+  warpStrength = 4.0,
+  warpLayers = 2,
+  // Caustics parameters
+  waveCount = 3,
+  waveFrequency = 8.0,
+  waveSharpness = 1.5,
+  detailAmount = 0.15,
+  // Marble parameters
+  lineFrequency = 8.0,
+  noiseInfluence = 6.0,
+  detailBlend = 0.3
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', className]}
+  id={id}
+  data-effect-type="noise-texture"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-colors={JSON.stringify(colors || {})}
+  data-noise-scale={noiseScale}
+  data-noise-type={noiseType}
+  data-animated={animated}
+  data-octaves={octaves}
+  data-lacunarity={lacunarity}
+  data-gain={gain}
+  data-time-scale-x={timeScaleX}
+  data-time-scale-y={timeScaleY}
+  data-cell-scale={cellScale}
+  data-cell-anim-speed={cellAnimSpeed}
+  data-invert={invert}
+  data-edge-thickness={edgeThickness}
+  data-sharpness={sharpness}
+  data-ridge-sharpness={ridgeSharpness}
+  data-ridge-time-scale={ridgeTimeScale}
+  data-warp-strength={warpStrength}
+  data-warp-layers={warpLayers}
+  data-wave-count={waveCount}
+  data-wave-frequency={waveFrequency}
+  data-wave-sharpness={waveSharpness}
+  data-detail-amount={detailAmount}
+  data-line-frequency={lineFrequency}
+  data-noise-influence={noiseInfluence}
+  data-detail-blend={detailBlend}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+
+  // Vertex shader
+  const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  // Fragment shader with multiple noise implementations
+  const fragmentShader = `
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform float uNoiseScale;
+    uniform float uIntensity;
+    uniform float uSpeed;
+    uniform int uNoiseType;
+    uniform bool uAnimated;
+    uniform vec3 uColorPrimary;
+    uniform vec3 uColorSecondary;
+    uniform vec3 uColorTertiary;
+
+    // FBM parameters (for applicable patterns)
+    uniform int uOctaves;
+    uniform float uLacunarity;
+    uniform float uGain;
+
+    // Perlin/Simplex parameters
+    uniform float uTimeScaleX;
+    uniform float uTimeScaleY;
+
+    // Worley/Voronoi parameters
+    uniform float uCellScale;
+    uniform float uCellAnimSpeed;
+    uniform bool uInvert;
+    uniform float uEdgeThickness;
+
+    // Turbulence parameters
+    uniform float uSharpness;
+
+    // Ridged parameters
+    uniform float uRidgeSharpness;
+    uniform float uRidgeTimeScale;
+
+    // Domain Warp parameters
+    uniform float uWarpStrength;
+    uniform int uWarpLayers;
+
+    // Caustics parameters
+    uniform int uWaveCount;
+    uniform float uWaveFrequency;
+    uniform float uWaveSharpness;
+    uniform float uDetailAmount;
+
+    // Marble parameters
+    uniform float uLineFrequency;
+    uniform float uNoiseInfluence;
+    uniform float uDetailBlend;
+
+    varying vec2 vUv;
+
+    // ============= NOISE FUNCTIONS =============
+
+    // Permutation polynomial for hash
+    vec3 permute(vec3 x) {
+      return mod(((x * 34.0) + 1.0) * x, 289.0);
+    }
+
+    // 2D Simplex Noise
+    float simplex2D(vec2 v) {
+      const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                          -0.577350269189626, 0.024390243902439);
+      vec2 i  = floor(v + dot(v, C.yy));
+      vec2 x0 = v - i + dot(i, C.xx);
+      vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+      vec4 x12 = x0.xyxy + C.xxzz;
+      x12.xy -= i1;
+      i = mod(i, 289.0);
+      vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+                     + i.x + vec3(0.0, i1.x, 1.0));
+      vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy),
+                              dot(x12.zw, x12.zw)), 0.0);
+      m = m * m;
+      m = m * m;
+      vec3 x = 2.0 * fract(p * C.www) - 1.0;
+      vec3 h = abs(x) - 0.5;
+      vec3 ox = floor(x + 0.5);
+      vec3 a0 = x - ox;
+      m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+      vec3 g;
+      g.x = a0.x * x0.x + h.x * x0.y;
+      g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+      return 130.0 * dot(m, g);
+    }
+
+    // Classic Perlin 2D Noise
+    vec2 fade(vec2 t) {
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+    }
+
+    float hash2D(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+
+    float perlin2D(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = fade(f);
+
+      float a = hash2D(i);
+      float b = hash2D(i + vec2(1.0, 0.0));
+      float c = hash2D(i + vec2(0.0, 1.0));
+      float d = hash2D(i + vec2(1.0, 1.0));
+
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y) * 2.0 - 1.0;
+    }
+
+    // Worley (Cellular) Noise - parameterized
+    float worley2D(vec2 p) {
+      vec2 scaledP = p * uCellScale;
+      vec2 i = floor(scaledP);
+      vec2 f = fract(scaledP);
+
+      float minDist = 1.0;
+
+      for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+          vec2 neighbor = vec2(float(x), float(y));
+          vec2 point = vec2(
+            hash2D(i + neighbor),
+            hash2D(i + neighbor + vec2(31.0, 17.0))
+          );
+
+          if (uAnimated) {
+            point = 0.5 + 0.5 * sin(uTime * uCellAnimSpeed * uSpeed + 6.2831 * point);
+          }
+
+          vec2 diff = neighbor + point - f;
+          float dist = length(diff);
+          minDist = min(minDist, dist);
+        }
+      }
+
+      // Invert based on uniform
+      return uInvert ? 1.0 - minDist : minDist;
+    }
+
+    // Fractal Brownian Motion for layered noise (parameterized)
+    float fbm(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+
+      for (int i = 0; i < 8; i++) {
+        if (i >= uOctaves) break;
+        value += amplitude * simplex2D(p * frequency);
+        amplitude *= uGain;
+        frequency *= uLacunarity;
+      }
+
+      return value;
+    }
+
+    // ============= ADVANCED NOISE FUNCTIONS =============
+
+    // Voronoi Edge (F2-F1) - Creates cell boundaries/cracks - parameterized
+    float voronoiEdge2D(vec2 p) {
+      vec2 scaledP = p * uCellScale;
+      vec2 i = floor(scaledP);
+      vec2 f = fract(scaledP);
+
+      float f1 = 1.0; // Closest
+      float f2 = 1.0; // Second closest
+
+      for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+          vec2 neighbor = vec2(float(x), float(y));
+          vec2 point = vec2(
+            hash2D(i + neighbor),
+            hash2D(i + neighbor + vec2(31.0, 17.0))
+          );
+
+          if (uAnimated) {
+            point = 0.5 + 0.5 * sin(uTime * uCellAnimSpeed * uSpeed + 6.2831 * point);
+          }
+
+          vec2 diff = neighbor + point - f;
+          float dist = length(diff);
+
+          if (dist < f1) {
+            f2 = f1;
+            f1 = dist;
+          } else if (dist < f2) {
+            f2 = dist;
+          }
+        }
+      }
+
+      float edge = f2 - f1;
+      // Apply edge thickness via smoothstep
+      return smoothstep(0.0, uEdgeThickness, edge);
+    }
+
+    // Turbulence - Absolute value FBM for billowy clouds - parameterized
+    float turbulence2D(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      vec2 pos = p;
+
+      for (int i = 0; i < 8; i++) {
+        if (i >= uOctaves) break;
+        // Apply sharpness multiplier to abs value
+        value += amplitude * abs(simplex2D(pos)) * uSharpness;
+        pos *= uLacunarity;
+        amplitude *= uGain;
+      }
+
+      return value;
+    }
+
+    // Ridged Multifractal - Sharp ridges like mountains - parameterized
+    float ridged2D(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float prev = 1.0;
+      vec2 pos = p;
+
+      for (int i = 0; i < 8; i++) {
+        if (i >= uOctaves) break;
+        float n = 1.0 - abs(simplex2D(pos));
+        // Apply ridge sharpness as power
+        n = pow(n, uRidgeSharpness);
+        n *= prev; // Weight by previous octave
+        value += amplitude * n;
+        prev = n;
+        pos *= uLacunarity;
+        amplitude *= uGain;
+      }
+
+      return value;
+    }
+
+    // Domain Warp - Warps coordinates with noise for fluid effect - parameterized
+    float domainWarp2D(vec2 p) {
+      float timeOffset = uAnimated ? uTime * 0.1 * uSpeed : 0.0;
+
+      // First warp layer (always present)
+      vec2 q = vec2(
+        simplex2D(p + vec2(0.0, 0.0) + timeOffset),
+        simplex2D(p + vec2(5.2, 1.3) + timeOffset * 0.7)
+      );
+
+      // Apply warp strength to first layer
+      vec2 warped = p + uWarpStrength * q;
+
+      // Second warp layer (if layers >= 2)
+      if (uWarpLayers >= 2) {
+        vec2 r = vec2(
+          simplex2D(warped + vec2(1.7, 9.2) + timeOffset * 0.5),
+          simplex2D(warped + vec2(8.3, 2.8) + timeOffset * 0.3)
+        );
+        warped = p + uWarpStrength * r;
+
+        // Third warp layer (if layers >= 3)
+        if (uWarpLayers >= 3) {
+          vec2 s = vec2(
+            simplex2D(warped + vec2(3.2, 7.1) + timeOffset * 0.2),
+            simplex2D(warped + vec2(6.5, 4.9) + timeOffset * 0.15)
+          );
+          warped = p + uWarpStrength * s;
+        }
+      }
+
+      return simplex2D(warped);
+    }
+
+    // Caustics - Underwater light refraction patterns - parameterized
+    float caustics2D(vec2 p) {
+      float timeOffset = uAnimated ? uTime * 0.5 * uSpeed : 0.0;
+      float c = 0.0;
+
+      // Overlapping wave patterns - parameterized wave count
+      for (int i = 0; i < 6; i++) {
+        if (i >= uWaveCount) break;
+        float angle = float(i) * (6.283185 / float(uWaveCount)); // Evenly distributed angles
+        vec2 dir = vec2(cos(angle), sin(angle));
+
+        // Distort with noise for organic feel
+        float noiseOffset = simplex2D(p * 0.5 + float(i) * 3.0) * 2.0;
+
+        // Use parameterized wave frequency
+        float wave = sin(dot(p, dir) * uWaveFrequency + timeOffset + noiseOffset);
+        wave = wave * 0.5 + 0.5; // Normalize to 0-1
+        wave = pow(wave, uWaveSharpness); // Parameterized sharpness
+
+        c = max(c, wave);
+      }
+
+      // Add detail layer with parameterized amount
+      c += simplex2D(p * 4.0 + timeOffset * 0.3) * uDetailAmount;
+
+      return clamp(c, 0.0, 1.0);
+    }
+
+    // Marble - Sine waves distorted by noise for stone/wood grain - parameterized
+    float marble2D(vec2 p) {
+      float timeOffset = uAnimated ? uTime * 0.1 * uSpeed : 0.0;
+
+      // Get layered noise using FBM with uniform params
+      float n = fbm(p + timeOffset);
+
+      // Create flowing lines distorted by noise - parameterized frequency and influence
+      float lines = sin(p.x * uLineFrequency + n * uNoiseInfluence + p.y * 2.0);
+      lines = lines * 0.5 + 0.5; // Normalize to 0-1
+
+      // Add secondary detail
+      float detail = sin(p.y * (uLineFrequency * 1.5) + n * (uNoiseInfluence * 0.67) - p.x * 1.5 + timeOffset);
+      detail = detail * 0.5 + 0.5;
+
+      // Parameterized detail blend
+      return mix(lines, detail, uDetailBlend);
+    }
+
+    // ============= MAIN =============
+
+    void main() {
+      vec2 uv = vUv;
+      vec2 p = uv * uNoiseScale;
+
+      // Time offset for animation (using parameterized time scales where applicable)
+      float timeOffset = uAnimated ? uTime * 0.15 * uSpeed : 0.0;
+
+      // Get noise value based on type
+      float n;
+
+      // 0: perlin, 1: simplex, 2: worley
+      // 3: voronoiEdge, 4: turbulence, 5: ridged
+      // 6: domainWarp, 7: caustics, 8: marble
+
+      if (uNoiseType == 0) {
+        // Perlin - classic gradient noise (uses timeScaleX/Y)
+        vec2 perlinOffset = uAnimated ? vec2(timeOffset * uTimeScaleX, timeOffset * uTimeScaleY) : vec2(0.0);
+        n = fbm(p + perlinOffset);
+        n = n * 0.5 + 0.5;
+      } else if (uNoiseType == 1) {
+        // Simplex - smooth organic patterns (uses timeScaleX/Y)
+        vec2 simplexOffset = uAnimated ? vec2(timeOffset * uTimeScaleX, timeOffset * uTimeScaleY) : vec2(0.0);
+        n = fbm(p + simplexOffset);
+        n = n * 0.5 + 0.5;
+      } else if (uNoiseType == 2) {
+        // Worley - cellular patterns (scaling/invert handled in function)
+        n = worley2D(p);
+      } else if (uNoiseType == 3) {
+        // Voronoi Edge - cell boundaries/cracks (scaling/edge handled in function)
+        n = voronoiEdge2D(p);
+      } else if (uNoiseType == 4) {
+        // Turbulence - billowy clouds
+        n = turbulence2D(p + timeOffset);
+      } else if (uNoiseType == 5) {
+        // Ridged - mountain ridges (uses ridgeTimeScale)
+        float ridgeOffset = uAnimated ? timeOffset * uRidgeTimeScale : 0.0;
+        n = ridged2D(p + ridgeOffset);
+      } else if (uNoiseType == 6) {
+        // Domain Warp - fluid distortion
+        n = domainWarp2D(p);
+        n = n * 0.5 + 0.5;
+      } else if (uNoiseType == 7) {
+        // Caustics - underwater light
+        n = caustics2D(p);
+      } else {
+        // Marble - stone veins (type 8)
+        n = marble2D(p);
+      }
+
+      // Create gradient colors based on noise
+      vec3 color;
+      if (n < 0.33) {
+        color = mix(uColorPrimary, uColorSecondary, n * 3.0);
+      } else if (n < 0.66) {
+        color = mix(uColorSecondary, uColorTertiary, (n - 0.33) * 3.0);
+      } else {
+        color = mix(uColorTertiary, uColorPrimary, (n - 0.66) * 3.0);
+      }
+
+      // Subtle color shift over time
+      if (uAnimated) {
+        float colorShift = sin(uTime * 0.2 * uSpeed) * 0.1;
+        color = mix(color, color.gbr, colorShift + 0.1);
+      }
+
+      // Calculate alpha with soft edges
+      float alpha = n * uIntensity;
+
+      // Edge fade
+      float edgeFade = smoothstep(0.0, 0.15, uv.x) * smoothstep(1.0, 0.85, uv.x);
+      edgeFade *= smoothstep(0.0, 0.15, uv.y) * smoothstep(1.0, 0.85, uv.y);
+      alpha *= edgeFade;
+
+      // Add subtle texture variation
+      float micro = simplex2D(uv * uResolution * 0.02) * 0.05;
+      alpha += micro * uIntensity;
+
+      alpha = clamp(alpha, 0.0, 1.0);
+
+      gl_FragColor = vec4(color, alpha);
+    }
+  `;
+
+  type NoiseType = 'perlin' | 'simplex' | 'worley' | 'voronoiEdge' | 'turbulence' | 'ridged' | 'domainWarp' | 'caustics' | 'marble';
+
+  interface NoiseTextureConfig {
+    speed: number;
+    intensity: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    noiseScale: number;
+    noiseType: NoiseType;
+    animated: boolean;
+    // FBM parameters
+    octaves: number;
+    lacunarity: number;
+    gain: number;
+    // Perlin/Simplex parameters
+    timeScaleX: number;
+    timeScaleY: number;
+    // Worley/Voronoi parameters
+    cellScale: number;
+    cellAnimSpeed: number;
+    invert: boolean;
+    edgeThickness: number;
+    // Turbulence parameters
+    sharpness: number;
+    // Ridged parameters
+    ridgeSharpness: number;
+    ridgeTimeScale: number;
+    // Domain Warp parameters
+    warpStrength: number;
+    warpLayers: number;
+    // Caustics parameters
+    waveCount: number;
+    waveFrequency: number;
+    waveSharpness: number;
+    detailAmount: number;
+    // Marble parameters
+    lineFrequency: number;
+    noiseInfluence: number;
+    detailBlend: number;
+  }
+
+  class NoiseTextureManager {
+    private container: HTMLElement;
+    private canvas: HTMLCanvasElement;
+    private renderer: THREE.WebGLRenderer | null = null;
+    private scene: THREE.Scene | null = null;
+    private camera: THREE.OrthographicCamera | null = null;
+    private material: THREE.ShaderMaterial | null = null;
+    private animationId: number | null = null;
+    private isVisible: boolean = true;
+    private isPaused: boolean = false;
+    private clock: THREE.Clock | null = null;
+    private config: NoiseTextureConfig;
+    private prefersReducedMotion: boolean;
+    private resizeHandler: () => void;
+    private visibilityHandler: () => void;
+    private intersectionObserver: IntersectionObserver | null = null;
+
+    constructor(container: HTMLElement) {
+      this.container = container;
+      this.canvas = container.querySelector('.webgl-canvas') as HTMLCanvasElement;
+
+      const noiseTypeStr = container.dataset.noiseType || 'simplex';
+
+      this.config = {
+        speed: parseFloat(container.dataset.speed || '1'),
+        intensity: parseFloat(container.dataset.intensity || '0.5'),
+        maxPixelRatio: parseFloat(container.dataset.maxPixelRatio || '2'),
+        pauseOffscreen: container.dataset.pauseOffscreen !== 'false',
+        colors: JSON.parse(container.dataset.colors || '{}'),
+        noiseScale: parseFloat(container.dataset.noiseScale || '2'),
+        noiseType: noiseTypeStr as NoiseType,
+        animated: container.dataset.animated !== 'false',
+        // FBM parameters
+        octaves: parseInt(container.dataset.octaves || '4'),
+        lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
+        gain: parseFloat(container.dataset.gain || '0.5'),
+        // Perlin/Simplex parameters
+        timeScaleX: parseFloat(container.dataset.timeScaleX || '1.0'),
+        timeScaleY: parseFloat(container.dataset.timeScaleY || '0.7'),
+        // Worley/Voronoi parameters
+        cellScale: parseFloat(container.dataset.cellScale || '2.0'),
+        cellAnimSpeed: parseFloat(container.dataset.cellAnimSpeed || '0.3'),
+        invert: container.dataset.invert !== 'false',
+        edgeThickness: parseFloat(container.dataset.edgeThickness || '0.15'),
+        // Turbulence parameters
+        sharpness: parseFloat(container.dataset.sharpness || '1.0'),
+        // Ridged parameters
+        ridgeSharpness: parseFloat(container.dataset.ridgeSharpness || '2.0'),
+        ridgeTimeScale: parseFloat(container.dataset.ridgeTimeScale || '0.5'),
+        // Domain Warp parameters
+        warpStrength: parseFloat(container.dataset.warpStrength || '4.0'),
+        warpLayers: parseInt(container.dataset.warpLayers || '2'),
+        // Caustics parameters
+        waveCount: parseInt(container.dataset.waveCount || '3'),
+        waveFrequency: parseFloat(container.dataset.waveFrequency || '8.0'),
+        waveSharpness: parseFloat(container.dataset.waveSharpness || '1.5'),
+        detailAmount: parseFloat(container.dataset.detailAmount || '0.15'),
+        // Marble parameters
+        lineFrequency: parseFloat(container.dataset.lineFrequency || '8.0'),
+        noiseInfluence: parseFloat(container.dataset.noiseInfluence || '6.0'),
+        detailBlend: parseFloat(container.dataset.detailBlend || '0.3')
+      };
+
+      this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.resizeHandler = () => this.onResize();
+      this.visibilityHandler = () => this.onVisibilityChange();
+    }
+
+    async init(): Promise<void> {
+      if (this.prefersReducedMotion) {
+        return;
+      }
+
+      if (!this.isWebGLSupported()) {
+        console.warn('WebGL not supported');
+        return;
+      }
+
+      this.setupRenderer();
+      this.setupScene();
+      this.setupCamera();
+      this.setupMesh();
+      this.setupVisibilityObservers();
+      this.onResize();
+      this.animate();
+
+      window.addEventListener('resize', this.resizeHandler);
+    }
+
+    private isWebGLSupported(): boolean {
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext &&
+          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    private setupRenderer(): void {
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: false,
+        powerPreference: 'low-power'
+      });
+
+      const pixelRatio = Math.min(window.devicePixelRatio, this.config.maxPixelRatio);
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.setClearColor(0x000000, 0);
+    }
+
+    private setupScene(): void {
+      this.scene = new THREE.Scene();
+      this.clock = new THREE.Clock();
+    }
+
+    private setupCamera(): void {
+      this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+      this.camera.position.z = 1;
+    }
+
+    private setupMesh(): void {
+      const colors = this.getThemeColors();
+
+      // Map noise type to integer for shader
+      const noiseTypeMap: Record<NoiseType, number> = {
+        'perlin': 0,
+        'simplex': 1,
+        'worley': 2,
+        'voronoiEdge': 3,
+        'turbulence': 4,
+        'ridged': 5,
+        'domainWarp': 6,
+        'caustics': 7,
+        'marble': 8
+      };
+
+      this.material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uResolution: { value: new THREE.Vector2(1, 1) },
+          uNoiseScale: { value: this.config.noiseScale },
+          uIntensity: { value: this.config.intensity },
+          uSpeed: { value: this.config.speed },
+          uNoiseType: { value: noiseTypeMap[this.config.noiseType] || 1 },
+          uAnimated: { value: this.config.animated },
+          uColorPrimary: { value: new THREE.Color(colors.primary) },
+          uColorSecondary: { value: new THREE.Color(colors.secondary) },
+          uColorTertiary: { value: new THREE.Color(colors.tertiary) },
+          // FBM parameters
+          uOctaves: { value: this.config.octaves },
+          uLacunarity: { value: this.config.lacunarity },
+          uGain: { value: this.config.gain },
+          // Perlin/Simplex parameters
+          uTimeScaleX: { value: this.config.timeScaleX },
+          uTimeScaleY: { value: this.config.timeScaleY },
+          // Worley/Voronoi parameters
+          uCellScale: { value: this.config.cellScale },
+          uCellAnimSpeed: { value: this.config.cellAnimSpeed },
+          uInvert: { value: this.config.invert },
+          uEdgeThickness: { value: this.config.edgeThickness },
+          // Turbulence parameters
+          uSharpness: { value: this.config.sharpness },
+          // Ridged parameters
+          uRidgeSharpness: { value: this.config.ridgeSharpness },
+          uRidgeTimeScale: { value: this.config.ridgeTimeScale },
+          // Domain Warp parameters
+          uWarpStrength: { value: this.config.warpStrength },
+          uWarpLayers: { value: this.config.warpLayers },
+          // Caustics parameters
+          uWaveCount: { value: this.config.waveCount },
+          uWaveFrequency: { value: this.config.waveFrequency },
+          uWaveSharpness: { value: this.config.waveSharpness },
+          uDetailAmount: { value: this.config.detailAmount },
+          // Marble parameters
+          uLineFrequency: { value: this.config.lineFrequency },
+          uNoiseInfluence: { value: this.config.noiseInfluence },
+          uDetailBlend: { value: this.config.detailBlend }
+        },
+        transparent: true,
+        depthWrite: false
+      });
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const mesh = new THREE.Mesh(geometry, this.material);
+      this.scene?.add(mesh);
+    }
+
+    private setupVisibilityObservers(): void {
+      if (this.config.pauseOffscreen) {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              this.isVisible = entry.isIntersecting;
+            });
+          },
+          { threshold: 0.1 }
+        );
+        this.intersectionObserver.observe(this.container);
+      }
+
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+        this.prefersReducedMotion = e.matches;
+        if (this.prefersReducedMotion) {
+          this.stopAnimation();
+        }
+      });
+    }
+
+    private onVisibilityChange(): void {
+      this.isPaused = document.hidden;
+    }
+
+    private onResize(): void {
+      if (!this.renderer || !this.material) return;
+
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+
+      this.renderer.setSize(width, height);
+      this.material.uniforms.uResolution.value.set(width, height);
+    }
+
+    private animate(): void {
+      this.animationId = requestAnimationFrame(() => this.animate());
+
+      if (!this.isVisible || this.isPaused || this.prefersReducedMotion) {
+        return;
+      }
+
+      if (!this.renderer || !this.scene || !this.camera || !this.clock || !this.material) {
+        return;
+      }
+
+      const elapsed = this.clock.getElapsedTime();
+      this.material.uniforms.uTime.value = elapsed;
+
+      this.renderer.render(this.scene, this.camera);
+    }
+
+    private stopAnimation(): void {
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+
+    private getCSSVariable(name: string): string {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    private getThemeColors(): { primary: string; secondary: string; tertiary: string } {
+      return {
+        primary: this.config.colors.primary || this.getCSSVariable('--accent-primary') || '#FF6B6B',
+        secondary: this.config.colors.secondary || this.getCSSVariable('--accent-secondary') || '#4ECDC4',
+        tertiary: this.config.colors.tertiary || this.getCSSVariable('--accent-tertiary') || '#FFE66D'
+      };
+    }
+
+    /**
+     * Update shader uniforms in real-time without re-rendering
+     * Used by PropertiesPanel for live editing
+     */
+    updateUniforms(props: {
+      // General
+      speed?: number;
+      intensity?: number;
+      noiseScale?: number;
+      animated?: boolean;
+      noiseType?: NoiseType;
+      colors?: { primary?: string; secondary?: string; tertiary?: string };
+      // FBM parameters
+      octaves?: number;
+      lacunarity?: number;
+      gain?: number;
+      // Perlin/Simplex parameters
+      timeScaleX?: number;
+      timeScaleY?: number;
+      // Worley/Voronoi parameters
+      cellScale?: number;
+      cellAnimSpeed?: number;
+      invert?: boolean;
+      edgeThickness?: number;
+      // Turbulence parameters
+      sharpness?: number;
+      // Ridged parameters
+      ridgeSharpness?: number;
+      ridgeTimeScale?: number;
+      // Domain Warp parameters
+      warpStrength?: number;
+      warpLayers?: number;
+      // Caustics parameters
+      waveCount?: number;
+      waveFrequency?: number;
+      waveSharpness?: number;
+      detailAmount?: number;
+      // Marble parameters
+      lineFrequency?: number;
+      noiseInfluence?: number;
+      detailBlend?: number;
+    }): void {
+      if (!this.material) return;
+
+      const noiseTypeMap: Record<NoiseType, number> = {
+        'perlin': 0, 'simplex': 1, 'worley': 2,
+        'voronoiEdge': 3, 'turbulence': 4, 'ridged': 5,
+        'domainWarp': 6, 'caustics': 7, 'marble': 8
+      };
+
+      // General parameters
+      if (props.speed !== undefined) {
+        this.config.speed = props.speed;
+        this.material.uniforms.uSpeed.value = props.speed;
+      }
+
+      if (props.intensity !== undefined) {
+        this.config.intensity = props.intensity;
+        this.material.uniforms.uIntensity.value = props.intensity;
+      }
+
+      if (props.noiseScale !== undefined) {
+        this.config.noiseScale = props.noiseScale;
+        this.material.uniforms.uNoiseScale.value = props.noiseScale;
+      }
+
+      if (props.animated !== undefined) {
+        this.config.animated = props.animated;
+        this.material.uniforms.uAnimated.value = props.animated;
+      }
+
+      if (props.noiseType !== undefined) {
+        this.config.noiseType = props.noiseType;
+        this.material.uniforms.uNoiseType.value = noiseTypeMap[props.noiseType] || 1;
+      }
+
+      if (props.colors) {
+        if (props.colors.primary) {
+          this.config.colors.primary = props.colors.primary;
+          this.material.uniforms.uColorPrimary.value = new THREE.Color(props.colors.primary);
+        }
+        if (props.colors.secondary) {
+          this.config.colors.secondary = props.colors.secondary;
+          this.material.uniforms.uColorSecondary.value = new THREE.Color(props.colors.secondary);
+        }
+        if (props.colors.tertiary) {
+          this.config.colors.tertiary = props.colors.tertiary;
+          this.material.uniforms.uColorTertiary.value = new THREE.Color(props.colors.tertiary);
+        }
+      }
+
+      // FBM parameters
+      if (props.octaves !== undefined) {
+        this.config.octaves = props.octaves;
+        this.material.uniforms.uOctaves.value = props.octaves;
+      }
+
+      if (props.lacunarity !== undefined) {
+        this.config.lacunarity = props.lacunarity;
+        this.material.uniforms.uLacunarity.value = props.lacunarity;
+      }
+
+      if (props.gain !== undefined) {
+        this.config.gain = props.gain;
+        this.material.uniforms.uGain.value = props.gain;
+      }
+
+      // Perlin/Simplex parameters
+      if (props.timeScaleX !== undefined) {
+        this.config.timeScaleX = props.timeScaleX;
+        this.material.uniforms.uTimeScaleX.value = props.timeScaleX;
+      }
+
+      if (props.timeScaleY !== undefined) {
+        this.config.timeScaleY = props.timeScaleY;
+        this.material.uniforms.uTimeScaleY.value = props.timeScaleY;
+      }
+
+      // Worley/Voronoi parameters
+      if (props.cellScale !== undefined) {
+        this.config.cellScale = props.cellScale;
+        this.material.uniforms.uCellScale.value = props.cellScale;
+      }
+
+      if (props.cellAnimSpeed !== undefined) {
+        this.config.cellAnimSpeed = props.cellAnimSpeed;
+        this.material.uniforms.uCellAnimSpeed.value = props.cellAnimSpeed;
+      }
+
+      if (props.invert !== undefined) {
+        this.config.invert = props.invert;
+        this.material.uniforms.uInvert.value = props.invert;
+      }
+
+      if (props.edgeThickness !== undefined) {
+        this.config.edgeThickness = props.edgeThickness;
+        this.material.uniforms.uEdgeThickness.value = props.edgeThickness;
+      }
+
+      // Turbulence parameters
+      if (props.sharpness !== undefined) {
+        this.config.sharpness = props.sharpness;
+        this.material.uniforms.uSharpness.value = props.sharpness;
+      }
+
+      // Ridged parameters
+      if (props.ridgeSharpness !== undefined) {
+        this.config.ridgeSharpness = props.ridgeSharpness;
+        this.material.uniforms.uRidgeSharpness.value = props.ridgeSharpness;
+      }
+
+      if (props.ridgeTimeScale !== undefined) {
+        this.config.ridgeTimeScale = props.ridgeTimeScale;
+        this.material.uniforms.uRidgeTimeScale.value = props.ridgeTimeScale;
+      }
+
+      // Domain Warp parameters
+      if (props.warpStrength !== undefined) {
+        this.config.warpStrength = props.warpStrength;
+        this.material.uniforms.uWarpStrength.value = props.warpStrength;
+      }
+
+      if (props.warpLayers !== undefined) {
+        this.config.warpLayers = props.warpLayers;
+        this.material.uniforms.uWarpLayers.value = props.warpLayers;
+      }
+
+      // Caustics parameters
+      if (props.waveCount !== undefined) {
+        this.config.waveCount = props.waveCount;
+        this.material.uniforms.uWaveCount.value = props.waveCount;
+      }
+
+      if (props.waveFrequency !== undefined) {
+        this.config.waveFrequency = props.waveFrequency;
+        this.material.uniforms.uWaveFrequency.value = props.waveFrequency;
+      }
+
+      if (props.waveSharpness !== undefined) {
+        this.config.waveSharpness = props.waveSharpness;
+        this.material.uniforms.uWaveSharpness.value = props.waveSharpness;
+      }
+
+      if (props.detailAmount !== undefined) {
+        this.config.detailAmount = props.detailAmount;
+        this.material.uniforms.uDetailAmount.value = props.detailAmount;
+      }
+
+      // Marble parameters
+      if (props.lineFrequency !== undefined) {
+        this.config.lineFrequency = props.lineFrequency;
+        this.material.uniforms.uLineFrequency.value = props.lineFrequency;
+      }
+
+      if (props.noiseInfluence !== undefined) {
+        this.config.noiseInfluence = props.noiseInfluence;
+        this.material.uniforms.uNoiseInfluence.value = props.noiseInfluence;
+      }
+
+      if (props.detailBlend !== undefined) {
+        this.config.detailBlend = props.detailBlend;
+        this.material.uniforms.uDetailBlend.value = props.detailBlend;
+      }
+    }
+
+    /** Get current config for serialization */
+    getConfig(): NoiseTextureConfig {
+      return { ...this.config };
+    }
+
+    destroy(): void {
+      this.stopAnimation();
+      window.removeEventListener('resize', this.resizeHandler);
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.intersectionObserver?.disconnect();
+
+      if (this.renderer) {
+        this.renderer.dispose();
+        this.renderer = null;
+      }
+
+      if (this.material) {
+        this.material.dispose();
+        this.material = null;
+      }
+
+      this.scene?.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry?.dispose();
+        }
+      });
+
+      this.scene = null;
+      this.camera = null;
+      this.clock = null;
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.noise-texture').forEach(container => {
+      const manager = new NoiseTextureManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>

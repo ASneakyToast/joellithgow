@@ -1,0 +1,301 @@
+---
+/**
+ * Interactive Pattern Playground
+ * Full-page background with live properties panel
+ */
+import BaseLayout from '@components/common/BaseLayout.astro';
+import NoiseTextureBackground from '@components/backgrounds/NoiseTextureBackground.astro';
+import PropertiesPanel from '@components/backgrounds/PropertiesPanel.astro';
+import type { NoiseType } from '@components/backgrounds/types';
+
+// Generate static paths - must be at top of frontmatter
+export function getStaticPaths() {
+  return [
+    'perlin', 'simplex', 'worley', 'voronoi-edge', 'turbulence',
+    'ridged', 'domain-warp', 'caustics', 'marble'
+  ].map(pattern => ({
+    params: { pattern }
+  }));
+}
+
+// Pattern configurations with all parameters
+const patternConfigs: Record<string, {
+  name: string;
+  description: string;
+  noiseType: NoiseType;
+  defaults: {
+    // General
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    colors: { primary: string; secondary: string; tertiary: string };
+    // FBM parameters (optional)
+    octaves?: number;
+    lacunarity?: number;
+    gain?: number;
+    // Pattern-specific (optional)
+    timeScaleX?: number;
+    timeScaleY?: number;
+    cellScale?: number;
+    cellAnimSpeed?: number;
+    invert?: boolean;
+    edgeThickness?: number;
+    sharpness?: number;
+    ridgeSharpness?: number;
+    ridgeTimeScale?: number;
+    warpStrength?: number;
+    warpLayers?: number;
+    waveCount?: number;
+    waveFrequency?: number;
+    waveSharpness?: number;
+    detailAmount?: number;
+    lineFrequency?: number;
+    noiseInfluence?: number;
+    detailBlend?: number;
+  };
+}> = {
+  'perlin': {
+    name: 'Perlin Noise',
+    description: 'Classic gradient noise with smooth, organic variations',
+    noiseType: 'perlin',
+    defaults: {
+      speed: 0.5,
+      intensity: 0.6,
+      noiseScale: 2.0,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // FBM
+      octaves: 4,
+      lacunarity: 2.0,
+      gain: 0.5,
+      // Perlin-specific
+      timeScaleX: 1.0,
+      timeScaleY: 0.7
+    }
+  },
+  'simplex': {
+    name: 'Simplex Noise',
+    description: 'Smooth flowing organic patterns with less directional artifacts',
+    noiseType: 'simplex',
+    defaults: {
+      speed: 0.4,
+      intensity: 0.5,
+      noiseScale: 3.0,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // FBM
+      octaves: 5,
+      lacunarity: 2.0,
+      gain: 0.5,
+      // Simplex-specific
+      timeScaleX: 0.8,
+      timeScaleY: 1.0
+    }
+  },
+  'worley': {
+    name: 'Worley Noise',
+    description: 'Cellular patterns based on distance to random points',
+    noiseType: 'worley',
+    defaults: {
+      speed: 0.3,
+      intensity: 0.5,
+      noiseScale: 1.5,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // Worley-specific
+      cellScale: 2.0,
+      cellAnimSpeed: 0.3,
+      invert: true
+    }
+  },
+  'voronoi-edge': {
+    name: 'Voronoi Edge',
+    description: 'Cell boundaries creating crack or tile-like patterns',
+    noiseType: 'voronoiEdge',
+    defaults: {
+      speed: 0.4,
+      intensity: 0.6,
+      noiseScale: 2.0,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // Voronoi-specific
+      cellScale: 2.0,
+      edgeThickness: 0.15,
+      cellAnimSpeed: 0.2
+    }
+  },
+  'turbulence': {
+    name: 'Turbulence',
+    description: 'Billowy cloud-like patterns with high contrast swirls',
+    noiseType: 'turbulence',
+    defaults: {
+      speed: 0.5,
+      intensity: 0.55,
+      noiseScale: 2.5,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // FBM
+      octaves: 5,
+      lacunarity: 2.0,
+      gain: 0.5,
+      // Turbulence-specific
+      sharpness: 1.0
+    }
+  },
+  'ridged': {
+    name: 'Ridged Multifractal',
+    description: 'Sharp ridge patterns like mountain ranges or lightning',
+    noiseType: 'ridged',
+    defaults: {
+      speed: 0.4,
+      intensity: 0.6,
+      noiseScale: 2.0,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // FBM
+      octaves: 5,
+      lacunarity: 2.0,
+      gain: 0.5,
+      // Ridged-specific
+      ridgeSharpness: 2.0,
+      ridgeTimeScale: 0.5
+    }
+  },
+  'domain-warp': {
+    name: 'Domain Warp',
+    description: 'Fluid distortion effect by warping coordinate space',
+    noiseType: 'domainWarp',
+    defaults: {
+      speed: 0.3,
+      intensity: 0.5,
+      noiseScale: 1.5,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // Domain Warp-specific
+      warpStrength: 4.0,
+      warpLayers: 2
+    }
+  },
+  'caustics': {
+    name: 'Caustics',
+    description: 'Underwater light refraction patterns',
+    noiseType: 'caustics',
+    defaults: {
+      speed: 0.6,
+      intensity: 0.55,
+      noiseScale: 1.8,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // Caustics-specific
+      waveCount: 3,
+      waveFrequency: 8.0,
+      waveSharpness: 1.5,
+      detailAmount: 0.15
+    }
+  },
+  'marble': {
+    name: 'Marble',
+    description: 'Flowing veins like natural stone or wood grain',
+    noiseType: 'marble',
+    defaults: {
+      speed: 0.3,
+      intensity: 0.5,
+      noiseScale: 2.0,
+      animated: true,
+      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
+      // FBM
+      octaves: 4,
+      lacunarity: 2.0,
+      gain: 0.5,
+      // Marble-specific
+      lineFrequency: 8.0,
+      noiseInfluence: 6.0,
+      detailBlend: 0.3
+    }
+  }
+};
+
+const { pattern } = Astro.params;
+const config = patternConfigs[pattern];
+
+// 404 if pattern not found
+if (!config) {
+  return Astro.redirect('/backgrounds');
+}
+
+const pageTitle = `${config.name} - Background Playground`;
+const pageDescription = config.description;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="playground-page">
+    <NoiseTextureBackground
+      noiseType={config.noiseType}
+      speed={config.defaults.speed}
+      intensity={config.defaults.intensity}
+      noiseScale={config.defaults.noiseScale}
+      animated={config.defaults.animated}
+      colors={config.defaults.colors}
+      octaves={config.defaults.octaves}
+      lacunarity={config.defaults.lacunarity}
+      gain={config.defaults.gain}
+      timeScaleX={config.defaults.timeScaleX}
+      timeScaleY={config.defaults.timeScaleY}
+      cellScale={config.defaults.cellScale}
+      cellAnimSpeed={config.defaults.cellAnimSpeed}
+      invert={config.defaults.invert}
+      edgeThickness={config.defaults.edgeThickness}
+      sharpness={config.defaults.sharpness}
+      ridgeSharpness={config.defaults.ridgeSharpness}
+      ridgeTimeScale={config.defaults.ridgeTimeScale}
+      warpStrength={config.defaults.warpStrength}
+      warpLayers={config.defaults.warpLayers}
+      waveCount={config.defaults.waveCount}
+      waveFrequency={config.defaults.waveFrequency}
+      waveSharpness={config.defaults.waveSharpness}
+      detailAmount={config.defaults.detailAmount}
+      lineFrequency={config.defaults.lineFrequency}
+      noiseInfluence={config.defaults.noiseInfluence}
+      detailBlend={config.defaults.detailBlend}
+      class="fullscreen-background"
+    />
+
+    <PropertiesPanel
+      patternName={config.name}
+      patternDescription={config.description}
+      patternSlug={config.noiseType}
+      defaults={config.defaults}
+    />
+  </main>
+</BaseLayout>
+
+<style is:global>
+  /* Full page background */
+  .playground-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .playground-page .fullscreen-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* Ensure canvas fills container */
+  .playground-page .webgl-background-container {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+</style>

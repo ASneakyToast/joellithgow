@@ -4,6 +4,8 @@ import Card from '@components/primitives/Card.astro';
 import Button from '@components/primitives/Button.astro';
 import Badge from '@components/primitives/Badge.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import NoiseTextureBackground from '@components/backgrounds/NoiseTextureBackground.astro';
 
 const pageTitle = 'Design Primitives Test';
 const pageDescription = 'Testing design system primitives';
@@ -213,6 +215,180 @@ const sampleLinks = [
       </div>
     </section>
 
+    {/* WebGL Backgrounds */}
+    <section style="margin-bottom: 4rem;">
+      <h2 style="margin-bottom: 1.5rem;">WebGL Backgrounds</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        GPU-accelerated animated backgrounds powered by Three.js and WebGL shaders.
+        These are standalone components that replace CSS backgrounds entirely.
+      </p>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Geometric Grid</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div class="webgl-demo-container">
+          <GeometricGridBackground
+            speed={1.0}
+            intensity={0.5}
+            gridSize={80}
+            animationType="drift"
+          />
+          <div class="webgl-demo-label">
+            <code>GeometricGrid - Drift</code>
+            <p>Subtle floating grid movement</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <GeometricGridBackground
+            speed={0.8}
+            intensity={0.6}
+            gridSize={60}
+            animationType="pulse"
+          />
+          <div class="webgl-demo-label">
+            <code>GeometricGrid - Pulse</code>
+            <p>Breathing grid effect</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <GeometricGridBackground
+            speed={1.2}
+            intensity={0.4}
+            gridSize={100}
+            animationType="wave"
+          />
+          <div class="webgl-demo-label">
+            <code>GeometricGrid - Wave</code>
+            <p>Undulating wave pattern</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Basic Noise</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.5}
+            intensity={0.6}
+            noiseScale={2.0}
+            noiseType="perlin"
+          />
+          <div class="webgl-demo-label">
+            <code>perlin</code>
+            <p>Classic gradient noise</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.4}
+            intensity={0.5}
+            noiseScale={3.0}
+            noiseType="simplex"
+          />
+          <div class="webgl-demo-label">
+            <code>simplex</code>
+            <p>Smooth organic patterns</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.3}
+            intensity={0.5}
+            noiseScale={1.5}
+            noiseType="worley"
+          />
+          <div class="webgl-demo-label">
+            <code>worley</code>
+            <p>Cellular/voronoi distance</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Advanced Noise</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.4}
+            intensity={0.6}
+            noiseScale={2.0}
+            noiseType="voronoiEdge"
+          />
+          <div class="webgl-demo-label">
+            <code>voronoiEdge</code>
+            <p>Cell boundaries/cracks</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.5}
+            intensity={0.55}
+            noiseScale={2.5}
+            noiseType="turbulence"
+          />
+          <div class="webgl-demo-label">
+            <code>turbulence</code>
+            <p>Billowy clouds/smoke</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.4}
+            intensity={0.6}
+            noiseScale={2.0}
+            noiseType="ridged"
+          />
+          <div class="webgl-demo-label">
+            <code>ridged</code>
+            <p>Mountain ridges/lightning</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.3}
+            intensity={0.5}
+            noiseScale={1.5}
+            noiseType="domainWarp"
+          />
+          <div class="webgl-demo-label">
+            <code>domainWarp</code>
+            <p>Fluid distortion/warping</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.6}
+            intensity={0.55}
+            noiseScale={1.8}
+            noiseType="caustics"
+          />
+          <div class="webgl-demo-label">
+            <code>caustics</code>
+            <p>Underwater light patterns</p>
+          </div>
+        </div>
+
+        <div class="webgl-demo-container">
+          <NoiseTextureBackground
+            speed={0.3}
+            intensity={0.5}
+            noiseScale={2.0}
+            noiseType="marble"
+          />
+          <div class="webgl-demo-label">
+            <code>marble</code>
+            <p>Stone veins/wood grain</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     {/* Real-world examples */}
     <section style="margin-bottom: 4rem;">
       <h2 style="margin-bottom: 1.5rem;">Real-World Examples</h2>
@@ -364,6 +540,58 @@ const sampleLinks = [
   }
 
   .pattern-label p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* WebGL Background Demo Styles */
+  .webgl-demo-container {
+    position: relative;
+    min-height: 300px;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--accent-secondary);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-xl);
+    background: var(--bg-primary);
+    transition: all var(--duration-base) var(--ease-out);
+    isolation: isolate;
+  }
+
+  .webgl-demo-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--accent-primary);
+  }
+
+  .webgl-demo-label {
+    position: relative;
+    z-index: 20;
+    background: rgba(var(--bg-secondary-rgb, 255, 255, 255), 0.95);
+    backdrop-filter: blur(8px);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    border: var(--border-width) solid var(--accent-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .webgl-demo-label code {
+    display: block;
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--accent-secondary);
+    margin-bottom: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--gradient-secondary-light, rgba(78, 205, 196, 0.1));
+    border-radius: var(--radius-sm);
+  }
+
+  .webgl-demo-label p {
     font-size: var(--text-sm);
     color: var(--text-secondary);
     margin: 0;

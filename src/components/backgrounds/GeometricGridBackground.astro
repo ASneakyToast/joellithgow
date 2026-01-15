@@ -1,0 +1,406 @@
+---
+/**
+ * GeometricGridBackground - WebGL animated geometric grid patterns
+ * Renders procedural grid lines with configurable animation types
+ */
+import type { GeometricGridProps } from './types';
+
+export interface Props extends GeometricGridProps {}
+
+const {
+  speed = 1.0,
+  intensity = 0.5,
+  colors,
+  gridSize = 80,
+  lineWidth = 1,
+  animationType = 'drift',
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `geometric-grid-${Math.random().toString(36).substr(2, 9)}`
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'geometric-grid', className]}
+  id={id}
+  data-effect-type="geometric-grid"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-colors={JSON.stringify(colors || {})}
+  data-grid-size={gridSize}
+  data-line-width={lineWidth}
+  data-animation-type={animationType}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .geometric-grid {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+
+  // Vertex shader - simple fullscreen quad
+  const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  // Fragment shader - procedural grid with animations
+  const fragmentShader = `
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform float uGridSize;
+    uniform float uLineWidth;
+    uniform float uIntensity;
+    uniform float uSpeed;
+    uniform int uAnimationType;
+    uniform vec3 uColorPrimary;
+    uniform vec3 uColorSecondary;
+
+    varying vec2 vUv;
+
+    void main() {
+      vec2 pixelCoord = vUv * uResolution;
+
+      // Animation offset based on type
+      vec2 offset = vec2(0.0);
+      float pulse = 1.0;
+      float wave = 0.0;
+
+      // 0 = drift, 1 = pulse, 2 = wave
+      if (uAnimationType == 0) {
+        // Drift animation - subtle movement
+        offset = vec2(
+          sin(uTime * 0.3 * uSpeed) * 20.0,
+          cos(uTime * 0.2 * uSpeed) * 15.0
+        );
+      } else if (uAnimationType == 1) {
+        // Pulse animation - breathing grid
+        pulse = 0.8 + 0.4 * sin(uTime * 1.5 * uSpeed);
+      } else if (uAnimationType == 2) {
+        // Wave animation - undulating lines
+        wave = sin(pixelCoord.x * 0.01 + uTime * uSpeed) * 10.0;
+        offset.y = wave;
+      }
+
+      // Apply offset to coordinates
+      vec2 gridCoord = pixelCoord + offset;
+
+      // Calculate grid
+      vec2 grid = mod(gridCoord, uGridSize);
+
+      // Create grid lines with adjustable width
+      float lineX = step(uGridSize - uLineWidth * pulse, grid.x);
+      float lineY = step(uGridSize - uLineWidth * pulse, grid.y);
+      float gridLine = max(lineX, lineY);
+
+      // Create intersection points (nodes)
+      float nodeSize = uLineWidth * 2.5 * pulse;
+      float nodeX = step(uGridSize - nodeSize, grid.x);
+      float nodeY = step(uGridSize - nodeSize, grid.y);
+      float node = nodeX * nodeY;
+
+      // Color mixing based on position
+      float colorMix = sin(vUv.x * 3.14159 + uTime * 0.5 * uSpeed) * 0.5 + 0.5;
+      vec3 lineColor = mix(uColorPrimary, uColorSecondary, colorMix);
+
+      // Combine lines and nodes
+      float alpha = gridLine * uIntensity * 0.6;
+      alpha += node * uIntensity * 0.3;
+
+      // Add subtle glow to lines
+      float glowX = smoothstep(uGridSize - uLineWidth * 3.0, uGridSize - uLineWidth, grid.x);
+      float glowY = smoothstep(uGridSize - uLineWidth * 3.0, uGridSize - uLineWidth, grid.y);
+      float glow = max(glowX, glowY) * 0.15 * uIntensity;
+      alpha += glow;
+
+      // Fade out at edges
+      float edgeFade = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
+      edgeFade *= smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
+      alpha *= edgeFade;
+
+      gl_FragColor = vec4(lineColor, alpha);
+    }
+  `;
+
+  interface GeometricGridConfig {
+    speed: number;
+    intensity: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    gridSize: number;
+    lineWidth: number;
+    animationType: 'drift' | 'pulse' | 'wave';
+  }
+
+  class GeometricGridManager {
+    private container: HTMLElement;
+    private canvas: HTMLCanvasElement;
+    private renderer: THREE.WebGLRenderer | null = null;
+    private scene: THREE.Scene | null = null;
+    private camera: THREE.OrthographicCamera | null = null;
+    private material: THREE.ShaderMaterial | null = null;
+    private animationId: number | null = null;
+    private isVisible: boolean = true;
+    private isPaused: boolean = false;
+    private clock: THREE.Clock | null = null;
+    private config: GeometricGridConfig;
+    private prefersReducedMotion: boolean;
+    private resizeHandler: () => void;
+    private visibilityHandler: () => void;
+    private intersectionObserver: IntersectionObserver | null = null;
+
+    constructor(container: HTMLElement) {
+      this.container = container;
+      this.canvas = container.querySelector('.webgl-canvas') as HTMLCanvasElement;
+
+      const animTypeStr = container.dataset.animationType || 'drift';
+
+      this.config = {
+        speed: parseFloat(container.dataset.speed || '1'),
+        intensity: parseFloat(container.dataset.intensity || '0.5'),
+        maxPixelRatio: parseFloat(container.dataset.maxPixelRatio || '2'),
+        pauseOffscreen: container.dataset.pauseOffscreen !== 'false',
+        colors: JSON.parse(container.dataset.colors || '{}'),
+        gridSize: parseFloat(container.dataset.gridSize || '80'),
+        lineWidth: parseFloat(container.dataset.lineWidth || '1'),
+        animationType: animTypeStr as 'drift' | 'pulse' | 'wave'
+      };
+
+      this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.resizeHandler = () => this.onResize();
+      this.visibilityHandler = () => this.onVisibilityChange();
+    }
+
+    async init(): Promise<void> {
+      if (this.prefersReducedMotion) {
+        return;
+      }
+
+      if (!this.isWebGLSupported()) {
+        console.warn('WebGL not supported');
+        return;
+      }
+
+      this.setupRenderer();
+      this.setupScene();
+      this.setupCamera();
+      this.setupMesh();
+      this.setupVisibilityObservers();
+      this.onResize();
+      this.animate();
+
+      window.addEventListener('resize', this.resizeHandler);
+    }
+
+    private isWebGLSupported(): boolean {
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext &&
+          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    private setupRenderer(): void {
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: false,
+        powerPreference: 'low-power'
+      });
+
+      const pixelRatio = Math.min(window.devicePixelRatio, this.config.maxPixelRatio);
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.setClearColor(0x000000, 0);
+    }
+
+    private setupScene(): void {
+      this.scene = new THREE.Scene();
+      this.clock = new THREE.Clock();
+    }
+
+    private setupCamera(): void {
+      this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+      this.camera.position.z = 1;
+    }
+
+    private setupMesh(): void {
+      const colors = this.getThemeColors();
+
+      // Map animation type to integer for shader
+      const animTypeMap: Record<string, number> = {
+        'drift': 0,
+        'pulse': 1,
+        'wave': 2
+      };
+
+      this.material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uResolution: { value: new THREE.Vector2(1, 1) },
+          uGridSize: { value: this.config.gridSize },
+          uLineWidth: { value: this.config.lineWidth },
+          uIntensity: { value: this.config.intensity },
+          uSpeed: { value: this.config.speed },
+          uAnimationType: { value: animTypeMap[this.config.animationType] || 0 },
+          uColorPrimary: { value: new THREE.Color(colors.primary) },
+          uColorSecondary: { value: new THREE.Color(colors.secondary) }
+        },
+        transparent: true,
+        depthWrite: false
+      });
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const mesh = new THREE.Mesh(geometry, this.material);
+      this.scene?.add(mesh);
+    }
+
+    private setupVisibilityObservers(): void {
+      if (this.config.pauseOffscreen) {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              this.isVisible = entry.isIntersecting;
+            });
+          },
+          { threshold: 0.1 }
+        );
+        this.intersectionObserver.observe(this.container);
+      }
+
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+        this.prefersReducedMotion = e.matches;
+        if (this.prefersReducedMotion) {
+          this.stopAnimation();
+        }
+      });
+    }
+
+    private onVisibilityChange(): void {
+      this.isPaused = document.hidden;
+    }
+
+    private onResize(): void {
+      if (!this.renderer || !this.material) return;
+
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+
+      this.renderer.setSize(width, height);
+      this.material.uniforms.uResolution.value.set(width, height);
+    }
+
+    private animate(): void {
+      this.animationId = requestAnimationFrame(() => this.animate());
+
+      if (!this.isVisible || this.isPaused || this.prefersReducedMotion) {
+        return;
+      }
+
+      if (!this.renderer || !this.scene || !this.camera || !this.clock || !this.material) {
+        return;
+      }
+
+      const elapsed = this.clock.getElapsedTime();
+      this.material.uniforms.uTime.value = elapsed;
+
+      this.renderer.render(this.scene, this.camera);
+    }
+
+    private stopAnimation(): void {
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+
+    private getCSSVariable(name: string): string {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    private getThemeColors(): { primary: string; secondary: string } {
+      return {
+        primary: this.config.colors.primary || this.getCSSVariable('--accent-primary') || '#FF6B6B',
+        secondary: this.config.colors.secondary || this.getCSSVariable('--accent-secondary') || '#4ECDC4'
+      };
+    }
+
+    destroy(): void {
+      this.stopAnimation();
+      window.removeEventListener('resize', this.resizeHandler);
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.intersectionObserver?.disconnect();
+
+      if (this.renderer) {
+        this.renderer.dispose();
+        this.renderer = null;
+      }
+
+      if (this.material) {
+        this.material.dispose();
+        this.material = null;
+      }
+
+      this.scene?.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry?.dispose();
+        }
+      });
+
+      this.scene = null;
+      this.camera = null;
+      this.clock = null;
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.geometric-grid').forEach(container => {
+      const manager = new GeometricGridManager(container as HTMLElement);
+      manager.init();
+      // Store reference for potential cleanup
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>
