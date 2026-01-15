@@ -10,6 +10,7 @@ export interface Props {
   linkedinUrl?: string;
   githubUrl?: string;
   showContact?: boolean;
+  showSkills?: boolean;
 }
 
 const {
@@ -18,7 +19,8 @@ const {
   emailAddress = "joelnotlithgow@gmail.com",
   linkedinUrl = "https://www.linkedin.com/in/joel-lithgow-40a9341b4/",
   githubUrl = "https://github.com/ASneakyToast",
-  showContact = true
+  showContact = true,
+  showSkills = true
 } = Astro.props;
 
 // Flattened skills list - all skills in one array
@@ -173,20 +175,22 @@ const contactLinks = [
       </div>
     </div>
 
-    <div class="skills-container" role="group" aria-label="Technical skills">
-      <div class="skills-list" role="list">
-        {allSkills.map((skill) => (
-          <Badge
-            variant="secondary"
-            size="sm"
-            role="listitem"
-            href={`/work/skills/${skill}`}
-          >
-            #{skill}
-          </Badge>
-        ))}
+    {showSkills && (
+      <div class="skills-container" role="group" aria-label="Technical skills">
+        <div class="skills-list" role="list">
+          {allSkills.map((skill) => (
+            <Badge
+              variant="secondary"
+              size="sm"
+              role="listitem"
+              href={`/work/skills/${skill}`}
+            >
+              #{skill}
+            </Badge>
+          ))}
+        </div>
       </div>
-    </div>
+    )}
 
     {showContact && (
       <nav class="contact-links" aria-label="Contact links">
