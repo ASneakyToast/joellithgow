@@ -1,0 +1,152 @@
+---
+/**
+ * CausticsBackground - Underwater light refraction patterns
+ * Creates shimmering light effects from overlapping wave patterns
+ */
+import type { CausticsBackgroundProps } from './types';
+
+export interface Props extends CausticsBackgroundProps {}
+
+const {
+  speed = 0.6,
+  intensity = 0.55,
+  noiseScale = 1.8,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `caustics-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // Caustics-specific
+  waveCount = 3,
+  waveFrequency = 8.0,
+  waveSharpness = 1.5,
+  detailAmount = 0.15
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'caustics-bg', className]}
+  id={id}
+  data-effect-type="caustics"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-wave-count={waveCount}
+  data-wave-frequency={waveFrequency}
+  data-wave-sharpness={waveSharpness}
+  data-detail-amount={detailAmount}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
+  import { causticsFragmentShader } from './shaders/fragments/caustics.glsl';
+
+  interface CausticsConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    waveCount: number;
+    waveFrequency: number;
+    waveSharpness: number;
+    detailAmount: number;
+  }
+
+  class CausticsBackgroundManager extends NoiseBackgroundManager<CausticsConfig> {
+    protected getFragmentShader(): string {
+      return causticsFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<CausticsConfig> {
+      return {
+        waveCount: parseInt(container.dataset.waveCount || '3'),
+        waveFrequency: parseFloat(container.dataset.waveFrequency || '8.0'),
+        waveSharpness: parseFloat(container.dataset.waveSharpness || '1.5'),
+        detailAmount: parseFloat(container.dataset.detailAmount || '0.15')
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        uWaveCount: { value: this.config.waveCount },
+        uWaveFrequency: { value: this.config.waveFrequency },
+        uWaveSharpness: { value: this.config.waveSharpness },
+        uDetailAmount: { value: this.config.detailAmount }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<CausticsConfig>): void {
+      if (!this.material) return;
+
+      if (props.waveCount !== undefined) {
+        this.config.waveCount = props.waveCount;
+        this.material.uniforms.uWaveCount.value = props.waveCount;
+      }
+      if (props.waveFrequency !== undefined) {
+        this.config.waveFrequency = props.waveFrequency;
+        this.material.uniforms.uWaveFrequency.value = props.waveFrequency;
+      }
+      if (props.waveSharpness !== undefined) {
+        this.config.waveSharpness = props.waveSharpness;
+        this.material.uniforms.uWaveSharpness.value = props.waveSharpness;
+      }
+      if (props.detailAmount !== undefined) {
+        this.config.detailAmount = props.detailAmount;
+        this.material.uniforms.uDetailAmount.value = props.detailAmount;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.caustics-bg').forEach(container => {
+      const manager = new CausticsBackgroundManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>

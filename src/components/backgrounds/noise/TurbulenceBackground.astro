@@ -1,0 +1,156 @@
+---
+/**
+ * TurbulenceBackground - Billowy cloud-like patterns
+ * Uses absolute value FBM for high contrast swirling effects
+ */
+import type { TurbulenceBackgroundProps } from './types';
+
+export interface Props extends TurbulenceBackgroundProps {}
+
+const {
+  speed = 0.5,
+  intensity = 0.55,
+  noiseScale = 2.5,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `turbulence-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // FBM params
+  octaves = 5,
+  lacunarity = 2.0,
+  gain = 0.5,
+  // Turbulence-specific
+  sharpness = 1.0
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'turbulence-bg', className]}
+  id={id}
+  data-effect-type="turbulence"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-octaves={octaves}
+  data-lacunarity={lacunarity}
+  data-gain={gain}
+  data-sharpness={sharpness}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
+  import { turbulenceFragmentShader } from './shaders/fragments/turbulence.glsl';
+  import { createFBMUniforms } from './shaders/uniforms';
+
+  interface TurbulenceConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    octaves: number;
+    lacunarity: number;
+    gain: number;
+    sharpness: number;
+  }
+
+  class TurbulenceBackgroundManager extends NoiseBackgroundManager<TurbulenceConfig> {
+    protected getFragmentShader(): string {
+      return turbulenceFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<TurbulenceConfig> {
+      return {
+        octaves: parseInt(container.dataset.octaves || '5'),
+        lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
+        gain: parseFloat(container.dataset.gain || '0.5'),
+        sharpness: parseFloat(container.dataset.sharpness || '1.0')
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        ...createFBMUniforms({
+          octaves: this.config.octaves,
+          lacunarity: this.config.lacunarity,
+          gain: this.config.gain
+        }),
+        uSharpness: { value: this.config.sharpness }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<TurbulenceConfig>): void {
+      if (!this.material) return;
+
+      if (props.octaves !== undefined) {
+        this.config.octaves = props.octaves;
+        this.material.uniforms.uOctaves.value = props.octaves;
+      }
+      if (props.lacunarity !== undefined) {
+        this.config.lacunarity = props.lacunarity;
+        this.material.uniforms.uLacunarity.value = props.lacunarity;
+      }
+      if (props.gain !== undefined) {
+        this.config.gain = props.gain;
+        this.material.uniforms.uGain.value = props.gain;
+      }
+      if (props.sharpness !== undefined) {
+        this.config.sharpness = props.sharpness;
+        this.material.uniforms.uSharpness.value = props.sharpness;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.turbulence-bg').forEach(container => {
+      const manager = new TurbulenceBackgroundManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>

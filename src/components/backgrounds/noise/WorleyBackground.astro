@@ -1,0 +1,143 @@
+---
+/**
+ * WorleyBackground - Cellular noise patterns
+ * Creates organic cell-like structures based on distance to random points
+ */
+import type { WorleyBackgroundProps } from './types';
+
+export interface Props extends WorleyBackgroundProps {}
+
+const {
+  speed = 0.3,
+  intensity = 0.5,
+  noiseScale = 1.5,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `worley-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // Worley-specific
+  cellScale = 2.0,
+  cellAnimSpeed = 0.3,
+  invert = true
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'worley-bg', className]}
+  id={id}
+  data-effect-type="worley"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-cell-scale={cellScale}
+  data-cell-anim-speed={cellAnimSpeed}
+  data-invert={invert}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
+  import { worleyFragmentShader } from './shaders/fragments/worley.glsl';
+
+  interface WorleyConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    cellScale: number;
+    cellAnimSpeed: number;
+    invert: boolean;
+  }
+
+  class WorleyBackgroundManager extends NoiseBackgroundManager<WorleyConfig> {
+    protected getFragmentShader(): string {
+      return worleyFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<WorleyConfig> {
+      return {
+        cellScale: parseFloat(container.dataset.cellScale || '2.0'),
+        cellAnimSpeed: parseFloat(container.dataset.cellAnimSpeed || '0.3'),
+        invert: container.dataset.invert !== 'false'
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        uCellScale: { value: this.config.cellScale },
+        uCellAnimSpeed: { value: this.config.cellAnimSpeed },
+        uInvert: { value: this.config.invert }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<WorleyConfig>): void {
+      if (!this.material) return;
+
+      if (props.cellScale !== undefined) {
+        this.config.cellScale = props.cellScale;
+        this.material.uniforms.uCellScale.value = props.cellScale;
+      }
+      if (props.cellAnimSpeed !== undefined) {
+        this.config.cellAnimSpeed = props.cellAnimSpeed;
+        this.material.uniforms.uCellAnimSpeed.value = props.cellAnimSpeed;
+      }
+      if (props.invert !== undefined) {
+        this.config.invert = props.invert;
+        this.material.uniforms.uInvert.value = props.invert;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.worley-bg').forEach(container => {
+      const manager = new WorleyBackgroundManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>

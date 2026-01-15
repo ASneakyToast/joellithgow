@@ -1,0 +1,165 @@
+---
+/**
+ * RidgedBackground - Sharp ridge patterns
+ * Creates mountain ridge or lightning-like effects using ridged multifractal noise
+ */
+import type { RidgedBackgroundProps } from './types';
+
+export interface Props extends RidgedBackgroundProps {}
+
+const {
+  speed = 0.4,
+  intensity = 0.6,
+  noiseScale = 2.0,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `ridged-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // FBM params
+  octaves = 5,
+  lacunarity = 2.0,
+  gain = 0.5,
+  // Ridged-specific
+  ridgeSharpness = 2.0,
+  ridgeTimeScale = 0.5
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'ridged-bg', className]}
+  id={id}
+  data-effect-type="ridged"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-octaves={octaves}
+  data-lacunarity={lacunarity}
+  data-gain={gain}
+  data-ridge-sharpness={ridgeSharpness}
+  data-ridge-time-scale={ridgeTimeScale}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
+  import { ridgedFragmentShader } from './shaders/fragments/ridged.glsl';
+  import { createFBMUniforms } from './shaders/uniforms';
+
+  interface RidgedConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    octaves: number;
+    lacunarity: number;
+    gain: number;
+    ridgeSharpness: number;
+    ridgeTimeScale: number;
+  }
+
+  class RidgedBackgroundManager extends NoiseBackgroundManager<RidgedConfig> {
+    protected getFragmentShader(): string {
+      return ridgedFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<RidgedConfig> {
+      return {
+        octaves: parseInt(container.dataset.octaves || '5'),
+        lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
+        gain: parseFloat(container.dataset.gain || '0.5'),
+        ridgeSharpness: parseFloat(container.dataset.ridgeSharpness || '2.0'),
+        ridgeTimeScale: parseFloat(container.dataset.ridgeTimeScale || '0.5')
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        ...createFBMUniforms({
+          octaves: this.config.octaves,
+          lacunarity: this.config.lacunarity,
+          gain: this.config.gain
+        }),
+        uRidgeSharpness: { value: this.config.ridgeSharpness },
+        uRidgeTimeScale: { value: this.config.ridgeTimeScale }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<RidgedConfig>): void {
+      if (!this.material) return;
+
+      if (props.octaves !== undefined) {
+        this.config.octaves = props.octaves;
+        this.material.uniforms.uOctaves.value = props.octaves;
+      }
+      if (props.lacunarity !== undefined) {
+        this.config.lacunarity = props.lacunarity;
+        this.material.uniforms.uLacunarity.value = props.lacunarity;
+      }
+      if (props.gain !== undefined) {
+        this.config.gain = props.gain;
+        this.material.uniforms.uGain.value = props.gain;
+      }
+      if (props.ridgeSharpness !== undefined) {
+        this.config.ridgeSharpness = props.ridgeSharpness;
+        this.material.uniforms.uRidgeSharpness.value = props.ridgeSharpness;
+      }
+      if (props.ridgeTimeScale !== undefined) {
+        this.config.ridgeTimeScale = props.ridgeTimeScale;
+        this.material.uniforms.uRidgeTimeScale.value = props.ridgeTimeScale;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.ridged-bg').forEach(container => {
+      const manager = new RidgedBackgroundManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>
