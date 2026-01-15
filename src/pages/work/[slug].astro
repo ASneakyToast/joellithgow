@@ -2,11 +2,9 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import UIInteractions from '@components/interactive/UIInteractions.astro';
-import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
-import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
+import PullQuote from '@components/ui/PullQuote.astro';
+import MetricDisplay from '@components/ui/MetricDisplay.astro';
 import Button from '@components/primitives/Button.astro';
-import Badge from '@components/primitives/Badge.astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects', ({ data }) => !data.draft);
@@ -39,6 +37,10 @@ const jsonLd = {
   url: `https://joellithgow.com/work/${data.id}`,
   genre: data.type,
 };
+
+// Get hero image
+const heroImage = data.images && data.images.length > 0 ? data.images[0] : null;
+const galleryImages = data.images && data.images.length > 1 ? data.images.slice(1) : [];
 ---
 
 <BaseLayout
@@ -48,207 +50,228 @@ const jsonLd = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <main class="case-study-page">
-    {/* Back navigation */}
-    <nav class="case-nav">
-      <Button href="/work" variant="secondary" size="md" class="nav-back-btn">
-        ← Back to work
-      </Button>
-    </nav>
+  <main class="case-study">
+    {/* Breadcrumb Header */}
+    <header class="breadcrumb-header">
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item">
+            <a href="/" class="breadcrumb-link">Joel Lithgow</a>
+          </li>
+          <li class="breadcrumb-separator" aria-hidden="true">/</li>
+          <li class="breadcrumb-item">
+            <a href="/work" class="breadcrumb-link">Portfolio</a>
+          </li>
+          <li class="breadcrumb-separator" aria-hidden="true">/</li>
+          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+            {data.title}
+          </li>
+        </ol>
+      </nav>
+    </header>
 
-    <article class="case-study-content">
-      {/* Hero Section */}
-      <div class="case-hero">
-        <div class="case-subtitle">{data.subtitle || data.type}</div>
-        <h1 class="case-title">{data.title}</h1>
-        <p class="case-overview">{data.overview || data.description}</p>
+    {/* Full-bleed Hero Image */}
+    {heroImage && (
+      <figure class="hero-figure">
+        {heroImage.type === 'video' ? (
+          <video class="hero-media" autoplay muted loop playsinline>
+            <source src={heroImage.src} type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <img
+            src={heroImage.src}
+            alt={heroImage.alt}
+            class="hero-media"
+            loading="eager"
+          />
+        )}
+      </figure>
+    )}
 
-        {/* Hero Image - immediate visual impact */}
-        {data.images && data.images.length > 0 && (
-          <div class="case-image-gallery hero-image">
-            {data.images[0].type === 'video' ? (
-              <video class="case-image primary-image" autoplay muted loop playsinline controls>
-                <source src={data.images[0].src} type="video/webm" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img
-                src={data.images[0].src}
-                alt={data.images[0].alt}
-                class="case-image primary-image"
-                loading="eager"
-              />
-            )}
-            {data.images[0].caption && (
-              <div class="image-caption">{data.images[0].caption}</div>
-            )}
+    {/* Article Content */}
+    <article class="article">
+      {/* Header Section */}
+      <header class="article-header">
+        <span class="project-type">{data.subtitle || data.type}</span>
+        <h1 class="article-title">{data.title}</h1>
+        <p class="article-overview">{data.overview || data.description}</p>
+      </header>
+
+      {/* Meta Information */}
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">duration</span>
+          <span class="meta-value">{data.duration || 'Ongoing'}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">team</span>
+          <span class="meta-value">{data.team || 'Solo project'}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">role</span>
+          <span class="meta-value">{data.role || 'Designer & Developer'}</span>
+        </div>
+        {data.tools && (
+          <div class="meta-item">
+            <span class="meta-label">tools</span>
+            <span class="meta-value">{data.tools}</span>
           </div>
         )}
-
-        <div class="case-meta">
-          <div class="meta-item">
-            <div class="meta-label">duration</div>
-            <div class="meta-value">{data.duration || 'Ongoing'}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">team</div>
-            <div class="meta-value">{data.team || 'Solo project'}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">role</div>
-            <div class="meta-value">{data.role || 'Designer & Developer'}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">tools</div>
-            <div class="meta-value">{data.tools || data.tags?.join(', ') || ''}</div>
-          </div>
-        </div>
       </div>
 
       {/* The Challenge */}
-      <div class="case-section">
-        <h2 class="section-title">the challenge</h2>
-        <div class="section-content">{data.problem || 'Challenge details coming soon...'}</div>
-        {data.insights && data.insights.length > 0 && (
-          <div class="insight-box">
-            <strong>key insight:</strong> {data.insights[0]}
+      {data.problem && (
+        <section class="content-section">
+          <h2 class="section-heading">the challenge</h2>
+          <div class="prose">
+            <p>{data.problem}</p>
           </div>
-        )}
-      </div>
+          {data.insights && data.insights.length > 0 && (
+            <PullQuote>
+              {data.insights[0]}
+            </PullQuote>
+          )}
+        </section>
+      )}
 
       {/* The Approach */}
-      <div class="case-section">
-        <h2 class="section-title">the approach</h2>
-        <div class="section-content">{data.solution || 'Solution details coming soon...'}</div>
-      </div>
+      {data.solution && (
+        <section class="content-section">
+          <h2 class="section-heading">the approach</h2>
+          <div class="prose">
+            <p>{data.solution}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Visual Documentation - First batch */}
+      {galleryImages.length > 0 && (
+        <section class="visual-section">
+          <figure class="featured-image">
+            <img
+              src={galleryImages[0].src}
+              alt={galleryImages[0].alt}
+              loading="lazy"
+            />
+            {galleryImages[0].caption && (
+              <figcaption>{galleryImages[0].caption}</figcaption>
+            )}
+          </figure>
+        </section>
+      )}
 
       {/* Process Deep Dive */}
       {data.process && data.process.length > 0 && (
-        <div class="case-section">
-          <h2 class="section-title">process deep dive</h2>
-          <div class="process-steps">
+        <section class="content-section">
+          <h2 class="section-heading">process</h2>
+          <ol class="process-list">
             {data.process.map((step, index) => (
-              <div class="process-step-detailed">
-                <div class="step-number-detailed">{index + 1}</div>
-                <div class="step-title-detailed">{step.title}</div>
-                <div class="step-description-detailed">{step.description}</div>
-              </div>
+              <li class="process-item">
+                <span class="process-number">{String(index + 1).padStart(2, '0')}</span>
+                <div class="process-content">
+                  <h3 class="process-title">{step.title}</h3>
+                  <p class="process-description">{step.description}</p>
+                </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ol>
+        </section>
       )}
 
-      {/* Visual Documentation */}
-      {data.images && data.images.length > 1 && (
-        <div class="case-section">
-          <h2 class="section-title">visual documentation</h2>
+      {/* Image Gallery */}
+      {galleryImages.length > 1 && (
+        <section class="visual-section">
           <div class="image-grid">
-            {data.images.slice(1).map(image => (
-              <div class="image-item">
+            {galleryImages.slice(1).map(image => (
+              <figure class="grid-image">
                 <img
                   src={image.src}
                   alt={image.alt}
-                  class="case-image gallery-image"
                   loading="lazy"
                 />
-                <div class="image-caption">{image.caption}</div>
-              </div>
+                {image.caption && (
+                  <figcaption>{image.caption}</figcaption>
+                )}
+              </figure>
             ))}
           </div>
-        </div>
+        </section>
       )}
-
-      {/* Key Insights */}
-      <div class="case-section">
-        <h2 class="section-title">key insights</h2>
-        {data.insights && data.insights.length > 0 ? (
-          data.insights.map(insight => (
-            <div class="quote-block">
-              "{insight}"
-            </div>
-          ))
-        ) : (
-          <p>Insights coming soon...</p>
-        )}
-      </div>
 
       {/* Impact & Results */}
       {data.metrics && data.metrics.length > 0 && (
-        <div class="case-section">
-          <h2 class="section-title">impact & results</h2>
-          <div class="metric-grid">
-            {data.metrics.map(metric => (
-              <div class="metric-card">
-                <div class="metric-number">{metric.number}</div>
-                <div class="metric-label">{metric.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <section class="content-section results-section">
+          <h2 class="section-heading">impact & results</h2>
+          <MetricDisplay
+            metrics={data.metrics}
+            columns={data.metrics.length <= 2 ? 2 : data.metrics.length <= 3 ? 3 : 4}
+          />
+        </section>
       )}
 
-      {/* Live Link */}
-      {data.liveLink && (
-        <div class="case-section">
-          <h2 class="section-title">{data.liveLink.title}</h2>
-          <div class="live-link-container">
-            <a
-              href={data.liveLink.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="live-link-button"
-            >
-              Visit Live Site
-              <span class="link-arrow">→</span>
-            </a>
-            <p class="live-link-description">{data.liveLink.description}</p>
-          </div>
-        </div>
+      {/* Key Insights */}
+      {data.insights && data.insights.length > 1 && (
+        <section class="content-section">
+          <h2 class="section-heading">key insights</h2>
+          {data.insights.slice(1).map(insight => (
+            <PullQuote>
+              {insight}
+            </PullQuote>
+          ))}
+        </section>
       )}
 
-      {/* Live Links (Multiple) */}
-      {data.liveLinks && (
-        <div class="case-section">
-          <h2 class="section-title">{data.liveLinks.title}</h2>
-          <div class="live-links-container">
-            <p class="live-links-description">{data.liveLinks.description}</p>
-            <div class="live-links-grid">
-              {data.liveLinks.links.map(link => (
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="live-link-button"
-                >
-                  {link.title}
-                  <span class="link-arrow">→</span>
-                </a>
-              ))}
+      {/* Live Link(s) */}
+      {(data.liveLink || data.liveLinks) && (
+        <section class="content-section cta-section">
+          {data.liveLink && (
+            <div class="live-link-wrapper">
+              <h2 class="section-heading">{data.liveLink.title}</h2>
+              <p class="cta-description">{data.liveLink.description}</p>
+              <a
+                href={data.liveLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="cta-link"
+              >
+                Visit Live Site
+                <span class="cta-arrow" aria-hidden="true">&rarr;</span>
+              </a>
             </div>
-          </div>
-        </div>
+          )}
+          {data.liveLinks && (
+            <div class="live-links-wrapper">
+              <h2 class="section-heading">{data.liveLinks.title}</h2>
+              <p class="cta-description">{data.liveLinks.description}</p>
+              <div class="links-grid">
+                {data.liveLinks.links.map(link => (
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="cta-link"
+                  >
+                    {link.title}
+                    <span class="cta-arrow" aria-hidden="true">&rarr;</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Back navigation */}
-      <footer class="case-footer">
-        <Button href="/work" variant="primary" size="lg" class="footer-back-btn">
-          ← Back to all projects
+      {/* Footer Navigation */}
+      <footer class="article-footer">
+        <Button href="/work" variant="primary" size="lg">
+          <span aria-hidden="true">&larr;</span> Back to all projects
         </Button>
       </footer>
     </article>
   </main>
 
-  {/* Modals */}
   <ThemeModal />
-
-  {/* Enhanced UI Interactions */}
-  <UIInteractions />
-
-  {/* Keyboard Shortcuts and Accessibility */}
-  <KeyboardShortcuts />
-
-  {/* Performance Optimization and Monitoring */}
-  <PerformanceOptimizer />
 </BaseLayout>
 
 <style>
@@ -256,347 +279,393 @@ const jsonLd = {
   @import '../../styles/themes.css';
 
   /* Page Layout */
-  .case-study-page {
-    min-height: 100vh;
+  .case-study {
     background: var(--bg-secondary);
+    min-height: 100vh;
   }
 
-  .case-nav {
-    padding: var(--space-2xl) var(--page-gutter);
-    max-width: var(--content-wide);
-    margin: 0 auto;
-  }
-
-  .nav-back-btn {
-    margin-bottom: var(--space-lg);
-  }
-
-  .case-study-content {
-    max-width: var(--content-wide);
-    margin: 0 auto;
-  }
-
-  /* Hero Section */
-  .case-hero {
-    padding: var(--space-3xl) var(--page-gutter);
+  /* Breadcrumb Header */
+  .breadcrumb-header {
     background: var(--bg-primary);
+    padding: var(--space-md) var(--page-gutter);
     border-bottom: 2px solid var(--bg-dark);
   }
 
-  .case-title {
-    font-size: var(--heading-xl);
-    margin-bottom: var(--space-md);
-    color: var(--text-primary);
-    text-shadow: 2px 2px 0px var(--accent-primary);
-    line-height: 1.2;
+  .breadcrumb-nav {
+    max-width: var(--content-container);
+    margin: 0 auto;
   }
 
-  .case-subtitle {
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb-item {
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+  }
+
+  .breadcrumb-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .breadcrumb-separator {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    font-size: var(--text-sm);
+  }
+
+  .breadcrumb-current {
+    color: var(--text-primary);
+    font-weight: var(--font-bold);
+  }
+
+  /* Hero Image - Full Bleed */
+  .hero-figure {
+    width: 100%;
+    height: 85vh;
+    max-height: 900px;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 4px solid var(--bg-dark);
+  }
+
+  .hero-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Article Container */
+  .article {
+    max-width: var(--content-container);
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
+  }
+
+  /* Article Header */
+  .article-header {
+    max-width: var(--content-normal);
+    margin-bottom: var(--space-4xl);
+    padding-top: var(--space-3xl);
+  }
+
+  .project-type {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--text-secondary);
+    color: var(--accent-secondary);
+    display: block;
     margin-bottom: var(--space-lg);
   }
 
-  .case-overview {
-    font-size: var(--text-lg);
-    line-height: var(--leading-relaxed);
+  .article-title {
+    font-family: var(--font-family);
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
     color: var(--text-primary);
-    margin-bottom: var(--space-2xl);
+    margin: 0 0 var(--space-xl);
   }
 
-  .case-meta {
+  .article-overview {
+    font-family: var(--font-family);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Meta Grid */
+  .meta-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: var(--space-md);
+    margin-bottom: var(--space-4xl);
   }
 
   .meta-item {
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     border: 2px solid var(--bg-dark);
-    padding: var(--space-md);
-    transform: rotate(1deg);
+    padding: var(--space-lg);
   }
 
   .meta-item:nth-child(even) {
-    transform: rotate(-1deg);
     background: var(--accent-tertiary);
   }
 
   .meta-label {
+    font-family: var(--font-family);
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    margin-bottom: var(--space-xs);
     color: var(--text-secondary);
+    display: block;
+    margin-bottom: var(--space-xs);
   }
 
   .meta-value {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
     color: var(--text-primary);
   }
 
-  /* Case Sections */
-  .case-section {
-    padding: var(--space-3xl) var(--page-gutter);
-    border-bottom: 2px solid var(--bg-primary);
+  /* Content Sections */
+  .content-section {
+    margin-bottom: var(--space-5xl);
   }
 
-  .case-section:nth-child(even) {
-    background: var(--bg-primary);
-  }
-
-  .section-title {
-    font-size: var(--text-2xl);
-    margin-bottom: var(--space-lg);
+  .section-heading {
+    font-family: var(--font-family);
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
     color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
     text-transform: lowercase;
     border-left: 4px solid var(--accent-primary);
     padding-left: var(--space-md);
   }
 
-  .section-content {
+  /* Prose Content */
+  .prose {
+    max-width: var(--content-normal);
+  }
+
+  .prose p {
+    font-family: var(--font-family);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     color: var(--text-primary);
-    margin-bottom: var(--space-lg);
+    margin: 0 0 var(--space-lg);
   }
 
-  .insight-box {
-    background: var(--accent-secondary);
-    color: var(--text-light);
-    padding: var(--space-lg);
-    margin: var(--space-lg) 0;
-    border: 2px solid var(--bg-dark);
-    transform: rotate(-1deg);
-    position: relative;
+  .prose p:last-child {
+    margin-bottom: 0;
   }
 
-  .insight-box::before {
-    content: '💡';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    background: var(--accent-tertiary);
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--bg-dark);
+  /* Visual Sections */
+  .visual-section {
+    margin: var(--space-4xl) 0;
+  }
+
+  .featured-image {
+    margin: 0;
+  }
+
+  .featured-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 4px solid var(--bg-dark);
+  }
+
+  .featured-image figcaption,
+  .grid-image figcaption {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: var(--space-md);
   }
 
-  /* Metrics */
-  .metric-grid {
+  /* Image Grid */
+  .image-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-md);
-    margin: var(--space-lg) 0;
+    gap: var(--space-xl);
   }
 
-  .metric-card {
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: var(--space-lg);
-    text-align: center;
-    border: 2px solid var(--bg-dark);
-    transform: rotate(1deg);
+  @media (min-width: 768px) {
+    .image-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
-  .metric-card:nth-child(even) {
-    transform: rotate(-2deg);
-    background: var(--accent-primary);
+  .grid-image {
+    margin: 0;
   }
 
-  .metric-number {
-    font-size: var(--heading-md);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-xs);
+  .grid-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 3px solid var(--bg-dark);
   }
 
-  .metric-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+  /* Process List */
+  .process-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: var(--content-normal);
   }
 
-  /* Process Steps */
-  .process-step-detailed {
-    background: var(--bg-secondary);
-    border: 2px solid var(--bg-dark);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-lg);
-    transform: rotate(0.5deg);
+  .process-item {
+    display: flex;
+    gap: var(--space-xl);
+    padding: var(--space-xl) 0;
+    border-bottom: 2px solid var(--bg-dark);
   }
 
-  .process-step-detailed:nth-child(even) {
-    transform: rotate(-0.5deg);
+  .process-item:last-child {
+    border-bottom: none;
   }
 
-  .step-number-detailed {
+  .process-number {
+    font-family: var(--font-family);
     font-size: var(--heading-sm);
     font-weight: var(--font-bold);
     color: var(--accent-primary);
-    margin-bottom: var(--space-sm);
+    flex-shrink: 0;
+    width: 50px;
   }
 
-  .step-title-detailed {
+  .process-content {
+    flex: 1;
+  }
+
+  .process-title {
+    font-family: var(--font-family);
     font-size: var(--text-xl);
     font-weight: var(--font-bold);
-    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-sm);
   }
 
-  .step-description-detailed {
+  .process-description {
+    font-family: var(--font-family);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
-  }
-
-  /* Images */
-  .case-image-gallery,
-  .image-grid {
-    margin: var(--space-lg) 0;
-  }
-
-  .hero-image {
-    margin: var(--space-2xl) 0;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  }
-
-  .hero-image .primary-image {
-    border-radius: var(--radius-lg);
-  }
-
-  .case-image {
-    width: 100%;
-    height: auto;
-    border: 2px solid var(--bg-dark);
-    border-radius: var(--radius-md);
-  }
-
-  .primary-image {
-    max-height: 500px;
-    object-fit: cover;
-  }
-
-  .image-caption {
-    font-size: var(--text-sm);
     color: var(--text-secondary);
-    margin-top: var(--space-sm);
-    text-align: center;
+    margin: 0;
   }
 
-  .image-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
+  /* Results Section */
+  .results-section {
+    background: var(--bg-primary);
+    margin-left: calc(-1 * var(--page-gutter));
+    margin-right: calc(-1 * var(--page-gutter));
+    padding: var(--space-4xl) var(--page-gutter);
+    border-top: 4px solid var(--accent-primary);
+    border-bottom: 4px solid var(--accent-primary);
   }
 
-  .quote-block {
-    background: var(--bg-secondary);
-    border-left: 4px solid var(--accent-primary);
-    padding: var(--space-lg);
-    margin: var(--space-lg) 0;
-    font-style: italic;
-    font-size: var(--text-lg);
+  /* CTA Section */
+  .cta-section {
+    border-top: 3px solid var(--bg-dark);
+    padding-top: var(--space-4xl);
   }
 
-  /* Live Links */
-  .live-link-container,
-  .live-links-container {
-    margin: var(--space-lg) 0;
+  .cta-description {
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-xl);
+    max-width: var(--content-normal);
   }
 
-  .live-link-button {
+  .cta-link {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
-    text-decoration: none;
+    font-family: var(--font-family);
+    font-size: var(--text-base);
     font-weight: var(--font-bold);
+    color: var(--text-light);
+    text-decoration: none;
+    padding: var(--space-md) var(--space-xl);
+    background: var(--accent-primary);
+    border: 3px solid var(--bg-dark);
+    box-shadow: var(--shadow-md) var(--bg-dark);
     transition: all var(--duration-base) var(--ease-out);
   }
 
-  .live-link-button:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
+  .cta-link:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg) var(--bg-dark);
   }
 
-  .link-arrow {
-    font-size: var(--text-xl);
+  .cta-arrow {
+    transition: transform var(--duration-base) var(--ease-out);
   }
 
-  .live-link-description,
-  .live-links-description {
-    font-size: var(--text-base);
-    color: var(--text-secondary);
-    margin: var(--space-md) 0;
+  .cta-link:hover .cta-arrow {
+    transform: translateX(4px);
   }
 
-  .live-links-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+  .links-grid {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-md);
   }
 
-  /* Footer */
-  .case-footer {
-    padding: var(--space-3xl) var(--page-gutter);
+  /* Article Footer */
+  .article-footer {
+    padding: var(--space-4xl) 0;
+    margin-top: var(--space-4xl);
+    border-top: 3px solid var(--bg-dark);
     text-align: center;
-    background: var(--bg-primary);
   }
 
-  /* Mobile-first responsive breakpoints */
-  @media (min-width: 600px) {
-    .case-meta {
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-figure {
+      height: 60vh;
+    }
+
+    .article-title {
+      font-size: var(--heading-xl);
+    }
+
+    .meta-grid {
       grid-template-columns: repeat(2, 1fr);
     }
 
-    .metric-grid {
-      grid-template-columns: repeat(2, 1fr);
+    .process-item {
+      flex-direction: column;
+      gap: var(--space-md);
     }
 
-    .image-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .live-links-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .case-meta {
-      grid-template-columns: repeat(4, 1fr);
-    }
-
-    .metric-grid {
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-
-    .image-grid {
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-
-    .live-links-grid {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .process-number {
+      width: auto;
     }
   }
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .meta-item,
-    .metric-card,
-    .process-step-detailed,
-    .insight-box {
-      transform: none !important;
+    .cta-arrow {
+      transition: none;
     }
+
+    .cta-link:hover .cta-arrow {
+      transform: none;
+    }
+
+    .cta-link:hover {
+      transform: none;
+    }
+  }
+
+  /* Focus states */
+  .breadcrumb-link:focus,
+  .cta-link:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
   }
 </style>

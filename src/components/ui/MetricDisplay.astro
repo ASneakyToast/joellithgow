@@ -1,0 +1,102 @@
+---
+export interface Props {
+  metrics: Array<{ number: string; label: string }>;
+  columns?: 2 | 3 | 4;
+}
+
+const { metrics, columns = 3 } = Astro.props;
+---
+
+<div class={`metrics-container metrics-container--cols-${columns}`}>
+  {metrics.map((metric, index) => (
+    <div class={`metric metric--${index % 2 === 0 ? 'even' : 'odd'}`}>
+      <span class="metric-value">{metric.number}</span>
+      <span class="metric-label">{metric.label}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .metrics-container {
+    display: grid;
+    gap: var(--space-lg);
+    margin: var(--space-xl) 0;
+  }
+
+  .metrics-container--cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metrics-container--cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .metrics-container--cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .metric {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-xl);
+    text-align: center;
+    border: 2px solid var(--bg-dark);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  .metric--odd {
+    background: var(--accent-primary);
+  }
+
+  .metric:hover {
+    transform: scale(1.02);
+  }
+
+  .metric-value {
+    font-family: var(--font-family);
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    line-height: 1;
+    display: block;
+    margin-bottom: var(--space-sm);
+  }
+
+  .metric-label {
+    font-family: var(--font-family);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    display: block;
+    opacity: 0.9;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .metrics-container--cols-3,
+    .metrics-container--cols-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .metrics-container {
+      grid-template-columns: 1fr;
+    }
+
+    .metrics-container--cols-2,
+    .metrics-container--cols-3,
+    .metrics-container--cols-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .metric:hover {
+      transform: none;
+    }
+  }
+</style>

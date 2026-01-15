@@ -53,19 +53,6 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  /* Project card hover effects - only for ProjectCards component */
-  :global(.project-card) {
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
-  }
-
-  :global(.project-card:hover) {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 
-      0 25px 50px rgba(0, 0, 0, 0.1),
-      0 0 0 1px var(--accent-primary);
-  }
-
   /* Loading states */
   .loading-placeholder {
     background: linear-gradient(90deg, 
@@ -94,8 +81,7 @@
   @media (prefers-reduced-motion: reduce) {
     .animate-on-scroll,
     .cursor-trail,
-    :global(.interactive-hover),
-    :global(.project-card) {
+    :global(.interactive-hover) {
       animation: none !important;
       transition: none !important;
     }

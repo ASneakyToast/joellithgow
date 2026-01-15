@@ -7,10 +7,17 @@ import { getCollection } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths = (async () => {
+  // Skills listed in the About section that should have pages even without projects
+  const aboutSkills = [
+    'figma', 'sketch', 'adobe cc', 'prototyping', 'user research', 'design systems',
+    'javascript', 'typescript', 'react', 'node.js', 'python', 'docker',
+    'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
+  ];
+
   const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 
-  // Get all unique tags/skills from projects
-  const allSkills = new Set<string>();
+  // Get all unique tags/skills from projects AND the about section
+  const allSkills = new Set<string>(aboutSkills);
   allProjects.forEach((project) => {
     project.data.tags?.forEach((tag) => allSkills.add(tag));
   });
@@ -52,42 +59,51 @@ const pageDescription = `Projects featuring ${skill}`;
       </p>
     </div>
 
-    <div class="projects-grid">
-      {projects.map((project) => (
-        <Card variant="interactive" href={`/work/${project.data.id}`}>
-          <div class="project-header">
-            <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
-            <span class="project-type">{project.data.type}</span>
-          </div>
-
-          <h2 class="project-title">{project.data.title}</h2>
-          <p class="project-description">{project.data.description}</p>
-
-          {/* Impact */}
-          {project.data.impact && (
-            <div class="project-impact">
-              <span class="impact-label">impact:</span>
-              <span class="impact-value">{project.data.impact}</span>
+    {projects.length > 0 ? (
+      <div class="projects-grid">
+        {projects.map((project) => (
+          <Card variant="interactive" href={`/work/${project.data.id}`}>
+            <div class="project-header">
+              <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
+              <span class="project-type">{project.data.type}</span>
             </div>
-          )}
 
-          {/* Tags - highlight current skill */}
-          {project.data.tags && project.data.tags.length > 0 && (
-            <div class="project-tags">
-              {project.data.tags.slice(0, 5).map((tag) => (
-                <Badge
-                  variant={tag === skill ? "primary" : "secondary"}
-                  size="sm"
-                  href={`/work/skills/${tag}`}
-                >
-                  #{tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </Card>
-      ))}
-    </div>
+            <h2 class="project-title">{project.data.title}</h2>
+            <p class="project-description">{project.data.description}</p>
+
+            {/* Impact */}
+            {project.data.impact && (
+              <div class="project-impact">
+                <span class="impact-label">impact:</span>
+                <span class="impact-value">{project.data.impact}</span>
+              </div>
+            )}
+
+            {/* Tags - highlight current skill */}
+            {project.data.tags && project.data.tags.length > 0 && (
+              <div class="project-tags">
+                {project.data.tags.slice(0, 5).map((tag) => (
+                  <Badge
+                    variant={tag === skill ? "primary" : "secondary"}
+                    size="sm"
+                    href={`/work/skills/${tag}`}
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <p class="empty-message">No documented case studies for this skill yet.</p>
+        <Button href="/work" variant="primary" size="md">
+          View all projects
+        </Button>
+      </div>
+    )}
   </main>
 </BaseLayout>
 
@@ -205,6 +221,24 @@ const pageDescription = `Projects featuring ${skill}`;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-xs);
+  }
+
+  /* Empty State */
+  .empty-state {
+    max-width: var(--content-normal);
+    margin: 0 auto;
+    text-align: center;
+    padding: var(--space-5xl) var(--space-xl);
+    background: var(--bg-primary);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .empty-message {
+    font-family: var(--font-family);
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-xl);
   }
 
   @media (max-width: 768px) {

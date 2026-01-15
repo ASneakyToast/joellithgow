@@ -1,0 +1,59 @@
+---
+export interface Props {
+  variant?: 'default' | 'highlight';
+}
+
+const { variant = 'default' } = Astro.props;
+---
+
+<blockquote class={`pull-quote pull-quote--${variant}`}>
+  <span class="quote-icon" aria-hidden="true">💡</span>
+  <p class="quote-text"><slot /></p>
+</blockquote>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .pull-quote {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: var(--space-xl);
+    margin: var(--space-xl) 0;
+    border: 2px solid var(--bg-dark);
+    position: relative;
+    max-width: var(--content-normal);
+  }
+
+  .pull-quote--highlight {
+    background: var(--accent-tertiary);
+    color: var(--text-primary);
+  }
+
+  .quote-icon {
+    position: absolute;
+    top: calc(-1 * var(--space-md));
+    left: calc(-1 * var(--space-md));
+    background: var(--accent-tertiary);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+    font-size: var(--text-base);
+  }
+
+  .pull-quote--highlight .quote-icon {
+    background: var(--accent-primary);
+  }
+
+  .quote-text {
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    font-weight: var(--font-bold);
+  }
+
+</style>

@@ -1,21 +1,21 @@
 ---
-// Projects section component using content collections
+// Projects section component - Clean layout with brutalist styling
 import { getCollection } from 'astro:content';
-import Badge from '@components/primitives/Badge.astro';
-import Button from '@components/primitives/Button.astro';
 
 export interface Props {
   sectionTitle?: string;
   sectionSubtitle?: string;
   featuredOnly?: boolean;
   limit?: number;
+  showHeader?: boolean;
 }
 
 const {
   sectionTitle = 'selected work',
   sectionSubtitle = 'solving complex problems through research-driven design',
   featuredOnly = true,
-  limit
+  limit,
+  showHeader = true
 } = Astro.props;
 
 // Get projects from content collection (exclude drafts)
@@ -31,180 +31,57 @@ if (limit && limit > 0) {
 }
 ---
 
-<section id="work" class="projects-wrapper" aria-labelledby="projects-heading">
-  <!-- Hero header -->
-  <header class="section-header">
-    <h2 id="projects-heading" class="section-title">{sectionTitle}</h2>
-    <p class="section-subtitle">{sectionSubtitle}</p>
-  </header>
+<section id="work" class="projects-section" aria-labelledby={showHeader ? "projects-heading" : undefined}>
+  {/* Section Header */}
+  {showHeader && (
+    <header class="section-header">
+      <h2 id="projects-heading" class="section-title">{sectionTitle}</h2>
+      <p class="section-subtitle">{sectionSubtitle}</p>
+    </header>
+  )}
 
-  <!-- Progress indicator -->
-  <nav class="progress-indicator" aria-label="Project navigation">
-    {projects.map((project, index) => (
-      <button
-        class="progress-dot"
-        data-project-index={index}
-        aria-label={`Go to project ${project.data.number}: ${project.data.title}`}
-      >
-        <span class="sr-only">{String(project.data.number).padStart(2, '0')}</span>
-      </button>
-    ))}
-  </nav>
-
-  <!-- Projects container -->
-  <div class="projects-container">
+  {/* Projects Grid */}
+  <div class="projects-grid">
     {projects.map((project, index) => {
+      const hasImage = project.data.images && project.data.images.length > 0;
+      const heroImage = hasImage ? project.data.images[0] : null;
       const isEven = index % 2 === 1;
-      const metrics = project.data.metrics || [];
-      const hasImages = project.data.images && project.data.images.length > 0;
 
       return (
-        <article
-          class={`project-section ${isEven ? 'media-left' : 'media-right'} ${!hasImages ? 'no-images' : ''}`}
-          data-project-index={index}
-        >
-          <div class="project-content-wrapper">
-            <!-- Content Side -->
+        <a href={`/work/${project.data.id}`} class={`project-card-link ${isEven ? 'project-card--reversed' : ''}`}>
+          <article class="project-card">
+            {/* Image */}
+            {heroImage && (
+              <figure class="project-image">
+                {heroImage.type === 'video' ? (
+                  <video autoplay muted loop playsinline>
+                    <source src={heroImage.src} type="video/webm" />
+                  </video>
+                ) : (
+                  <img
+                    src={heroImage.src}
+                    alt={heroImage.alt}
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                )}
+              </figure>
+            )}
+
+            {/* Content */}
             <div class="project-content">
               <div class="project-meta">
-                <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
+                <span class="project-number">{String(index + 1).padStart(2, '0')}</span>
                 <span class="project-divider">─────</span>
                 <span class="project-type">{project.data.type}</span>
               </div>
-
               <h3 class="project-title">{project.data.title}</h3>
-
-              {/* Mobile Hero Image - shown only on mobile after title */}
-              {project.data.images && project.data.images.length > 0 && (
-                <div
-                  class="hero-media mobile-hero clickable-media gallery-trigger"
-                  data-image-index="0"
-                  role="button"
-                  tabindex="0"
-                  aria-label={`View image: ${project.data.images[0].caption}`}
-                >
-                  {project.data.images[0].type === 'video' ? (
-                    <video class="media-element" autoplay muted loop playsinline>
-                      <source src={project.data.images[0].src} type="video/webm" />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <img
-                      src={project.data.images[0].src}
-                      alt={project.data.images[0].alt}
-                      class="media-element"
-                      loading="lazy"
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Metrics */}
-              {metrics.length > 0 && (
-                <div class="project-metrics">
-                  {metrics.slice(0, 2).map((metric) => (
-                    <div class="metric-box">
-                      <div class="metric-number">{metric.number}</div>
-                      <div class="metric-label">{metric.label}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Problem */}
-              {project.data.problem && (
-                <div class="project-detail">
-                  <h4 class="detail-heading">the challenge</h4>
-                  <p class="detail-text">{project.data.problem}</p>
-                </div>
-              )}
-
-              {/* Solution */}
-              {project.data.solution && (
-                <div class="project-detail">
-                  <h4 class="detail-heading">the solution</h4>
-                  <p class="detail-text">{project.data.solution}</p>
-                </div>
-              )}
-
-              {/* Technologies */}
-              <div class="project-tech">
-                {project.data.technologies.slice(0, 4).map((tech) => (
-                  <Badge variant="tertiary" size="sm">{tech}</Badge>
-                ))}
-              </div>
-
-              {/* CTAs */}
+              <p class="project-excerpt">{project.data.description}</p>
               <div class="project-actions">
-                <Button
-                  variant="primary"
-                  size="md"
-                  href={`/work/${project.data.id}`}
-                >
-                  view full story →
-                </Button>
-                {project.data.liveLink && (
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onclick={`window.open('${project.data.liveLink.url}', '_blank')`}
-                  >
-                    see live →
-                  </Button>
-                )}
+                <span class="project-cta">view case study →</span>
               </div>
             </div>
-
-            <!-- Media Side -->
-            <div class="project-media" data-project-images={JSON.stringify(project.data.images)}>
-              {/* Hero Image/Video - desktop only */}
-              {project.data.images && project.data.images.length > 0 && (
-                <div
-                  class="hero-media desktop-hero clickable-media gallery-trigger"
-                  data-image-index="0"
-                  role="button"
-                  tabindex="0"
-                  aria-label={`View image: ${project.data.images[0].caption}`}
-                >
-                  {project.data.images[0].type === 'video' ? (
-                    <video class="media-element" autoplay muted loop playsinline>
-                      <source src={project.data.images[0].src} type="video/webm" />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <img
-                      src={project.data.images[0].src}
-                      alt={project.data.images[0].alt}
-                      class="media-element"
-                      loading="lazy"
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Supporting Images */}
-              {project.data.images && project.data.images.length > 1 && (
-                <div class="supporting-media">
-                  {project.data.images.slice(1, 5).map((image, idx) => (
-                    <div
-                      class="supporting-image clickable-media gallery-trigger"
-                      data-image-index={idx + 1}
-                      role="button"
-                      tabindex="0"
-                      aria-label={`View image: ${image.caption}`}
-                    >
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </article>
+          </article>
+        </a>
       );
     })}
   </div>
@@ -220,27 +97,26 @@ if (limit && limit > 0) {
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
 
-  /* Wrapper */
-  .projects-wrapper {
-    background: var(--bg-secondary);
+  /* Section Container */
+  .projects-section {
+    background: transparent;
+    padding: var(--space-5xl) var(--page-gutter);
     border-top: 5px solid var(--accent-primary);
-    position: relative;
   }
 
   /* Section Header */
   .section-header {
     max-width: var(--content-wide);
-    margin: 0 auto;
-    padding: var(--space-5xl) var(--space-5xl) var(--space-4xl);
+    margin: 0 auto var(--space-5xl);
     text-align: center;
-    position: relative;
-    z-index: 10;
   }
 
   .section-title {
+    font-family: var(--font-family);
     font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
     color: var(--text-primary);
-    margin-bottom: var(--space-lg);
+    margin: 0 0 var(--space-lg);
     text-decoration: underline;
     text-decoration-color: var(--accent-primary);
     text-decoration-thickness: 4px;
@@ -248,128 +124,119 @@ if (limit && limit > 0) {
   }
 
   .section-subtitle {
+    font-family: var(--font-family);
     font-size: var(--text-base);
     color: var(--text-secondary);
-    letter-spacing: var(--tracking-wider);
+    letter-spacing: var(--tracking-wide);
+    margin: 0;
   }
 
-  /* Progress Indicator */
-  .progress-indicator {
-    position: fixed;
-    right: var(--space-xl);
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 100;
+  /* Projects Grid */
+  .projects-grid {
+    max-width: var(--content-full);
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--duration-base) var(--ease-out), visibility var(--duration-base) var(--ease-out);
+    gap: var(--space-5xl);
   }
 
-  .progress-indicator.visible {
-    opacity: 1;
-    visibility: visible;
+  /* Project Card Link - wraps entire card */
+  .project-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
   }
 
-  .progress-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--bg-primary);
-    border: 2px solid var(--accent-primary);
-    cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
-    padding: 0;
-  }
-
-  .progress-dot:hover,
-  .progress-dot.active {
-    background: var(--accent-primary);
-    transform: scale(1.3);
-  }
-
-  /* Projects Container */
-  .projects-container {
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-  }
-
-  /* Project Section */
-  .project-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-5xl) var(--space-5xl);
-    border-bottom: 5px solid var(--accent-primary);
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    position: relative;
-  }
-
-  .project-content-wrapper {
-    max-width: 1400px;
-    width: 100%;
+  /* Project Card */
+  .project-card {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
     align-items: center;
-    padding: 0 var(--space-lg);
+    background-color: var(--bg-secondary);
+    padding: var(--card-padding);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  /* Mobile-first: Show mobile hero, hide desktop hero */
-  .mobile-hero {
+  .project-card-link:hover .project-card {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  @media (min-width: 1024px) {
+    .project-card {
+      grid-template-columns: 1.2fr 1fr;
+      gap: var(--space-4xl);
+    }
+
+    .project-card--reversed .project-card {
+      grid-template-columns: 1fr 1.2fr;
+    }
+
+    .project-card--reversed .project-image {
+      order: 2;
+    }
+
+    .project-card--reversed .project-content {
+      order: 1;
+      text-align: right;
+    }
+
+    .project-card--reversed .project-meta {
+      justify-content: flex-end;
+    }
+
+    .project-card--reversed .project-actions {
+      justify-content: flex-end;
+    }
+  }
+
+  /* Project Image */
+  .project-image {
+    margin: 0;
+    overflow: hidden;
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
+  }
+
+  .project-card-link:hover .project-image {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
+  }
+
+  .project-image img {
+    width: 100%;
+    height: auto;
     display: block;
-    margin: var(--space-xl) 0;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
   }
 
-  .desktop-hero {
-    display: none;
-  }
-
-  /* Mobile: Hide supporting images */
-  .supporting-media {
-    display: none;
-  }
-
-  /* Alternating Layouts - will be activated on larger screens */
-  .media-right .project-content-wrapper {
-    grid-template-columns: 1fr;
-  }
-
-  .media-left .project-content-wrapper {
-    grid-template-columns: 1fr;
-  }
-
-  /* No Images State */
-  .project-section.no-images .project-content-wrapper {
-    grid-template-columns: 1fr;
-    max-width: 900px;
-  }
-
-  .project-section.no-images .project-content {
-    order: 1;
-  }
-
-  .project-section.no-images .project-media {
-    display: none;
+  .project-image video {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: auto;
+    object-fit: contain;
   }
 
   /* Project Content */
   .project-content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: var(--space-lg);
   }
 
   .project-meta {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    font-size: var(--text-lg);
-    color: var(--text-primary);
+    font-family: var(--font-family);
   }
 
   .project-number {
@@ -386,154 +253,30 @@ if (limit && limit > 0) {
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     font-size: var(--text-sm);
-    opacity: 0.8;
-  }
-
-  .project-title {
-    font-size: var(--heading-lg);
-    line-height: 1.2;
-    color: var(--text-primary);
-    font-weight: var(--font-bold);
-    margin: 0;
-  }
-
-  /* Metrics */
-  .project-metrics {
-    display: flex;
-    gap: var(--space-lg);
-    margin: var(--space-lg) 0;
-  }
-
-  .metric-box {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-lg) var(--space-xl);
-    border: 4px solid var(--bg-dark);
-    border-radius: var(--radius-sm);
-    transform: rotate(-2deg);
-    transition: transform var(--duration-base) var(--ease-out);
-  }
-
-  .metric-box:hover {
-    transform: rotate(0deg) scale(1.05);
-  }
-
-  .metric-number {
-    font-size: var(--heading-md);
-    font-weight: var(--font-bold);
-    line-height: 1;
-    margin-bottom: var(--space-xs);
-  }
-
-  .metric-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    opacity: 0.9;
-  }
-
-  /* Project Details */
-  .project-detail {
-    margin: var(--space-md) 0;
-  }
-
-  .detail-heading {
-    font-size: var(--text-sm);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--accent-primary);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-sm);
-  }
-
-  .detail-text {
-    font-size: var(--text-base);
-    line-height: var(--leading-relaxed);
     color: var(--text-secondary);
   }
 
-  /* Technologies */
-  .project-tech {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
+  .project-title {
+    font-family: var(--font-family);
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    color: var(--text-primary);
+    margin: 0;
   }
 
-  /* Actions */
+  .project-excerpt {
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
   .project-actions {
     display: flex;
     gap: var(--space-md);
-    margin-top: var(--space-lg);
-  }
-
-  /* Project Media */
-  .project-media {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
-  .hero-media {
-    display: block;
-    width: 100%;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 4px solid var(--bg-dark);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
-    transition: all var(--duration-base) var(--ease-out);
-    text-decoration: none;
-  }
-
-  /* Clickable Media Styles */
-  .clickable-media {
-    cursor: pointer;
-  }
-
-  .clickable-media:hover {
-    transform: scale(1.02);
-    border-color: var(--accent-primary);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  .clickable-media:focus {
-    outline: 3px solid var(--accent-primary);
-    outline-offset: 4px;
-  }
-
-  .clickable-media:active {
-    transform: scale(0.98);
-  }
-
-  .media-element {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
-  }
-
-  .supporting-media {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
-  }
-
-  .supporting-image {
-    display: block;
-    width: 100%;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    border: 3px solid var(--bg-dark);
-    transition: all var(--duration-base) var(--ease-out);
-    text-decoration: none;
-  }
-
-  .supporting-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-    aspect-ratio: 4 / 3;
+    margin-top: var(--space-md);
   }
 
   /* No Projects */
@@ -544,276 +287,63 @@ if (limit && limit > 0) {
     font-size: var(--text-lg);
   }
 
-  /* Screen reader only */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
-
-  /* Responsive Design */
-  /* Mobile-first responsive breakpoints */
-  @media (min-width: 769px) {
-    .project-content-wrapper {
-      gap: var(--space-4xl);
-      padding: 0 var(--space-2xl);
-    }
-  }
-
-  @media (min-width: 1025px) {
-    .project-section {
-      padding: var(--space-5xl) var(--space-4xl);
-    }
-
-    .project-content-wrapper {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-5xl);
-      padding: 0 var(--space-xl);
-    }
-
-    .media-right .project-content-wrapper {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .media-left .project-content-wrapper {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    /* Desktop: hide mobile hero, show desktop hero */
-    .mobile-hero {
-      display: none;
-    }
-
-    .desktop-hero {
-      display: block;
-    }
-
-    /* Show supporting images on desktop */
-    .supporting-media {
-      display: grid;
-    }
-
-    /* Desktop: media-right shows content on left, media on right */
-    .media-right .project-content {
-      order: 1;
-    }
-
-    .media-right .project-media {
-      order: 2;
-    }
-
-    /* Desktop: media-left shows media on left, content on right */
-    .media-left .project-content {
-      order: 2;
-    }
-
-    .media-left .project-media {
-      order: 1;
-    }
-
-    .progress-indicator {
-      right: var(--space-lg);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .section-header {
-      padding: var(--space-4xl) var(--space-lg) var(--space-3xl);
-    }
-
+  /* Responsive */
+  @media (max-width: 767px) {
     .section-title {
       font-size: var(--heading-lg);
-    }
-
-    .project-section {
-      padding: var(--space-3xl) var(--space-lg);
-      min-height: auto;
-    }
-
-    .project-content-wrapper {
-      gap: var(--space-2xl);
-      padding: 0;
     }
 
     .project-title {
       font-size: var(--heading-md);
     }
 
-    .project-metrics {
-      flex-direction: column;
-      gap: var(--space-md);
+    .projects-grid {
+      gap: var(--space-4xl);
     }
+  }
 
-    .metric-box {
-      padding: var(--space-md) var(--space-lg);
-    }
+  /* CTA styling */
+  .project-cta {
+    display: inline-block;
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--text-light);
+    padding: var(--button-padding-y) var(--button-padding-x);
+    background: var(--accent-primary);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-md) var(--bg-dark);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
+  }
 
-    .supporting-media {
-      grid-template-columns: 1fr;
-    }
-
-    .project-actions {
-      flex-direction: column;
-    }
-
-    .progress-indicator {
-      display: none;
-    }
+  .project-card-link:hover .project-cta {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg) var(--bg-dark);
   }
 
   /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
-    .projects-container {
-      scroll-behavior: auto;
-      scroll-snap-type: none;
+    .project-card,
+    .project-image,
+    .project-cta {
+      transition: none;
     }
 
-    .project-section {
-      scroll-snap-align: none;
-      scroll-snap-stop: normal;
-    }
-
-    .metric-box {
+    .project-card-link:hover .project-image,
+    .project-card-link:hover .project-cta {
       transform: none;
     }
-
-    .metric-box:hover {
-      transform: scale(1.05);
-    }
   }
 
-  /* Focus Styles */
-  .progress-dot:focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 4px;
+  /* Focus States */
+  .project-card-link:focus {
+    outline: var(--border-width-thick) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
   }
 
-  button:focus-visible {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
+  .project-card-link:focus .project-image {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
   }
 </style>
-
-<script>
-  // Type declarations for gallery
-  declare global {
-    interface Window {
-      openGallery?: (images: Array<{ src: string; alt: string; caption: string; type?: string }>, startIndex: number) => void;
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const projectSections = document.querySelectorAll('.project-section');
-    const progressDots = document.querySelectorAll('.progress-dot');
-    const progressIndicator = document.querySelector('.progress-indicator');
-    const projectsWrapper = document.querySelector('.projects-wrapper');
-
-    // Image gallery triggers
-    const galleryTriggers = document.querySelectorAll('.gallery-trigger');
-    galleryTriggers.forEach((trigger) => {
-      // Click handler
-      trigger.addEventListener('click', () => {
-        const imageIndex = parseInt((trigger as HTMLElement).dataset.imageIndex || '0', 10);
-        const mediaContainer = (trigger as HTMLElement).closest('.project-media');
-
-        if (mediaContainer) {
-          const imagesJson = (mediaContainer as HTMLElement).dataset.projectImages;
-          if (imagesJson) {
-            try {
-              const images = JSON.parse(imagesJson);
-              if (window.openGallery) {
-                window.openGallery(images, imageIndex);
-              }
-            } catch (error) {
-              console.error('Error parsing project images:', error);
-            }
-          }
-        }
-      });
-
-      // Keyboard handler (Enter or Space)
-      trigger.addEventListener('keydown', (e) => {
-        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
-          e.preventDefault();
-          (trigger as HTMLElement).click();
-        }
-      });
-    });
-
-    // Show/hide progress indicator when projects section is in view
-    if (progressIndicator && projectsWrapper) {
-      const sectionObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            progressIndicator.classList.add('visible');
-          } else {
-            progressIndicator.classList.remove('visible');
-          }
-        });
-      }, {
-        threshold: 0.1,
-        rootMargin: '-50px 0px 0px 0px'
-      });
-
-      sectionObserver.observe(projectsWrapper);
-    }
-
-    // Progress indicator active state based on scroll
-    const updateActiveProgress = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 2;
-
-      projectSections.forEach((section, index) => {
-        const sectionTop = (section as HTMLElement).offsetTop;
-        const sectionBottom = sectionTop + (section as HTMLElement).offsetHeight;
-
-        if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-          progressDots.forEach(dot => dot.classList.remove('active'));
-          progressDots[index]?.classList.add('active');
-        }
-      });
-    };
-
-    // Scroll to project on progress dot click
-    progressDots.forEach((dot, index) => {
-      dot.addEventListener('click', () => {
-        projectSections[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-
-    // Update progress on scroll
-    window.addEventListener('scroll', updateActiveProgress, { passive: true });
-
-    // Initial update
-    updateActiveProgress();
-
-    // Intersection Observer for scroll animations
-    if ('IntersectionObserver' in window) {
-      const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px 0px -100px 0px'
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            (entry.target as HTMLElement).style.opacity = '1';
-            (entry.target as HTMLElement).style.transform = 'translateY(0)';
-          }
-        });
-      }, observerOptions);
-
-      projectSections.forEach(section => {
-        (section as HTMLElement).style.opacity = '0';
-        (section as HTMLElement).style.transform = 'translateY(40px)';
-        (section as HTMLElement).style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-        observer.observe(section);
-      });
-    }
-  });
-</script>

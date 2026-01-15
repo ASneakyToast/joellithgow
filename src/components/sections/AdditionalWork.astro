@@ -1,8 +1,6 @@
 ---
 // Additional Work section - showcases non-featured projects in a lighter format
 import { getCollection } from 'astro:content';
-import Badge from '@components/primitives/Badge.astro';
-import Button from '@components/primitives/Button.astro';
 import Card from '@components/primitives/Card.astro';
 
 export interface Props {
@@ -83,6 +81,7 @@ const projects = allProjects
   }
 
   .section-title {
+    font-family: var(--font-family);
     font-size: var(--heading-xl);
     color: var(--text-primary);
     margin-bottom: var(--space-lg);
@@ -93,9 +92,10 @@ const projects = allProjects
   }
 
   .section-subtitle {
+    font-family: var(--font-family);
     font-size: var(--text-base);
     color: var(--text-secondary);
-    letter-spacing: var(--tracking-wider);
+    letter-spacing: var(--tracking-wide);
     max-width: 600px;
     margin: 0 auto;
   }
@@ -113,6 +113,12 @@ const projects = allProjects
     }
   }
 
+  @media (min-width: 1024px) {
+    .projects-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
   /* Project Content - styled to work within Card component */
   .project-header {
     display: flex;
@@ -122,20 +128,23 @@ const projects = allProjects
   }
 
   .project-number {
+    font-family: var(--font-family);
     font-size: var(--text-lg);
     font-weight: var(--font-bold);
     color: var(--accent-primary);
   }
 
   .project-type {
+    font-family: var(--font-family);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     font-size: var(--text-xs);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
 
   /* Project Content */
   .project-title {
+    font-family: var(--font-family);
     font-size: var(--text-xl);
     line-height: 1.3;
     color: var(--text-primary);
@@ -144,6 +153,7 @@ const projects = allProjects
   }
 
   .project-description {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
@@ -155,35 +165,23 @@ const projects = allProjects
     display: flex;
     gap: var(--space-xs);
     padding: var(--space-sm) 0;
-    border-top: 1px solid var(--border-secondary);
-    border-bottom: 1px solid var(--border-secondary);
-    margin-bottom: var(--space-md);
+    border-top: 2px solid var(--bg-dark);
+    margin-top: auto;
   }
 
   .impact-label {
+    font-family: var(--font-family);
     font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--text-tertiary);
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-secondary);
     font-weight: var(--font-bold);
   }
 
   .impact-value {
+    font-family: var(--font-family);
     font-size: var(--text-xs);
     color: var(--text-secondary);
-  }
-
-  /* Technologies */
-  .project-tech {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-md);
-  }
-
-  /* Actions */
-  .project-actions {
-    margin-top: auto;
   }
 
   /* Responsive adjustments */
