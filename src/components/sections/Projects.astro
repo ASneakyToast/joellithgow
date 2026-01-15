@@ -48,10 +48,10 @@ if (limit && limit > 0) {
       const isEven = index % 2 === 1;
 
       return (
-        <a href={`/work/${project.data.id}`} class={`project-card-link ${isEven ? 'project-card--reversed' : ''}`}>
-          <article class="project-card">
-            {/* Image */}
-            {heroImage && (
+        <article class={`project-card ${isEven ? 'project-card--reversed' : ''}`}>
+          {/* Image - clickable link */}
+          {heroImage && (
+            <a href={`/work/${project.data.id}`} class="project-image-link">
               <figure class="project-image">
                 {heroImage.type === 'video' ? (
                   <video autoplay muted loop playsinline>
@@ -65,23 +65,23 @@ if (limit && limit > 0) {
                   />
                 )}
               </figure>
-            )}
+            </a>
+          )}
 
-            {/* Content */}
-            <div class="project-content">
-              <div class="project-meta">
-                <span class="project-number">{String(index + 1).padStart(2, '0')}</span>
-                <span class="project-divider">─────</span>
-                <span class="project-type">{project.data.type}</span>
-              </div>
-              <h3 class="project-title">{project.data.title}</h3>
-              <p class="project-excerpt">{project.data.description}</p>
-              <div class="project-actions">
-                <span class="project-cta">view case study →</span>
-              </div>
+          {/* Content */}
+          <div class="project-content">
+            <div class="project-meta">
+              <span class="project-number">{String(index + 1).padStart(2, '0')}</span>
+              <span class="project-divider">─────</span>
+              <span class="project-type">{project.data.type}</span>
             </div>
-          </article>
-        </a>
+            <h3 class="project-title">{project.data.title}</h3>
+            <p class="project-excerpt">{project.data.description}</p>
+            <div class="project-actions">
+              <a href={`/work/${project.data.id}`} class="project-cta">view case study →</a>
+            </div>
+          </div>
+        </article>
       );
     })}
   </div>
@@ -140,56 +140,44 @@ if (limit && limit > 0) {
     gap: var(--space-5xl);
   }
 
-  /* Project Card Link - wraps entire card */
-  .project-card-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-  }
-
   /* Project Card */
   .project-card {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-2xl);
     align-items: center;
-    background-color: var(--bg-secondary);
-    padding: var(--card-padding);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: transform var(--duration-slow) var(--ease-out),
-                box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  .project-card-link:hover .project-card {
-    transform: scale(1.02);
-    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  /* Project Image Link */
+  .project-image-link {
+    display: block;
+    text-decoration: none;
   }
 
   @media (min-width: 1024px) {
     .project-card {
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: 1.5fr 1fr;
       gap: var(--space-4xl);
     }
 
-    .project-card--reversed .project-card {
-      grid-template-columns: 1fr 1.2fr;
+    .project-card.project-card--reversed {
+      grid-template-columns: 1fr 1.5fr;
     }
 
-    .project-card--reversed .project-image {
+    .project-card.project-card--reversed .project-image-link {
       order: 2;
     }
 
-    .project-card--reversed .project-content {
+    .project-card.project-card--reversed .project-content {
       order: 1;
       text-align: right;
     }
 
-    .project-card--reversed .project-meta {
+    .project-card.project-card--reversed .project-meta {
       justify-content: flex-end;
     }
 
-    .project-card--reversed .project-actions {
+    .project-card.project-card--reversed .project-actions {
       justify-content: flex-end;
     }
   }
@@ -204,7 +192,7 @@ if (limit && limit > 0) {
                 box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  .project-card-link:hover .project-image {
+  .project-image-link:hover .project-image {
     transform: translate(-4px, -4px);
     box-shadow: var(--shadow-2xl) var(--accent-secondary);
   }
@@ -309,6 +297,7 @@ if (limit && limit > 0) {
     font-size: var(--text-base);
     font-weight: var(--font-bold);
     color: var(--text-light);
+    text-decoration: none;
     padding: var(--button-padding-y) var(--button-padding-x);
     background: var(--accent-primary);
     border: var(--border-width-thick) solid var(--bg-dark);
@@ -317,33 +306,37 @@ if (limit && limit > 0) {
                 box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  .project-card-link:hover .project-cta {
+  .project-cta:hover {
     transform: translate(-2px, -2px);
     box-shadow: var(--shadow-lg) var(--bg-dark);
   }
 
   /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
-    .project-card,
     .project-image,
     .project-cta {
       transition: none;
     }
 
-    .project-card-link:hover .project-image,
-    .project-card-link:hover .project-cta {
+    .project-image-link:hover .project-image,
+    .project-cta:hover {
       transform: none;
     }
   }
 
   /* Focus States */
-  .project-card-link:focus {
+  .project-image-link:focus {
     outline: var(--border-width-thick) solid var(--accent-primary);
     outline-offset: var(--space-xs);
   }
 
-  .project-card-link:focus .project-image {
+  .project-image-link:focus .project-image {
     transform: translate(-4px, -4px);
     box-shadow: var(--shadow-2xl) var(--accent-secondary);
+  }
+
+  .project-cta:focus {
+    outline: var(--border-width-thick) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
   }
 </style>

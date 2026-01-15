@@ -149,11 +149,18 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
       {galleryImages.length > 0 && (
         <section class="visual-section">
           <figure class="featured-image">
-            <img
-              src={galleryImages[0].src}
-              alt={galleryImages[0].alt}
-              loading="lazy"
-            />
+            {galleryImages[0].type === 'video' ? (
+              <video autoplay muted loop playsinline>
+                <source src={galleryImages[0].src} type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img
+                src={galleryImages[0].src}
+                alt={galleryImages[0].alt}
+                loading="lazy"
+              />
+            )}
             {galleryImages[0].caption && (
               <figcaption>{galleryImages[0].caption}</figcaption>
             )}
@@ -185,11 +192,18 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
           <div class="image-grid">
             {galleryImages.slice(1).map(image => (
               <figure class="grid-image">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  loading="lazy"
-                />
+                {image.type === 'video' ? (
+                  <video autoplay muted loop playsinline>
+                    <source src={image.src} type="video/webm" />
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    loading="lazy"
+                  />
+                )}
                 {image.caption && (
                   <figcaption>{image.caption}</figcaption>
                 )}
@@ -468,7 +482,8 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
     margin: 0;
   }
 
-  .featured-image img {
+  .featured-image img,
+  .featured-image video {
     width: 100%;
     height: auto;
     display: block;
@@ -501,7 +516,8 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
     margin: 0;
   }
 
-  .grid-image img {
+  .grid-image img,
+  .grid-image video {
     width: 100%;
     height: auto;
     display: block;

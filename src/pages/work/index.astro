@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Projects from '@components/sections/Projects.astro';
-import About from '@components/sections/About.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
@@ -32,12 +31,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
 
     <!-- Projects Component -->
     <Projects showHeader={false} />
-
-    <!-- About Section -->
-    <About
-      sectionTitle="about me"
-      bio="I build digital products that balance user needs with business goals. My background spans UX research, interface design, and frontend development—giving me the ability to take projects from concept to production. I focus on solving real problems with clean, maintainable solutions."
-    />
   </main>
 
   <!-- Modals -->
