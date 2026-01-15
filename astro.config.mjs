@@ -42,6 +42,7 @@ export default defineConfig({
           // Optimize chunk splitting for better caching
           manualChunks: {
             'vendor': ['astro'],
+                'three': ['three'],
             'interactive': ['src/components/interactive/InteractiveElements.astro'],
             'snake': ['src/pages/snake.astro'],
             'themes': ['src/features/themes/index.ts'],

@@ -1,0 +1,330 @@
+---
+/**
+ * WebGLBackground - Base component for WebGL animated backgrounds
+ * Provides shared WebGL setup, performance optimization, and theme integration
+ */
+import type { WebGLBackgroundProps } from './types';
+
+export interface Props extends WebGLBackgroundProps {}
+
+const {
+  speed = 1.0,
+  intensity = 0.5,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `webgl-bg-${Math.random().toString(36).substr(2, 9)}`
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', className]}
+  id={id}
+  data-speed={speed}
+  data-intensity={intensity}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-colors={JSON.stringify(colors || {})}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Minimal theme: reduce opacity */
+  :global([data-theme="minimal"]) .webgl-background-container {
+    opacity: 0.2;
+  }
+
+  /* Reduced motion: hide entirely */
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+
+  interface WebGLConfig {
+    speed: number;
+    intensity: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+  }
+
+  /**
+   * Base WebGL Background Manager
+   * Extended by specific effect components
+   */
+  class WebGLBackgroundManager {
+    protected container: HTMLElement;
+    protected canvas: HTMLCanvasElement;
+    protected renderer: THREE.WebGLRenderer | null = null;
+    protected scene: THREE.Scene | null = null;
+    protected camera: THREE.OrthographicCamera | null = null;
+    protected animationId: number | null = null;
+    protected isVisible: boolean = true;
+    protected isPaused: boolean = false;
+    protected clock: THREE.Clock | null = null;
+    protected config: WebGLConfig;
+    protected prefersReducedMotion: boolean;
+    protected resizeHandler: () => void;
+    protected visibilityHandler: () => void;
+
+    constructor(container: HTMLElement) {
+      this.container = container;
+      this.canvas = container.querySelector('.webgl-canvas') as HTMLCanvasElement;
+
+      this.config = {
+        speed: parseFloat(container.dataset.speed || '1'),
+        intensity: parseFloat(container.dataset.intensity || '0.5'),
+        maxPixelRatio: parseFloat(container.dataset.maxPixelRatio || '2'),
+        pauseOffscreen: container.dataset.pauseOffscreen !== 'false',
+        colors: JSON.parse(container.dataset.colors || '{}')
+      };
+
+      this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Bind handlers for cleanup
+      this.resizeHandler = () => this.onResize();
+      this.visibilityHandler = () => this.onVisibilityChange();
+    }
+
+    async init(): Promise<void> {
+      // Don't initialize if user prefers reduced motion
+      if (this.prefersReducedMotion) {
+        console.log('WebGL background disabled: prefers-reduced-motion');
+        return;
+      }
+
+      // Check WebGL support
+      if (!this.isWebGLSupported()) {
+        console.warn('WebGL not supported, background disabled');
+        return;
+      }
+
+      this.setupRenderer();
+      this.setupScene();
+      this.setupCamera();
+      this.setupVisibilityObservers();
+      this.onResize();
+
+      // Start animation loop
+      this.animate();
+
+      // Listen for resize
+      window.addEventListener('resize', this.resizeHandler);
+    }
+
+    protected isWebGLSupported(): boolean {
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext &&
+          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    protected setupRenderer(): void {
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        alpha: true,
+        antialias: false,
+        powerPreference: 'low-power'
+      });
+
+      const pixelRatio = Math.min(window.devicePixelRatio, this.config.maxPixelRatio);
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.setClearColor(0x000000, 0);
+    }
+
+    protected setupScene(): void {
+      this.scene = new THREE.Scene();
+      this.clock = new THREE.Clock();
+    }
+
+    protected setupCamera(): void {
+      // Orthographic camera for 2D shader effects
+      this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+      this.camera.position.z = 1;
+    }
+
+    protected setupVisibilityObservers(): void {
+      // Intersection Observer for off-screen pausing
+      if (this.config.pauseOffscreen) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              this.isVisible = entry.isIntersecting;
+            });
+          },
+          { threshold: 0.1 }
+        );
+        observer.observe(this.container);
+      }
+
+      // Tab visibility
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+
+      // Listen for reduced motion preference changes
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+        this.prefersReducedMotion = e.matches;
+        if (this.prefersReducedMotion) {
+          this.stopAnimation();
+        } else {
+          this.startAnimation();
+        }
+      });
+    }
+
+    protected onVisibilityChange(): void {
+      this.isPaused = document.hidden;
+    }
+
+    protected onResize(): void {
+      if (!this.renderer) return;
+
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+
+      this.renderer.setSize(width, height);
+
+      // Call effect-specific resize handler
+      this.onResizeEffect(width, height);
+    }
+
+    // Override in subclasses for effect-specific resize handling
+    protected onResizeEffect(_width: number, _height: number): void {}
+
+    protected animate(): void {
+      this.animationId = requestAnimationFrame(() => this.animate());
+
+      // Skip rendering if not visible or paused
+      if (!this.isVisible || this.isPaused || this.prefersReducedMotion) {
+        return;
+      }
+
+      if (!this.renderer || !this.scene || !this.camera || !this.clock) {
+        return;
+      }
+
+      const delta = this.clock.getDelta();
+      const elapsed = this.clock.getElapsedTime();
+
+      // Call effect-specific update
+      this.updateEffect(delta, elapsed);
+
+      this.renderer.render(this.scene, this.camera);
+    }
+
+    // Override in subclasses for effect-specific updates
+    protected updateEffect(_delta: number, _elapsed: number): void {}
+
+    protected startAnimation(): void {
+      if (this.animationId === null && !this.prefersReducedMotion) {
+        this.animate();
+      }
+    }
+
+    protected stopAnimation(): void {
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+
+    // Read CSS custom property from document
+    protected getCSSVariable(name: string): string {
+      return getComputedStyle(document.documentElement)
+        .getPropertyValue(name).trim();
+    }
+
+    // Convert CSS color to THREE.Color
+    protected cssToThreeColor(cssColor: string): THREE.Color {
+      return new THREE.Color(cssColor);
+    }
+
+    // Get theme colors with fallbacks
+    protected getThemeColors(): {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+      bgPrimary: string;
+      bgSecondary: string;
+    } {
+      return {
+        primary: this.config.colors.primary || this.getCSSVariable('--accent-primary') || '#FF6B6B',
+        secondary: this.config.colors.secondary || this.getCSSVariable('--accent-secondary') || '#4ECDC4',
+        tertiary: this.config.colors.tertiary || this.getCSSVariable('--accent-tertiary') || '#FFE66D',
+        bgPrimary: this.getCSSVariable('--bg-primary') || '#FFFFFF',
+        bgSecondary: this.getCSSVariable('--bg-secondary') || '#F5F5F5'
+      };
+    }
+
+    // Cleanup resources
+    destroy(): void {
+      this.stopAnimation();
+
+      // Remove event listeners
+      window.removeEventListener('resize', this.resizeHandler);
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+
+      // Dispose Three.js resources
+      if (this.renderer) {
+        this.renderer.dispose();
+        this.renderer = null;
+      }
+
+      // Dispose scene objects
+      this.scene?.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry?.dispose();
+          if (object.material instanceof THREE.Material) {
+            object.material.dispose();
+          } else if (Array.isArray(object.material)) {
+            object.material.forEach(m => m.dispose());
+          }
+        }
+      });
+
+      this.scene = null;
+      this.camera = null;
+      this.clock = null;
+    }
+  }
+
+  // Export base class for extension by other components
+  (window as any).WebGLBackgroundManager = WebGLBackgroundManager;
+
+  // Auto-initialize base components (usually extended components will handle their own init)
+  document.addEventListener('DOMContentLoaded', () => {
+    // Base component initialization - specific effects should override
+    const containers = document.querySelectorAll('.webgl-background-container:not([data-effect-type])');
+    containers.forEach(container => {
+      const manager = new WebGLBackgroundManager(container as HTMLElement);
+      manager.init();
+    });
+  });
+</script>

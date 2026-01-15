@@ -1,0 +1,1373 @@
+---
+/**
+ * PropertiesPanel - Design-app style vertical tabbed control panel
+ * Allows live editing of shader uniforms with pattern-specific controls
+ */
+import { FBM_PATTERNS } from './types';
+import type { NoiseType } from './types';
+
+export interface Props {
+  patternName: string;
+  patternDescription: string;
+  patternSlug: NoiseType;
+  defaults: {
+    // General
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    colors: {
+      primary: string;
+      secondary: string;
+      tertiary: string;
+    };
+    // FBM parameters
+    octaves?: number;
+    lacunarity?: number;
+    gain?: number;
+    // Perlin/Simplex
+    timeScaleX?: number;
+    timeScaleY?: number;
+    // Worley/Voronoi
+    cellScale?: number;
+    cellAnimSpeed?: number;
+    invert?: boolean;
+    edgeThickness?: number;
+    // Turbulence
+    sharpness?: number;
+    // Ridged
+    ridgeSharpness?: number;
+    ridgeTimeScale?: number;
+    // Domain Warp
+    warpStrength?: number;
+    warpLayers?: number;
+    // Caustics
+    waveCount?: number;
+    waveFrequency?: number;
+    waveSharpness?: number;
+    detailAmount?: number;
+    // Marble
+    lineFrequency?: number;
+    noiseInfluence?: number;
+    detailBlend?: number;
+  };
+}
+
+const { patternName, patternDescription, patternSlug, defaults } = Astro.props;
+
+// Check if this pattern supports FBM
+const hasFBM = FBM_PATTERNS.includes(patternSlug);
+
+// Determine which pattern-specific controls to show
+const isPerlinSimplex = patternSlug === 'perlin' || patternSlug === 'simplex';
+const isWorley = patternSlug === 'worley';
+const isVoronoiEdge = patternSlug === 'voronoiEdge';
+const isTurbulence = patternSlug === 'turbulence';
+const isRidged = patternSlug === 'ridged';
+const isDomainWarp = patternSlug === 'domainWarp';
+const isCaustics = patternSlug === 'caustics';
+const isMarble = patternSlug === 'marble';
+---
+
+<aside class="properties-panel" id="properties-panel" data-pattern={patternSlug} data-has-fbm={hasFBM}>
+  <div class="panel-content">
+    <header class="panel-header">
+      <div class="pattern-indicator"></div>
+      <div class="pattern-info">
+        <h2>{patternName}</h2>
+        <p>{patternDescription}</p>
+      </div>
+    </header>
+
+    <!-- Tab Content Panels -->
+    <div class="tab-panels">
+      <!-- General Tab -->
+      <section class="tab-panel active" data-tab="general">
+        <div class="control-group">
+          <label for="speed-slider">Speed</label>
+          <div class="slider-row">
+            <input
+              type="range"
+              id="speed-slider"
+              min="0"
+              max="2"
+              step="0.1"
+              value={defaults.speed}
+              data-prop="speed"
+            />
+            <span class="value-display" data-for="speed-slider">{defaults.speed}</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="intensity-slider">Intensity</label>
+          <div class="slider-row">
+            <input
+              type="range"
+              id="intensity-slider"
+              min="0"
+              max="1"
+              step="0.05"
+              value={defaults.intensity}
+              data-prop="intensity"
+            />
+            <span class="value-display" data-for="intensity-slider">{defaults.intensity}</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="scale-slider">Scale</label>
+          <div class="slider-row">
+            <input
+              type="range"
+              id="scale-slider"
+              min="0.5"
+              max="5"
+              step="0.1"
+              value={defaults.noiseScale}
+              data-prop="noiseScale"
+            />
+            <span class="value-display" data-for="scale-slider">{defaults.noiseScale}</span>
+          </div>
+        </div>
+
+        <div class="control-group toggle-group">
+          <label for="animated-toggle">Animated</label>
+          <button
+            id="animated-toggle"
+            class="toggle-button"
+            data-prop="animated"
+            data-active={defaults.animated ? 'true' : 'false'}
+            aria-pressed={defaults.animated}
+          >
+            <span class="toggle-indicator"></span>
+            <span class="toggle-label">{defaults.animated ? 'On' : 'Off'}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Fractal Tab (FBM patterns only) -->
+      {hasFBM && (
+        <section class="tab-panel" data-tab="fractal">
+          <div class="control-group">
+            <label for="octaves-slider">Octaves</label>
+            <div class="slider-row">
+              <input
+                type="range"
+                id="octaves-slider"
+                min="1"
+                max="8"
+                step="1"
+                value={defaults.octaves ?? 4}
+                data-prop="octaves"
+              />
+              <span class="value-display" data-for="octaves-slider">{defaults.octaves ?? 4}</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="lacunarity-slider">Lacunarity</label>
+            <div class="slider-row">
+              <input
+                type="range"
+                id="lacunarity-slider"
+                min="1.5"
+                max="3.5"
+                step="0.1"
+                value={defaults.lacunarity ?? 2.0}
+                data-prop="lacunarity"
+              />
+              <span class="value-display" data-for="lacunarity-slider">{(defaults.lacunarity ?? 2.0).toFixed(1)}</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="gain-slider">Gain</label>
+            <div class="slider-row">
+              <input
+                type="range"
+                id="gain-slider"
+                min="0.3"
+                max="0.7"
+                step="0.05"
+                value={defaults.gain ?? 0.5}
+                data-prop="gain"
+              />
+              <span class="value-display" data-for="gain-slider">{(defaults.gain ?? 0.5).toFixed(2)}</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Pattern-Specific Tab -->
+      <section class="tab-panel" data-tab="pattern">
+        {isPerlinSimplex && (
+          <>
+            <div class="control-group">
+              <label for="timescalex-slider">Time Scale X</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="timescalex-slider"
+                  min="0.1"
+                  max="2"
+                  step="0.1"
+                  value={defaults.timeScaleX ?? 1.0}
+                  data-prop="timeScaleX"
+                />
+                <span class="value-display" data-for="timescalex-slider">{(defaults.timeScaleX ?? 1.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="timescaley-slider">Time Scale Y</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="timescaley-slider"
+                  min="0.1"
+                  max="2"
+                  step="0.1"
+                  value={defaults.timeScaleY ?? 0.7}
+                  data-prop="timeScaleY"
+                />
+                <span class="value-display" data-for="timescaley-slider">{(defaults.timeScaleY ?? 0.7).toFixed(1)}</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {isWorley && (
+          <>
+            <div class="control-group">
+              <label for="cellscale-slider">Cell Scale</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="cellscale-slider"
+                  min="0.5"
+                  max="5"
+                  step="0.1"
+                  value={defaults.cellScale ?? 2.0}
+                  data-prop="cellScale"
+                />
+                <span class="value-display" data-for="cellscale-slider">{(defaults.cellScale ?? 2.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="cellanimspeed-slider">Cell Anim Speed</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="cellanimspeed-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.cellAnimSpeed ?? 0.3}
+                  data-prop="cellAnimSpeed"
+                />
+                <span class="value-display" data-for="cellanimspeed-slider">{(defaults.cellAnimSpeed ?? 0.3).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group toggle-group">
+              <label for="invert-toggle">Invert</label>
+              <button
+                id="invert-toggle"
+                class="toggle-button"
+                data-prop="invert"
+                data-active={defaults.invert !== false ? 'true' : 'false'}
+                aria-pressed={defaults.invert !== false}
+              >
+                <span class="toggle-indicator"></span>
+                <span class="toggle-label">{defaults.invert !== false ? 'On' : 'Off'}</span>
+              </button>
+            </div>
+          </>
+        )}
+
+        {isVoronoiEdge && (
+          <>
+            <div class="control-group">
+              <label for="cellscale-slider">Cell Scale</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="cellscale-slider"
+                  min="0.5"
+                  max="5"
+                  step="0.1"
+                  value={defaults.cellScale ?? 2.0}
+                  data-prop="cellScale"
+                />
+                <span class="value-display" data-for="cellscale-slider">{(defaults.cellScale ?? 2.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="edgethickness-slider">Edge Thickness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="edgethickness-slider"
+                  min="0.05"
+                  max="0.5"
+                  step="0.05"
+                  value={defaults.edgeThickness ?? 0.15}
+                  data-prop="edgeThickness"
+                />
+                <span class="value-display" data-for="edgethickness-slider">{(defaults.edgeThickness ?? 0.15).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="cellanimspeed-slider">Cell Anim Speed</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="cellanimspeed-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.cellAnimSpeed ?? 0.2}
+                  data-prop="cellAnimSpeed"
+                />
+                <span class="value-display" data-for="cellanimspeed-slider">{(defaults.cellAnimSpeed ?? 0.2).toFixed(1)}</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {isTurbulence && (
+          <div class="control-group">
+            <label for="sharpness-slider">Sharpness</label>
+            <div class="slider-row">
+              <input
+                type="range"
+                id="sharpness-slider"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={defaults.sharpness ?? 1.0}
+                data-prop="sharpness"
+              />
+              <span class="value-display" data-for="sharpness-slider">{(defaults.sharpness ?? 1.0).toFixed(1)}</span>
+            </div>
+          </div>
+        )}
+
+        {isRidged && (
+          <>
+            <div class="control-group">
+              <label for="ridgesharpness-slider">Ridge Sharpness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="ridgesharpness-slider"
+                  min="1"
+                  max="4"
+                  step="0.1"
+                  value={defaults.ridgeSharpness ?? 2.0}
+                  data-prop="ridgeSharpness"
+                />
+                <span class="value-display" data-for="ridgesharpness-slider">{(defaults.ridgeSharpness ?? 2.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="ridgetimescale-slider">Time Scale</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="ridgetimescale-slider"
+                  min="0.1"
+                  max="2"
+                  step="0.1"
+                  value={defaults.ridgeTimeScale ?? 0.5}
+                  data-prop="ridgeTimeScale"
+                />
+                <span class="value-display" data-for="ridgetimescale-slider">{(defaults.ridgeTimeScale ?? 0.5).toFixed(1)}</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {isDomainWarp && (
+          <>
+            <div class="control-group">
+              <label for="warpstrength-slider">Warp Strength</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="warpstrength-slider"
+                  min="1"
+                  max="8"
+                  step="0.5"
+                  value={defaults.warpStrength ?? 4.0}
+                  data-prop="warpStrength"
+                />
+                <span class="value-display" data-for="warpstrength-slider">{(defaults.warpStrength ?? 4.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="warplayers-slider">Warp Layers</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="warplayers-slider"
+                  min="1"
+                  max="3"
+                  step="1"
+                  value={defaults.warpLayers ?? 2}
+                  data-prop="warpLayers"
+                />
+                <span class="value-display" data-for="warplayers-slider">{defaults.warpLayers ?? 2}</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {isCaustics && (
+          <>
+            <div class="control-group">
+              <label for="wavecount-slider">Wave Count</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="wavecount-slider"
+                  min="1"
+                  max="6"
+                  step="1"
+                  value={defaults.waveCount ?? 3}
+                  data-prop="waveCount"
+                />
+                <span class="value-display" data-for="wavecount-slider">{defaults.waveCount ?? 3}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="wavefrequency-slider">Wave Frequency</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="wavefrequency-slider"
+                  min="4"
+                  max="16"
+                  step="0.5"
+                  value={defaults.waveFrequency ?? 8.0}
+                  data-prop="waveFrequency"
+                />
+                <span class="value-display" data-for="wavefrequency-slider">{(defaults.waveFrequency ?? 8.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="wavesharpness-slider">Wave Sharpness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="wavesharpness-slider"
+                  min="1"
+                  max="3"
+                  step="0.1"
+                  value={defaults.waveSharpness ?? 1.5}
+                  data-prop="waveSharpness"
+                />
+                <span class="value-display" data-for="wavesharpness-slider">{(defaults.waveSharpness ?? 1.5).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="detailamount-slider">Detail Amount</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="detailamount-slider"
+                  min="0"
+                  max="0.3"
+                  step="0.05"
+                  value={defaults.detailAmount ?? 0.15}
+                  data-prop="detailAmount"
+                />
+                <span class="value-display" data-for="detailamount-slider">{(defaults.detailAmount ?? 0.15).toFixed(2)}</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {isMarble && (
+          <>
+            <div class="control-group">
+              <label for="linefrequency-slider">Line Frequency</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="linefrequency-slider"
+                  min="2"
+                  max="16"
+                  step="0.5"
+                  value={defaults.lineFrequency ?? 8.0}
+                  data-prop="lineFrequency"
+                />
+                <span class="value-display" data-for="linefrequency-slider">{(defaults.lineFrequency ?? 8.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="noiseinfluence-slider">Noise Influence</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="noiseinfluence-slider"
+                  min="2"
+                  max="12"
+                  step="0.5"
+                  value={defaults.noiseInfluence ?? 6.0}
+                  data-prop="noiseInfluence"
+                />
+                <span class="value-display" data-for="noiseinfluence-slider">{(defaults.noiseInfluence ?? 6.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="detailblend-slider">Detail Blend</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="detailblend-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.detailBlend ?? 0.3}
+                  data-prop="detailBlend"
+                />
+                <span class="value-display" data-for="detailblend-slider">{(defaults.detailBlend ?? 0.3).toFixed(1)}</span>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+
+      <!-- Colors Tab -->
+      <section class="tab-panel" data-tab="colors">
+        <div class="control-group color-group">
+          <label for="color-primary">Primary</label>
+          <div class="color-row">
+            <input
+              type="color"
+              id="color-primary"
+              value={defaults.colors.primary}
+              data-prop="colors.primary"
+            />
+            <span class="color-value">{defaults.colors.primary}</span>
+          </div>
+        </div>
+
+        <div class="control-group color-group">
+          <label for="color-secondary">Secondary</label>
+          <div class="color-row">
+            <input
+              type="color"
+              id="color-secondary"
+              value={defaults.colors.secondary}
+              data-prop="colors.secondary"
+            />
+            <span class="color-value">{defaults.colors.secondary}</span>
+          </div>
+        </div>
+
+        <div class="control-group color-group">
+          <label for="color-tertiary">Tertiary</label>
+          <div class="color-row">
+            <input
+              type="color"
+              id="color-tertiary"
+              value={defaults.colors.tertiary}
+              data-prop="colors.tertiary"
+            />
+            <span class="color-value">{defaults.colors.tertiary}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="panel-footer">
+      <button id="reset-btn" class="action-btn reset-btn">
+        <span class="btn-icon">↺</span>
+        Reset
+      </button>
+      <button id="copy-btn" class="action-btn copy-btn">
+        <span class="btn-icon">&lt;/&gt;</span>
+        Copy Code
+      </button>
+    </footer>
+
+    <a href="/backgrounds" class="back-link">← Back to Gallery</a>
+  </div>
+
+  <!-- Vertical Tab Bar -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="general" title="General">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+
+    {hasFBM && (
+      <button class="tab-btn" data-tab="fractal" title="Fractal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+      </button>
+    )}
+
+    <button class="tab-btn" data-tab="pattern" title={patternName}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </button>
+
+    <button class="tab-btn" data-tab="colors" title="Colors">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a10 10 0 0 1 0 20"/>
+      </svg>
+    </button>
+  </nav>
+</aside>
+
+<style>
+  .properties-panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  /* Dark theme support */
+  :global([data-theme="dark"]) .properties-panel,
+  :global([data-theme="neon"]) .properties-panel {
+    background: rgba(30, 30, 35, 0.92);
+    color: #fff;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .panel-content {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Vertical Tab Bar */
+  .tab-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.03);
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="dark"]) .tab-bar,
+  :global([data-theme="neon"]) .tab-bar {
+    background: rgba(0, 0, 0, 0.2);
+    border-left-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .tab-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.4);
+    transition: all 0.15s ease;
+  }
+
+  :global([data-theme="dark"]) .tab-btn,
+  :global([data-theme="neon"]) .tab-btn {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .tab-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  :global([data-theme="dark"]) .tab-btn:hover,
+  :global([data-theme="neon"]) .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .tab-btn.active {
+    background: var(--accent-primary, #FF6B6B);
+    color: white;
+  }
+
+  .tab-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Tab Panels */
+  .tab-panels {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .tab-panel {
+    display: none;
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="dark"]) .panel-header,
+  :global([data-theme="neon"]) .panel-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .pattern-indicator {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--accent-primary, #FF6B6B);
+    flex-shrink: 0;
+  }
+
+  .pattern-info h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .pattern-info p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  :global([data-theme="dark"]) .pattern-info p,
+  :global([data-theme="neon"]) .pattern-info p {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .control-group {
+    margin-bottom: 14px;
+  }
+
+  .control-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .control-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  :global([data-theme="dark"]) .control-group label,
+  :global([data-theme="neon"]) .control-group label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  :global([data-theme="dark"]) input[type="range"],
+  :global([data-theme="neon"]) input[type="range"] {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent-primary, #FF6B6B);
+    border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  input[type="range"]::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent-primary, #FF6B6B);
+    border: none;
+    border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .value-display {
+    min-width: 36px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+  }
+
+  :global([data-theme="dark"]) .value-display,
+  :global([data-theme="neon"]) .value-display {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Toggle button */
+  .toggle-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .toggle-group label {
+    margin-bottom: 0;
+  }
+
+  .toggle-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.06);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: inherit;
+  }
+
+  :global([data-theme="dark"]) .toggle-button,
+  :global([data-theme="neon"]) .toggle-button {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .toggle-button[data-active="true"] {
+    background: var(--accent-primary, #FF6B6B);
+    color: white;
+  }
+
+  .toggle-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.15s ease;
+  }
+
+  .toggle-button[data-active="true"] .toggle-indicator {
+    background: white;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Color pickers */
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  input[type="color"] {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    -webkit-appearance: none;
+  }
+
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+  }
+
+  .color-value {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+  }
+
+  :global([data-theme="dark"]) .color-value,
+  :global([data-theme="neon"]) .color-value {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Footer */
+  .panel-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="dark"]) .panel-footer,
+  :global([data-theme="neon"]) .panel-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.04);
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: inherit;
+  }
+
+  :global([data-theme="dark"]) .action-btn,
+  :global([data-theme="neon"]) .action-btn {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .action-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  :global([data-theme="dark"]) .action-btn:hover,
+  :global([data-theme="neon"]) .action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-icon {
+    font-size: 14px;
+  }
+
+  .copy-btn.copied {
+    background: var(--accent-primary, #FF6B6B);
+    color: white;
+  }
+
+  /* Back link */
+  .back-link {
+    display: block;
+    padding: 12px 16px;
+    color: rgba(0, 0, 0, 0.5);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.15s ease;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="dark"]) .back-link,
+  :global([data-theme="neon"]) .back-link {
+    color: rgba(255, 255, 255, 0.5);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .back-link:hover {
+    color: var(--accent-primary, #FF6B6B);
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .properties-panel {
+      bottom: 16px;
+      right: 16px;
+      left: 16px;
+    }
+
+    .panel-content {
+      width: 100%;
+    }
+  }
+</style>
+
+<script define:vars={{ patternSlug, defaults }}>
+  class PropertiesPanelController {
+    constructor() {
+      this.panel = document.getElementById('properties-panel');
+      this.defaults = defaults;
+      this.currentValues = { ...defaults };
+      this.patternSlug = patternSlug;
+      this.activeTab = 'general';
+
+      this.init();
+    }
+
+    init() {
+      this.setupTabs();
+      this.setupSliders();
+      this.setupToggles();
+      this.setupColorPickers();
+      this.setupButtons();
+      this.loadTabState();
+    }
+
+    setupTabs() {
+      const tabBtns = this.panel.querySelectorAll('.tab-btn');
+      const tabPanels = this.panel.querySelectorAll('.tab-panel');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+
+          // Update buttons
+          tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          // Update panels
+          tabPanels.forEach(p => p.classList.remove('active'));
+          const targetPanel = this.panel.querySelector(`[data-tab="${tab}"]`);
+          if (targetPanel) {
+            targetPanel.classList.add('active');
+          }
+
+          // Save state
+          this.activeTab = tab;
+          this.saveTabState();
+        });
+      });
+    }
+
+    loadTabState() {
+      const saved = localStorage.getItem('properties-panel-tab');
+      if (saved) {
+        const btn = this.panel.querySelector(`.tab-btn[data-tab="${saved}"]`);
+        if (btn) {
+          btn.click();
+        }
+      }
+    }
+
+    saveTabState() {
+      localStorage.setItem('properties-panel-tab', this.activeTab);
+    }
+
+    getBackgroundManager() {
+      const container = document.querySelector('.noise-texture');
+      return container?._webglManager;
+    }
+
+    updateBackground(props) {
+      const manager = this.getBackgroundManager();
+      if (manager && typeof manager.updateUniforms === 'function') {
+        manager.updateUniforms(props);
+      }
+    }
+
+    setupSliders() {
+      const sliders = this.panel.querySelectorAll('input[type="range"]');
+
+      sliders.forEach(slider => {
+        const prop = slider.dataset.prop;
+        const display = this.panel.querySelector(`[data-for="${slider.id}"]`);
+
+        slider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+
+          // Format display based on step
+          const step = parseFloat(slider.step);
+          let displayValue;
+          if (step >= 1) {
+            displayValue = Math.round(value).toString();
+          } else if (step >= 0.1) {
+            displayValue = value.toFixed(1);
+          } else {
+            displayValue = value.toFixed(2);
+          }
+
+          if (display) {
+            display.textContent = displayValue;
+          }
+
+          this.currentValues[prop] = value;
+          this.updateBackground({ [prop]: value });
+        });
+      });
+    }
+
+    setupToggles() {
+      const toggles = this.panel.querySelectorAll('.toggle-button');
+
+      toggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          const prop = toggle.dataset.prop;
+          const isActive = toggle.dataset.active === 'true';
+          const newValue = !isActive;
+
+          toggle.dataset.active = newValue.toString();
+          toggle.setAttribute('aria-pressed', newValue.toString());
+          toggle.querySelector('.toggle-label').textContent = newValue ? 'On' : 'Off';
+
+          this.currentValues[prop] = newValue;
+          this.updateBackground({ [prop]: newValue });
+        });
+      });
+    }
+
+    setupColorPickers() {
+      const colorInputs = this.panel.querySelectorAll('input[type="color"]');
+
+      colorInputs.forEach(input => {
+        const prop = input.dataset.prop;
+        const valueDisplay = input.parentElement.querySelector('.color-value');
+
+        input.addEventListener('input', (e) => {
+          const value = e.target.value;
+          if (valueDisplay) {
+            valueDisplay.textContent = value.toUpperCase();
+          }
+
+          // Parse nested prop like "colors.primary"
+          const [parent, child] = prop.split('.');
+          if (parent === 'colors') {
+            if (!this.currentValues.colors) {
+              this.currentValues.colors = {};
+            }
+            this.currentValues.colors[child] = value;
+            this.updateBackground({ colors: { [child]: value } });
+          }
+        });
+      });
+    }
+
+    setupButtons() {
+      const resetBtn = this.panel.querySelector('#reset-btn');
+      const copyBtn = this.panel.querySelector('#copy-btn');
+
+      resetBtn?.addEventListener('click', () => {
+        this.resetToDefaults();
+      });
+
+      copyBtn?.addEventListener('click', () => {
+        this.copyCode();
+      });
+    }
+
+    resetToDefaults() {
+      // Reset all sliders
+      const sliders = this.panel.querySelectorAll('input[type="range"]');
+      sliders.forEach(slider => {
+        const prop = slider.dataset.prop;
+        const defaultValue = this.defaults[prop];
+        if (defaultValue !== undefined) {
+          slider.value = defaultValue;
+
+          const display = this.panel.querySelector(`[data-for="${slider.id}"]`);
+          const step = parseFloat(slider.step);
+          if (display) {
+            if (step >= 1) {
+              display.textContent = Math.round(defaultValue).toString();
+            } else if (step >= 0.1) {
+              display.textContent = defaultValue.toFixed(1);
+            } else {
+              display.textContent = defaultValue.toFixed(2);
+            }
+          }
+        }
+      });
+
+      // Reset toggles
+      const toggles = this.panel.querySelectorAll('.toggle-button');
+      toggles.forEach(toggle => {
+        const prop = toggle.dataset.prop;
+        const defaultValue = this.defaults[prop];
+        if (defaultValue !== undefined) {
+          toggle.dataset.active = defaultValue.toString();
+          toggle.setAttribute('aria-pressed', defaultValue.toString());
+          toggle.querySelector('.toggle-label').textContent = defaultValue ? 'On' : 'Off';
+        }
+      });
+
+      // Reset colors
+      const colorInputs = this.panel.querySelectorAll('input[type="color"]');
+      colorInputs.forEach(input => {
+        const prop = input.dataset.prop;
+        const [parent, child] = prop.split('.');
+        if (parent === 'colors') {
+          input.value = this.defaults.colors[child];
+          const valueDisplay = input.parentElement.querySelector('.color-value');
+          if (valueDisplay) {
+            valueDisplay.textContent = this.defaults.colors[child].toUpperCase();
+          }
+        }
+      });
+
+      // Reset current values and update background
+      this.currentValues = JSON.parse(JSON.stringify(this.defaults));
+      this.updateBackground(this.currentValues);
+    }
+
+    copyCode() {
+      // Build pattern-specific props
+      let patternProps = '';
+
+      // FBM patterns
+      if (['perlin', 'simplex', 'turbulence', 'ridged', 'marble'].includes(this.patternSlug)) {
+        patternProps += `
+  octaves={${this.currentValues.octaves ?? 4}}
+  lacunarity={${this.currentValues.lacunarity ?? 2.0}}
+  gain={${this.currentValues.gain ?? 0.5}}`;
+      }
+
+      // Perlin/Simplex
+      if (['perlin', 'simplex'].includes(this.patternSlug)) {
+        patternProps += `
+  timeScaleX={${this.currentValues.timeScaleX ?? 1.0}}
+  timeScaleY={${this.currentValues.timeScaleY ?? 0.7}}`;
+      }
+
+      // Worley
+      if (this.patternSlug === 'worley') {
+        patternProps += `
+  cellScale={${this.currentValues.cellScale ?? 2.0}}
+  cellAnimSpeed={${this.currentValues.cellAnimSpeed ?? 0.3}}
+  invert={${this.currentValues.invert ?? true}}`;
+      }
+
+      // VoronoiEdge
+      if (this.patternSlug === 'voronoiEdge') {
+        patternProps += `
+  cellScale={${this.currentValues.cellScale ?? 2.0}}
+  edgeThickness={${this.currentValues.edgeThickness ?? 0.15}}
+  cellAnimSpeed={${this.currentValues.cellAnimSpeed ?? 0.2}}`;
+      }
+
+      // Turbulence
+      if (this.patternSlug === 'turbulence') {
+        patternProps += `
+  sharpness={${this.currentValues.sharpness ?? 1.0}}`;
+      }
+
+      // Ridged
+      if (this.patternSlug === 'ridged') {
+        patternProps += `
+  ridgeSharpness={${this.currentValues.ridgeSharpness ?? 2.0}}
+  ridgeTimeScale={${this.currentValues.ridgeTimeScale ?? 0.5}}`;
+      }
+
+      // Domain Warp
+      if (this.patternSlug === 'domainWarp') {
+        patternProps += `
+  warpStrength={${this.currentValues.warpStrength ?? 4.0}}
+  warpLayers={${this.currentValues.warpLayers ?? 2}}`;
+      }
+
+      // Caustics
+      if (this.patternSlug === 'caustics') {
+        patternProps += `
+  waveCount={${this.currentValues.waveCount ?? 3}}
+  waveFrequency={${this.currentValues.waveFrequency ?? 8.0}}
+  waveSharpness={${this.currentValues.waveSharpness ?? 1.5}}
+  detailAmount={${this.currentValues.detailAmount ?? 0.15}}`;
+      }
+
+      // Marble
+      if (this.patternSlug === 'marble') {
+        patternProps += `
+  lineFrequency={${this.currentValues.lineFrequency ?? 8.0}}
+  noiseInfluence={${this.currentValues.noiseInfluence ?? 6.0}}
+  detailBlend={${this.currentValues.detailBlend ?? 0.3}}`;
+      }
+
+      const code = `<NoiseTextureBackground
+  noiseType="${this.patternSlug}"
+  speed={${this.currentValues.speed}}
+  intensity={${this.currentValues.intensity}}
+  noiseScale={${this.currentValues.noiseScale}}
+  animated={${this.currentValues.animated}}${patternProps}
+  colors={{
+    primary: "${this.currentValues.colors?.primary || this.defaults.colors.primary}",
+    secondary: "${this.currentValues.colors?.secondary || this.defaults.colors.secondary}",
+    tertiary: "${this.currentValues.colors?.tertiary || this.defaults.colors.tertiary}"
+  }}
+/>`;
+
+      navigator.clipboard.writeText(code).then(() => {
+        const copyBtn = this.panel.querySelector('#copy-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<span class="btn-icon">✓</span> Copied!';
+        copyBtn.classList.add('copied');
+
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  }
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new PropertiesPanelController();
+  });
+</script>
