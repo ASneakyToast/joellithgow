@@ -1,0 +1,98 @@
+---
+export interface Props {
+  videos: Array<{
+    src: string;
+    poster?: string;
+    title: string;
+    caption?: string;
+  }>;
+  title?: string;
+  layout?: 'carousel' | 'grid';
+}
+
+const { videos, title = 'video gallery', layout = 'grid' } = Astro.props;
+---
+
+<div class="case-section video-gallery">
+  <h2 class="section-title">{title}</h2>
+  <div class={`video-gallery-container ${layout}`}>
+    {videos.map((video) => (
+      <div class="video-item">
+        <video
+          class="gallery-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          controls
+          poster={video.poster}
+        >
+          <source src={video.src} type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        {video.title && <div class="video-title">{video.title}</div>}
+        {video.caption && <div class="video-caption">{video.caption}</div>}
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .video-gallery-container.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @container case-study (min-width: 600px) {
+    .video-gallery-container.grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .video-gallery-container.carousel {
+    display: flex;
+    gap: var(--space-lg);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--space-md);
+  }
+
+  .video-gallery-container.carousel .video-item {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+
+  @container case-study (min-width: 600px) {
+    .video-gallery-container.carousel .video-item {
+      flex: 0 0 45%;
+    }
+  }
+
+  .video-item {
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .gallery-video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .video-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    padding: var(--space-sm) var(--space-md) 0;
+    color: var(--text-primary);
+  }
+
+  .video-caption {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    padding: var(--space-xs) var(--space-md) var(--space-sm);
+  }
+</style>

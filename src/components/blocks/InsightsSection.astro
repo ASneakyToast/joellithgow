@@ -1,0 +1,16 @@
+---
+export interface Props {
+  insights: string[];
+}
+
+const { insights } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">key insights</h2>
+  {insights.map((insight) => (
+    <div class="quote-block">
+      "{insight}"
+    </div>
+  ))}
+</div>

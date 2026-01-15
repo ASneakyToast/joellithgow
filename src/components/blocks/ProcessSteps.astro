@@ -1,0 +1,23 @@
+---
+export interface Props {
+  steps: Array<{
+    title: string;
+    description: string;
+  }>;
+}
+
+const { steps } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">process deep dive</h2>
+  <div class="process-steps">
+    {steps.map((step, index) => (
+      <div class="process-step-detailed">
+        <div class="step-number-detailed">{index + 1}</div>
+        <div class="step-title-detailed">{step.title}</div>
+        <div class="step-description-detailed">{step.description}</div>
+      </div>
+    ))}
+  </div>
+</div>

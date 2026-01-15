@@ -1,0 +1,35 @@
+---
+export interface Props {
+  title: string;
+  subtitle: string;
+  overview: string;
+  media?: {
+    src: string;
+    alt: string;
+    caption?: string;
+    type?: 'image' | 'video';
+  };
+}
+
+const { title, subtitle, overview, media } = Astro.props;
+---
+
+<div class="case-hero">
+  <div class="case-subtitle">{subtitle}</div>
+  <h1 class="case-title">{title}</h1>
+  <p class="case-overview">{overview}</p>
+
+  {media && (
+    <div class="case-image-gallery hero-image">
+      {media.type === 'video' ? (
+        <video class="case-image primary-image" autoplay muted loop playsinline controls>
+          <source src={media.src} type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+      ) : (
+        <img src={media.src} alt={media.alt} class="case-image primary-image" loading="eager" />
+      )}
+      {media.caption && <div class="image-caption">{media.caption}</div>}
+    </div>
+  )}
+</div>

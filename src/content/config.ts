@@ -1,39 +1,34 @@
 import { defineCollection, z } from 'astro:content';
 
-// Define project schema based on current data structure
+// Define project schema for MDX-based case studies
+// Content sections (challenge, approach, process, etc.) are now in MDX body, not frontmatter
 const projectSchema = z.object({
+  // Card/listing metadata
   id: z.string(),
   number: z.number(),
   type: z.string(),
   title: z.string(),
   description: z.string(),
   impact: z.string(),
-  url: z.string().optional(),
   technologies: z.array(z.string()).optional(),
-  images: z.array(z.object({
-    src: z.string(),
-    alt: z.string(),
-    caption: z.string(),
-    type: z.enum(['image', 'video']).optional()
-  })),
-  // Extended modal data
+
+  // Hero metadata
   subtitle: z.string(),
   overview: z.string(),
+  heroMedia: z.object({
+    src: z.string(),
+    alt: z.string(),
+    caption: z.string().optional(),
+    type: z.enum(['image', 'video']).default('image')
+  }).optional(),
+
+  // Meta information
   duration: z.string(),
   team: z.string(),
   role: z.string(),
   tools: z.string(),
-  problem: z.string(),
-  solution: z.string(),
-  process: z.array(z.object({
-    title: z.string(),
-    description: z.string()
-  })).optional(),
-  insights: z.array(z.string()),
-  metrics: z.array(z.object({
-    number: z.string(),
-    label: z.string()
-  })),
+
+  // Live links (optional)
   liveLink: z.object({
     title: z.string(),
     url: z.string(),
@@ -47,7 +42,8 @@ const projectSchema = z.object({
       url: z.string()
     }))
   }).optional(),
-  // SEO and metadata
+
+  // SEO and organization
   publishDate: z.date().optional(),
   draft: z.boolean().default(false),
   featured: z.boolean().default(false),
@@ -159,7 +155,7 @@ const artworkSchema = z.object({
 // Define collections
 export const collections = {
   'projects': defineCollection({
-    type: 'data',
+    type: 'content',
     schema: projectSchema
   }),
   'blog': defineCollection({

@@ -28,6 +28,7 @@
   "license": "MIT",
   "description": "Joel Lithgow's portfolio - Creative technologist transforming ideas into digital experiences",
   "dependencies": {
+    "@astrojs/mdx": "^4.3.13",
     "astro": "^5.12.8",
     "typescript": "^5.9.2"
   },
