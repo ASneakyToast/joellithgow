@@ -14,6 +14,7 @@ const {
   noiseScale = 2.0,
   noiseType = 'simplex',
   animated = true,
+  animationAngle = 315,
   maxPixelRatio = 2,
   pauseOffscreen = true,
   class: className = '',
@@ -62,6 +63,7 @@ const {
   data-noise-scale={noiseScale}
   data-noise-type={noiseType}
   data-animated={animated}
+  data-animation-angle={animationAngle}
   data-octaves={octaves}
   data-lacunarity={lacunarity}
   data-gain={gain}
@@ -138,6 +140,7 @@ const {
     uniform float uSpeed;
     uniform int uNoiseType;
     uniform bool uAnimated;
+    uniform float uAnimationAngle;
     uniform vec3 uColorPrimary;
     uniform vec3 uColorSecondary;
     uniform vec3 uColorTertiary;
@@ -449,8 +452,13 @@ const {
       vec2 uv = vUv;
       vec2 p = uv * uNoiseScale;
 
-      // Time offset for animation (using parameterized time scales where applicable)
-      float timeOffset = uAnimated ? uTime * 0.15 * uSpeed : 0.0;
+      // Compute animation direction from angle (convert degrees to radians)
+      float angleRad = uAnimationAngle * 3.14159265 / 180.0;
+      vec2 animDir = vec2(cos(angleRad), sin(angleRad));
+
+      // Time offset for animation as 2D vector with direction
+      float timeMag = uAnimated ? uTime * 0.15 * uSpeed : 0.0;
+      vec2 timeOffset2D = animDir * timeMag;
 
       // Get noise value based on type
       float n;
@@ -460,38 +468,43 @@ const {
       // 6: domainWarp, 7: caustics, 8: marble
 
       if (uNoiseType == 0) {
-        // Perlin - classic gradient noise (uses timeScaleX/Y)
-        vec2 perlinOffset = uAnimated ? vec2(timeOffset * uTimeScaleX, timeOffset * uTimeScaleY) : vec2(0.0);
+        // Perlin - classic gradient noise (uses timeScaleX/Y and direction)
+        vec2 perlinOffset = uAnimated ? timeOffset2D * vec2(uTimeScaleX, uTimeScaleY) : vec2(0.0);
         n = fbm(p + perlinOffset);
         n = n * 0.5 + 0.5;
       } else if (uNoiseType == 1) {
-        // Simplex - smooth organic patterns (uses timeScaleX/Y)
-        vec2 simplexOffset = uAnimated ? vec2(timeOffset * uTimeScaleX, timeOffset * uTimeScaleY) : vec2(0.0);
+        // Simplex - smooth organic patterns (uses timeScaleX/Y and direction)
+        vec2 simplexOffset = uAnimated ? timeOffset2D * vec2(uTimeScaleX, uTimeScaleY) : vec2(0.0);
         n = fbm(p + simplexOffset);
         n = n * 0.5 + 0.5;
       } else if (uNoiseType == 2) {
         // Worley - cellular patterns (scaling/invert handled in function)
-        n = worley2D(p);
+        // Add directional drift on top of cell animation
+        n = worley2D(p + timeOffset2D * 0.3);
       } else if (uNoiseType == 3) {
         // Voronoi Edge - cell boundaries/cracks (scaling/edge handled in function)
-        n = voronoiEdge2D(p);
+        // Add directional drift on top of cell animation
+        n = voronoiEdge2D(p + timeOffset2D * 0.3);
       } else if (uNoiseType == 4) {
-        // Turbulence - billowy clouds
-        n = turbulence2D(p + timeOffset);
+        // Turbulence - billowy clouds (uses direction)
+        n = turbulence2D(p + timeOffset2D);
       } else if (uNoiseType == 5) {
-        // Ridged - mountain ridges (uses ridgeTimeScale)
-        float ridgeOffset = uAnimated ? timeOffset * uRidgeTimeScale : 0.0;
+        // Ridged - mountain ridges (uses ridgeTimeScale and direction)
+        vec2 ridgeOffset = uAnimated ? timeOffset2D * uRidgeTimeScale : vec2(0.0);
         n = ridged2D(p + ridgeOffset);
       } else if (uNoiseType == 6) {
         // Domain Warp - fluid distortion
-        n = domainWarp2D(p);
+        // Add directional drift on top of multi-layer swirl
+        n = domainWarp2D(p + timeOffset2D * 0.5);
         n = n * 0.5 + 0.5;
       } else if (uNoiseType == 7) {
         // Caustics - underwater light
-        n = caustics2D(p);
+        // Add directional drift on top of wave interference
+        n = caustics2D(p + timeOffset2D * 0.8);
       } else {
         // Marble - stone veins (type 8)
-        n = marble2D(p);
+        // Add directional drift on top of vein evolution
+        n = marble2D(p + timeOffset2D * 0.5);
       }
 
       // Create gradient colors based on noise
@@ -539,6 +552,7 @@ const {
     noiseScale: number;
     noiseType: NoiseType;
     animated: boolean;
+    animationAngle: number;
     // FBM parameters
     octaves: number;
     lacunarity: number;
@@ -602,6 +616,7 @@ const {
         noiseScale: parseFloat(container.dataset.noiseScale || '2'),
         noiseType: noiseTypeStr as NoiseType,
         animated: container.dataset.animated !== 'false',
+        animationAngle: parseFloat(container.dataset.animationAngle || '315'),
         // FBM parameters
         octaves: parseInt(container.dataset.octaves || '4'),
         lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
@@ -719,6 +734,7 @@ const {
           uSpeed: { value: this.config.speed },
           uNoiseType: { value: noiseTypeMap[this.config.noiseType] || 1 },
           uAnimated: { value: this.config.animated },
+          uAnimationAngle: { value: this.config.animationAngle },
           uColorPrimary: { value: new THREE.Color(colors.primary) },
           uColorSecondary: { value: new THREE.Color(colors.secondary) },
           uColorTertiary: { value: new THREE.Color(colors.tertiary) },
@@ -844,6 +860,7 @@ const {
       intensity?: number;
       noiseScale?: number;
       animated?: boolean;
+      animationAngle?: number;
       noiseType?: NoiseType;
       colors?: { primary?: string; secondary?: string; tertiary?: string };
       // FBM parameters
@@ -903,6 +920,11 @@ const {
       if (props.animated !== undefined) {
         this.config.animated = props.animated;
         this.material.uniforms.uAnimated.value = props.animated;
+      }
+
+      if (props.animationAngle !== undefined) {
+        this.config.animationAngle = props.animationAngle;
+        this.material.uniforms.uAnimationAngle.value = props.animationAngle;
       }
 
       if (props.noiseType !== undefined) {

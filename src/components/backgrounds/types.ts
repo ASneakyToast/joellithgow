@@ -159,6 +159,8 @@ export interface NoiseTextureProps extends WebGLBackgroundProps {
   noiseType?: NoiseType;
   /** Whether to animate the noise (default: true) */
   animated?: boolean;
+  /** Animation direction in degrees (0-360, default: 315 for down-left) */
+  animationAngle?: number;
 
   // FBM parameters (for applicable patterns)
   /** Number of noise octaves (1-8, default: 4) */
