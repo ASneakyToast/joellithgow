@@ -1,0 +1,174 @@
+---
+/**
+ * MarbleBackground - Stone vein patterns
+ * Creates flowing veins like natural marble stone or wood grain
+ */
+import type { MarbleBackgroundProps } from './types';
+
+export interface Props extends MarbleBackgroundProps {}
+
+const {
+  speed = 0.3,
+  intensity = 0.5,
+  noiseScale = 2.0,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `marble-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // FBM params
+  octaves = 4,
+  lacunarity = 2.0,
+  gain = 0.5,
+  // Marble-specific
+  lineFrequency = 8.0,
+  noiseInfluence = 6.0,
+  detailBlend = 0.3
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'marble-bg', className]}
+  id={id}
+  data-effect-type="marble"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-octaves={octaves}
+  data-lacunarity={lacunarity}
+  data-gain={gain}
+  data-line-frequency={lineFrequency}
+  data-noise-influence={noiseInfluence}
+  data-detail-blend={detailBlend}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
+  import { marbleFragmentShader } from './shaders/fragments/marble.glsl';
+  import { createFBMUniforms } from './shaders/uniforms';
+
+  interface MarbleConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    octaves: number;
+    lacunarity: number;
+    gain: number;
+    lineFrequency: number;
+    noiseInfluence: number;
+    detailBlend: number;
+  }
+
+  class MarbleBackgroundManager extends NoiseBackgroundManager<MarbleConfig> {
+    protected getFragmentShader(): string {
+      return marbleFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<MarbleConfig> {
+      return {
+        octaves: parseInt(container.dataset.octaves || '4'),
+        lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
+        gain: parseFloat(container.dataset.gain || '0.5'),
+        lineFrequency: parseFloat(container.dataset.lineFrequency || '8.0'),
+        noiseInfluence: parseFloat(container.dataset.noiseInfluence || '6.0'),
+        detailBlend: parseFloat(container.dataset.detailBlend || '0.3')
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        ...createFBMUniforms({
+          octaves: this.config.octaves,
+          lacunarity: this.config.lacunarity,
+          gain: this.config.gain
+        }),
+        uLineFrequency: { value: this.config.lineFrequency },
+        uNoiseInfluence: { value: this.config.noiseInfluence },
+        uDetailBlend: { value: this.config.detailBlend }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<MarbleConfig>): void {
+      if (!this.material) return;
+
+      if (props.octaves !== undefined) {
+        this.config.octaves = props.octaves;
+        this.material.uniforms.uOctaves.value = props.octaves;
+      }
+      if (props.lacunarity !== undefined) {
+        this.config.lacunarity = props.lacunarity;
+        this.material.uniforms.uLacunarity.value = props.lacunarity;
+      }
+      if (props.gain !== undefined) {
+        this.config.gain = props.gain;
+        this.material.uniforms.uGain.value = props.gain;
+      }
+      if (props.lineFrequency !== undefined) {
+        this.config.lineFrequency = props.lineFrequency;
+        this.material.uniforms.uLineFrequency.value = props.lineFrequency;
+      }
+      if (props.noiseInfluence !== undefined) {
+        this.config.noiseInfluence = props.noiseInfluence;
+        this.material.uniforms.uNoiseInfluence.value = props.noiseInfluence;
+      }
+      if (props.detailBlend !== undefined) {
+        this.config.detailBlend = props.detailBlend;
+        this.material.uniforms.uDetailBlend.value = props.detailBlend;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.marble-bg').forEach(container => {
+      const manager = new MarbleBackgroundManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>
