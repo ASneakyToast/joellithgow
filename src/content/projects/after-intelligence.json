@@ -1,6 +1,6 @@
 {
   "id": "after-intelligence",
-  "number": 5,
+  "number": 1,
   "type": "event website",
   "title": "After Intelligence Event Series",
   "description": "A multi-purpose event website built under tight deadlines by prototyping ahead of design decisions, using a configurable color system that unblocked marketing teams and enabled rapid iteration once branding finalized",
@@ -8,9 +8,10 @@
   "technologies": ["astro.js", "css custom properties", "figma", "mailchimp"],
   "images": [
     {
-      "src": "/assets/images/projects/after-intelligence-hero.png",
+      "src": "/assets/images/projects/cca-afterIntelligence-caseStudy-hero.webm",
       "alt": "After Intelligence event website homepage",
-      "caption": "Homepage featuring dynamic event information and registration integration"
+      "caption": "Homepage featuring dynamic event information and registration integration",
+      "type": "video"
     },
     {
       "src": "/assets/images/projects/after-intelligence-email.png",
@@ -26,6 +27,12 @@
       "src": "/assets/images/projects/after-intelligence-design-system.png",
       "alt": "Configurable color design system",
       "caption": "CSS custom properties powering the configurable design system"
+    },
+    {
+      "src": "/assets/images/projects/cca-afterIntelligence-caseStudy-lightDark.webm",
+      "alt": "Light and dark mode switching demonstration",
+      "caption": "The configurable design system enables seamless light and dark mode switching",
+      "type": "video"
     },
     {
       "src": "/assets/images/projects/after-intelligence-archive.png",
