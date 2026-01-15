@@ -1,0 +1,29 @@
+---
+export interface Props {
+  duration: string;
+  team: string;
+  role: string;
+  tools: string;
+}
+
+const { duration, team, role, tools } = Astro.props;
+---
+
+<div class="case-meta">
+  <div class="meta-item">
+    <div class="meta-label">duration</div>
+    <div class="meta-value">{duration}</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-label">team</div>
+    <div class="meta-value">{team}</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-label">role</div>
+    <div class="meta-value">{role}</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-label">tools</div>
+    <div class="meta-value">{tools}</div>
+  </div>
+</div>

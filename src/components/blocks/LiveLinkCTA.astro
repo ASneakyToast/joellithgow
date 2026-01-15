@@ -1,0 +1,21 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  url: string;
+  linkText?: string;
+}
+
+const { title, description, url, linkText = 'Visit Live Site' } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">{title}</h2>
+  <div class="live-link-container">
+    <a href={url} target="_blank" rel="noopener noreferrer" class="live-link-button">
+      {linkText}
+      <span class="link-arrow">&rarr;</span>
+    </a>
+    <p class="live-link-description">{description}</p>
+  </div>
+</div>

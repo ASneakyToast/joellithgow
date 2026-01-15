@@ -1,9 +1,7 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import PullQuote from '@components/ui/PullQuote.astro';
-import MetricDisplay from '@components/ui/MetricDisplay.astro';
 import Button from '@components/primitives/Button.astro';
 
 export async function getStaticPaths() {
@@ -22,6 +20,9 @@ interface Props {
 const { project } = Astro.props;
 const data = project.data;
 
+// Render the MDX content
+const { Content } = await render(project);
+
 // JSON-LD structured data for case study
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -37,10 +38,6 @@ const jsonLd = {
   url: `https://joellithgow.com/work/${data.id}`,
   genre: data.type,
 };
-
-// Get hero image
-const heroImage = data.images && data.images.length > 0 ? data.images[0] : null;
-const galleryImages = data.images && data.images.length > 1 ? data.images.slice(1) : [];
 ---
 
 <BaseLayout
@@ -70,211 +67,11 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
       </nav>
     </header>
 
-    {/* Full-bleed Hero Image */}
-    {heroImage && (
-      <figure class="hero-figure">
-        {heroImage.type === 'video' ? (
-          <video class="hero-media" autoplay muted loop playsinline>
-            <source src={heroImage.src} type="video/webm" />
-            Your browser does not support the video tag.
-          </video>
-        ) : (
-          <img
-            src={heroImage.src}
-            alt={heroImage.alt}
-            class="hero-media"
-            loading="eager"
-          />
-        )}
-      </figure>
-    )}
-
-    {/* Article Content */}
+    {/* MDX Content */}
     <article class="article">
-      {/* Header Section */}
-      <header class="article-header">
-        <span class="project-type">{data.subtitle || data.type}</span>
-        <h1 class="article-title">{data.title}</h1>
-        <p class="article-overview">{data.overview || data.description}</p>
-      </header>
-
-      {/* Meta Information */}
-      <div class="meta-grid">
-        <div class="meta-item">
-          <span class="meta-label">duration</span>
-          <span class="meta-value">{data.duration || 'Ongoing'}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">team</span>
-          <span class="meta-value">{data.team || 'Solo project'}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">role</span>
-          <span class="meta-value">{data.role || 'Designer & Developer'}</span>
-        </div>
-        {data.tools && (
-          <div class="meta-item">
-            <span class="meta-label">tools</span>
-            <span class="meta-value">{data.tools}</span>
-          </div>
-        )}
+      <div class="case-study-content">
+        <Content />
       </div>
-
-      {/* The Challenge */}
-      {data.problem && (
-        <section class="content-section">
-          <h2 class="section-heading">the challenge</h2>
-          <div class="prose">
-            <p>{data.problem}</p>
-          </div>
-          {data.insights && data.insights.length > 0 && (
-            <PullQuote>
-              {data.insights[0]}
-            </PullQuote>
-          )}
-        </section>
-      )}
-
-      {/* The Approach */}
-      {data.solution && (
-        <section class="content-section">
-          <h2 class="section-heading">the approach</h2>
-          <div class="prose">
-            <p>{data.solution}</p>
-          </div>
-        </section>
-      )}
-
-      {/* Visual Documentation - First batch */}
-      {galleryImages.length > 0 && (
-        <section class="visual-section">
-          <figure class="featured-image">
-            {galleryImages[0].type === 'video' ? (
-              <video autoplay muted loop playsinline>
-                <source src={galleryImages[0].src} type="video/webm" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img
-                src={galleryImages[0].src}
-                alt={galleryImages[0].alt}
-                loading="lazy"
-              />
-            )}
-            {galleryImages[0].caption && (
-              <figcaption>{galleryImages[0].caption}</figcaption>
-            )}
-          </figure>
-        </section>
-      )}
-
-      {/* Process Deep Dive */}
-      {data.process && data.process.length > 0 && (
-        <section class="content-section">
-          <h2 class="section-heading">process</h2>
-          <ol class="process-list">
-            {data.process.map((step, index) => (
-              <li class="process-item">
-                <span class="process-number">{String(index + 1).padStart(2, '0')}</span>
-                <div class="process-content">
-                  <h3 class="process-title">{step.title}</h3>
-                  <p class="process-description">{step.description}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {/* Image Gallery */}
-      {galleryImages.length > 1 && (
-        <section class="visual-section">
-          <div class="image-grid">
-            {galleryImages.slice(1).map(image => (
-              <figure class="grid-image">
-                {image.type === 'video' ? (
-                  <video autoplay muted loop playsinline>
-                    <source src={image.src} type="video/webm" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    loading="lazy"
-                  />
-                )}
-                {image.caption && (
-                  <figcaption>{image.caption}</figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Impact & Results */}
-      {data.metrics && data.metrics.length > 0 && (
-        <section class="content-section results-section">
-          <h2 class="section-heading">impact & results</h2>
-          <MetricDisplay
-            metrics={data.metrics}
-            columns={data.metrics.length <= 2 ? 2 : data.metrics.length <= 3 ? 3 : 4}
-          />
-        </section>
-      )}
-
-      {/* Key Insights */}
-      {data.insights && data.insights.length > 1 && (
-        <section class="content-section">
-          <h2 class="section-heading">key insights</h2>
-          {data.insights.slice(1).map(insight => (
-            <PullQuote>
-              {insight}
-            </PullQuote>
-          ))}
-        </section>
-      )}
-
-      {/* Live Link(s) */}
-      {(data.liveLink || data.liveLinks) && (
-        <section class="content-section cta-section">
-          {data.liveLink && (
-            <div class="live-link-wrapper">
-              <h2 class="section-heading">{data.liveLink.title}</h2>
-              <p class="cta-description">{data.liveLink.description}</p>
-              <a
-                href={data.liveLink.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="cta-link"
-              >
-                Visit Live Site
-                <span class="cta-arrow" aria-hidden="true">&rarr;</span>
-              </a>
-            </div>
-          )}
-          {data.liveLinks && (
-            <div class="live-links-wrapper">
-              <h2 class="section-heading">{data.liveLinks.title}</h2>
-              <p class="cta-description">{data.liveLinks.description}</p>
-              <div class="links-grid">
-                {data.liveLinks.links.map(link => (
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="cta-link"
-                  >
-                    {link.title}
-                    <span class="cta-arrow" aria-hidden="true">&rarr;</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Footer Navigation */}
       <footer class="article-footer">
@@ -288,7 +85,7 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
   <ThemeModal />
 </BaseLayout>
 
-<style>
+<style is:global>
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
 
@@ -346,24 +143,6 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
     font-weight: var(--font-bold);
   }
 
-  /* Hero Image - Full Bleed */
-  .hero-figure {
-    width: 100%;
-    height: 85vh;
-    max-height: 900px;
-    margin: 0;
-    overflow: hidden;
-    position: relative;
-    border-bottom: 4px solid var(--bg-dark);
-  }
-
-  .hero-media {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
   /* Article Container */
   .article {
     max-width: var(--content-container);
@@ -371,46 +150,45 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
     padding: 0 var(--page-gutter);
   }
 
-  /* Article Header */
-  .article-header {
-    max-width: var(--content-normal);
-    margin-bottom: var(--space-4xl);
-    padding-top: var(--space-3xl);
+  /* Case Study Content - styles for MDX blocks */
+  .case-study-content {
+    container-type: inline-size;
+    container-name: case-study;
   }
 
-  .project-type {
-    font-family: var(--font-family);
+  .case-hero {
+    padding: var(--space-3xl) 0;
+    background: var(--bg-secondary);
+  }
+
+  .case-title {
+    font-size: var(--heading-2xl);
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+  }
+
+  .case-subtitle {
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     color: var(--accent-secondary);
-    display: block;
     margin-bottom: var(--space-lg);
   }
 
-  .article-title {
-    font-family: var(--font-family);
-    font-size: var(--heading-2xl);
-    font-weight: var(--font-bold);
-    line-height: var(--leading-tight);
-    color: var(--text-primary);
-    margin: 0 0 var(--space-xl);
-  }
-
-  .article-overview {
-    font-family: var(--font-family);
+  .case-overview {
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
-    margin: 0;
+    margin-bottom: var(--space-2xl);
+    max-width: var(--content-normal);
   }
 
-  /* Meta Grid */
-  .meta-grid {
+  .case-meta {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: var(--space-md);
-    margin-bottom: var(--space-4xl);
+    margin-top: var(--space-2xl);
   }
 
   .meta-item {
@@ -424,86 +202,152 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
   }
 
   .meta-label {
-    font-family: var(--font-family);
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
+    margin-bottom: var(--space-xs);
     color: var(--text-secondary);
     display: block;
-    margin-bottom: var(--space-xs);
   }
 
   .meta-value {
-    font-family: var(--font-family);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
     color: var(--text-primary);
   }
 
-  /* Content Sections */
-  .content-section {
-    margin-bottom: var(--space-5xl);
+  .case-section {
+    padding: var(--space-3xl) 0;
+    border-bottom: 2px solid var(--bg-primary);
   }
 
-  .section-heading {
-    font-family: var(--font-family);
+  .case-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .case-section .section-title {
     font-size: var(--heading-md);
-    font-weight: var(--font-bold);
+    margin-bottom: var(--space-lg);
     color: var(--text-primary);
-    margin: 0 0 var(--space-lg);
     text-transform: lowercase;
     border-left: 4px solid var(--accent-primary);
     padding-left: var(--space-md);
   }
 
-  /* Prose Content */
-  .prose {
-    max-width: var(--content-normal);
-  }
-
-  .prose p {
-    font-family: var(--font-family);
+  .section-content {
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     color: var(--text-primary);
-    margin: 0 0 var(--space-lg);
+    max-width: var(--content-normal);
   }
 
-  .prose p:last-child {
-    margin-bottom: 0;
+  .section-content p {
+    margin-bottom: var(--space-lg);
   }
 
-  /* Visual Sections */
-  .visual-section {
-    margin: var(--space-4xl) 0;
+  .insight-box {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    padding: var(--space-lg);
+    margin: var(--space-xl) 0;
+    border: 2px solid var(--bg-dark);
+    position: relative;
+    max-width: var(--content-normal);
   }
 
-  .featured-image {
-    margin: 0;
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-lg) 0;
   }
 
-  .featured-image img,
-  .featured-image video {
+  .metric-card {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-lg);
+    text-align: center;
+    border: 2px solid var(--bg-dark);
+  }
+
+  .metric-card:nth-child(even) {
+    background: var(--accent-primary);
+  }
+
+  .metric-number {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-xs);
+  }
+
+  .metric-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .process-step-detailed {
+    background: var(--bg-primary);
+    border: 2px solid var(--bg-dark);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+  }
+
+  .step-number-detailed {
+    font-size: var(--heading-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .step-title-detailed {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+  }
+
+  .step-description-detailed {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+
+  .case-image-gallery,
+  .image-grid {
+    margin: var(--space-xl) 0;
+  }
+
+  .hero-image {
+    margin: var(--space-2xl) 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .case-image {
     width: 100%;
     height: auto;
-    display: block;
-    border: 4px solid var(--bg-dark);
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
   }
 
-  .featured-image figcaption,
-  .grid-image figcaption {
-    font-family: var(--font-family);
+  .primary-image {
+    max-height: 600px;
+    object-fit: cover;
+  }
+
+  .image-caption {
     font-size: var(--text-sm);
     color: var(--text-secondary);
+    margin-top: var(--space-sm);
     text-align: center;
-    margin-top: var(--space-md);
   }
 
-  /* Image Grid */
   .image-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-xl);
+    gap: var(--space-lg);
   }
 
   @media (min-width: 768px) {
@@ -512,120 +356,51 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
     }
   }
 
-  .grid-image {
-    margin: 0;
-  }
-
-  .grid-image img,
-  .grid-image video {
-    width: 100%;
-    height: auto;
-    display: block;
-    border: 3px solid var(--bg-dark);
-  }
-
-  /* Process List */
-  .process-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-width: var(--content-normal);
-  }
-
-  .process-item {
-    display: flex;
-    gap: var(--space-xl);
-    padding: var(--space-xl) 0;
-    border-bottom: 2px solid var(--bg-dark);
-  }
-
-  .process-item:last-child {
-    border-bottom: none;
-  }
-
-  .process-number {
-    font-family: var(--font-family);
-    font-size: var(--heading-sm);
-    font-weight: var(--font-bold);
-    color: var(--accent-primary);
-    flex-shrink: 0;
-    width: 50px;
-  }
-
-  .process-content {
-    flex: 1;
-  }
-
-  .process-title {
-    font-family: var(--font-family);
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
-    color: var(--text-primary);
-    margin: 0 0 var(--space-sm);
-  }
-
-  .process-description {
-    font-family: var(--font-family);
-    font-size: var(--text-base);
-    line-height: var(--leading-relaxed);
-    color: var(--text-secondary);
-    margin: 0;
-  }
-
-  /* Results Section */
-  .results-section {
+  .quote-block {
     background: var(--bg-primary);
-    margin-left: calc(-1 * var(--page-gutter));
-    margin-right: calc(-1 * var(--page-gutter));
-    padding: var(--space-4xl) var(--page-gutter);
-    border-top: 4px solid var(--accent-primary);
-    border-bottom: 4px solid var(--accent-primary);
-  }
-
-  /* CTA Section */
-  .cta-section {
-    border-top: 3px solid var(--bg-dark);
-    padding-top: var(--space-4xl);
-  }
-
-  .cta-description {
-    font-family: var(--font-family);
-    font-size: var(--text-base);
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-xl);
+    border-left: 4px solid var(--accent-primary);
+    padding: var(--space-lg);
+    margin: var(--space-lg) 0;
+    font-style: italic;
+    font-size: var(--text-lg);
     max-width: var(--content-normal);
   }
 
-  .cta-link {
+  .live-link-container,
+  .live-links-container {
+    margin: var(--space-lg) 0;
+  }
+
+  .live-link-button {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    font-family: var(--font-family);
-    font-size: var(--text-base);
-    font-weight: var(--font-bold);
-    color: var(--text-light);
-    text-decoration: none;
-    padding: var(--space-md) var(--space-xl);
     background: var(--accent-primary);
-    border: 3px solid var(--bg-dark);
-    box-shadow: var(--shadow-md) var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: var(--font-bold);
     transition: all var(--duration-base) var(--ease-out);
   }
 
-  .cta-link:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: var(--shadow-lg) var(--bg-dark);
+  .live-link-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
   }
 
-  .cta-arrow {
-    transition: transform var(--duration-base) var(--ease-out);
+  .link-arrow {
+    font-size: var(--text-xl);
   }
 
-  .cta-link:hover .cta-arrow {
-    transform: translateX(4px);
+  .live-link-description,
+  .live-links-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: var(--space-md) 0;
   }
 
-  .links-grid {
+  .live-links-grid {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-md);
@@ -634,53 +409,24 @@ const galleryImages = data.images && data.images.length > 1 ? data.images.slice(
   /* Article Footer */
   .article-footer {
     padding: var(--space-4xl) 0;
-    margin-top: var(--space-4xl);
+    margin-top: var(--space-2xl);
     border-top: 3px solid var(--bg-dark);
     text-align: center;
   }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .hero-figure {
-      height: 60vh;
-    }
-
-    .article-title {
+    .case-title {
       font-size: var(--heading-xl);
     }
 
-    .meta-grid {
+    .case-meta {
       grid-template-columns: repeat(2, 1fr);
-    }
-
-    .process-item {
-      flex-direction: column;
-      gap: var(--space-md);
-    }
-
-    .process-number {
-      width: auto;
-    }
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .cta-arrow {
-      transition: none;
-    }
-
-    .cta-link:hover .cta-arrow {
-      transform: none;
-    }
-
-    .cta-link:hover {
-      transform: none;
     }
   }
 
   /* Focus states */
-  .breadcrumb-link:focus,
-  .cta-link:focus {
+  .breadcrumb-link:focus {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
   }

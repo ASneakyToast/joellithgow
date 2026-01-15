@@ -1,0 +1,23 @@
+---
+export interface Props {
+  metrics: Array<{
+    number: string;
+    label: string;
+  }>;
+  title?: string;
+}
+
+const { metrics, title = 'impact & results' } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">{title}</h2>
+  <div class="metric-grid">
+    {metrics.map((metric) => (
+      <div class="metric-card">
+        <div class="metric-number">{metric.number}</div>
+        <div class="metric-label">{metric.label}</div>
+      </div>
+    ))}
+  </div>
+</div>

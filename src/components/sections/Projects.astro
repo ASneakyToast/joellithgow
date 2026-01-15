@@ -43,8 +43,8 @@ if (limit && limit > 0) {
   {/* Projects Grid */}
   <div class="projects-grid">
     {projects.map((project, index) => {
-      const hasImage = project.data.images && project.data.images.length > 0;
-      const heroImage = hasImage ? project.data.images[0] : null;
+      // Use heroMedia from frontmatter (MDX schema)
+      const heroImage = project.data.heroMedia || null;
       const isEven = index % 2 === 1;
 
       return (

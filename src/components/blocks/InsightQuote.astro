@@ -1,0 +1,19 @@
+---
+export interface Props {
+  variant?: 'default' | 'highlight';
+}
+
+const { variant = 'default' } = Astro.props;
+---
+
+<div class={`quote-block ${variant}`}>
+  "<slot />"
+</div>
+
+<style>
+  .quote-block.highlight {
+    background: var(--accent-secondary);
+    color: var(--text-light);
+    border-left-color: var(--accent-tertiary);
+  }
+</style>

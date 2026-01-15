@@ -1,0 +1,19 @@
+---
+export interface Props {
+  insight?: string;
+}
+
+const { insight } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">the challenge</h2>
+  <div class="section-content">
+    <slot />
+  </div>
+  {insight && (
+    <div class="insight-box">
+      <strong>key insight:</strong> {insight}
+    </div>
+  )}
+</div>

@@ -1,11 +1,38 @@
 ---
-// Case study modal for project details
+// Case study modal for project details - MDX-based rendering
 import Modal from '@components/primitives/Modal.astro';
+import { getCollection, render } from 'astro:content';
+
+// Pre-render all case studies at build time
+const projects = await getCollection('projects', ({ data }) => !data.draft);
+
+// Render each project's MDX content
+const renderedProjects = await Promise.all(
+  projects.map(async (project) => {
+    const { Content } = await render(project);
+    return {
+      id: project.data.id,
+      data: project.data,
+      Content
+    };
+  })
+);
 ---
 
 <Modal id="caseStudyModal" title="case study" size="lg" closeButton={true}>
   <div class="case-study-content">
-    <!-- Content will be populated dynamically via JavaScript -->
+    <!-- Pre-rendered content stored in hidden divs -->
+    {renderedProjects.map((project) => (
+      <div
+        class="case-study-rendered"
+        data-project-id={project.id}
+        style="display: none;"
+      >
+        <project.Content />
+      </div>
+    ))}
+    <!-- Active content container -->
+    <div class="case-study-active"></div>
   </div>
 </Modal>
 
@@ -115,7 +142,7 @@ import Modal from '@components/primitives/Modal.astro';
   }
 
   .insight-box::before {
-    content: '💡';
+    content: '';
     position: absolute;
     top: -10px;
     left: -10px;
@@ -345,222 +372,36 @@ import Modal from '@components/primitives/Modal.astro';
 </style>
 
 <script>
-  // Case Study Modal Management
+  // Case Study Modal Management - MDX Pre-rendered Version
   class CaseStudyModal {
     private modal: HTMLElement | null;
     private content: HTMLElement | null;
+    private activeContainer: HTMLElement | null;
 
     constructor() {
       this.modal = document.getElementById('caseStudyModal');
       this.content = this.modal?.querySelector('.case-study-content') || null;
+      this.activeContainer = this.modal?.querySelector('.case-study-active') || null;
     }
 
-    open(projectData: any) {
-      if (!this.modal || !this.content) return;
+    open(projectId: string) {
+      if (!this.modal || !this.content || !this.activeContainer) return;
 
-      // Generate and populate content
-      const generatedContent = this.generateCaseStudyContent(projectData);
-      this.content.innerHTML = generatedContent;
+      // Find pre-rendered content by project ID
+      const renderedContent = this.content.querySelector(
+        `.case-study-rendered[data-project-id="${projectId}"]`
+      );
+
+      if (renderedContent) {
+        // Clone the content to the active container
+        this.activeContainer.innerHTML = renderedContent.innerHTML;
+      } else {
+        console.warn(`No pre-rendered content found for project: ${projectId}`);
+        this.activeContainer.innerHTML = '<p>Case study content not found.</p>';
+      }
 
       // Open modal using global modal manager
       (window as any).openModal?.('caseStudyModal');
-    }
-
-    generateCaseStudyContent(data: any): string {
-      return `
-        <div class="case-hero">
-            <div class="case-subtitle">${data.subtitle || data.type}</div>
-            <h1 class="case-title">${data.title}</h1>
-            <p class="case-overview">${data.overview || data.description}</p>
-
-            ${
-              data.images && data.images.length > 0
-                ? `
-                <div class="case-image-gallery hero-image">
-                    ${
-                      data.images[0].type === 'video'
-                        ? `
-                        <video class="case-image primary-image" autoplay muted loop playsinline controls>
-                            <source src="${data.images[0].src}" type="video/webm">
-                            Your browser does not support the video tag.
-                        </video>
-                    `
-                        : `
-                        <img src="${data.images[0].src}" alt="${data.images[0].alt}" class="case-image primary-image" loading="eager">
-                    `
-                    }
-                    ${data.images[0].caption ? `<div class="image-caption">${data.images[0].caption}</div>` : ''}
-                </div>
-            `
-                : ''
-            }
-
-            <div class="case-meta">
-                <div class="meta-item">
-                    <div class="meta-label">duration</div>
-                    <div class="meta-value">${data.duration || 'Ongoing'}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">team</div>
-                    <div class="meta-value">${data.team || 'Solo project'}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">role</div>
-                    <div class="meta-value">${data.role || 'Designer & Developer'}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">tools</div>
-                    <div class="meta-value">${data.tools || data.technologies?.join(', ') || ''}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="case-section">
-            <h2 class="section-title">the challenge</h2>
-            <div class="section-content">${data.problem || 'Challenge details coming soon...'}</div>
-            ${
-              data.insights && data.insights.length > 0
-                ? `
-                <div class="insight-box">
-                    <strong>key insight:</strong> ${data.insights[0]}
-                </div>
-            `
-                : ''
-            }
-        </div>
-
-        <div class="case-section">
-            <h2 class="section-title">the approach</h2>
-            <div class="section-content">${data.solution || 'Solution details coming soon...'}</div>
-        </div>
-
-        ${
-          data.process && data.process.length > 0
-            ? `
-        <div class="case-section">
-            <h2 class="section-title">process deep dive</h2>
-            <div class="process-steps">
-                ${data.process
-                  .map(
-                    (step: any, index: number) => `
-                    <div class="process-step-detailed">
-                        <div class="step-number-detailed">${index + 1}</div>
-                        <div class="step-title-detailed">${step.title}</div>
-                        <div class="step-description-detailed">${step.description}</div>
-                    </div>
-                `
-                  )
-                  .join('')}
-            </div>
-        </div>
-        `
-            : ''
-        }
-
-        ${
-          data.images && data.images.length > 1
-            ? `
-            <div class="case-section">
-                <h2 class="section-title">visual documentation</h2>
-                <div class="image-grid">
-                    ${data.images
-                      .slice(1)
-                      .map(
-                        (image: any) => `
-                        <div class="image-item">
-                            <img src="${image.src}" alt="${image.alt}" class="case-image gallery-image" loading="lazy">
-                            <div class="image-caption">${image.caption}</div>
-                        </div>
-                    `
-                      )
-                      .join('')}
-                </div>
-            </div>
-        `
-            : ''
-        }
-
-        <div class="case-section">
-            <h2 class="section-title">key insights</h2>
-            ${
-              data.insights && data.insights.length > 0
-                ? data.insights
-                    .map(
-                      (insight: string) => `
-                <div class="quote-block">
-                    "${insight}"
-                </div>
-            `
-                    )
-                    .join('')
-                : '<p>Insights coming soon...</p>'
-            }
-        </div>
-
-        ${
-          data.metrics && data.metrics.length > 0
-            ? `
-        <div class="case-section">
-            <h2 class="section-title">impact & results</h2>
-            <div class="metric-grid">
-                ${data.metrics
-                  .map(
-                    (metric: any) => `
-                    <div class="metric-card">
-                        <div class="metric-number">${metric.number}</div>
-                        <div class="metric-label">${metric.label}</div>
-                    </div>
-                `
-                  )
-                  .join('')}
-            </div>
-        </div>
-        `
-            : ''
-        }
-
-        ${
-          data.liveLink
-            ? `
-        <div class="case-section">
-            <h2 class="section-title">${data.liveLink.title}</h2>
-            <div class="live-link-container">
-                <a href="${data.liveLink.url}" target="_blank" rel="noopener noreferrer" class="live-link-button">
-                    Visit Live Site
-                    <span class="link-arrow">→</span>
-                </a>
-                <p class="live-link-description">${data.liveLink.description}</p>
-            </div>
-        </div>
-        `
-            : ''
-        }
-
-        ${
-          data.liveLinks
-            ? `
-        <div class="case-section">
-            <h2 class="section-title">${data.liveLinks.title}</h2>
-            <div class="live-links-container">
-                <p class="live-links-description">${data.liveLinks.description}</p>
-                <div class="live-links-grid">
-                    ${data.liveLinks.links
-                      .map(
-                        (link: any) => `
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="live-link-button">
-                            ${link.title}
-                            <span class="link-arrow">→</span>
-                        </a>
-                    `
-                      )
-                      .join('')}
-                </div>
-            </div>
-        </div>
-        `
-            : ''
-        }
-      `;
     }
   }
 
@@ -569,5 +410,5 @@ import Modal from '@components/primitives/Modal.astro';
 
   // Export globally
   (window as any).caseStudyModal = caseStudyModal;
-  (window as any).openCaseStudy = (projectData: any) => caseStudyModal.open(projectData);
+  (window as any).openCaseStudy = (projectId: string) => caseStudyModal.open(projectId);
 </script>

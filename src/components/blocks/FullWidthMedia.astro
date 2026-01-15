@@ -1,0 +1,47 @@
+---
+export interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  type?: 'image' | 'video';
+}
+
+const { src, alt, caption, type = 'image' } = Astro.props;
+---
+
+<div class="case-section full-width-media">
+  <div class="full-width-container">
+    {type === 'video' ? (
+      <video class="full-width-asset" autoplay muted loop playsinline controls>
+        <source src={src} type="video/webm" />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      <img src={src} alt={alt} class="full-width-asset" loading="lazy" />
+    )}
+    {caption && <div class="image-caption">{caption}</div>}
+  </div>
+</div>
+
+<style>
+  .full-width-media {
+    padding: 0 !important;
+    margin: var(--space-2xl) 0;
+  }
+
+  .full-width-container {
+    width: 100%;
+  }
+
+  .full-width-asset {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .full-width-media .image-caption {
+    padding: var(--space-md) var(--space-xl);
+  }
+</style>

@@ -543,17 +543,20 @@ projects = projects.sort((a, b) => {
     }
 
     handleCardClick(card) {
+      const projectId = card.dataset.projectId;
       const projectData = JSON.parse(card.dataset.projectData || '{}');
-      
+
       // Add click animation
       card.style.transform = 'scale(0.98)';
       setTimeout(() => {
         card.style.transform = '';
       }, 150);
 
-      // Open case study modal
+      // Open case study modal with project ID (for MDX pre-rendered content)
       if (window.caseStudyModal && typeof window.caseStudyModal.open === 'function') {
-        window.caseStudyModal.open(projectData);
+        window.caseStudyModal.open(projectId);
+      } else if (window.openCaseStudy) {
+        window.openCaseStudy(projectId);
       } else {
         console.warn('Case study modal not available');
         // Fallback: navigate to project page if available
