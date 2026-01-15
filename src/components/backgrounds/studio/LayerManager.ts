@@ -79,6 +79,10 @@ export class LayerManager extends EventTarget {
     const layerContainer = createLayerContainer(id, patternType, config, zIndex);
     this.container.appendChild(layerContainer);
 
+    // Apply layer compositing CSS (opacity and blend mode)
+    layerContainer.style.opacity = String(config.opacity);
+    layerContainer.style.mixBlendMode = config.blendMode;
+
     // Create and initialize the manager
     const manager = createPatternManager(layerContainer, patternType);
     manager.init();
@@ -239,6 +243,17 @@ export class LayerManager extends EventTarget {
 
     // Update stored config
     Object.assign(layer.config, config);
+
+    // Apply CSS properties for layer compositing
+    const container = document.getElementById(`layer-${id}`);
+    if (container) {
+      if (config.opacity !== undefined) {
+        container.style.opacity = String(config.opacity);
+      }
+      if (config.blendMode !== undefined) {
+        container.style.mixBlendMode = config.blendMode;
+      }
+    }
 
     // Update the WebGL uniforms
     manager.updateUniforms(config as any);
