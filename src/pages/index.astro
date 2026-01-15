@@ -4,13 +4,15 @@ import ThemeModal from '@components/modals/ThemeModal.astro';
 import Card from '@components/primitives/Card.astro';
 import Button from '@components/primitives/Button.astro';
 import Badge from '@components/primitives/Badge.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
 const pageDescription = 'Creative technologist who builds things and writes about them. View my professional work or read my writing.';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={false}>
-  <main class="landing-page animated-bg bg-accent-network">
+  <main class="landing-page">
+    <GeometricGridBackground animationType="wave" intensity={0.6} gridSize={60} speed={0.8} />
     <div class="landing-content">
       <div class="landing-grid">
         <!-- Left Column: Name + Bio -->
@@ -23,7 +25,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
             <p class="bio-text">
               A 27-year-old Australian-American nerd with a BFA in Art and Design from California College of the Arts.
             </p>
-            <a href="/about" class="about-link">
+            <a href="/about" class="about-cta">
               Learn more about me →
             </a>
           </div>
@@ -89,7 +91,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .landing-page {
     min-height: 100vh;
-    background: var(--bg-primary);
     color: var(--text-primary);
     padding: var(--space-3xl) var(--page-gutter);
     position: relative;
@@ -130,7 +131,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     line-height: 1;
     margin: 0;
     color: var(--text-primary);
-    text-shadow: var(--text-shadow) var(--accent-secondary);
     display: inline-block;
   }
 
@@ -140,23 +140,18 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     gap: var(--space-xl);
   }
 
-  /* Custom nav card styling - brutalist design */
+  /* Custom nav card styling */
   .nav-card {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
     padding: var(--space-2xl) var(--space-xl);
     position: relative;
-    transform: var(--rotation-sm);
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .nav-card:nth-child(even) {
-    transform: rotate(1deg);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
   }
 
   .nav-card:hover {
-    transform: scale(1.02);
     z-index: 5;
   }
 
@@ -169,6 +164,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .card-title {
     display: block;
+    font-family: var(--font-family);
     font-size: clamp(32px, 6vw, 60px);
     font-weight: var(--font-bold);
     line-height: var(--leading-tight);
@@ -185,6 +181,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .card-description {
     display: block;
+    font-family: var(--font-family);
     font-size: clamp(1.125rem, 3vw, 1.875rem);
     font-weight: var(--font-semibold);
     line-height: var(--leading-relaxed);
@@ -222,18 +219,30 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     max-width: 400px;
   }
 
-  .about-link {
-    font-size: var(--text-sm);
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: var(--font-medium);
-    transition: color var(--duration-base) var(--ease-out);
+  /* CTA styling - matches project-cta on /work */
+  .about-cta {
     display: inline-block;
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--text-light);
+    text-decoration: none;
+    padding: var(--button-padding-y) var(--button-padding-x);
+    background: var(--accent-primary);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-md) var(--bg-dark);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  .about-link:hover {
-    color: var(--text-primary);
-    text-decoration: underline;
+  .about-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg) var(--bg-dark);
+  }
+
+  .about-cta:focus {
+    outline: var(--border-width-thick) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
   }
 
   .theme-toggle-minimal {

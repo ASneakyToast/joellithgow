@@ -40,11 +40,11 @@ const {
 
 <style>
   .webgl-background-container {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
@@ -147,11 +147,6 @@ const {
       float glowY = smoothstep(uGridSize - uLineWidth * 3.0, uGridSize - uLineWidth, grid.y);
       float glow = max(glowX, glowY) * 0.15 * uIntensity;
       alpha += glow;
-
-      // Fade out at edges
-      float edgeFade = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
-      edgeFade *= smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
-      alpha *= edgeFade;
 
       gl_FragColor = vec4(lineColor, alpha);
     }
