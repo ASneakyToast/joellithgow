@@ -1,6 +1,6 @@
 {
   "id": "homepage-redesign",
-  "number": 1,
+  "number": 2,
   "type": "homepage redesign",
   "title": "CCA homepage redesign",
   "description": "data-driven redesign that solved user confusion about institutional identity, achieving a 33% reduction in confusion-driven navigation while improving conversion paths and engagement metrics",
@@ -8,9 +8,21 @@
   "technologies": ["figma", "google analytics", "looker studio", "ux research"],
   "images": [
     {
-      "src": "/assets/videos/homepage-scroll-720.webm",
-      "alt": "CCA homepage before and after redesign comparison",
+      "src": "/assets/images/projects/cca-homepageRedesign-caseStudy-intro.webm",
+      "alt": "CCA homepage redesign introduction",
       "caption": "Homepage transformation showing improved clarity and user flow",
+      "type": "video"
+    },
+    {
+      "src": "/assets/images/projects/cca-homepageRedesign-caseStudy-studnetWorkGallery.webm",
+      "alt": "Student work gallery feature on CCA homepage",
+      "caption": "Dynamic student work gallery showcasing creative output",
+      "type": "video"
+    },
+    {
+      "src": "/assets/images/projects/cca-homepageRedesign-caseStudy-newsroomTicker.webm",
+      "alt": "Newsroom ticker feature on CCA homepage",
+      "caption": "Real-time newsroom ticker displaying campus updates and events",
       "type": "video"
     },
     {
@@ -22,11 +34,6 @@
       "src": "/assets/images/projects/homepage-adm-image--processed.png",
       "alt": "Homepage admissions section design",
       "caption": "Strategic admissions section with clear conversion paths and program highlights"
-    },
-    {
-      "src": "/assets/images/projects/homepage-experience-image--processed.png",
-      "alt": "Homepage experience section design",
-      "caption": "Community experience section demonstrating progressive disclosure approach"
     },
     {
       "src": "/assets/images/projects/homepage-hero-image--processed.png",
@@ -69,11 +76,6 @@
     { "number": "33%", "label": "reduction in \"about\" clicks" },
     { "number": "20%", "label": "increase of engagement time" }
   ],
-  "liveLink": {
-    "title": "see for yourself",
-    "url": "https://www.cca.edu",
-    "description": "Visit the live CCA homepage to experience the redesigned user flow"
-  },
-  "featured": true,
+    "featured": true,
   "tags": ["user research", "google analytics", "stakeholder interviews", "conversion optimization", "ux-design", "analytics", "figma"]
 }
