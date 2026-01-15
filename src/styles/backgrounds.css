@@ -8,7 +8,8 @@
  * 1. Ensure section has: position: relative; overflow: hidden;
  * 2. Add .animated-bg class to section
  * 3. Add specific accent class (e.g., .bg-accent-spiral, .bg-accent-network)
- * 4. Ensure content wrapper has: position: relative; z-index: 10;
+ *
+ * Background pseudo-elements use z-index: -1 so content naturally sits above.
  */
 
 /* ========================================
@@ -141,7 +142,7 @@
   background-size: 80px 80px;
   background-position: 0 0;
   animation: gridBreathe 4s ease-in-out infinite, gridDrift 12s ease-in-out infinite;
-  z-index: 1;
+  z-index: -1;
 }
 
 /* Grid variation for secondary sections */
@@ -174,7 +175,7 @@
   width: 100%;
   height: 100%;
   background-repeat: no-repeat;
-  z-index: 2;
+  z-index: -1;
 }
 
 /* SPIRAL ACCENT - Hero style */

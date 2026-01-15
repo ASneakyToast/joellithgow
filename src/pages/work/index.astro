@@ -1,14 +1,9 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Hero from '@components/sections/Hero.astro';
 import Projects from '@components/sections/Projects.astro';
-import AdditionalWork from '@components/sections/AdditionalWork.astro';
 import About from '@components/sections/About.astro';
-import Contact from '@components/sections/Contact.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import ImageGallery from '@components/modals/ImageGallery.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
-import SnakeEasterEgg from '@components/interactive/SnakeEasterEgg.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
 import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Button from '@components/primitives/Button.astro';
@@ -22,32 +17,34 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
   <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
 
   <!-- Main Content -->
-  <main id="main-content">
-    <!-- Hero Component -->
-    <Hero />
+  <main id="main-content" class="work-container animated-bg bg-accent-editorial">
+    <!-- Work Header Section -->
+    <section class="work-header-section">
+      <header class="work-header">
+        <h1 class="work-title">
+          <a href="/" class="breadcrumb-link">Joel Lithgow</a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">Portfolio</span>
+        </h1>
+        <p class="work-subtitle">designing and developing for the web</p>
+      </header>
+    </section>
 
     <!-- Projects Component -->
-    <Projects />
+    <Projects showHeader={false} />
 
-    <!-- Additional Work Component -->
-    <AdditionalWork />
-
-    <!-- About Component -->
-    <About />
-
-    <!-- Contact Component -->
-    <Contact />
+    <!-- About Section -->
+    <About
+      sectionTitle="about me"
+      bio="I build digital products that balance user needs with business goals. My background spans UX research, interface design, and frontend development—giving me the ability to take projects from concept to production. I focus on solving real problems with clean, maintainable solutions."
+    />
   </main>
 
   <!-- Modals -->
   <ThemeModal />
-  <ImageGallery />
 
   <!-- Enhanced UI Interactions (Scroll animations, hover effects, parallax) -->
   <UIInteractions />
-
-  <!-- Snake Easter Egg Component -->
-  <SnakeEasterEgg />
 
   <!-- Keyboard Shortcuts and Accessibility -->
   <KeyboardShortcuts />
@@ -65,7 +62,8 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
     aria-label="Change theme"
     title="Change theme (Ctrl+T)"
   >
-    🎨
+    <span aria-hidden="true">🎨</span>
+    <span class="sr-only">Change theme</span>
   </Button>
 
   <!-- Screen reader only content -->
@@ -79,25 +77,75 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
   /* Import design system */
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
-  
-  /* Global Reset and Body - matching original exactly */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  @import '../../styles/backgrounds.css';
+
+  /* Work Page Container */
+  .work-container {
+    min-height: 100vh;
+    color: var(--text-primary);
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden;
   }
 
-  body {
-    font-family: var(--font-family);
-    line-height: 1.4;
-    overflow-x: hidden;
-    background: var(--bg-primary);
+  /* Work Header Section */
+  .work-header-section {
+    position: relative;
+    margin: var(--space-2xl) 0;
+    max-width: var(--content-full);
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 10;
+  }
+
+  .work-header {
+    text-align: left;
+    padding-bottom: var(--space-xl);
+  }
+
+  .work-title {
+    font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
+    margin: var(--space-sm) 0 var(--space-md) 0;
     color: var(--text-primary);
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23ff6b6b" opacity="0.6"/></svg>'), auto;
+    letter-spacing: var(--tracking-tight);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .breadcrumb-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-underline-offset: 3px;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--accent-primary);
+    text-decoration-color: var(--accent-primary);
+  }
+
+  .breadcrumb-separator {
+    color: var(--text-secondary);
+    font-weight: var(--font-normal);
+  }
+
+  .breadcrumb-current {
+    color: var(--text-primary);
+  }
+
+  .work-subtitle {
+    font-size: var(--text-2xl);
+    color: var(--text-primary);
+    margin: 0;
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-relaxed);
   }
 
   /* Global accessibility styles - sr-only class is defined globally in BaseLayout */
-  
+
   .skip-link {
     position: absolute;
     top: -40px;
@@ -108,159 +156,39 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
     text-decoration: none;
     z-index: 100;
   }
-  
+
   .skip-link:focus {
     top: 6px;
   }
-  
+
   /* Focus styles */
   :focus {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
   }
-  
-  /* Page-specific styles for component integration */
-  main {
-    position: relative;
-  }
-  
+
   /* Smooth scroll behavior */
   html {
     scroll-behavior: smooth;
   }
-  
-  /* Ensure components stack properly */
-  section {
+
+  /* Ensure content stacks above animated background pseudo-elements */
+  .work-container > * {
     position: relative;
-    z-index: 1;
-  }
-  
-  /* Navigation should be above other content */
-  nav {
-    position: relative;
-    z-index: 1000;
+    z-index: 10;
   }
 
-  /* Section Spacing */
-  section {
-    position: relative;
-    z-index: 1;
+  /* Make animated background pseudo-elements non-blocking for clicks */
+  .work-container::before,
+  .work-container::after {
+    pointer-events: none;
   }
 
-  /* Container Utilities */
-  .container {
-    max-width: var(--content-container);
-    margin: 0 auto;
-    padding: 0 20px;
+  /* Remove Projects section top border since we're flowing from header */
+  .work-container :global(.projects-section) {
+    border-top: none;
+    padding-top: var(--space-xl);
   }
-
-  .container-narrow {
-    max-width: var(--content-normal);
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  .container-wide {
-    max-width: var(--content-full);
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  /* Flexbox Utilities */
-  .flex {
-    display: flex;
-  }
-
-  .flex-column {
-    flex-direction: column;
-  }
-
-  .flex-center {
-    align-items: center;
-    justify-content: center;
-  }
-
-  .flex-between {
-    justify-content: space-between;
-  }
-
-  .flex-around {
-    justify-content: space-around;
-  }
-
-  .flex-wrap {
-    flex-wrap: wrap;
-  }
-
-  /* Grid Utilities */
-  .grid {
-    display: grid;
-  }
-
-  .grid-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .grid-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .grid-auto {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-
-  .gap-sm {
-    gap: 10px;
-  }
-
-  .gap-md {
-    gap: 20px;
-  }
-
-  .gap-lg {
-    gap: 40px;
-  }
-
-  .gap-xl {
-    gap: 60px;
-  }
-
-  /* Spacing Utilities */
-  .mb-sm { margin-bottom: 10px; }
-  .mb-md { margin-bottom: 20px; }
-  .mb-lg { margin-bottom: 40px; }
-  .mb-xl { margin-bottom: 60px; }
-
-  .mt-sm { margin-top: 10px; }
-  .mt-md { margin-top: 20px; }
-  .mt-lg { margin-top: 40px; }
-  .mt-xl { margin-top: 60px; }
-
-  .p-sm { padding: 10px; }
-  .p-md { padding: 20px; }
-  .p-lg { padding: 40px; }
-  .p-xl { padding: 60px; }
-
-  /* Text Alignment */
-  .text-center { text-align: center; }
-  .text-left { text-align: left; }
-  .text-right { text-align: right; }
-
-  /* Position Utilities */
-  .relative { position: relative; }
-  .absolute { position: absolute; }
-  .fixed { position: fixed; }
-  .sticky { position: sticky; }
-
-  /* Z-Index Layers */
-  .z-10 { z-index: 10; }
-  .z-100 { z-index: 100; }
-  .z-1000 { z-index: 1000; }
-  .z-10000 { z-index: 10000; }
 
   /* Theme toggle button */
   .theme-toggle-button {
@@ -274,11 +202,37 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
   }
 
   @media (max-width: 768px) {
+    .work-container {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .work-header {
+      padding-bottom: var(--space-lg);
+    }
+
+    .work-title {
+      font-size: var(--heading-lg);
+    }
+
+    .work-subtitle {
+      font-size: var(--text-xl);
+    }
+
     .theme-toggle-button {
       bottom: var(--space-lg);
       right: var(--space-lg);
       width: 44px;
       height: 44px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .work-container {
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    .work-subtitle {
+      font-size: var(--text-lg);
     }
   }
 
@@ -298,16 +252,16 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
   document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme on page load - force reset to default if it's forest
     let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
-    
+
     // If the saved theme is invalid, reset to default
     const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
     if (!validThemes.includes(savedTheme)) {
       savedTheme = 'default';
       localStorage.setItem('portfolio-theme', 'default');
     }
-    
+
     document.documentElement.setAttribute('data-theme', savedTheme);
-    
+
     // Global keyboard shortcuts for theme switching
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 't') {
@@ -318,7 +272,7 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
         }
       }
     });
-    
+
     // Smooth scroll enhancement for all anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', (e) => {
@@ -327,7 +281,7 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
         if (href) {
           const targetId = href.substring(1);
           const targetElement = document.getElementById(targetId);
-          
+
           if (targetElement) {
             targetElement.scrollIntoView({
               behavior: 'smooth',
@@ -338,15 +292,12 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
       });
     });
 
-    // Removed parallax scrolling for floating elements to match original behavior
-    // Floating elements should remain fixed in space and not move with scroll
-
     // Initialize scroll-based animations
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -100px 0px'
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -354,64 +305,10 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
         }
       });
     }, observerOptions);
-    
+
     // Observe elements that should animate on scroll
     document.querySelectorAll('.animate-on-scroll').forEach(el => {
       observer.observe(el);
-    });
-
-    // Cursor trail animation
-    let trails = [];
-    const maxTrails = 5;
-    
-    function createTrail(x: number, y: number) {
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      trail.style.cssText = `
-        position: fixed;
-        width: 6px;
-        height: 6px;
-        background: var(--accent-primary);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9999;
-        left: ${x - 3}px;
-        top: ${y - 3}px;
-        opacity: 0.8;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-      `;
-      
-      document.body.appendChild(trail);
-      trails.push(trail);
-      
-      // Remove excess trails
-      if (trails.length > maxTrails) {
-        const oldTrail = trails.shift();
-        if (oldTrail && oldTrail.parentNode) {
-          oldTrail.parentNode.removeChild(oldTrail);
-        }
-      }
-      
-      // Animate trail
-      setTimeout(() => {
-        trail.style.opacity = '0';
-        trail.style.transform = 'scale(0)';
-      }, 50);
-      
-      setTimeout(() => {
-        if (trail.parentNode) {
-          trail.parentNode.removeChild(trail);
-        }
-      }, 350);
-    }
-    
-    let lastTime = 0;
-    document.addEventListener('mousemove', (e) => {
-      const now = Date.now();
-      if (now - lastTime > 50) { // Throttle to every 50ms
-        createTrail(e.clientX, e.clientY);
-        lastTime = now;
-      }
     });
   });
 </script>

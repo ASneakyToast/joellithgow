@@ -1,5 +1,5 @@
 ---
-// Contact section component - exact original design
+// Contact section component - Editorial style matching Projects section
 export interface Props {
   title?: string;
   description?: string;
@@ -16,10 +16,11 @@ const {
   githubUrl = "https://github.com/ASneakyToast"
 } = Astro.props;
 
-// Contact methods configuration - matching original exactly
+// Contact methods configuration
 const contactMethods = [
   {
     id: 'email',
+    number: '01',
     label: 'email',
     text: 'send an email',
     href: `mailto:${emailAddress}`,
@@ -28,6 +29,7 @@ const contactMethods = [
   },
   {
     id: 'linkedin',
+    number: '02',
     label: 'linkedin',
     text: 'connect with me',
     href: linkedinUrl,
@@ -36,6 +38,7 @@ const contactMethods = [
   },
   {
     id: 'github',
+    number: '03',
     label: 'github',
     text: 'see my code',
     href: githubUrl,
@@ -50,26 +53,29 @@ const contactMethods = [
   <div class="contact-content">
     <header class="section-header">
       <h2 id="contact-heading" class="section-title">{title}</h2>
-      <p class="section-subtitle">
-        {description}
-      </p>
+      <p class="section-subtitle">{description}</p>
     </header>
-    
+
     <div class="contact-methods" role="group" aria-label="Contact methods">
       {contactMethods.map((method) => (
-        <a 
-          href={method.href} 
-          class="contact-method" 
+        <a
+          href={method.href}
+          class="contact-method"
           aria-describedby={`${method.id}-description`}
           target={method.external ? "_blank" : undefined}
           rel={method.external ? "noopener noreferrer" : undefined}
         >
-          <div class="contact-label">{method.label}</div>
+          <div class="contact-meta">
+            <span class="contact-number">{method.number}</span>
+            <span class="contact-divider">-----</span>
+            <span class="contact-label">{method.label}</span>
+          </div>
           <div class="contact-text">{method.text}</div>
+          <span class="contact-arrow" aria-hidden="true">-></span>
         </a>
       ))}
     </div>
-    
+
     <!-- Hidden descriptions for screen readers -->
     <div class="sr-only">
       {contactMethods.map((method) => (
@@ -85,136 +91,26 @@ const contactMethods = [
 
   .contact {
     padding: var(--space-5xl) var(--page-gutter);
-    background: var(--bg-secondary);
+    background: transparent;
     border-top: 5px solid var(--accent-primary);
     position: relative;
-    overflow: hidden;
-  }
-
-  /* Contact Section Animated Background Grid */
-  .contact::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-      /* Grid pattern - different color for contact */
-      linear-gradient(90deg, transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px),
-      linear-gradient(transparent 79px, var(--gradient-secondary-dim) 80px, var(--gradient-secondary-dim) 81px, transparent 82px);
-    background-size: 80px 80px;
-    background-position: 0 0;
-    animation: contactGridBreathe 5s ease-in-out infinite, contactGridDrift 15s ease-in-out infinite;
-    z-index: 1;
-  }
-
-  /* Contact Section Accent Elements */
-  .contact::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-      /* Connection dots scattered like network nodes */
-      radial-gradient(circle 20px at 15% 25%, var(--gradient-tertiary-medium) 0%, var(--gradient-tertiary-medium) 70%, transparent 100%),
-      radial-gradient(circle 18px at 75% 35%, var(--gradient-primary-medium) 0%, var(--gradient-primary-medium) 70%, transparent 100%),
-      radial-gradient(circle 22px at 25% 75%, var(--gradient-secondary-light) 0%, var(--gradient-secondary-light) 70%, transparent 100%),
-      radial-gradient(circle 19px at 85% 85%, var(--gradient-tertiary-light) 0%, var(--gradient-tertiary-light) 70%, transparent 100%),
-      /* Curved connection paths */
-      radial-gradient(ellipse 200px 100px at 30% 40%, transparent 30%, var(--gradient-secondary-subtle) 40%, transparent 50%),
-      radial-gradient(ellipse 150px 80px at 70% 60%, transparent 35%, var(--gradient-primary-subtle) 45%, transparent 55%);
-    background-size:
-      100% 100%,
-      100% 100%,
-      100% 100%,
-      100% 100%,
-      400px 400px,
-      350px 350px;
-    background-position:
-      0 0,
-      0 0,
-      0 0,
-      0 0,
-      center,
-      center;
-    background-repeat: no-repeat;
-    animation: contactAccentPulse 4s ease-in-out infinite, contactAccentFloat 10s ease-in-out infinite;
-    z-index: 2;
-  }
-
-  @keyframes contactGridBreathe {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.3;
-      transform: scale(1.015);
-    }
-  }
-
-  @keyframes contactGridDrift {
-    0% {
-      background-position: 0 0;
-    }
-    25% {
-      background-position: -20px 20px;
-    }
-    50% {
-      background-position: -40px -20px;
-    }
-    75% {
-      background-position: 20px -40px;
-    }
-    100% {
-      background-position: 0 0;
-    }
-  }
-
-  @keyframes contactAccentPulse {
-    0%, 100% {
-      filter: brightness(1) saturate(1);
-      transform: scale(1);
-    }
-    50% {
-      filter: brightness(2) saturate(1.8);
-      transform: scale(1.15);
-    }
-  }
-
-  @keyframes contactAccentFloat {
-    0%, 100% {
-      transform: translateY(0) translateX(0) rotate(0deg);
-    }
-    25% {
-      transform: translateY(calc(var(--space-sm) * -1)) translateX(calc(var(--space-sm) * -1)) rotate(-1deg);
-    }
-    50% {
-      transform: translateY(var(--space-sm)) translateX(var(--space-sm)) rotate(0.5deg);
-    }
-    75% {
-      transform: translateY(calc(var(--space-xs) * -1)) translateX(calc(var(--space-md) * -1)) rotate(-0.8deg);
-    }
   }
 
   .contact-content {
-    max-width: var(--content-normal);
+    max-width: var(--content-wide);
     margin: 0 auto;
     text-align: center;
-    position: relative;
-    z-index: 10;
   }
 
-  /* Section header - unified underline pattern */
+  /* Section Header */
   .section-header {
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--space-4xl);
   }
 
   .section-title {
+    font-family: var(--font-family);
     font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
     margin-bottom: var(--space-lg);
     color: var(--text-primary);
     text-decoration: underline;
@@ -224,192 +120,160 @@ const contactMethods = [
   }
 
   .section-subtitle {
-    font-size: var(--text-lg);
+    font-family: var(--font-family);
+    font-size: var(--text-base);
     line-height: var(--leading-relaxed);
-    margin-bottom: var(--space-4xl);
     color: var(--text-secondary);
+    letter-spacing: var(--tracking-wide);
+    max-width: 600px;
+    margin: 0 auto;
   }
 
+  /* Contact Methods Grid */
   .contact-methods {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-2xl);
   }
 
+  /* Contact Method Card */
   .contact-method {
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: var(--space-3xl) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    background: var(--bg-secondary);
+    padding: var(--space-2xl);
     text-decoration: none;
-    transition: all var(--duration-base) var(--ease-out);
-    border: var(--border-width) solid var(--bg-dark);
-    border-radius: var(--border-radius);
-    transform: var(--rotation-sm);
-    display: block;
-    text-align: center;
-  }
-
-  .contact-method:nth-child(2) {
-    background: var(--accent-secondary);
-    transform: var(--rotation-sm);
-  }
-
-  .contact-method:nth-child(3) {
-    background: var(--accent-tertiary);
     color: var(--text-primary);
-    transform: var(--rotation-md);
-  }
-
-  /* Fix contrast for themes with poor accent-tertiary/text-primary combinations */
-  [data-theme="neon"] .contact-method:nth-child(3),
-  [data-theme="electric"] .contact-method:nth-child(3) {
-    color: var(--bg-dark);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
   }
 
   .contact-method:hover {
-    transform: rotate(0deg) scale(1.05);
-    box-shadow: var(--shadow-xl) var(--accent-primary);
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
+  }
+
+  /* Metadata Row */
+  .contact-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    font-family: var(--font-family);
+  }
+
+  .contact-number {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+
+  .contact-divider {
+    color: var(--accent-primary);
   }
 
   .contact-label {
-    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    margin-bottom: var(--space-sm);
-    opacity: 0.8;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
   }
 
+  /* Contact Text */
   .contact-text {
+    font-family: var(--font-family);
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+  }
+
+  /* Arrow */
+  .contact-arrow {
+    font-family: var(--font-family);
     font-size: var(--text-base);
     font-weight: var(--font-bold);
-    word-break: auto-phrase;
-    overflow-wrap: break-word;
-    line-height: var(--leading-normal);
+    color: var(--accent-primary);
+    margin-top: auto;
   }
 
-  /* Screen reader only styles - sr-only class is defined globally in BaseLayout */
+  /* Focus States */
+  .contact-method:focus-visible {
+    outline: var(--border-width-thick) solid var(--accent-primary);
+    outline-offset: var(--space-xs);
+  }
 
-  /* Responsive design */
+  .contact-method:focus-visible {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
+  }
+
+  /* Responsive - Tablet */
+  @media (max-width: 1024px) {
+    .contact-methods {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contact-method:last-child {
+      grid-column: span 2;
+      max-width: 50%;
+      justify-self: center;
+    }
+  }
+
+  /* Responsive - Mobile */
   @media (max-width: 768px) {
     .contact {
       padding: var(--space-4xl) var(--page-gutter);
+    }
+
+    .section-header {
+      margin-bottom: var(--space-3xl);
     }
 
     .section-title {
       font-size: var(--heading-lg);
     }
 
-    .section-subtitle {
-      font-size: var(--text-base);
-    }
-
     .contact-methods {
       grid-template-columns: 1fr;
-      gap: var(--space-lg);
+      gap: var(--space-xl);
+    }
+
+    .contact-method:last-child {
+      grid-column: span 1;
+      max-width: 100%;
     }
 
     .contact-method {
-      padding: var(--space-2xl) var(--space-lg);
+      padding: var(--space-xl);
+    }
+
+    .contact-text {
+      font-size: var(--text-lg);
     }
   }
 
-  /* Reduced motion support */
+  /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
-    .contact::before,
-    .contact::after {
-      animation: none !important;
-      transform: none !important;
-      filter: none !important;
+    .contact-method {
+      transition: none;
     }
 
     .contact-method:hover {
-      transform: scale(1.02);
+      transform: none;
     }
   }
 
-  /* High contrast mode adjustments */
+  /* High Contrast Mode */
   @media (prefers-contrast: high) {
     .contact-method {
       border-width: 4px;
     }
   }
 </style>
-
-<style is:global>
-  /* Hide background gradient effects in minimal theme */
-  [data-theme="minimal"] .contact::after {
-    display: none !important;
-  }
-</style>
-
-<script>
-  // Contact method interactions and draggable floating elements
-  document.addEventListener('DOMContentLoaded', () => {
-    const contactMethods = document.querySelectorAll('.contact-method');
-    
-    // Enhanced contact method interactions
-    contactMethods.forEach(method => {
-      method.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.05) rotate(0deg)';
-      });
-      
-      method.addEventListener('mouseleave', function() {
-        const transform = this.style.transform;
-        const currentRotation = transform.match(/rotate\(([^)]+)\)/);
-        const rotation = currentRotation ? currentRotation[1] : '1deg';
-        this.style.transform = `rotate(${rotation})`;
-      });
-
-      // Add keyboard navigation enhancement
-      method.addEventListener('keydown', (e) => {
-        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
-          e.preventDefault();
-          (method as HTMLElement).click();
-        }
-      });
-
-      // Track clicks for analytics (placeholder)
-      method.addEventListener('click', () => {
-        const methodType = method.querySelector('.contact-label')?.textContent?.trim();
-        console.log(`Contact method clicked: ${methodType}`);
-      });
-    });
-
-    // Floating elements are now purely decorative - no drag functionality needed
-
-    // Intersection Observer for animation on scroll
-    if ('IntersectionObserver' in window) {
-      const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px 0px -50px 0px'
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const methods = entry.target.querySelectorAll('.contact-method');
-            methods.forEach((method, index) => {
-              setTimeout(() => {
-                (method as HTMLElement).style.opacity = '1';
-                (method as HTMLElement).style.transform = 'translateY(0)';
-              }, index * 100);
-            });
-          }
-        });
-      }, observerOptions);
-
-      const contactSection = document.querySelector('.contact');
-      if (contactSection) {
-        // Set initial state for contact methods
-        const methods = contactSection.querySelectorAll('.contact-method');
-        methods.forEach(method => {
-          (method as HTMLElement).style.opacity = '0';
-          (method as HTMLElement).style.transform = 'translateY(20px)';
-          (method as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        });
-        
-        observer.observe(contactSection);
-      }
-    }
-  });
-</script>
