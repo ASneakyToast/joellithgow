@@ -7,6 +7,7 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
 import ArtworkGallery from '@components/sections/ArtworkGallery.astro';
 import { getAllArtworks } from '@features/artworks';
 
@@ -37,6 +38,7 @@ const topCategories = Array.from(categoryCounts.entries())
 
 const pageTitle = 'Joel Lithgow > Artworks';
 const pageDescription = 'Fine art portfolio featuring printmedia, sculpture, exhibitions, and collaborative works exploring the intersection of digital and analog processes.';
+const pageSubtitle = 'Material exploration and printmedia experiments';
 
 // JSON-LD structured data for CollectionPage
 const jsonLd = {
@@ -80,12 +82,7 @@ const jsonLd = {
         {/* Header Section */}
         <section id="artworks" class="artworks-header-section">
           <header class="artworks-header">
-            <h1 class="artworks-title">
-              <a href="/" class="breadcrumb-link">Joel Lithgow</a>
-              <span class="breadcrumb-separator">/</span>
-              <span class="breadcrumb-current">Artworks</span>
-            </h1>
-            <p class="artworks-subtitle">{pageDescription}</p>
+            <PageTitle title="Artworks" subtitle={pageSubtitle} />
 
             {/* Category tag cloud */}
             {topCategories.length > 0 && (
@@ -253,49 +250,6 @@ const jsonLd = {
     text-align: left;
     padding-bottom: var(--space-xl);
     border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
-  }
-
-  .artworks-title {
-    font-size: var(--heading-xl);
-    font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-md) 0;
-    color: var(--text-primary);
-    letter-spacing: var(--tracking-tight);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
-  }
-
-  .breadcrumb-link {
-    color: var(--text-primary);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-secondary);
-    text-underline-offset: 3px;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .breadcrumb-link:hover {
-    color: var(--accent-primary);
-    text-decoration-color: var(--accent-primary);
-  }
-
-  .breadcrumb-separator {
-    color: var(--text-secondary);
-    font-weight: var(--font-normal);
-  }
-
-  .breadcrumb-current {
-    color: var(--text-primary);
-  }
-
-  .artworks-subtitle {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-lg) 0;
-    font-style: italic;
-    line-height: var(--leading-relaxed);
-    max-width: var(--content-normal);
   }
 
   /* Tag Cloud Styles */
@@ -522,14 +476,6 @@ const jsonLd = {
       padding-bottom: var(--space-lg);
     }
 
-    .artworks-title {
-      font-size: var(--heading-lg);
-    }
-
-    .artworks-subtitle {
-      font-size: var(--text-base);
-    }
-
     .tag-cloud {
       gap: var(--space-sm);
     }
@@ -567,10 +513,6 @@ const jsonLd = {
   @media (max-width: 480px) {
     .artworks-container {
       padding: var(--space-lg) var(--space-md);
-    }
-
-    .artworks-title {
-      font-size: var(--heading-md);
     }
 
     .artwork-title {

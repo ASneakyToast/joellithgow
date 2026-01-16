@@ -8,6 +8,7 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import CollectionWidget from '@components/blog/CollectionWidget.astro';
 
@@ -122,7 +123,7 @@ const collectionPostsWithLinks = collectionPosts.map(collectionPost => {
 });
 
 const pageTitle = "Joel Lithgow > Blog";
-const pageDescription = "Silly ideas, shiny objects, and more things I share digitally.";
+const pageDescription = "Silly ideas, shiny objects, and more things I share digitally";
 
 // JSON-LD structured data for CollectionPage
 const jsonLd = {
@@ -166,12 +167,7 @@ const jsonLd = {
         {/* Header Section */}
         <section id="blog" class="blog-header-section">
           <header class="blog-header">
-            <h1 class="blog-title">
-              <a href="/" class="breadcrumb-link">Joel Lithgow</a>
-              <span class="breadcrumb-separator">/</span>
-              <span class="breadcrumb-current">Blog</span>
-            </h1>
-            <p class="blog-subtitle">{pageDescription}</p>
+            <PageTitle title="Blog" subtitle={pageDescription} />
 
             {/* Tag cloud */}
             {topTags.length > 0 && (
@@ -225,32 +221,36 @@ const jsonLd = {
                     )}
                   </h2>
 
-                  {/* Hero image */}
+                  {/* Hero image/video */}
                   {post.data.image && (
                     <div class="post-hero-image">
-                      {post.data.image.link ? (
-                        <a href={post.data.image.link} class="post-hero-link" target="_blank" rel="noopener noreferrer">
+                      {(() => {
+                        const isVideo = post.data.image.type === 'video';
+                        const linkHref = post.data.image.link || (post.data.hasDetailPage !== false ? `/blog/${post.slug}` : null);
+                        const isExternal = post.data.image.link?.startsWith('http');
+
+                        const media = isVideo ? (
+                          <video autoplay loop muted playsinline>
+                            <source src={post.data.image.src} type="video/webm" />
+                          </video>
+                        ) : (
                           <img
                             src={post.data.image.src}
                             alt={post.data.image.alt}
                             loading="lazy"
                           />
-                        </a>
-                      ) : post.data.hasDetailPage !== false ? (
-                        <a href={`/blog/${post.slug}`} class="post-hero-link">
-                          <img
-                            src={post.data.image.src}
-                            alt={post.data.image.alt}
-                            loading="lazy"
-                          />
-                        </a>
-                      ) : (
-                        <img
-                          src={post.data.image.src}
-                          alt={post.data.image.alt}
-                          loading="lazy"
-                        />
-                      )}
+                        );
+
+                        return linkHref ? (
+                          <a
+                            href={linkHref}
+                            class="post-hero-link"
+                            {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                          >
+                            {media}
+                          </a>
+                        ) : media;
+                      })()}
                     </div>
                   )}
 
@@ -446,6 +446,7 @@ const jsonLd = {
   }
 
   .sidebar-heading {
+    font-family: var(--font-family);
     font-size: var(--text-lg);
     font-weight: var(--font-bold);
     color: var(--text-primary);
@@ -474,11 +475,13 @@ const jsonLd = {
   }
 
   .section-heading {
-    font-size: var(--heading-lg);
-    font-weight: var(--font-bold);
-    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
     margin: 0 0 var(--space-xl) 0;
-    letter-spacing: var(--tracking-tight);
   }
 
   .blog-header {
@@ -491,47 +494,6 @@ const jsonLd = {
     margin-bottom: var(--space-md);
   }
 
-  .blog-title {
-    font-size: var(--heading-xl);
-    font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-md) 0;
-    color: var(--text-primary);
-    letter-spacing: var(--tracking-tight);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-  }
-
-  .breadcrumb-link {
-    color: var(--text-primary);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-secondary);
-    text-underline-offset: 3px;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .breadcrumb-link:hover {
-    color: var(--accent-primary);
-    text-decoration-color: var(--accent-primary);
-  }
-
-  .breadcrumb-separator {
-    color: var(--text-secondary);
-    font-weight: var(--font-normal);
-  }
-
-  .breadcrumb-current {
-    color: var(--text-primary);
-  }
-
-  .blog-subtitle {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-lg) 0;
-    font-style: italic;
-    line-height: var(--leading-relaxed);
-  }
-
   /* Tag Cloud Styles */
   .tag-cloud {
     display: flex;
@@ -542,6 +504,7 @@ const jsonLd = {
   }
 
   .tag-cloud-label {
+    font-family: var(--font-family);
     font-size: var(--text-lg);
     color: var(--text-secondary);
     font-weight: var(--font-medium);
@@ -558,6 +521,7 @@ const jsonLd = {
     border: var(--border-width) solid var(--accent-primary);
     border-radius: var(--radius-full);
     text-decoration: none;
+    font-family: var(--font-family);
     font-size: var(--text-base);
     font-weight: var(--font-medium);
     transition: all var(--duration-base) var(--ease-out);
@@ -593,6 +557,7 @@ const jsonLd = {
 
   /* Browse all links */
   .browse-all-link {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     font-weight: 400;
     color: var(--text-secondary);
@@ -685,13 +650,15 @@ const jsonLd = {
   .post-date {
     display: block;
     color: var(--text-secondary);
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
     letter-spacing: var(--tracking-wide);
   }
 
   .post-title {
-    font-size: var(--text-2xl);
+    font-family: var(--font-family-system);
+    font-size: var(--heading-lg);
     font-weight: var(--font-bold);
     margin: 0 0 var(--space-md) 0;
     line-height: var(--leading-tight);
@@ -718,6 +685,7 @@ const jsonLd = {
 
   .post-description {
     color: var(--text-secondary);
+    font-family: var(--font-family);
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     margin: 0;
@@ -735,7 +703,8 @@ const jsonLd = {
     box-shadow: var(--shadow-lg) var(--accent-secondary);
   }
 
-  .post-hero-image img {
+  .post-hero-image img,
+  .post-hero-image video {
     width: 100%;
     height: auto;
     max-height: 400px;
@@ -749,7 +718,8 @@ const jsonLd = {
     overflow: hidden;
   }
 
-  .post-hero-link:hover img {
+  .post-hero-link:hover img,
+  .post-hero-link:hover video {
     transform: scale(1.05);
   }
 
@@ -763,6 +733,7 @@ const jsonLd = {
   /* Content Preview Styles */
   .post-content-preview {
     color: var(--text-primary);
+    font-family: var(--font-family);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     margin: var(--space-lg) 0;
@@ -773,6 +744,7 @@ const jsonLd = {
 
   .post-excerpt-preview {
     color: var(--text-primary);
+    font-family: var(--font-family);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     margin: var(--space-lg) 0;
@@ -927,6 +899,7 @@ const jsonLd = {
   }
 
   .post-links-title {
+    font-family: var(--font-family);
     font-size: var(--text-xl);
     font-weight: var(--font-bold);
     color: var(--accent-primary);
@@ -937,6 +910,7 @@ const jsonLd = {
     background: var(--accent-tertiary);
     color: var(--bg-dark);
     padding: var(--space-xs) var(--space-md);
+    font-family: var(--font-family);
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
     text-transform: uppercase;
@@ -968,6 +942,7 @@ const jsonLd = {
   }
 
   .post-reading-time {
+    font-family: var(--font-family);
     font-size: var(--text-sm);
     color: var(--text-secondary);
   }
@@ -983,6 +958,7 @@ const jsonLd = {
   }
 
   .empty-message p {
+    font-family: var(--font-family);
     font-size: var(--text-lg);
     color: var(--text-secondary);
     margin: 0;
@@ -1015,14 +991,6 @@ const jsonLd = {
     .blog-header {
       margin-bottom: var(--space-xl);
       padding-bottom: var(--space-lg);
-    }
-
-    .blog-title {
-      font-size: var(--heading-lg);
-    }
-
-    .blog-subtitle {
-      font-size: var(--text-base);
     }
 
     .tag-cloud {
@@ -1081,10 +1049,6 @@ const jsonLd = {
   @media (max-width: 480px) {
     .blog-container {
       padding: var(--space-lg) var(--space-md);
-    }
-
-    .blog-subtitle {
-      font-size: var(--text-sm);
     }
 
     .featured-post-card {

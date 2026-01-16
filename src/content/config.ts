@@ -71,8 +71,10 @@ const blogSchema = z.object({
   image: z.object({
     src: z.string(),
     alt: z.string(),
-    /** Optional URL to link the hero image to (opens in new tab). If not set, links to detail page for articles. */
-    link: z.string().url().optional()
+    /** Optional URL to link the hero image/video to. If not set, links to detail page for articles. */
+    link: z.string().optional(),
+    /** Media type - 'image' (default) or 'video' */
+    type: z.enum(['image', 'video']).default('image')
   }).optional(),
   tags: z.array(z.string()).optional(),
   draft: z.boolean().default(false),
@@ -106,6 +108,80 @@ const blogSchema = z.object({
     data.hasDetailPage = data.type === 'article' || data.type === 'collection';
   }
   return data;
+});
+
+// Define application schema for job applications
+const applicationSchema = z.object({
+  // Company and role info
+  company: z.string(),
+  position: z.string(),
+  location: z.string(),
+  salary: z.string().optional(),
+  jobUrl: z.string().url(),
+
+  // Application status tracking
+  status: z.enum(['preparing', 'applied', 'interviewing', 'offered', 'rejected', 'withdrawn']).default('preparing'),
+  appliedDate: z.date().optional(),
+  deadline: z.date().optional(),
+
+  // Cover letter metadata
+  coverLetterDate: z.date().optional(),
+
+  // Cover letter content (array of paragraphs)
+  coverLetter: z.object({
+    opening: z.string().optional(),
+    paragraphs: z.array(z.string()).optional(),
+    closing: z.string().optional(),
+  }).optional(),
+
+  // Resume customizations
+  resume: z.object({
+    summary: z.string().optional(),
+    skills: z.object({
+      frontend: z.string().optional(),
+      testing: z.string().optional(),
+      cloud: z.string().optional(),
+      tools: z.string().optional(),
+      accessibility: z.string().optional(),
+      learning: z.string().optional(),
+      // Allow custom skill categories
+      creative: z.string().optional(),
+      ai: z.string().optional(),
+    }).optional(),
+  }).optional(),
+
+  // Display options
+  featured: z.boolean().default(false),
+  public: z.boolean().default(true), // Can hide sensitive applications
+  fit: z.enum(['very-strong', 'strong', 'moderate', 'stretch']).optional(),
+
+  // SEO
+  description: z.string().optional()
+});
+
+// Define experience schema for work history
+const experienceSchema = z.object({
+  // Job identification
+  company: z.string(),
+  title: z.string(),
+  location: z.string().optional(),
+
+  // Timeline
+  startDate: z.string(), // Format: "2017" or "2017-03"
+  endDate: z.string().optional(), // Optional = current job
+
+  // Classification
+  type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']).default('full-time'),
+
+  // Content
+  description: z.string().optional(),
+  responsibilities: z.array(z.string()).optional(),
+  achievements: z.array(z.string()).optional(),
+
+  // Display options
+  featured: z.boolean().default(false), // Show on about page
+  showOnResume: z.boolean().default(true),
+  order: z.number().optional(), // Manual sort order within same company
 });
 
 // Define artwork schema for fine art portfolio
@@ -161,6 +237,14 @@ export const collections = {
   'blog': defineCollection({
     type: 'content',
     schema: blogSchema
+  }),
+  'applications': defineCollection({
+    type: 'content',
+    schema: applicationSchema
+  }),
+  'experience': defineCollection({
+    type: 'content',
+    schema: experienceSchema
   })
 };
 
@@ -168,4 +252,6 @@ export const collections = {
 export type Project = z.infer<typeof projectSchema>;
 export type BlogPost = z.infer<typeof blogSchema>;
 export type Artwork = z.infer<typeof artworkSchema>;
+export type Application = z.infer<typeof applicationSchema>;
+export type Experience = z.infer<typeof experienceSchema>;
 export type Link = z.infer<typeof linkSchema>;

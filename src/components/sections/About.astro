@@ -1,6 +1,7 @@
 ---
 // About section component - Editorial style matching Projects section
 // Interactive stat cards reveal contextual content in the left panel
+import { getCollection } from 'astro:content';
 import Badge from '@components/primitives/Badge.astro';
 
 export interface Props {
@@ -30,11 +31,29 @@ const allSkills = [
   'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
 ];
 
-// Employment history for the experience panel
-const employment = [
-  { title: 'Web Developer', company: 'California College of the Arts', duration: '2024 – Present' },
-  { title: 'Interaction Designer', company: 'California College of the Arts', duration: '2022 – 2024' }
-];
+// Get employment history from content collection
+const allExperience = await getCollection('experience');
+
+// Helper to format date range
+function formatDateRange(startDate: string, endDate?: string): string {
+  return endDate ? `${startDate} – ${endDate}` : `${startDate} – Present`;
+}
+
+// Filter featured jobs and format for display
+const employment = allExperience
+  .filter(exp => exp.data.featured || exp.data.type === 'full-time')
+  .sort((a, b) => {
+    // Sort by start year descending (most recent first)
+    const aYear = parseInt(a.data.startDate.split('-')[0]);
+    const bYear = parseInt(b.data.startDate.split('-')[0]);
+    return bYear - aYear;
+  })
+  .slice(0, 3) // Show top 3 most recent
+  .map(exp => ({
+    title: exp.data.title,
+    company: exp.data.company,
+    duration: formatDateRange(exp.data.startDate, exp.data.endDate)
+  }));
 
 // Published projects for the projects panel
 const publishedProjects = [
@@ -48,7 +67,7 @@ const publishedProjects = [
 const stats = [
   {
     id: 'experience',
-    value: '5+',
+    value: '7+',
     label: 'years experience'
   },
   {

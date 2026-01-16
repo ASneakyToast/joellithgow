@@ -1,0 +1,116 @@
+---
+/**
+ * PageTitle - Reusable stacked page title component
+ *
+ * Displays a two-line title with:
+ * - Name link on top (smaller, links to home)
+ * - Slash + page title on bottom (larger, prominent)
+ * - Optional subtitle below
+ */
+
+interface Props {
+  /** The page title to display (e.g., "Blog", "Portfolio", "Artworks") */
+  title: string;
+  /** Optional subtitle text */
+  subtitle?: string;
+  /** Optional custom name (defaults to "Joel Lithgow") */
+  name?: string;
+  /** Optional custom home link (defaults to "/") */
+  homeLink?: string;
+}
+
+const {
+  title,
+  subtitle,
+  name = "Joel Lithgow",
+  homeLink = "/"
+} = Astro.props;
+---
+
+<div class="page-title-wrapper">
+  <h1 class="page-title">
+    <a href={homeLink} class="page-title-name">{name}</a>
+    <span class="page-title-current"><span class="page-title-slash">/</span>{title}</span>
+  </h1>
+  {subtitle && <p class="page-title-subtitle">{subtitle}</p>}
+</div>
+
+<style is:global>
+  .page-title-wrapper {
+    margin: var(--space-sm) 0 var(--space-md) 0;
+  }
+
+  .page-title-wrapper .page-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    margin: 0;
+    letter-spacing: var(--tracking-tight);
+    font-family: var(--font-family);
+  }
+
+  .page-title-wrapper .page-title-name {
+    color: var(--text-primary);
+    font-size: var(--heading-md);
+    font-weight: var(--font-medium);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-secondary);
+    text-underline-offset: 3px;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .page-title-wrapper .page-title-name:hover {
+    color: var(--accent-primary);
+    text-decoration-color: var(--accent-primary);
+  }
+
+  .page-title-wrapper .page-title-current {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  .page-title-wrapper .page-title-slash {
+    margin-right: 0.15em;
+    color: var(--accent-primary);
+  }
+
+  .page-title-wrapper .page-title-subtitle {
+    font-family: var(--font-family);
+    font-size: var(--text-2xl);
+    color: var(--text-primary);
+    margin: var(--space-sm) 0 0 0;
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .page-title-wrapper .page-title-name {
+      font-size: var(--heading-sm);
+    }
+
+    .page-title-wrapper .page-title-current {
+      font-size: var(--heading-xl);
+    }
+
+    .page-title-wrapper .page-title-subtitle {
+      font-size: var(--text-xl);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page-title-wrapper .page-title-name {
+      font-size: var(--text-lg);
+    }
+
+    .page-title-wrapper .page-title-current {
+      font-size: var(--heading-lg);
+    }
+
+    .page-title-wrapper .page-title-subtitle {
+      font-size: var(--text-lg);
+    }
+  }
+</style>
