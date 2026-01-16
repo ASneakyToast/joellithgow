@@ -1,24 +1,35 @@
 /**
  * Manager Factory for Background Studio
  * Creates pattern-specific managers programmatically for layered composition
+ * Supports both WebGL (Three.js) and p5.js renderers
  */
 
-import { NoiseBackgroundManager } from '../noise/NoiseBackgroundManager';
-import { createFBMUniforms } from '../noise/shaders/uniforms';
-import type { NoiseType } from '../types';
-import type { LayerPatternConfig } from './types';
-import { PATTERN_DEFAULTS } from './types';
+import { PatternBackgroundManager } from '../patterns/PatternBackgroundManager';
+import { P5PatternManager } from '../patterns/p5/P5PatternManager';
+import { createFBMUniforms } from '../patterns/shaders/uniforms';
+import type { PatternType } from '../patterns/types';
+import type { LayerPatternConfig } from '../patterns/types';
+import { PATTERN_DEFAULTS, isP5Pattern } from '../patterns/registry';
 
-// Import all fragment shaders
-import { perlinFragmentShader } from '../noise/shaders/fragments/perlin.glsl';
-import { simplexFragmentShader } from '../noise/shaders/fragments/simplex.glsl';
-import { worleyFragmentShader } from '../noise/shaders/fragments/worley.glsl';
-import { voronoiEdgeFragmentShader } from '../noise/shaders/fragments/voronoi-edge.glsl';
-import { turbulenceFragmentShader } from '../noise/shaders/fragments/turbulence.glsl';
-import { ridgedFragmentShader } from '../noise/shaders/fragments/ridged.glsl';
-import { domainWarpFragmentShader } from '../noise/shaders/fragments/domain-warp.glsl';
-import { causticsFragmentShader } from '../noise/shaders/fragments/caustics.glsl';
-import { marbleFragmentShader } from '../noise/shaders/fragments/marble.glsl';
+// Import noise fragment shaders
+import { perlinFragmentShader } from '../patterns/shaders/fragments/noise/perlin.glsl';
+import { simplexFragmentShader } from '../patterns/shaders/fragments/noise/simplex.glsl';
+import { worleyFragmentShader } from '../patterns/shaders/fragments/noise/worley.glsl';
+import { voronoiEdgeFragmentShader } from '../patterns/shaders/fragments/noise/voronoi-edge.glsl';
+import { turbulenceFragmentShader } from '../patterns/shaders/fragments/noise/turbulence.glsl';
+import { ridgedFragmentShader } from '../patterns/shaders/fragments/noise/ridged.glsl';
+import { domainWarpFragmentShader } from '../patterns/shaders/fragments/noise/domain-warp.glsl';
+import { causticsFragmentShader } from '../patterns/shaders/fragments/noise/caustics.glsl';
+import { marbleFragmentShader } from '../patterns/shaders/fragments/noise/marble.glsl';
+
+// Import p5.js pattern managers
+import { ConstellationP5Manager } from '../patterns/p5/patterns/constellation.p5';
+import { BlueprintP5Manager } from '../patterns/p5/patterns/blueprint.p5';
+import { FloatingShapesP5Manager } from '../patterns/p5/patterns/floating-shapes.p5';
+import { MinimalLinesP5Manager } from '../patterns/p5/patterns/minimal-lines.p5';
+
+// Backward compat alias
+type NoiseType = PatternType;
 
 /**
  * Extended config interface for studio managers
@@ -68,7 +79,7 @@ interface StudioManagerConfig {
 /**
  * Perlin Background Manager
  */
-class PerlinManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class PerlinManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return perlinFragmentShader;
   }
@@ -123,7 +134,7 @@ class PerlinManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Simplex Background Manager
  */
-class SimplexManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class SimplexManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return simplexFragmentShader;
   }
@@ -178,7 +189,7 @@ class SimplexManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Worley Background Manager
  */
-class WorleyManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class WorleyManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return worleyFragmentShader;
   }
@@ -219,7 +230,7 @@ class WorleyManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Voronoi Edge Background Manager
  */
-class VoronoiEdgeManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class VoronoiEdgeManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return voronoiEdgeFragmentShader;
   }
@@ -260,7 +271,7 @@ class VoronoiEdgeManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Turbulence Background Manager
  */
-class TurbulenceManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class TurbulenceManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return turbulenceFragmentShader;
   }
@@ -309,7 +320,7 @@ class TurbulenceManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Ridged Background Manager
  */
-class RidgedManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class RidgedManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return ridgedFragmentShader;
   }
@@ -364,7 +375,7 @@ class RidgedManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Domain Warp Background Manager
  */
-class DomainWarpManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class DomainWarpManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return domainWarpFragmentShader;
   }
@@ -399,7 +410,7 @@ class DomainWarpManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Caustics Background Manager
  */
-class CausticsManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class CausticsManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return causticsFragmentShader;
   }
@@ -446,7 +457,7 @@ class CausticsManager extends NoiseBackgroundManager<StudioManagerConfig> {
 /**
  * Marble Background Manager
  */
-class MarbleManager extends NoiseBackgroundManager<StudioManagerConfig> {
+class MarbleManager extends PatternBackgroundManager<StudioManagerConfig> {
   protected getFragmentShader(): string {
     return marbleFragmentShader;
   }
@@ -505,9 +516,9 @@ class MarbleManager extends NoiseBackgroundManager<StudioManagerConfig> {
 }
 
 /**
- * Manager class map
+ * WebGL Manager class map (noise patterns)
  */
-const MANAGER_CLASSES: Record<NoiseType, typeof NoiseBackgroundManager<StudioManagerConfig>> = {
+const WEBGL_MANAGER_CLASSES: Record<string, typeof PatternBackgroundManager<StudioManagerConfig>> = {
   perlin: PerlinManager,
   simplex: SimplexManager,
   worley: WorleyManager,
@@ -518,6 +529,23 @@ const MANAGER_CLASSES: Record<NoiseType, typeof NoiseBackgroundManager<StudioMan
   caustics: CausticsManager,
   marble: MarbleManager
 };
+
+/**
+ * p5.js Manager class map (geometric patterns)
+ */
+const P5_MANAGER_CLASSES: Record<string, typeof P5PatternManager<any>> = {
+  floatingShapes: FloatingShapesP5Manager,
+  constellation: ConstellationP5Manager,
+  minimalLines: MinimalLinesP5Manager,
+  blueprint: BlueprintP5Manager
+};
+
+/**
+ * Union type for all pattern managers
+ */
+export type AnyPatternManager =
+  | PatternBackgroundManager<StudioManagerConfig>
+  | P5PatternManager<any>;
 
 /**
  * Convert LayerPatternConfig to data attributes for container element
@@ -534,7 +562,7 @@ function configToDataAttributes(config: LayerPatternConfig): Record<string, stri
     'data-pause-offscreen': 'true'
   };
 
-  // Add pattern-specific attributes
+  // Add noise pattern-specific attributes
   if (config.octaves !== undefined) attrs['data-octaves'] = String(config.octaves);
   if (config.lacunarity !== undefined) attrs['data-lacunarity'] = String(config.lacunarity);
   if (config.gain !== undefined) attrs['data-gain'] = String(config.gain);
@@ -557,11 +585,44 @@ function configToDataAttributes(config: LayerPatternConfig): Record<string, stri
   if (config.noiseInfluence !== undefined) attrs['data-noise-influence'] = String(config.noiseInfluence);
   if (config.detailBlend !== undefined) attrs['data-detail-blend'] = String(config.detailBlend);
 
+  // Add geometric pattern-specific attributes (p5.js patterns)
+  // Constellation
+  if (config.starCount !== undefined) attrs['data-star-count'] = String(config.starCount);
+  if (config.pointSize !== undefined) attrs['data-point-size'] = String(config.pointSize);
+  if (config.connectionDistance !== undefined) attrs['data-connection-distance'] = String(config.connectionDistance);
+  if (config.lineThickness !== undefined) attrs['data-line-thickness'] = String(config.lineThickness);
+  if (config.lineFalloff !== undefined) attrs['data-line-falloff'] = String(config.lineFalloff);
+  if (config.twinkleIntensity !== undefined) attrs['data-twinkle-intensity'] = String(config.twinkleIntensity);
+  if (config.driftSpeed !== undefined) attrs['data-drift-speed'] = String(config.driftSpeed);
+  // Blueprint
+  if (config.elementDensity !== undefined) attrs['data-element-density'] = String(config.elementDensity);
+  if (config.dimensionLength !== undefined) attrs['data-dimension-length'] = String(config.dimensionLength);
+  if (config.markerSize !== undefined) attrs['data-marker-size'] = String(config.markerSize);
+  if (config.bracketSize !== undefined) attrs['data-bracket-size'] = String(config.bracketSize);
+  if (config.bracketRatio !== undefined) attrs['data-bracket-ratio'] = String(config.bracketRatio);
+  if (config.tickDensity !== undefined) attrs['data-tick-density'] = String(config.tickDensity);
+  // Floating Shapes
+  if (config.shapeDensity !== undefined) attrs['data-shape-density'] = String(config.shapeDensity);
+  if (config.shapeSize !== undefined) attrs['data-shape-size'] = String(config.shapeSize);
+  if (config.sizeVariation !== undefined) attrs['data-size-variation'] = String(config.sizeVariation);
+  if (config.shapeMix !== undefined) attrs['data-shape-mix'] = String(config.shapeMix);
+  if (config.edgeSoftness !== undefined) attrs['data-edge-softness'] = String(config.edgeSoftness);
+  if (config.rotationSpeed !== undefined) attrs['data-rotation-speed'] = String(config.rotationSpeed);
+  // Minimal Lines
+  if (config.lineDensity !== undefined) attrs['data-line-density'] = String(config.lineDensity);
+  if (config.lineLength !== undefined) attrs['data-line-length'] = String(config.lineLength);
+  if (config.lengthVariation !== undefined) attrs['data-length-variation'] = String(config.lengthVariation);
+  if (config.angleVariation !== undefined) attrs['data-angle-variation'] = String(config.angleVariation);
+  if (config.baseAngle !== undefined) attrs['data-base-angle'] = String(config.baseAngle);
+  if (config.crosshatchChance !== undefined) attrs['data-crosshatch-chance'] = String(config.crosshatchChance);
+  if (config.fillRatio !== undefined) attrs['data-fill-ratio'] = String(config.fillRatio);
+
   return attrs;
 }
 
 /**
  * Create a container element for a pattern layer
+ * Automatically selects WebGL or p5.js container based on pattern type
  */
 export function createLayerContainer(
   layerId: string,
@@ -569,8 +630,9 @@ export function createLayerContainer(
   config: LayerPatternConfig,
   zIndex: number
 ): HTMLDivElement {
+  const isP5 = isP5Pattern(patternType);
   const container = document.createElement('div');
-  container.className = `webgl-background-container noise-texture layer-canvas layer-${patternType}`;
+  container.className = `${isP5 ? 'p5' : 'webgl'}-background-container ${isP5 ? '' : 'noise-texture '}layer-canvas layer-${patternType}`;
   container.id = `layer-${layerId}`;
   container.setAttribute('aria-hidden', 'true');
   container.style.zIndex = String(zIndex);
@@ -581,26 +643,40 @@ export function createLayerContainer(
     container.setAttribute(key, value);
   }
 
-  // Create canvas
-  const canvas = document.createElement('canvas');
-  canvas.className = 'webgl-canvas';
-  container.appendChild(canvas);
+  // Create canvas with appropriate class
+  // Note: p5.js will create its own canvas, so we don't add one for p5 patterns
+  if (!isP5) {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'webgl-canvas';
+    container.appendChild(canvas);
+  }
 
   return container;
 }
 
 /**
  * Create a pattern manager for a layer
+ * Automatically selects WebGL or p5.js manager based on pattern type
  */
 export function createPatternManager(
   container: HTMLElement,
   patternType: NoiseType
-): NoiseBackgroundManager<StudioManagerConfig> {
-  const ManagerClass = MANAGER_CLASSES[patternType];
-  if (!ManagerClass) {
-    throw new Error(`Unknown pattern type: ${patternType}`);
+): AnyPatternManager {
+  // Check if this is a p5.js pattern
+  if (isP5Pattern(patternType)) {
+    const P5ManagerClass = P5_MANAGER_CLASSES[patternType];
+    if (!P5ManagerClass) {
+      throw new Error(`Unknown p5.js pattern type: ${patternType}`);
+    }
+    return new P5ManagerClass(container);
   }
-  return new ManagerClass(container);
+
+  // Otherwise, use WebGL manager
+  const WebGLManagerClass = WEBGL_MANAGER_CLASSES[patternType];
+  if (!WebGLManagerClass) {
+    throw new Error(`Unknown WebGL pattern type: ${patternType}`);
+  }
+  return new WebGLManagerClass(container);
 }
 
 /**
@@ -614,4 +690,4 @@ export function getPatternDefaults(patternType: NoiseType): LayerPatternConfig {
  * Export manager classes for type checking
  */
 export type { StudioManagerConfig };
-export { NoiseBackgroundManager };
+export { PatternBackgroundManager };

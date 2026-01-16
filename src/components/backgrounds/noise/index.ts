@@ -1,45 +1,39 @@
 /**
- * Noise Background Components
+ * @deprecated Import from '@components/backgrounds/patterns' instead
  *
- * Pattern-specific WebGL background components for organic noise effects.
- * Each component is self-contained with its own shader and configuration.
+ * This module re-exports everything from the patterns folder for backward compatibility.
+ * All pattern components and utilities have been moved to the patterns/ folder.
  *
  * @example
- * ```astro
- * ---
- * import { SimplexBackground, CausticsBackground } from '@components/backgrounds/noise';
- * ---
+ * // Old (deprecated):
+ * import { SimplexBackground } from '@components/backgrounds/noise';
  *
- * <SimplexBackground speed={0.5} intensity={0.6} />
- * <CausticsBackground waveCount={4} waveFrequency={10} />
- * ```
+ * // New (preferred):
+ * import { SimplexBackground } from '@components/backgrounds/patterns';
  */
 
-// Pattern Components
-export { default as PerlinBackground } from './PerlinBackground.astro';
-export { default as SimplexBackground } from './SimplexBackground.astro';
-export { default as WorleyBackground } from './WorleyBackground.astro';
-export { default as VoronoiEdgeBackground } from './VoronoiEdgeBackground.astro';
-export { default as TurbulenceBackground } from './TurbulenceBackground.astro';
-export { default as RidgedBackground } from './RidgedBackground.astro';
-export { default as DomainWarpBackground } from './DomainWarpBackground.astro';
-export { default as CausticsBackground } from './CausticsBackground.astro';
-export { default as MarbleBackground } from './MarbleBackground.astro';
+// Re-export everything from patterns
+export * from '../patterns';
 
-// Types
-export type {
-  BaseNoiseBackgroundProps,
-  FBMBackgroundProps,
-  SimplexBackgroundProps,
-  PerlinBackgroundProps,
-  WorleyBackgroundProps,
-  VoronoiEdgeBackgroundProps,
-  TurbulenceBackgroundProps,
-  RidgedBackgroundProps,
-  DomainWarpBackgroundProps,
-  CausticsBackgroundProps,
-  MarbleBackgroundProps
-} from './types';
+// Re-export pattern components
+export { default as SimplexBackground } from '../patterns/SimplexBackground.astro';
+export { default as PerlinBackground } from '../patterns/PerlinBackground.astro';
+export { default as WorleyBackground } from '../patterns/WorleyBackground.astro';
+export { default as VoronoiEdgeBackground } from '../patterns/VoronoiEdgeBackground.astro';
+export { default as TurbulenceBackground } from '../patterns/TurbulenceBackground.astro';
+export { default as RidgedBackground } from '../patterns/RidgedBackground.astro';
+export { default as DomainWarpBackground } from '../patterns/DomainWarpBackground.astro';
+export { default as CausticsBackground } from '../patterns/CausticsBackground.astro';
+export { default as MarbleBackground } from '../patterns/MarbleBackground.astro';
+export { default as FloatingShapesBackground } from '../patterns/FloatingShapesBackground.astro';
+export { default as ConstellationBackground } from '../patterns/ConstellationBackground.astro';
+export { default as MinimalLinesBackground } from '../patterns/MinimalLinesBackground.astro';
+export { default as BlueprintBackground } from '../patterns/BlueprintBackground.astro';
 
-// Base manager for custom extensions
-export { NoiseBackgroundManager } from './NoiseBackgroundManager';
+// Emit deprecation warning in development
+if (import.meta.env?.DEV) {
+  console.warn(
+    '[backgrounds/noise] This module is deprecated. ' +
+    'Import from "@components/backgrounds/patterns" instead.'
+  );
+}

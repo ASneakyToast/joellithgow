@@ -1,34 +1,34 @@
 ---
 /**
- * WorleyBackground - Cellular noise patterns
- * Creates organic cell-like structures based on distance to random points
+ * VoronoiEdgeBackground - Cell boundary patterns
+ * Creates crack or tile-like patterns using Voronoi F2-F1 distance
  */
-import type { WorleyBackgroundProps } from './types';
+import type { VoronoiEdgeBackgroundProps } from './types';
 
-export interface Props extends WorleyBackgroundProps {}
+export interface Props extends VoronoiEdgeBackgroundProps {}
 
 const {
-  speed = 0.3,
-  intensity = 0.5,
-  noiseScale = 1.5,
+  speed = 0.4,
+  intensity = 0.6,
+  noiseScale = 2.0,
   animated = true,
   animationAngle = 315,
   colors,
   maxPixelRatio = 2,
   pauseOffscreen = true,
   class: className = '',
-  id = `worley-bg-${Math.random().toString(36).substr(2, 9)}`,
-  // Worley-specific
+  id = `voronoi-edge-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // Voronoi Edge-specific
   cellScale = 2.0,
-  cellAnimSpeed = 0.3,
-  invert = true
+  edgeThickness = 0.15,
+  cellAnimSpeed = 0.2
 } = Astro.props;
 ---
 
 <div
-  class:list={['webgl-background-container', 'noise-texture', 'worley-bg', className]}
+  class:list={['webgl-background-container', 'noise-texture', 'voronoi-edge-bg', className]}
   id={id}
-  data-effect-type="worley"
+  data-effect-type="voronoiEdge"
   data-speed={speed}
   data-intensity={intensity}
   data-noise-scale={noiseScale}
@@ -38,8 +38,8 @@ const {
   data-max-pixel-ratio={maxPixelRatio}
   data-pause-offscreen={pauseOffscreen}
   data-cell-scale={cellScale}
+  data-edge-thickness={edgeThickness}
   data-cell-anim-speed={cellAnimSpeed}
-  data-invert={invert}
   aria-hidden="true"
 >
   <canvas class="webgl-canvas"></canvas>
@@ -76,10 +76,10 @@ const {
 
 <script>
   import * as THREE from 'three';
-  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
-  import { worleyFragmentShader } from './shaders/fragments/worley.glsl';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { voronoiEdgeFragmentShader } from './shaders/fragments/noise/voronoi-edge.glsl';
 
-  interface WorleyConfig {
+  interface VoronoiEdgeConfig {
     speed: number;
     intensity: number;
     noiseScale: number;
@@ -89,53 +89,53 @@ const {
     pauseOffscreen: boolean;
     colors: Record<string, string>;
     cellScale: number;
+    edgeThickness: number;
     cellAnimSpeed: number;
-    invert: boolean;
   }
 
-  class WorleyBackgroundManager extends NoiseBackgroundManager<WorleyConfig> {
+  class VoronoiEdgeBackgroundManager extends PatternBackgroundManager<VoronoiEdgeConfig> {
     protected getFragmentShader(): string {
-      return worleyFragmentShader;
+      return voronoiEdgeFragmentShader;
     }
 
-    protected parsePatternConfig(container: HTMLElement): Partial<WorleyConfig> {
+    protected parsePatternConfig(container: HTMLElement): Partial<VoronoiEdgeConfig> {
       return {
         cellScale: parseFloat(container.dataset.cellScale || '2.0'),
-        cellAnimSpeed: parseFloat(container.dataset.cellAnimSpeed || '0.3'),
-        invert: container.dataset.invert !== 'false'
+        edgeThickness: parseFloat(container.dataset.edgeThickness || '0.15'),
+        cellAnimSpeed: parseFloat(container.dataset.cellAnimSpeed || '0.2')
       };
     }
 
     protected createPatternUniforms() {
       return {
         uCellScale: { value: this.config.cellScale },
-        uCellAnimSpeed: { value: this.config.cellAnimSpeed },
-        uInvert: { value: this.config.invert }
+        uEdgeThickness: { value: this.config.edgeThickness },
+        uCellAnimSpeed: { value: this.config.cellAnimSpeed }
       };
     }
 
-    protected updatePatternUniforms(props: Partial<WorleyConfig>): void {
+    protected updatePatternUniforms(props: Partial<VoronoiEdgeConfig>): void {
       if (!this.material) return;
 
       if (props.cellScale !== undefined) {
         this.config.cellScale = props.cellScale;
         this.material.uniforms.uCellScale.value = props.cellScale;
       }
+      if (props.edgeThickness !== undefined) {
+        this.config.edgeThickness = props.edgeThickness;
+        this.material.uniforms.uEdgeThickness.value = props.edgeThickness;
+      }
       if (props.cellAnimSpeed !== undefined) {
         this.config.cellAnimSpeed = props.cellAnimSpeed;
         this.material.uniforms.uCellAnimSpeed.value = props.cellAnimSpeed;
-      }
-      if (props.invert !== undefined) {
-        this.config.invert = props.invert;
-        this.material.uniforms.uInvert.value = props.invert;
       }
     }
   }
 
   // Auto-initialize
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.worley-bg').forEach(container => {
-      const manager = new WorleyBackgroundManager(container as HTMLElement);
+    document.querySelectorAll('.voronoi-edge-bg').forEach(container => {
+      const manager = new VoronoiEdgeBackgroundManager(container as HTMLElement);
       manager.init();
       (container as any)._webglManager = manager;
     });

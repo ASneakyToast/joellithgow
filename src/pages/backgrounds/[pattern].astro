@@ -2,281 +2,283 @@
 /**
  * Interactive Pattern Playground
  * Full-page background with live properties panel
+ *
+ * Uses the pattern registry for dynamic path generation and configuration.
  */
 import BaseLayout from '@components/common/BaseLayout.astro';
-import NoiseTextureBackground from '@components/backgrounds/NoiseTextureBackground.astro';
 import PropertiesPanel from '@components/backgrounds/PropertiesPanel.astro';
-import type { NoiseType } from '@components/backgrounds/types';
+import { PATTERNS, getPatternById } from '@components/backgrounds/patterns/registry';
 
-// Generate static paths - must be at top of frontmatter
+// Pattern component imports - noise patterns
+import SimplexBackground from '@components/backgrounds/patterns/SimplexBackground.astro';
+import PerlinBackground from '@components/backgrounds/patterns/PerlinBackground.astro';
+import WorleyBackground from '@components/backgrounds/patterns/WorleyBackground.astro';
+import VoronoiEdgeBackground from '@components/backgrounds/patterns/VoronoiEdgeBackground.astro';
+import TurbulenceBackground from '@components/backgrounds/patterns/TurbulenceBackground.astro';
+import RidgedBackground from '@components/backgrounds/patterns/RidgedBackground.astro';
+import DomainWarpBackground from '@components/backgrounds/patterns/DomainWarpBackground.astro';
+import CausticsBackground from '@components/backgrounds/patterns/CausticsBackground.astro';
+import MarbleBackground from '@components/backgrounds/patterns/MarbleBackground.astro';
+
+// Pattern component imports - geometric patterns
+import FloatingShapesBackground from '@components/backgrounds/patterns/FloatingShapesBackground.astro';
+import ConstellationBackground from '@components/backgrounds/patterns/ConstellationBackground.astro';
+import MinimalLinesBackground from '@components/backgrounds/patterns/MinimalLinesBackground.astro';
+import BlueprintBackground from '@components/backgrounds/patterns/BlueprintBackground.astro';
+
+// Generate static paths from registry
 export function getStaticPaths() {
-  return [
-    'perlin', 'simplex', 'worley', 'voronoi-edge', 'turbulence',
-    'ridged', 'domain-warp', 'caustics', 'marble'
-  ].map(pattern => ({
-    params: { pattern }
+  return PATTERNS.map(pattern => ({
+    params: { pattern: pattern.id }
   }));
 }
 
-// Pattern configurations with all parameters
-const patternConfigs: Record<string, {
-  name: string;
-  description: string;
-  noiseType: NoiseType;
-  defaults: {
-    // General
-    speed: number;
-    intensity: number;
-    noiseScale: number;
-    animated: boolean;
-    animationAngle?: number;
-    colors: { primary: string; secondary: string; tertiary: string };
-    // FBM parameters (optional)
-    octaves?: number;
-    lacunarity?: number;
-    gain?: number;
-    // Pattern-specific (optional)
-    timeScaleX?: number;
-    timeScaleY?: number;
-    cellScale?: number;
-    cellAnimSpeed?: number;
-    invert?: boolean;
-    edgeThickness?: number;
-    sharpness?: number;
-    ridgeSharpness?: number;
-    ridgeTimeScale?: number;
-    warpStrength?: number;
-    warpLayers?: number;
-    waveCount?: number;
-    waveFrequency?: number;
-    waveSharpness?: number;
-    detailAmount?: number;
-    lineFrequency?: number;
-    noiseInfluence?: number;
-    detailBlend?: number;
-  };
-}> = {
-  'perlin': {
-    name: 'Perlin Noise',
-    description: 'Classic gradient noise with smooth, organic variations',
-    noiseType: 'perlin',
-    defaults: {
-      speed: 0.5,
-      intensity: 0.6,
-      noiseScale: 2.0,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // FBM
-      octaves: 4,
-      lacunarity: 2.0,
-      gain: 0.5,
-      // Perlin-specific
-      timeScaleX: 1.0,
-      timeScaleY: 0.7
-    }
-  },
-  'simplex': {
-    name: 'Simplex Noise',
-    description: 'Smooth flowing organic patterns with less directional artifacts',
-    noiseType: 'simplex',
-    defaults: {
-      speed: 0.4,
-      intensity: 0.5,
-      noiseScale: 3.0,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // FBM
-      octaves: 5,
-      lacunarity: 2.0,
-      gain: 0.5,
-      // Simplex-specific
-      timeScaleX: 0.8,
-      timeScaleY: 1.0
-    }
-  },
-  'worley': {
-    name: 'Worley Noise',
-    description: 'Cellular patterns based on distance to random points',
-    noiseType: 'worley',
-    defaults: {
-      speed: 0.3,
-      intensity: 0.5,
-      noiseScale: 1.5,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // Worley-specific
-      cellScale: 2.0,
-      cellAnimSpeed: 0.3,
-      invert: true
-    }
-  },
-  'voronoi-edge': {
-    name: 'Voronoi Edge',
-    description: 'Cell boundaries creating crack or tile-like patterns',
-    noiseType: 'voronoiEdge',
-    defaults: {
-      speed: 0.4,
-      intensity: 0.6,
-      noiseScale: 2.0,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // Voronoi-specific
-      cellScale: 2.0,
-      edgeThickness: 0.15,
-      cellAnimSpeed: 0.2
-    }
-  },
-  'turbulence': {
-    name: 'Turbulence',
-    description: 'Billowy cloud-like patterns with high contrast swirls',
-    noiseType: 'turbulence',
-    defaults: {
-      speed: 0.5,
-      intensity: 0.55,
-      noiseScale: 2.5,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // FBM
-      octaves: 5,
-      lacunarity: 2.0,
-      gain: 0.5,
-      // Turbulence-specific
-      sharpness: 1.0
-    }
-  },
-  'ridged': {
-    name: 'Ridged Multifractal',
-    description: 'Sharp ridge patterns like mountain ranges or lightning',
-    noiseType: 'ridged',
-    defaults: {
-      speed: 0.4,
-      intensity: 0.6,
-      noiseScale: 2.0,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // FBM
-      octaves: 5,
-      lacunarity: 2.0,
-      gain: 0.5,
-      // Ridged-specific
-      ridgeSharpness: 2.0,
-      ridgeTimeScale: 0.5
-    }
-  },
-  'domain-warp': {
-    name: 'Domain Warp',
-    description: 'Fluid distortion effect by warping coordinate space',
-    noiseType: 'domainWarp',
-    defaults: {
-      speed: 0.3,
-      intensity: 0.5,
-      noiseScale: 1.5,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // Domain Warp-specific
-      warpStrength: 4.0,
-      warpLayers: 2
-    }
-  },
-  'caustics': {
-    name: 'Caustics',
-    description: 'Underwater light refraction patterns',
-    noiseType: 'caustics',
-    defaults: {
-      speed: 0.6,
-      intensity: 0.55,
-      noiseScale: 1.8,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // Caustics-specific
-      waveCount: 3,
-      waveFrequency: 8.0,
-      waveSharpness: 1.5,
-      detailAmount: 0.15
-    }
-  },
-  'marble': {
-    name: 'Marble',
-    description: 'Flowing veins like natural stone or wood grain',
-    noiseType: 'marble',
-    defaults: {
-      speed: 0.3,
-      intensity: 0.5,
-      noiseScale: 2.0,
-      animated: true,
-      animationAngle: 315,
-      colors: { primary: '#FF6B6B', secondary: '#4ECDC4', tertiary: '#FFE66D' },
-      // FBM
-      octaves: 4,
-      lacunarity: 2.0,
-      gain: 0.5,
-      // Marble-specific
-      lineFrequency: 8.0,
-      noiseInfluence: 6.0,
-      detailBlend: 0.3
-    }
-  }
-};
-
 const { pattern } = Astro.params;
-const config = patternConfigs[pattern];
+const patternDef = getPatternById(pattern);
 
 // 404 if pattern not found
-if (!config) {
+if (!patternDef) {
   return Astro.redirect('/backgrounds');
 }
 
-const pageTitle = `${config.name} - Background Playground`;
-const pageDescription = config.description;
+const pageTitle = `${patternDef.name} - Background Playground`;
+const pageDescription = patternDef.description;
+const defaults = patternDef.defaults;
+
+// Map internal IDs to component usage for conditional rendering
+const patternId = patternDef.internalId;
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main class="playground-page">
-    <NoiseTextureBackground
-      noiseType={config.noiseType}
-      speed={config.defaults.speed}
-      intensity={config.defaults.intensity}
-      noiseScale={config.defaults.noiseScale}
-      animated={config.defaults.animated}
-      animationAngle={config.defaults.animationAngle}
-      colors={config.defaults.colors}
-      octaves={config.defaults.octaves}
-      lacunarity={config.defaults.lacunarity}
-      gain={config.defaults.gain}
-      timeScaleX={config.defaults.timeScaleX}
-      timeScaleY={config.defaults.timeScaleY}
-      cellScale={config.defaults.cellScale}
-      cellAnimSpeed={config.defaults.cellAnimSpeed}
-      invert={config.defaults.invert}
-      edgeThickness={config.defaults.edgeThickness}
-      sharpness={config.defaults.sharpness}
-      ridgeSharpness={config.defaults.ridgeSharpness}
-      ridgeTimeScale={config.defaults.ridgeTimeScale}
-      warpStrength={config.defaults.warpStrength}
-      warpLayers={config.defaults.warpLayers}
-      waveCount={config.defaults.waveCount}
-      waveFrequency={config.defaults.waveFrequency}
-      waveSharpness={config.defaults.waveSharpness}
-      detailAmount={config.defaults.detailAmount}
-      lineFrequency={config.defaults.lineFrequency}
-      noiseInfluence={config.defaults.noiseInfluence}
-      detailBlend={config.defaults.detailBlend}
-      class="fullscreen-background"
-    />
+    {/* Noise Patterns */}
+    {patternId === 'perlin' && (
+      <PerlinBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        octaves={defaults.octaves as number}
+        lacunarity={defaults.lacunarity as number}
+        gain={defaults.gain as number}
+        timeScaleX={defaults.timeScaleX as number}
+        timeScaleY={defaults.timeScaleY as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'simplex' && (
+      <SimplexBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        octaves={defaults.octaves as number}
+        lacunarity={defaults.lacunarity as number}
+        gain={defaults.gain as number}
+        timeScaleX={defaults.timeScaleX as number}
+        timeScaleY={defaults.timeScaleY as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'worley' && (
+      <WorleyBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        cellScale={defaults.cellScale as number}
+        cellAnimSpeed={defaults.cellAnimSpeed as number}
+        invert={defaults.invert as boolean}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'voronoiEdge' && (
+      <VoronoiEdgeBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        cellScale={defaults.cellScale as number}
+        edgeThickness={defaults.edgeThickness as number}
+        cellAnimSpeed={defaults.cellAnimSpeed as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'turbulence' && (
+      <TurbulenceBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        octaves={defaults.octaves as number}
+        lacunarity={defaults.lacunarity as number}
+        gain={defaults.gain as number}
+        sharpness={defaults.sharpness as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'ridged' && (
+      <RidgedBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        octaves={defaults.octaves as number}
+        lacunarity={defaults.lacunarity as number}
+        gain={defaults.gain as number}
+        ridgeSharpness={defaults.ridgeSharpness as number}
+        ridgeTimeScale={defaults.ridgeTimeScale as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'domainWarp' && (
+      <DomainWarpBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        warpStrength={defaults.warpStrength as number}
+        warpLayers={defaults.warpLayers as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'caustics' && (
+      <CausticsBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        waveCount={defaults.waveCount as number}
+        waveFrequency={defaults.waveFrequency as number}
+        waveSharpness={defaults.waveSharpness as number}
+        detailAmount={defaults.detailAmount as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'marble' && (
+      <MarbleBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        octaves={defaults.octaves as number}
+        lacunarity={defaults.lacunarity as number}
+        gain={defaults.gain as number}
+        lineFrequency={defaults.lineFrequency as number}
+        noiseInfluence={defaults.noiseInfluence as number}
+        detailBlend={defaults.detailBlend as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {/* Geometric Patterns */}
+    {patternId === 'floatingShapes' && (
+      <FloatingShapesBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        shapeDensity={defaults.shapeDensity as number}
+        shapeSize={defaults.shapeSize as number}
+        sizeVariation={defaults.sizeVariation as number}
+        shapeMix={defaults.shapeMix as number}
+        edgeSoftness={defaults.edgeSoftness as number}
+        rotationSpeed={defaults.rotationSpeed as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'constellation' && (
+      <ConstellationBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        starCount={defaults.starCount as number}
+        pointSize={defaults.pointSize as number}
+        connectionDistance={defaults.connectionDistance as number}
+        lineThickness={defaults.lineThickness as number}
+        lineFalloff={defaults.lineFalloff as number}
+        twinkleIntensity={defaults.twinkleIntensity as number}
+        driftSpeed={defaults.driftSpeed as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'minimalLines' && (
+      <MinimalLinesBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        lineDensity={defaults.lineDensity as number}
+        lineLength={defaults.lineLength as number}
+        lengthVariation={defaults.lengthVariation as number}
+        lineThickness={defaults.lineThickness as number}
+        angleVariation={defaults.angleVariation as number}
+        baseAngle={defaults.baseAngle as number}
+        crosshatchChance={defaults.crosshatchChance as number}
+        fillRatio={defaults.fillRatio as number}
+        class="fullscreen-background"
+      />
+    )}
+
+    {patternId === 'blueprint' && (
+      <BlueprintBackground
+        speed={defaults.speed}
+        intensity={defaults.intensity}
+        noiseScale={defaults.noiseScale}
+        animated={defaults.animated}
+        animationAngle={defaults.animationAngle}
+        colors={defaults.colors}
+        elementDensity={defaults.elementDensity as number}
+        dimensionLength={defaults.dimensionLength as number}
+        lineThickness={defaults.lineThickness as number}
+        markerSize={defaults.markerSize as number}
+        bracketSize={defaults.bracketSize as number}
+        bracketRatio={defaults.bracketRatio as number}
+        tickDensity={defaults.tickDensity as number}
+        class="fullscreen-background"
+      />
+    )}
 
     <PropertiesPanel
-      patternName={config.name}
-      patternDescription={config.description}
-      patternSlug={config.noiseType}
-      defaults={config.defaults}
+      patternName={patternDef.name}
+      patternDescription={patternDef.description}
+      patternSlug={patternDef.internalId}
+      defaults={defaults}
     />
   </main>
 </BaseLayout>
