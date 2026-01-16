@@ -138,3 +138,77 @@ export interface MarbleBackgroundProps extends BaseNoiseBackgroundProps, FBMBack
   /** Secondary pattern mix (0.0-1.0, default: 0.3) */
   detailBlend?: number;
 }
+
+// =============================================================================
+// SPARSE GEOMETRIC PATTERNS
+// =============================================================================
+
+/** Props for FloatingShapesBackground component */
+export interface FloatingShapesBackgroundProps extends BaseNoiseBackgroundProps {
+  /** Number of shapes per unit area (0.5-5.0, default: 1.5) */
+  shapeDensity?: number;
+  /** Shape size range (0.02-0.15, default: 0.05) */
+  shapeSize?: number;
+  /** Size variation between shapes (0.0-1.0, default: 0.5) */
+  sizeVariation?: number;
+  /** Mix of shape types: 0=circles only, 0.5=mixed, 1=polygons only (default: 0.5) */
+  shapeMix?: number;
+  /** Shape edge softness (0.001-0.02, default: 0.005) */
+  edgeSoftness?: number;
+  /** Individual shape rotation speed (0.0-1.0, default: 0.2) */
+  rotationSpeed?: number;
+}
+
+/** Props for ConstellationBackground component */
+export interface ConstellationBackgroundProps extends BaseNoiseBackgroundProps {
+  /** Number of star points (3-30, default: 12) */
+  starCount?: number;
+  /** Point size (0.002-0.02, default: 0.006) */
+  pointSize?: number;
+  /** Connection distance threshold (0.05-0.4, default: 0.15) */
+  connectionDistance?: number;
+  /** Line thickness (0.0005-0.005, default: 0.001) */
+  lineThickness?: number;
+  /** Line opacity falloff (0.5-3.0, default: 1.5) */
+  lineFalloff?: number;
+  /** Star twinkle intensity (0.0-1.0, default: 0.3) */
+  twinkleIntensity?: number;
+  /** Movement speed of stars (0.0-1.0, default: 0.1) */
+  driftSpeed?: number;
+}
+
+/** Props for MinimalLinesBackground component */
+export interface MinimalLinesBackgroundProps extends BaseNoiseBackgroundProps {
+  /** Line density (0.5-5.0, default: 1.5) */
+  lineDensity?: number;
+  /** Line length range (0.02-0.2, default: 0.08) */
+  lineLength?: number;
+  /** Length variation (0.0-1.0, default: 0.6) */
+  lengthVariation?: number;
+  /** Line thickness (0.0005-0.005, default: 0.001) */
+  lineThickness?: number;
+  /** Angle variation in degrees (0-90, default: 45) */
+  angleVariation?: number;
+  /** Base angle for lines in degrees (0-360, default: 45) */
+  baseAngle?: number;
+  /** Probability of crosshatch intersections (0.0-1.0, default: 0.2) */
+  crosshatchChance?: number;
+}
+
+/** Props for BlueprintBackground component */
+export interface BlueprintBackgroundProps extends BaseNoiseBackgroundProps {
+  /** Density of blueprint elements (0.5-3.0, default: 1.0) */
+  elementDensity?: number;
+  /** Dimension line length (0.05-0.3, default: 0.12) */
+  dimensionLength?: number;
+  /** Line thickness (0.0005-0.003, default: 0.001) */
+  lineThickness?: number;
+  /** End marker size (0.003-0.015, default: 0.006) */
+  markerSize?: number;
+  /** Corner bracket size (0.02-0.1, default: 0.04) */
+  bracketSize?: number;
+  /** Probability of corner brackets vs dimension lines (0.0-1.0, default: 0.3) */
+  bracketRatio?: number;
+  /** Tick mark density along dimension lines (0-5, default: 2) */
+  tickDensity?: number;
+}

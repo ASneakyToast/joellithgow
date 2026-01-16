@@ -1,37 +1,38 @@
 ---
 /**
- * SimplexBackground - Smooth flowing organic noise patterns
- * Uses simplex noise with FBM layering for less directional artifacts
+ * MarbleBackground - Stone vein patterns
+ * Creates flowing veins like natural marble stone or wood grain
  */
-import type { SimplexBackgroundProps } from './types';
+import type { MarbleBackgroundProps } from './types';
 
-export interface Props extends SimplexBackgroundProps {}
+export interface Props extends MarbleBackgroundProps {}
 
 const {
-  speed = 0.4,
+  speed = 0.3,
   intensity = 0.5,
-  noiseScale = 3.0,
+  noiseScale = 2.0,
   animated = true,
   animationAngle = 315,
   colors,
   maxPixelRatio = 2,
   pauseOffscreen = true,
   class: className = '',
-  id = `simplex-bg-${Math.random().toString(36).substr(2, 9)}`,
+  id = `marble-bg-${Math.random().toString(36).substr(2, 9)}`,
   // FBM params
-  octaves = 5,
+  octaves = 4,
   lacunarity = 2.0,
   gain = 0.5,
-  // Simplex-specific
-  timeScaleX = 0.8,
-  timeScaleY = 1.0
+  // Marble-specific
+  lineFrequency = 8.0,
+  noiseInfluence = 6.0,
+  detailBlend = 0.3
 } = Astro.props;
 ---
 
 <div
-  class:list={['webgl-background-container', 'noise-texture', 'simplex-bg', className]}
+  class:list={['webgl-background-container', 'noise-texture', 'marble-bg', className]}
   id={id}
-  data-effect-type="simplex"
+  data-effect-type="marble"
   data-speed={speed}
   data-intensity={intensity}
   data-noise-scale={noiseScale}
@@ -43,8 +44,9 @@ const {
   data-octaves={octaves}
   data-lacunarity={lacunarity}
   data-gain={gain}
-  data-time-scale-x={timeScaleX}
-  data-time-scale-y={timeScaleY}
+  data-line-frequency={lineFrequency}
+  data-noise-influence={noiseInfluence}
+  data-detail-blend={detailBlend}
   aria-hidden="true"
 >
   <canvas class="webgl-canvas"></canvas>
@@ -81,11 +83,11 @@ const {
 
 <script>
   import * as THREE from 'three';
-  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
-  import { simplexFragmentShader } from './shaders/fragments/simplex.glsl';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { marbleFragmentShader } from './shaders/fragments/noise/marble.glsl';
   import { createFBMUniforms } from './shaders/uniforms';
 
-  interface SimplexConfig {
+  interface MarbleConfig {
     speed: number;
     intensity: number;
     noiseScale: number;
@@ -97,22 +99,24 @@ const {
     octaves: number;
     lacunarity: number;
     gain: number;
-    timeScaleX: number;
-    timeScaleY: number;
+    lineFrequency: number;
+    noiseInfluence: number;
+    detailBlend: number;
   }
 
-  class SimplexBackgroundManager extends NoiseBackgroundManager<SimplexConfig> {
+  class MarbleBackgroundManager extends PatternBackgroundManager<MarbleConfig> {
     protected getFragmentShader(): string {
-      return simplexFragmentShader;
+      return marbleFragmentShader;
     }
 
-    protected parsePatternConfig(container: HTMLElement): Partial<SimplexConfig> {
+    protected parsePatternConfig(container: HTMLElement): Partial<MarbleConfig> {
       return {
-        octaves: parseInt(container.dataset.octaves || '5'),
+        octaves: parseInt(container.dataset.octaves || '4'),
         lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
         gain: parseFloat(container.dataset.gain || '0.5'),
-        timeScaleX: parseFloat(container.dataset.timeScaleX || '0.8'),
-        timeScaleY: parseFloat(container.dataset.timeScaleY || '1.0')
+        lineFrequency: parseFloat(container.dataset.lineFrequency || '8.0'),
+        noiseInfluence: parseFloat(container.dataset.noiseInfluence || '6.0'),
+        detailBlend: parseFloat(container.dataset.detailBlend || '0.3')
       };
     }
 
@@ -123,12 +127,13 @@ const {
           lacunarity: this.config.lacunarity,
           gain: this.config.gain
         }),
-        uTimeScaleX: { value: this.config.timeScaleX },
-        uTimeScaleY: { value: this.config.timeScaleY }
+        uLineFrequency: { value: this.config.lineFrequency },
+        uNoiseInfluence: { value: this.config.noiseInfluence },
+        uDetailBlend: { value: this.config.detailBlend }
       };
     }
 
-    protected updatePatternUniforms(props: Partial<SimplexConfig>): void {
+    protected updatePatternUniforms(props: Partial<MarbleConfig>): void {
       if (!this.material) return;
 
       if (props.octaves !== undefined) {
@@ -143,21 +148,25 @@ const {
         this.config.gain = props.gain;
         this.material.uniforms.uGain.value = props.gain;
       }
-      if (props.timeScaleX !== undefined) {
-        this.config.timeScaleX = props.timeScaleX;
-        this.material.uniforms.uTimeScaleX.value = props.timeScaleX;
+      if (props.lineFrequency !== undefined) {
+        this.config.lineFrequency = props.lineFrequency;
+        this.material.uniforms.uLineFrequency.value = props.lineFrequency;
       }
-      if (props.timeScaleY !== undefined) {
-        this.config.timeScaleY = props.timeScaleY;
-        this.material.uniforms.uTimeScaleY.value = props.timeScaleY;
+      if (props.noiseInfluence !== undefined) {
+        this.config.noiseInfluence = props.noiseInfluence;
+        this.material.uniforms.uNoiseInfluence.value = props.noiseInfluence;
+      }
+      if (props.detailBlend !== undefined) {
+        this.config.detailBlend = props.detailBlend;
+        this.material.uniforms.uDetailBlend.value = props.detailBlend;
       }
     }
   }
 
   // Auto-initialize
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.simplex-bg').forEach(container => {
-      const manager = new SimplexBackgroundManager(container as HTMLElement);
+    document.querySelectorAll('.marble-bg').forEach(container => {
+      const manager = new MarbleBackgroundManager(container as HTMLElement);
       manager.init();
       (container as any)._webglManager = manager;
     });

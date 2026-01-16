@@ -124,12 +124,10 @@ vec3 applyColorShift(vec3 color) {
 }
 `;
 
-/** Edge fade calculation (shared by all patterns) */
+/** Edge fade calculation (shared by all patterns) - disabled for edge-to-edge coverage */
 export const edgeFade = `
 float getEdgeFade(vec2 uv) {
-  float edgeFade = smoothstep(0.0, 0.15, uv.x) * smoothstep(1.0, 0.85, uv.x);
-  edgeFade *= smoothstep(0.0, 0.15, uv.y) * smoothstep(1.0, 0.85, uv.y);
-  return edgeFade;
+  return 1.0;
 }
 `;
 

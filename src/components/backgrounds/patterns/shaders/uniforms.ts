@@ -111,6 +111,7 @@ uniform float uLineThickness;
 uniform float uAngleVariation;
 uniform float uBaseAngle;
 uniform float uCrosshatchChance;
+uniform float uFillRatio;
 `;
 
 /** Blueprint specific uniform declarations */
@@ -132,7 +133,7 @@ export interface ColorsConfig {
 }
 
 /** Base configuration shared by all patterns */
-export interface BaseNoiseConfig {
+export interface BasePatternConfig {
   speed: number;
   intensity: number;
   noiseScale: number;
@@ -142,6 +143,9 @@ export interface BaseNoiseConfig {
   pauseOffscreen: boolean;
   colors: ColorsConfig;
 }
+
+/** @deprecated Use BasePatternConfig instead */
+export type BaseNoiseConfig = BasePatternConfig;
 
 /** Create base uniforms object for Three.js */
 export function createBaseUniforms(config: BaseNoiseConfig, themeColors: { primary: string; secondary: string; tertiary: string }) {

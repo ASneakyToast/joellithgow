@@ -1,37 +1,36 @@
 ---
 /**
- * PerlinBackground - Classic gradient noise patterns
- * Uses Perlin noise with FBM layering for smooth, organic variations
+ * TurbulenceBackground - Billowy cloud-like patterns
+ * Uses absolute value FBM for high contrast swirling effects
  */
-import type { PerlinBackgroundProps } from './types';
+import type { TurbulenceBackgroundProps } from './types';
 
-export interface Props extends PerlinBackgroundProps {}
+export interface Props extends TurbulenceBackgroundProps {}
 
 const {
   speed = 0.5,
-  intensity = 0.6,
-  noiseScale = 2.0,
+  intensity = 0.55,
+  noiseScale = 2.5,
   animated = true,
   animationAngle = 315,
   colors,
   maxPixelRatio = 2,
   pauseOffscreen = true,
   class: className = '',
-  id = `perlin-bg-${Math.random().toString(36).substr(2, 9)}`,
+  id = `turbulence-bg-${Math.random().toString(36).substr(2, 9)}`,
   // FBM params
-  octaves = 4,
+  octaves = 5,
   lacunarity = 2.0,
   gain = 0.5,
-  // Perlin-specific
-  timeScaleX = 1.0,
-  timeScaleY = 0.7
+  // Turbulence-specific
+  sharpness = 1.0
 } = Astro.props;
 ---
 
 <div
-  class:list={['webgl-background-container', 'noise-texture', 'perlin-bg', className]}
+  class:list={['webgl-background-container', 'noise-texture', 'turbulence-bg', className]}
   id={id}
-  data-effect-type="perlin"
+  data-effect-type="turbulence"
   data-speed={speed}
   data-intensity={intensity}
   data-noise-scale={noiseScale}
@@ -43,8 +42,7 @@ const {
   data-octaves={octaves}
   data-lacunarity={lacunarity}
   data-gain={gain}
-  data-time-scale-x={timeScaleX}
-  data-time-scale-y={timeScaleY}
+  data-sharpness={sharpness}
   aria-hidden="true"
 >
   <canvas class="webgl-canvas"></canvas>
@@ -81,11 +79,11 @@ const {
 
 <script>
   import * as THREE from 'three';
-  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
-  import { perlinFragmentShader } from './shaders/fragments/perlin.glsl';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { turbulenceFragmentShader } from './shaders/fragments/noise/turbulence.glsl';
   import { createFBMUniforms } from './shaders/uniforms';
 
-  interface PerlinConfig {
+  interface TurbulenceConfig {
     speed: number;
     intensity: number;
     noiseScale: number;
@@ -97,22 +95,20 @@ const {
     octaves: number;
     lacunarity: number;
     gain: number;
-    timeScaleX: number;
-    timeScaleY: number;
+    sharpness: number;
   }
 
-  class PerlinBackgroundManager extends NoiseBackgroundManager<PerlinConfig> {
+  class TurbulenceBackgroundManager extends PatternBackgroundManager<TurbulenceConfig> {
     protected getFragmentShader(): string {
-      return perlinFragmentShader;
+      return turbulenceFragmentShader;
     }
 
-    protected parsePatternConfig(container: HTMLElement): Partial<PerlinConfig> {
+    protected parsePatternConfig(container: HTMLElement): Partial<TurbulenceConfig> {
       return {
-        octaves: parseInt(container.dataset.octaves || '4'),
+        octaves: parseInt(container.dataset.octaves || '5'),
         lacunarity: parseFloat(container.dataset.lacunarity || '2.0'),
         gain: parseFloat(container.dataset.gain || '0.5'),
-        timeScaleX: parseFloat(container.dataset.timeScaleX || '1.0'),
-        timeScaleY: parseFloat(container.dataset.timeScaleY || '0.7')
+        sharpness: parseFloat(container.dataset.sharpness || '1.0')
       };
     }
 
@@ -123,12 +119,11 @@ const {
           lacunarity: this.config.lacunarity,
           gain: this.config.gain
         }),
-        uTimeScaleX: { value: this.config.timeScaleX },
-        uTimeScaleY: { value: this.config.timeScaleY }
+        uSharpness: { value: this.config.sharpness }
       };
     }
 
-    protected updatePatternUniforms(props: Partial<PerlinConfig>): void {
+    protected updatePatternUniforms(props: Partial<TurbulenceConfig>): void {
       if (!this.material) return;
 
       if (props.octaves !== undefined) {
@@ -143,21 +138,17 @@ const {
         this.config.gain = props.gain;
         this.material.uniforms.uGain.value = props.gain;
       }
-      if (props.timeScaleX !== undefined) {
-        this.config.timeScaleX = props.timeScaleX;
-        this.material.uniforms.uTimeScaleX.value = props.timeScaleX;
-      }
-      if (props.timeScaleY !== undefined) {
-        this.config.timeScaleY = props.timeScaleY;
-        this.material.uniforms.uTimeScaleY.value = props.timeScaleY;
+      if (props.sharpness !== undefined) {
+        this.config.sharpness = props.sharpness;
+        this.material.uniforms.uSharpness.value = props.sharpness;
       }
     }
   }
 
   // Auto-initialize
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.perlin-bg').forEach(container => {
-      const manager = new PerlinBackgroundManager(container as HTMLElement);
+    document.querySelectorAll('.turbulence-bg').forEach(container => {
+      const manager = new TurbulenceBackgroundManager(container as HTMLElement);
       manager.init();
       (container as any)._webglManager = manager;
     });

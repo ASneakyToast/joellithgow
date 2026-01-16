@@ -74,8 +74,8 @@ const {
 
 <script>
   import * as THREE from 'three';
-  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
-  import { domainWarpFragmentShader } from './shaders/fragments/domain-warp.glsl';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { domainWarpFragmentShader } from './shaders/fragments/noise/domain-warp.glsl';
 
   interface DomainWarpConfig {
     speed: number;
@@ -90,7 +90,7 @@ const {
     warpLayers: number;
   }
 
-  class DomainWarpBackgroundManager extends NoiseBackgroundManager<DomainWarpConfig> {
+  class DomainWarpBackgroundManager extends PatternBackgroundManager<DomainWarpConfig> {
     protected getFragmentShader(): string {
       return domainWarpFragmentShader;
     }

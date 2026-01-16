@@ -1,0 +1,105 @@
+---
+/**
+ * ConstellationBackground - Star map / network node pattern
+ * Creates sparse dots connected by thin lines like a constellation
+ * Uses p5.js for efficient canvas-based rendering
+ */
+import type { ConstellationBackgroundProps } from './types';
+
+export interface Props extends ConstellationBackgroundProps {}
+
+const {
+  speed = 0.3,
+  intensity = 0.6,
+  noiseScale = 1.0,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `constellation-bg-${Math.random().toString(36).substr(2, 9)}`,
+  // Constellation-specific
+  starCount = 12,
+  pointSize = 0.006,
+  connectionDistance = 0.15,
+  lineThickness = 0.001,
+  lineFalloff = 1.5,
+  twinkleIntensity = 0.3,
+  driftSpeed = 0.1
+} = Astro.props;
+---
+
+<div
+  class:list={['p5-background-container', 'constellation-bg', className]}
+  id={id}
+  data-effect-type="constellation"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-star-count={starCount}
+  data-point-size={pointSize}
+  data-connection-distance={connectionDistance}
+  data-line-thickness={lineThickness}
+  data-line-falloff={lineFalloff}
+  data-twinkle-intensity={twinkleIntensity}
+  data-drift-speed={driftSpeed}
+  aria-hidden="true"
+>
+  <!-- p5.js will create its own canvas -->
+</div>
+
+<style>
+  .p5-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .p5-background-container :global(canvas) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .p5-background-container {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .p5-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { ConstellationP5Manager } from './p5/patterns/constellation.p5';
+
+  // Auto-initialize
+  function initConstellationBackgrounds() {
+    document.querySelectorAll('.constellation-bg').forEach(container => {
+      if ((container as any)._p5Manager) return; // Already initialized
+      const manager = new ConstellationP5Manager(container as HTMLElement);
+      manager.init();
+      (container as any)._p5Manager = manager;
+    });
+  }
+
+  // Handle both cases: DOMContentLoaded already fired or not yet
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initConstellationBackgrounds);
+  } else {
+    initConstellationBackgrounds();
+  }
+</script>

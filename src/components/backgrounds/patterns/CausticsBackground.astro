@@ -78,8 +78,8 @@ const {
 
 <script>
   import * as THREE from 'three';
-  import { NoiseBackgroundManager } from './NoiseBackgroundManager';
-  import { causticsFragmentShader } from './shaders/fragments/caustics.glsl';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { causticsFragmentShader } from './shaders/fragments/noise/caustics.glsl';
 
   interface CausticsConfig {
     speed: number;
@@ -96,7 +96,7 @@ const {
     detailAmount: number;
   }
 
-  class CausticsBackgroundManager extends NoiseBackgroundManager<CausticsConfig> {
+  class CausticsBackgroundManager extends PatternBackgroundManager<CausticsConfig> {
     protected getFragmentShader(): string {
       return causticsFragmentShader;
     }

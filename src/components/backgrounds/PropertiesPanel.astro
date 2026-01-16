@@ -53,6 +53,38 @@ export interface Props {
     lineFrequency?: number;
     noiseInfluence?: number;
     detailBlend?: number;
+    // FloatingShapes
+    shapeDensity?: number;
+    shapeSize?: number;
+    sizeVariation?: number;
+    shapeMix?: number;
+    edgeSoftness?: number;
+    rotationSpeed?: number;
+    // Constellation
+    starCount?: number;
+    pointSize?: number;
+    connectionDistance?: number;
+    lineThickness?: number;
+    lineFalloff?: number;
+    twinkleIntensity?: number;
+    driftSpeed?: number;
+    // MinimalLines
+    lineDensity?: number;
+    lineLength?: number;
+    lengthVariation?: number;
+    // lineThickness already defined above
+    angleVariation?: number;
+    baseAngle?: number;
+    crosshatchChance?: number;
+    fillRatio?: number;
+    // Blueprint
+    elementDensity?: number;
+    dimensionLength?: number;
+    // lineThickness already defined above
+    markerSize?: number;
+    bracketSize?: number;
+    bracketRatio?: number;
+    tickDensity?: number;
   };
 }
 
@@ -74,6 +106,11 @@ const isRidged = isStudioMode || patternSlug === 'ridged';
 const isDomainWarp = isStudioMode || patternSlug === 'domainWarp';
 const isCaustics = isStudioMode || patternSlug === 'caustics';
 const isMarble = isStudioMode || patternSlug === 'marble';
+// Geometric patterns
+const isFloatingShapes = isStudioMode || patternSlug === 'floatingShapes';
+const isConstellation = isStudioMode || patternSlug === 'constellation';
+const isMinimalLines = isStudioMode || patternSlug === 'minimalLines';
+const isBlueprint = isStudioMode || patternSlug === 'blueprint';
 ---
 
 <aside class="properties-panel" id="properties-panel" data-pattern={patternSlug} data-has-fbm={hasFBM} data-mode={mode}>
@@ -608,6 +645,472 @@ const isMarble = isStudioMode || patternSlug === 'marble';
                   data-prop="detailBlend"
                 />
                 <span class="value-display" data-for="detailblend-slider">{(defaults.detailBlend ?? 0.3).toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============ GEOMETRIC PATTERNS ============ */}
+
+        {isFloatingShapes && (
+          <div data-pattern-group="floatingShapes" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="shapedensity-slider">Shape Density</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="shapedensity-slider"
+                  min="0.5"
+                  max="4"
+                  step="0.1"
+                  value={defaults.shapeDensity ?? 1.5}
+                  data-prop="shapeDensity"
+                />
+                <span class="value-display" data-for="shapedensity-slider">{(defaults.shapeDensity ?? 1.5).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="shapesize-slider">Shape Size</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="shapesize-slider"
+                  min="0.01"
+                  max="0.15"
+                  step="0.005"
+                  value={defaults.shapeSize ?? 0.05}
+                  data-prop="shapeSize"
+                />
+                <span class="value-display" data-for="shapesize-slider">{(defaults.shapeSize ?? 0.05).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="sizevariation-slider">Size Variation</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="sizevariation-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.sizeVariation ?? 0.5}
+                  data-prop="sizeVariation"
+                />
+                <span class="value-display" data-for="sizevariation-slider">{(defaults.sizeVariation ?? 0.5).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="shapemix-slider">Shape Mix</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="shapemix-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.shapeMix ?? 0.5}
+                  data-prop="shapeMix"
+                />
+                <span class="value-display" data-for="shapemix-slider">{(defaults.shapeMix ?? 0.5).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="edgesoftness-slider">Edge Softness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="edgesoftness-slider"
+                  min="0.001"
+                  max="0.02"
+                  step="0.001"
+                  value={defaults.edgeSoftness ?? 0.005}
+                  data-prop="edgeSoftness"
+                />
+                <span class="value-display" data-for="edgesoftness-slider">{(defaults.edgeSoftness ?? 0.005).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="rotationspeed-slider">Rotation Speed</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="rotationspeed-slider"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={defaults.rotationSpeed ?? 0.2}
+                  data-prop="rotationSpeed"
+                />
+                <span class="value-display" data-for="rotationspeed-slider">{(defaults.rotationSpeed ?? 0.2).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isConstellation && (
+          <div data-pattern-group="constellation" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="starcount-slider">Star Count</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="starcount-slider"
+                  min="4"
+                  max="24"
+                  step="1"
+                  value={defaults.starCount ?? 12}
+                  data-prop="starCount"
+                />
+                <span class="value-display" data-for="starcount-slider">{defaults.starCount ?? 12}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="pointsize-slider">Point Size</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="pointsize-slider"
+                  min="0.002"
+                  max="0.015"
+                  step="0.001"
+                  value={defaults.pointSize ?? 0.006}
+                  data-prop="pointSize"
+                />
+                <span class="value-display" data-for="pointsize-slider">{(defaults.pointSize ?? 0.006).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="connectiondistance-slider">Connection Distance</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="connectiondistance-slider"
+                  min="0.05"
+                  max="0.3"
+                  step="0.01"
+                  value={defaults.connectionDistance ?? 0.15}
+                  data-prop="connectionDistance"
+                />
+                <span class="value-display" data-for="connectiondistance-slider">{(defaults.connectionDistance ?? 0.15).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="constellation-linethickness-slider">Line Thickness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="constellation-linethickness-slider"
+                  min="0.0005"
+                  max="0.005"
+                  step="0.0005"
+                  value={defaults.lineThickness ?? 0.001}
+                  data-prop="lineThickness"
+                />
+                <span class="value-display" data-for="constellation-linethickness-slider">{(defaults.lineThickness ?? 0.001).toFixed(4)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="linefalloff-slider">Line Falloff</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="linefalloff-slider"
+                  min="0.5"
+                  max="3"
+                  step="0.1"
+                  value={defaults.lineFalloff ?? 1.5}
+                  data-prop="lineFalloff"
+                />
+                <span class="value-display" data-for="linefalloff-slider">{(defaults.lineFalloff ?? 1.5).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="twinkleintensity-slider">Twinkle Intensity</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="twinkleintensity-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.twinkleIntensity ?? 0.3}
+                  data-prop="twinkleIntensity"
+                />
+                <span class="value-display" data-for="twinkleintensity-slider">{(defaults.twinkleIntensity ?? 0.3).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="driftspeed-slider">Drift Speed</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="driftspeed-slider"
+                  min="0"
+                  max="0.5"
+                  step="0.05"
+                  value={defaults.driftSpeed ?? 0.1}
+                  data-prop="driftSpeed"
+                />
+                <span class="value-display" data-for="driftspeed-slider">{(defaults.driftSpeed ?? 0.1).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isMinimalLines && (
+          <div data-pattern-group="minimalLines" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="linedensity-slider">Line Density</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="linedensity-slider"
+                  min="2"
+                  max="30"
+                  step="1"
+                  value={defaults.lineDensity ?? 8.0}
+                  data-prop="lineDensity"
+                />
+                <span class="value-display" data-for="linedensity-slider">{(defaults.lineDensity ?? 8.0).toFixed(0)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="linelength-slider">Line Length</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="linelength-slider"
+                  min="0.02"
+                  max="0.3"
+                  step="0.01"
+                  value={defaults.lineLength ?? 0.15}
+                  data-prop="lineLength"
+                />
+                <span class="value-display" data-for="linelength-slider">{(defaults.lineLength ?? 0.15).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="lengthvariation-slider">Length Variation</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="lengthvariation-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.lengthVariation ?? 0.6}
+                  data-prop="lengthVariation"
+                />
+                <span class="value-display" data-for="lengthvariation-slider">{(defaults.lengthVariation ?? 0.6).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="minimallines-linethickness-slider">Line Thickness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="minimallines-linethickness-slider"
+                  min="0.001"
+                  max="0.01"
+                  step="0.001"
+                  value={defaults.lineThickness ?? 0.003}
+                  data-prop="lineThickness"
+                />
+                <span class="value-display" data-for="minimallines-linethickness-slider">{(defaults.lineThickness ?? 0.003).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="anglevariation-slider">Angle Variation</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="anglevariation-slider"
+                  min="0"
+                  max="90"
+                  step="5"
+                  value={defaults.angleVariation ?? 45}
+                  data-prop="angleVariation"
+                />
+                <span class="value-display" data-for="anglevariation-slider">{defaults.angleVariation ?? 45}°</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="baseangle-slider">Base Angle</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="baseangle-slider"
+                  min="0"
+                  max="180"
+                  step="15"
+                  value={defaults.baseAngle ?? 45}
+                  data-prop="baseAngle"
+                />
+                <span class="value-display" data-for="baseangle-slider">{defaults.baseAngle ?? 45}°</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="crosshatchchance-slider">Crosshatch Chance</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="crosshatchchance-slider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={defaults.crosshatchChance ?? 0.2}
+                  data-prop="crosshatchChance"
+                />
+                <span class="value-display" data-for="crosshatchchance-slider">{(defaults.crosshatchChance ?? 0.2).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="fillratio-slider">Fill Ratio</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="fillratio-slider"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value={defaults.fillRatio ?? 0.5}
+                  data-prop="fillRatio"
+                />
+                <span class="value-display" data-for="fillratio-slider">{((defaults.fillRatio ?? 0.5) * 100).toFixed(0)}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isBlueprint && (
+          <div data-pattern-group="blueprint" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="elementdensity-slider">Element Density</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="elementdensity-slider"
+                  min="0.5"
+                  max="3"
+                  step="0.1"
+                  value={defaults.elementDensity ?? 1.0}
+                  data-prop="elementDensity"
+                />
+                <span class="value-display" data-for="elementdensity-slider">{(defaults.elementDensity ?? 1.0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="dimensionlength-slider">Dimension Length</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="dimensionlength-slider"
+                  min="0.05"
+                  max="0.25"
+                  step="0.01"
+                  value={defaults.dimensionLength ?? 0.12}
+                  data-prop="dimensionLength"
+                />
+                <span class="value-display" data-for="dimensionlength-slider">{(defaults.dimensionLength ?? 0.12).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="blueprint-linethickness-slider">Line Thickness</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="blueprint-linethickness-slider"
+                  min="0.0005"
+                  max="0.005"
+                  step="0.0005"
+                  value={defaults.lineThickness ?? 0.001}
+                  data-prop="lineThickness"
+                />
+                <span class="value-display" data-for="blueprint-linethickness-slider">{(defaults.lineThickness ?? 0.001).toFixed(4)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="markersize-slider">Marker Size</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="markersize-slider"
+                  min="0.002"
+                  max="0.015"
+                  step="0.001"
+                  value={defaults.markerSize ?? 0.006}
+                  data-prop="markerSize"
+                />
+                <span class="value-display" data-for="markersize-slider">{(defaults.markerSize ?? 0.006).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="bracketsize-slider">Bracket Size</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="bracketsize-slider"
+                  min="0.01"
+                  max="0.1"
+                  step="0.005"
+                  value={defaults.bracketSize ?? 0.04}
+                  data-prop="bracketSize"
+                />
+                <span class="value-display" data-for="bracketsize-slider">{(defaults.bracketSize ?? 0.04).toFixed(3)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="bracketratio-slider">Bracket Ratio</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="bracketratio-slider"
+                  min="0.1"
+                  max="0.5"
+                  step="0.05"
+                  value={defaults.bracketRatio ?? 0.3}
+                  data-prop="bracketRatio"
+                />
+                <span class="value-display" data-for="bracketratio-slider">{(defaults.bracketRatio ?? 0.3).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="tickdensity-slider">Tick Density</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="tickdensity-slider"
+                  min="0"
+                  max="5"
+                  step="1"
+                  value={defaults.tickDensity ?? 2}
+                  data-prop="tickDensity"
+                />
+                <span class="value-display" data-for="tickdensity-slider">{defaults.tickDensity ?? 2}</span>
               </div>
             </div>
           </div>
@@ -1242,7 +1745,11 @@ const isMarble = isStudioMode || patternSlug === 'marble';
         ridged: 'Ridged',
         domainWarp: 'Domain Warp',
         caustics: 'Caustics',
-        marble: 'Marble'
+        marble: 'Marble',
+        floatingShapes: 'Floating Shapes',
+        constellation: 'Constellation',
+        minimalLines: 'Minimal Lines',
+        blueprint: 'Blueprint'
       };
       this.updateHeader(layer.name, patternNames[layer.patternType] || layer.patternType);
 
@@ -1424,8 +1931,17 @@ const isMarble = isStudioMode || patternSlug === 'marble';
         return this.layerManager.getLayerManager(this.selectedLayerId);
       }
       // Single mode: query DOM directly
-      const container = document.querySelector('.noise-texture');
-      return container?._webglManager;
+      // First try WebGL patterns
+      const webglContainer = document.querySelector('.noise-texture');
+      if (webglContainer?._webglManager) {
+        return webglContainer._webglManager;
+      }
+      // Then try p5.js patterns
+      const p5Container = document.querySelector('.p5-background-container');
+      if (p5Container?._p5Manager) {
+        return p5Container._p5Manager;
+      }
+      return null;
     }
 
     updateBackground(props) {
@@ -1678,6 +2194,54 @@ const isMarble = isStudioMode || patternSlug === 'marble';
   lineFrequency={${this.currentValues.lineFrequency ?? 8.0}}
   noiseInfluence={${this.currentValues.noiseInfluence ?? 6.0}}
   detailBlend={${this.currentValues.detailBlend ?? 0.3}}`;
+      }
+
+      // FloatingShapes
+      if (this.patternSlug === 'floatingShapes') {
+        patternProps += `
+  shapeDensity={${this.currentValues.shapeDensity ?? 1.5}}
+  shapeSize={${this.currentValues.shapeSize ?? 0.05}}
+  sizeVariation={${this.currentValues.sizeVariation ?? 0.5}}
+  shapeMix={${this.currentValues.shapeMix ?? 0.5}}
+  edgeSoftness={${this.currentValues.edgeSoftness ?? 0.005}}
+  rotationSpeed={${this.currentValues.rotationSpeed ?? 0.2}}`;
+      }
+
+      // Constellation
+      if (this.patternSlug === 'constellation') {
+        patternProps += `
+  starCount={${this.currentValues.starCount ?? 12}}
+  pointSize={${this.currentValues.pointSize ?? 0.006}}
+  connectionDistance={${this.currentValues.connectionDistance ?? 0.15}}
+  lineThickness={${this.currentValues.lineThickness ?? 0.001}}
+  lineFalloff={${this.currentValues.lineFalloff ?? 1.5}}
+  twinkleIntensity={${this.currentValues.twinkleIntensity ?? 0.3}}
+  driftSpeed={${this.currentValues.driftSpeed ?? 0.1}}`;
+      }
+
+      // MinimalLines
+      if (this.patternSlug === 'minimalLines') {
+        patternProps += `
+  lineDensity={${this.currentValues.lineDensity ?? 8.0}}
+  lineLength={${this.currentValues.lineLength ?? 0.15}}
+  lengthVariation={${this.currentValues.lengthVariation ?? 0.6}}
+  lineThickness={${this.currentValues.lineThickness ?? 0.003}}
+  angleVariation={${this.currentValues.angleVariation ?? 45}}
+  baseAngle={${this.currentValues.baseAngle ?? 45}}
+  crosshatchChance={${this.currentValues.crosshatchChance ?? 0.2}}
+  fillRatio={${this.currentValues.fillRatio ?? 0.5}}`;
+      }
+
+      // Blueprint
+      if (this.patternSlug === 'blueprint') {
+        patternProps += `
+  elementDensity={${this.currentValues.elementDensity ?? 1.0}}
+  dimensionLength={${this.currentValues.dimensionLength ?? 0.12}}
+  lineThickness={${this.currentValues.lineThickness ?? 0.001}}
+  markerSize={${this.currentValues.markerSize ?? 0.006}}
+  bracketSize={${this.currentValues.bracketSize ?? 0.04}}
+  bracketRatio={${this.currentValues.bracketRatio ?? 0.3}}
+  tickDensity={${this.currentValues.tickDensity ?? 2}}`;
       }
 
       const code = `<NoiseTextureBackground

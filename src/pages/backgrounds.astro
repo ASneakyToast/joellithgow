@@ -1,0 +1,633 @@
+---
+/**
+ * Backgrounds Gallery - Showcase of all WebGL background patterns
+ * Click to expand and load a pattern preview
+ *
+ * Uses the pattern registry for consistent pattern definitions.
+ */
+import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import UIInteractions from '@components/interactive/UIInteractions.astro';
+import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
+import { PATTERNS, getPatternsByCategory } from '@components/backgrounds/patterns/registry';
+
+const pageTitle = 'Joel Lithgow > Backgrounds';
+const pageDescription = 'Gallery of WebGL shader backgrounds featuring noise patterns and geometric designs.';
+const pageSubtitle = 'WebGL shader experiments and patterns';
+
+// Get patterns from registry, organized by category (geometric first, then noise)
+const geometricPatterns = getPatternsByCategory('geometric');
+const noisePatterns = getPatternsByCategory('noise');
+const patterns = [...geometricPatterns, ...noisePatterns];
+
+// JSON-LD structured data
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: pageTitle,
+  description: pageDescription,
+  url: 'https://joellithgow.com/backgrounds',
+  author: {
+    '@type': 'Person',
+    name: 'Joel Lithgow',
+    url: 'https://joellithgow.com',
+  },
+};
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <main class="backgrounds-container">
+    <div class="backgrounds-wrapper">
+      {/* Header Section */}
+      <section class="backgrounds-header-section">
+        <header class="backgrounds-header">
+          <PageTitle title="Backgrounds" subtitle={pageSubtitle} />
+          <p class="page-intro">
+            A collection of WebGL shader backgrounds. Click any pattern to preview it.
+          </p>
+        </header>
+      </section>
+
+      {/* Pattern List */}
+      <section class="patterns-section">
+        <div class="patterns-list">
+          {patterns.map((pattern) => (
+            <div
+              class="pattern-item"
+              data-pattern-id={pattern.id}
+              data-category={pattern.category}
+            >
+              <button class="pattern-header" type="button" aria-expanded="false">
+                <div class="pattern-info">
+                  <h3 class="pattern-name">
+                    {pattern.name}
+                    {pattern.isNew && <Badge variant="secondary" size="sm">New</Badge>}
+                  </h3>
+                  <p class="pattern-description">{pattern.description}</p>
+                </div>
+                <div class="pattern-meta">
+                  <Badge variant="ghost" size="sm">{pattern.category}</Badge>
+                  <Badge variant="ghost" size="sm" class="engine-badge">
+                    {pattern.rendererEngine === 'p5js' ? 'p5.js' : 'WebGL'}
+                  </Badge>
+                  <span class="expand-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </div>
+              </button>
+              <div class="pattern-preview" aria-hidden="true">
+                <div class="preview-container" data-pattern={pattern.id}>
+                  <div class="preview-placeholder">
+                    <span class="loading-text">Loading pattern...</span>
+                  </div>
+                </div>
+                <div class="preview-actions">
+                  <Button
+                    href={`/backgrounds/${pattern.id}`}
+                    variant="primary"
+                    size="sm"
+                  >
+                    Open Playground
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Theme Modal -->
+  <ThemeModal />
+
+  <!-- Enhanced UI Interactions -->
+  <UIInteractions />
+
+  <!-- Keyboard Shortcuts and Accessibility -->
+  <KeyboardShortcuts />
+
+  <!-- Theme toggle button -->
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
+</BaseLayout>
+
+<script>
+  // Dynamic pattern loader - imports from patterns/ folder
+  const patternComponents: Record<string, () => Promise<any>> = {
+    'minimal-lines': () => import('@components/backgrounds/patterns/MinimalLinesBackground.astro'),
+    'floating-shapes': () => import('@components/backgrounds/patterns/FloatingShapesBackground.astro'),
+    'constellation': () => import('@components/backgrounds/patterns/ConstellationBackground.astro'),
+    'blueprint': () => import('@components/backgrounds/patterns/BlueprintBackground.astro'),
+    'simplex': () => import('@components/backgrounds/patterns/SimplexBackground.astro'),
+    'perlin': () => import('@components/backgrounds/patterns/PerlinBackground.astro'),
+    'worley': () => import('@components/backgrounds/patterns/WorleyBackground.astro'),
+    'voronoi-edge': () => import('@components/backgrounds/patterns/VoronoiEdgeBackground.astro'),
+    'turbulence': () => import('@components/backgrounds/patterns/TurbulenceBackground.astro'),
+    'ridged': () => import('@components/backgrounds/patterns/RidgedBackground.astro'),
+    'domain-warp': () => import('@components/backgrounds/patterns/DomainWarpBackground.astro'),
+    'caustics': () => import('@components/backgrounds/patterns/CausticsBackground.astro'),
+    'marble': () => import('@components/backgrounds/patterns/MarbleBackground.astro'),
+  };
+
+  // Track active pattern and its manager
+  let activePatternId: string | null = null;
+  let activeManager: any = null;
+
+  // p5.js patterns list
+  const p5Patterns = ['minimal-lines', 'floating-shapes', 'constellation', 'blueprint'];
+
+  // Pattern HTML templates (since we can't dynamically render Astro components client-side)
+  function createPatternHTML(patternId: string): string {
+    const isP5 = p5Patterns.includes(patternId);
+    const baseClass = isP5
+      ? `p5-background-container ${patternId}-bg`
+      : `webgl-background-container noise-texture ${patternId}-bg`;
+    const id = `${patternId}-bg-preview`;
+
+    // Pattern-specific data attributes
+    const configs: Record<string, string> = {
+      'minimal-lines': 'data-line-density="2.0" data-line-length="0.06"',
+      'floating-shapes': 'data-shape-density="1.2" data-shape-size="0.04"',
+      'constellation': 'data-star-count="15" data-connection-distance="0.18"',
+      'blueprint': 'data-element-density="1.2" data-dimension-length="0.1"',
+      'simplex': 'data-octaves="5" data-lacunarity="2.0" data-gain="0.5"',
+      'perlin': 'data-octaves="5" data-lacunarity="2.0" data-gain="0.5"',
+      'worley': 'data-cell-scale="1.5" data-cell-anim-speed="0.3"',
+      'voronoi-edge': 'data-cell-scale="2.0" data-edge-thickness="0.02"',
+      'turbulence': 'data-octaves="6" data-sharpness="2.0"',
+      'ridged': 'data-octaves="5" data-ridge-sharpness="2.0"',
+      'domain-warp': 'data-warp-strength="0.5" data-warp-layers="3"',
+      'caustics': 'data-wave-count="4" data-wave-frequency="10"',
+      'marble': 'data-line-frequency="8" data-noise-influence="0.5"',
+    };
+
+    // p5.js patterns don't need a canvas element - p5 creates its own
+    const canvasHTML = isP5 ? '' : '<canvas class="webgl-canvas"></canvas>';
+
+    return `
+      <div
+        class="${baseClass}"
+        id="${id}"
+        data-effect-type="${patternId}"
+        data-speed="0.3"
+        data-intensity="0.6"
+        data-noise-scale="2.0"
+        data-animated="true"
+        data-animation-angle="315"
+        data-colors="{}"
+        data-max-pixel-ratio="2"
+        data-pause-offscreen="true"
+        ${configs[patternId] || ''}
+        aria-hidden="true"
+      >
+        ${canvasHTML}
+      </div>
+    `;
+  }
+
+  // Manager classes for each pattern type
+  async function loadPatternManager(patternId: string) {
+    // Check if this is a p5.js pattern
+    if (p5Patterns.includes(patternId)) {
+      // Import the appropriate p5.js manager
+      const p5Managers: Record<string, () => Promise<any>> = {
+        'minimal-lines': () => import('@components/backgrounds/patterns/p5/patterns/minimal-lines.p5'),
+        'floating-shapes': () => import('@components/backgrounds/patterns/p5/patterns/floating-shapes.p5'),
+        'constellation': () => import('@components/backgrounds/patterns/p5/patterns/constellation.p5'),
+        'blueprint': () => import('@components/backgrounds/patterns/p5/patterns/blueprint.p5'),
+      };
+
+      const module = await p5Managers[patternId]();
+      const managerKey = Object.keys(module).find(k => k.endsWith('P5Manager'));
+      return module[managerKey!];
+    }
+
+    // WebGL patterns
+    const { PatternBackgroundManager } = await import('@components/backgrounds/patterns/PatternBackgroundManager');
+
+    // Import the correct fragment shader - organized by category
+    const shaderModules: Record<string, () => Promise<any>> = {
+      // Noise patterns
+      'simplex': () => import('@components/backgrounds/patterns/shaders/fragments/noise/simplex.glsl'),
+      'perlin': () => import('@components/backgrounds/patterns/shaders/fragments/noise/perlin.glsl'),
+      'worley': () => import('@components/backgrounds/patterns/shaders/fragments/noise/worley.glsl'),
+      'voronoi-edge': () => import('@components/backgrounds/patterns/shaders/fragments/noise/voronoi-edge.glsl'),
+      'turbulence': () => import('@components/backgrounds/patterns/shaders/fragments/noise/turbulence.glsl'),
+      'ridged': () => import('@components/backgrounds/patterns/shaders/fragments/noise/ridged.glsl'),
+      'domain-warp': () => import('@components/backgrounds/patterns/shaders/fragments/noise/domain-warp.glsl'),
+      'caustics': () => import('@components/backgrounds/patterns/shaders/fragments/noise/caustics.glsl'),
+      'marble': () => import('@components/backgrounds/patterns/shaders/fragments/noise/marble.glsl'),
+    };
+
+    const shaderModule = await shaderModules[patternId]();
+    const shaderKey = Object.keys(shaderModule).find(k => k.endsWith('FragmentShader'));
+    const fragmentShader = shaderModule[shaderKey!];
+
+    // Create a dynamic manager class
+    class DynamicPatternManager extends PatternBackgroundManager<any> {
+      protected getFragmentShader(): string {
+        return fragmentShader;
+      }
+
+      protected parsePatternConfig(container: HTMLElement): any {
+        // Parse all data attributes as config
+        const config: any = {};
+        for (const [key, value] of Object.entries(container.dataset)) {
+          if (key.startsWith('effect') || key.startsWith('speed') || key.startsWith('intensity')) continue;
+          const numValue = parseFloat(value as string);
+          config[key] = isNaN(numValue) ? value : numValue;
+        }
+        return config;
+      }
+
+      protected createPatternUniforms(): Record<string, { value: any }> {
+        const uniforms: Record<string, { value: any }> = {};
+        // Create uniforms from config
+        for (const [key, value] of Object.entries(this.config)) {
+          if (typeof value === 'number' || typeof value === 'boolean') {
+            const uniformName = 'u' + key.charAt(0).toUpperCase() + key.slice(1);
+            uniforms[uniformName] = { value };
+          }
+        }
+        return uniforms;
+      }
+
+      protected updatePatternUniforms(): void {
+        // Not needed for preview
+      }
+    }
+
+    return DynamicPatternManager;
+  }
+
+  // Handle pattern expansion
+  async function togglePattern(patternItem: HTMLElement) {
+    const patternId = patternItem.dataset.patternId!;
+    const header = patternItem.querySelector('.pattern-header') as HTMLButtonElement;
+    const preview = patternItem.querySelector('.pattern-preview') as HTMLElement;
+    const previewContainer = patternItem.querySelector('.preview-container') as HTMLElement;
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+
+    // If clicking the same pattern, collapse it
+    if (isExpanded) {
+      collapsePattern(patternItem);
+      return;
+    }
+
+    // Collapse any currently expanded pattern
+    if (activePatternId && activePatternId !== patternId) {
+      const activeItem = document.querySelector(`[data-pattern-id="${activePatternId}"]`) as HTMLElement;
+      if (activeItem) {
+        collapsePattern(activeItem);
+      }
+    }
+
+    // Expand this pattern
+    header.setAttribute('aria-expanded', 'true');
+    preview.setAttribute('aria-hidden', 'false');
+    patternItem.classList.add('expanded');
+
+    // Load the pattern
+    try {
+      // Insert the pattern HTML
+      previewContainer.innerHTML = createPatternHTML(patternId);
+
+      // Load and initialize the manager
+      const ManagerClass = await loadPatternManager(patternId);
+      // Find the container - either webgl or p5
+      const container = previewContainer.querySelector('.webgl-background-container, .p5-background-container') as HTMLElement;
+
+      if (container) {
+        activeManager = new ManagerClass(container);
+        await activeManager.init();
+        activePatternId = patternId;
+      }
+    } catch (error) {
+      console.error('Failed to load pattern:', patternId, error);
+      previewContainer.innerHTML = '<div class="preview-error">Failed to load pattern</div>';
+    }
+  }
+
+  function collapsePattern(patternItem: HTMLElement) {
+    const header = patternItem.querySelector('.pattern-header') as HTMLButtonElement;
+    const preview = patternItem.querySelector('.pattern-preview') as HTMLElement;
+    const previewContainer = patternItem.querySelector('.preview-container') as HTMLElement;
+
+    header.setAttribute('aria-expanded', 'false');
+    preview.setAttribute('aria-hidden', 'true');
+    patternItem.classList.remove('expanded');
+
+    // Destroy the WebGL context
+    if (activeManager) {
+      activeManager.destroy();
+      activeManager = null;
+    }
+
+    // Clear the container
+    previewContainer.innerHTML = '<div class="preview-placeholder"><span class="loading-text">Loading pattern...</span></div>';
+    activePatternId = null;
+  }
+
+  // Set up event listeners
+  document.querySelectorAll('.pattern-item').forEach(item => {
+    const header = item.querySelector('.pattern-header');
+    header?.addEventListener('click', () => togglePattern(item as HTMLElement));
+  });
+</script>
+
+<style is:global>
+  /* Main container styling */
+  .backgrounds-container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+  }
+
+  .backgrounds-wrapper {
+    max-width: var(--content-normal);
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Header Section */
+  .backgrounds-header-section {
+    position: relative;
+    margin: var(--space-2xl) 0;
+  }
+
+  .backgrounds-header {
+    text-align: left;
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .page-intro {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin: var(--space-lg) 0 0 0;
+  }
+
+  /* Patterns Section */
+  .patterns-section {
+    margin: var(--space-2xl) 0;
+  }
+
+  .patterns-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  /* Pattern Item */
+  .pattern-item {
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .pattern-item:hover {
+    border-color: var(--accent-primary);
+  }
+
+  .pattern-item.expanded {
+    border-color: var(--accent-primary);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  /* Pattern Header (clickable) */
+  .pattern-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--bg-primary);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+
+  .pattern-header:hover {
+    background: var(--bg-secondary);
+  }
+
+  .pattern-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pattern-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .pattern-description {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  .pattern-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-shrink: 0;
+  }
+
+  .engine-badge {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+  }
+
+  .expand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .pattern-item.expanded .expand-icon {
+    transform: rotate(180deg);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+  }
+
+  /* Pattern Preview (expandable) */
+  .pattern-preview {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--duration-base) var(--ease-out);
+    background: var(--bg-secondary);
+  }
+
+  .pattern-item.expanded .pattern-preview {
+    grid-template-rows: 1fr;
+  }
+
+  .pattern-preview > * {
+    overflow: hidden;
+  }
+
+  .preview-container {
+    position: relative;
+    height: 300px;
+    min-height: 0;
+  }
+
+  .pattern-item:not(.expanded) .preview-container {
+    height: 0;
+  }
+
+  .pattern-item.expanded .preview-container {
+    height: 300px;
+  }
+
+  .preview-container .webgl-background-container,
+  .preview-container .p5-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .preview-container .p5-background-container canvas {
+    display: block;
+  }
+
+  .preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+  }
+
+  .loading-text {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+  }
+
+  .preview-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .preview-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-primary);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+    min-height: 0;
+  }
+
+  .pattern-item:not(.expanded) .preview-actions {
+    padding: 0;
+    border: none;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .backgrounds-container {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .pattern-header {
+      padding: var(--space-md) var(--space-lg);
+      flex-wrap: wrap;
+    }
+
+    .pattern-meta {
+      width: 100%;
+      justify-content: space-between;
+      margin-top: var(--space-sm);
+    }
+
+    .preview-container {
+      height: 250px;
+    }
+
+    .pattern-item.expanded .preview-container {
+      height: 250px;
+    }
+
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .backgrounds-container {
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    .pattern-header {
+      padding: var(--space-md);
+    }
+
+    .preview-container {
+      height: 200px;
+    }
+
+    .pattern-item.expanded .preview-container {
+      height: 200px;
+    }
+  }
+</style>
