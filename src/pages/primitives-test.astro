@@ -559,6 +559,13 @@ const sampleLinks = [
     background: var(--bg-primary);
     transition: all var(--duration-base) var(--ease-out);
     isolation: isolate;
+    /* Ensure WebGL backgrounds don't escape */
+    contain: paint;
+  }
+
+  /* Override z-index for WebGL containers within demos to keep them contained */
+  .webgl-demo-container :global(.webgl-background-container) {
+    z-index: 0;
   }
 
   .webgl-demo-container:hover {

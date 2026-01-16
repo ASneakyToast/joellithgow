@@ -141,14 +141,20 @@ if (image) {
         ) : (
           /* REGULAR ARTICLE LAYOUT */
           <article class="blog-article">
-            {/* Hero-style header with featured image */}
+            {/* Hero-style header with featured image/video */}
             {image && (
               <div class="article-hero">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  class="hero-image"
-                />
+                {image.type === 'video' ? (
+                  <video autoplay loop muted playsinline class="hero-image">
+                    <source src={image.src} type="video/webm" />
+                  </video>
+                ) : (
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    class="hero-image"
+                  />
+                )}
               </div>
             )}
 

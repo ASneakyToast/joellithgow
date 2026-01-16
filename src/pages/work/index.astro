@@ -6,6 +6,7 @@ import UIInteractions from '@components/interactive/UIInteractions.astro';
 import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
 import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Button from '@components/primitives/Button.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
 
 const pageTitle = 'Work - Joel Lithgow';
 const pageDescription = 'Professional portfolio showcasing UX design, product development, and creative technology projects. Case studies in user research, conversion optimization, and technical implementation.';
@@ -20,12 +21,7 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
     <!-- Work Header Section -->
     <section class="work-header-section">
       <header class="work-header">
-        <h1 class="work-title">
-          <a href="/" class="breadcrumb-link">Joel Lithgow</a>
-          <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-current">Portfolio</span>
-        </h1>
-        <p class="work-subtitle">designing and developing for the web</p>
+        <PageTitle title="Portfolio" subtitle="Designing and developing for the web" />
       </header>
     </section>
 
@@ -96,47 +92,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
     padding-bottom: var(--space-xl);
   }
 
-  .work-title {
-    font-size: var(--heading-xl);
-    font-weight: var(--font-bold);
-    margin: var(--space-sm) 0 var(--space-md) 0;
-    color: var(--text-primary);
-    letter-spacing: var(--tracking-tight);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-  }
-
-  .breadcrumb-link {
-    color: var(--text-primary);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-secondary);
-    text-underline-offset: 3px;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .breadcrumb-link:hover {
-    color: var(--accent-primary);
-    text-decoration-color: var(--accent-primary);
-  }
-
-  .breadcrumb-separator {
-    color: var(--text-secondary);
-    font-weight: var(--font-normal);
-  }
-
-  .breadcrumb-current {
-    color: var(--text-primary);
-  }
-
-  .work-subtitle {
-    font-size: var(--text-2xl);
-    color: var(--text-primary);
-    margin: 0;
-    font-weight: var(--font-semibold);
-    line-height: var(--leading-relaxed);
-  }
-
   /* Global accessibility styles - sr-only class is defined globally in BaseLayout */
 
   .skip-link {
@@ -203,14 +158,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
       padding-bottom: var(--space-lg);
     }
 
-    .work-title {
-      font-size: var(--heading-lg);
-    }
-
-    .work-subtitle {
-      font-size: var(--text-xl);
-    }
-
     .theme-toggle-button {
       bottom: var(--space-lg);
       right: var(--space-lg);
@@ -224,9 +171,6 @@ const pageDescription = 'Professional portfolio showcasing UX design, product de
       padding: var(--space-lg) var(--space-md);
     }
 
-    .work-subtitle {
-      font-size: var(--text-lg);
-    }
   }
 
   /* Reduced motion support */
