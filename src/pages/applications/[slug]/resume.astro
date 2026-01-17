@@ -1,0 +1,576 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Button from '@components/primitives/Button.astro';
+
+export async function getStaticPaths() {
+  const applications = await getCollection('applications', ({ data }) => {
+    return data.public;
+  });
+
+  return applications.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'applications'>;
+}
+
+const { entry } = Astro.props;
+const { company, position, resume: resumeCustomizations } = entry.data;
+
+// Default resume content
+const defaultSummary = "Frontend developer with 7+ years experience building accessible, user-centered web applications in higher education. Accessibility advocate who led systemic WCAG improvements across digital and print properties. Career progression from QA to design to development provides comprehensive understanding of software quality and user experience.";
+
+const defaultSkills: Record<string, string> = {
+  frontend: "TypeScript, JavaScript, CSS, HTML5, Vue, Astro, WebGL/Three.js",
+  testing: "Playwright, Unit Testing, QA Processes, Test Plan Development",
+  cloud: "Google Cloud Platform, Docker, CI/CD, Cloud Run",
+  tools: "Git, Figma, Adobe Creative Cloud, Agile/Scrum",
+  accessibility: "WCAG 2.1 AA, Screen Reader Optimization, Color Contrast Standards",
+  learning: "Angular, AWS Services"
+};
+
+// Use custom content if provided, otherwise defaults
+const summary = resumeCustomizations?.summary || defaultSummary;
+
+// Build skills object, merging custom with defaults
+const customSkills = resumeCustomizations?.skills || {};
+const skills: Record<string, string> = { ...defaultSkills };
+
+// Override defaults with custom skills if provided
+Object.entries(customSkills).forEach(([key, value]) => {
+  if (value) skills[key] = value;
+});
+
+// Define display order and labels for skills
+const skillLabels: Record<string, string> = {
+  frontend: "Frontend",
+  creative: "Creative",
+  ai: "AI & Tooling",
+  testing: "Testing",
+  cloud: "Cloud",
+  tools: "Tools",
+  accessibility: "Accessibility",
+  learning: "Learning"
+};
+
+// Filter to only show skills that have values, in preferred order
+const skillOrder = ['frontend', 'creative', 'ai', 'testing', 'cloud', 'tools', 'accessibility', 'learning'];
+const displaySkills = skillOrder
+  .filter(key => skills[key])
+  .map(key => ({ label: skillLabels[key], value: skills[key] }));
+
+// Get all experience entries
+const allExperience = await getCollection('experience');
+
+// Helper to format date range
+function formatDateRange(startDate: string, endDate?: string): string {
+  return endDate ? `${startDate} – ${endDate}` : `${startDate} – Present`;
+}
+
+// Group experience by company and sort
+interface GroupedExperience {
+  company: string;
+  overallDateRange: string;
+  roles: Array<{
+    title: string;
+    dateRange: string;
+    type: string;
+    responsibilities?: string[];
+    order: number;
+    startYear: number;
+  }>;
+}
+
+// Process and group experience
+const experienceByCompany = allExperience
+  .filter(exp => exp.data.showOnResume)
+  .reduce((acc, exp) => {
+    const company = exp.data.company;
+    if (!acc[company]) {
+      acc[company] = [];
+    }
+    acc[company].push({
+      title: exp.data.title,
+      dateRange: formatDateRange(exp.data.startDate, exp.data.endDate),
+      type: exp.data.type,
+      responsibilities: exp.data.responsibilities,
+      order: exp.data.order || 99,
+      startYear: parseInt(exp.data.startDate.split('-')[0]),
+      endYear: exp.data.endDate ? parseInt(exp.data.endDate.split('-')[0]) : new Date().getFullYear(),
+    });
+    return acc;
+  }, {} as Record<string, Array<{
+    title: string;
+    dateRange: string;
+    type: string;
+    responsibilities?: string[];
+    order: number;
+    startYear: number;
+    endYear: number;
+  }>>);
+
+// Convert to array and calculate overall date ranges
+const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompany)
+  .map(([company, roles]) => {
+    // Sort roles by order (most recent first)
+    const sortedRoles = roles.sort((a, b) => a.order - b.order);
+
+    // Calculate overall date range for the company
+    const minYear = Math.min(...roles.map(r => r.startYear));
+    const maxYear = Math.max(...roles.map(r => r.endYear));
+    const isCurrentRole = roles.some(r => !r.dateRange.includes('–') || r.dateRange.includes('Present'));
+    const overallDateRange = isCurrentRole ? `${minYear} – Present` : `${minYear} – ${maxYear}`;
+
+    return {
+      company,
+      overallDateRange,
+      roles: sortedRoles,
+    };
+  })
+  // Sort companies: CCA first (current employer), then by most recent role
+  .sort((a, b) => {
+    const aHasCurrent = a.overallDateRange.includes('Present');
+    const bHasCurrent = b.overallDateRange.includes('Present');
+    if (aHasCurrent && !bHasCurrent) return -1;
+    if (!aHasCurrent && bHasCurrent) return 1;
+    return 0;
+  });
+---
+
+<BaseLayout
+  title={`Resume - Joel Lithgow | ${position} at ${company}`}
+  description={`Joel Lithgow's resume for ${position} position at ${company}`}
+  showGlobalHeader={false}
+  robots="noindex, nofollow"
+>
+  <div class="resume-page">
+    <!-- Print-hidden navigation -->
+    <nav class="page-nav no-print">
+      <Button href={`/applications/${entry.slug}`} variant="ghost" size="sm">
+        ← Back to Application
+      </Button>
+      <Button onclick="window.print()" variant="secondary" size="sm">
+        Print / Save PDF
+      </Button>
+    </nav>
+
+    <!-- Resume content -->
+    <article class="resume">
+      <!-- Header -->
+      <header class="resume-header">
+        <h1 class="name">Joel Lithgow</h1>
+        <div class="contact-info">
+          <span>joelnotlithgow@gmail.com</span>
+          <span class="separator">|</span>
+          <a href="https://linkedin.com/in/joellithgow">linkedin.com/in/joellithgow</a>
+          <span class="separator">|</span>
+          <a href="https://github.com/joellithgow">github.com/joellithgow</a>
+          <span class="separator">|</span>
+          <span>San Francisco Bay Area</span>
+        </div>
+      </header>
+
+      <!-- Professional Summary -->
+      <section class="resume-section">
+        <h2 class="section-title">Professional Summary</h2>
+        <p class="summary">{summary}</p>
+      </section>
+
+      <!-- Technical Skills -->
+      <section class="resume-section">
+        <h2 class="section-title">Technical Skills</h2>
+        <div class="skills-grid">
+          {displaySkills.map((skill) => (
+            <div class="skill-category">
+              <strong>{skill.label}:</strong> {skill.value}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Experience -->
+      <section class="resume-section">
+        <h2 class="section-title">Professional Experience</h2>
+
+        {groupedExperience.map((employer) => (
+          <div class="employer-group">
+            <div class="employer-header">
+              <h3 class="employer-name">{employer.company}</h3>
+              <span class="employer-dates">{employer.overallDateRange}</span>
+            </div>
+
+            <div class="roles-list">
+              {employer.roles.map((role, index) => (
+                <div class="role">
+                  <div class="role-header">
+                    <span class="role-title">{role.title}</span>
+                    <span class="role-dates">{role.dateRange}</span>
+                  </div>
+                  {role.responsibilities && role.responsibilities.length > 0 && (
+                    <ul class="job-duties">
+                      {role.responsibilities.map((duty) => (
+                        <li>{duty}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <!-- Education -->
+      <section class="resume-section">
+        <h2 class="section-title">Education</h2>
+        <div class="education-item">
+          <div class="education-header">
+            <h3 class="degree">Bachelor of Fine Arts, Interdisciplinary Studies</h3>
+            <span class="school">California College of the Arts</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section class="resume-section">
+        <h2 class="section-title">Projects</h2>
+        <ul class="projects-list">
+          <li>
+            <strong>WebGL Background Playground</strong> – Interactive shader-based generative art system with real-time controls
+            <span class="project-link">joellithgow.com/backgrounds</span>
+          </li>
+          <li>
+            <strong>CMS Automation Case Study</strong> – Playwright test automation reducing months of manual work to automated processes
+          </li>
+          <li>
+            <strong>Accessibility Standards Initiative</strong> – Cross-functional effort to establish WCAG-compliant color guidelines for brand identity
+          </li>
+        </ul>
+      </section>
+    </article>
+
+    <!-- Footer links (print-hidden) -->
+    <footer class="page-footer no-print">
+      <Button href={`/applications/${entry.slug}/cover-letter`} variant="primary" size="md">
+        ← View Cover Letter
+      </Button>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+
+  .resume-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-xl);
+  }
+
+  .page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 8.5in;
+    margin: 0 auto var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+  }
+
+  .resume {
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: var(--space-2xl);
+    background: white;
+    color: #1a1a1a;
+    font-family: var(--font-family);
+    font-size: 10pt;
+    line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+
+  /* Header */
+  .resume-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 2px solid #1a1a1a;
+  }
+
+  .name {
+    font-size: 28pt;
+    font-weight: 700;
+    margin: 0 0 var(--space-sm);
+    letter-spacing: -0.02em;
+  }
+
+  .contact-info {
+    font-size: 9pt;
+    color: #444;
+  }
+
+  .contact-info a {
+    color: #1a1a1a;
+    text-decoration: none;
+  }
+
+  .contact-info a:hover {
+    text-decoration: underline;
+  }
+
+  .separator {
+    margin: 0 var(--space-xs);
+    color: #999;
+  }
+
+  /* Sections */
+  .resume-section {
+    margin-bottom: var(--space-lg);
+  }
+
+  .section-title {
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: var(--space-xs);
+    margin: 0 0 var(--space-md);
+  }
+
+  /* Summary */
+  .summary {
+    margin: 0;
+    text-align: justify;
+  }
+
+  /* Skills */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs) var(--space-lg);
+  }
+
+  .skill-category {
+    font-size: 9pt;
+  }
+
+  .skill-category strong {
+    color: #1a1a1a;
+  }
+
+  /* Employer Groups (Option B layout) */
+  .employer-group {
+    margin-bottom: var(--space-xl);
+  }
+
+  .employer-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .employer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid #ddd;
+  }
+
+  .employer-name {
+    font-size: 11pt;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .employer-dates {
+    font-size: 9pt;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .roles-list {
+    margin-left: var(--space-md);
+  }
+
+  .role {
+    margin-bottom: var(--space-md);
+  }
+
+  .role:last-child {
+    margin-bottom: 0;
+  }
+
+  .role-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+  }
+
+  .role-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .role-tag {
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #f0f0f0;
+    color: #666;
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  .role-dates {
+    font-size: 8pt;
+    color: #888;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  .job-duties {
+    margin: 0;
+    padding-left: var(--space-lg);
+    font-size: 9pt;
+  }
+
+  .job-duties li {
+    margin-bottom: var(--space-2xs);
+  }
+
+  .job-duties li:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Education */
+  .education-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .degree {
+    font-size: 10pt;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .school {
+    font-size: 10pt;
+    color: #444;
+  }
+
+  /* Projects */
+  .projects-list {
+    margin: 0;
+    padding-left: var(--space-lg);
+  }
+
+  .projects-list li {
+    margin-bottom: var(--space-xs);
+  }
+
+  .project-link {
+    font-size: 8pt;
+    color: #666;
+    margin-left: var(--space-xs);
+  }
+
+  /* Footer */
+  .page-footer {
+    max-width: 8.5in;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-color, #e5e5e5);
+    text-align: center;
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .resume-page {
+      padding: 0;
+      background: white;
+    }
+
+    .resume {
+      box-shadow: none;
+      padding: 0.25in;
+      max-width: none;
+    }
+
+    .resume-section {
+      page-break-inside: avoid;
+    }
+
+    .job {
+      page-break-inside: avoid;
+    }
+
+    @page {
+      margin: 0.5in;
+      size: letter;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .resume-page {
+      padding: var(--space-md);
+    }
+
+    .page-nav {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .resume {
+      padding: var(--space-lg);
+    }
+
+    .name {
+      font-size: 22pt;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2xs);
+    }
+
+    .separator {
+      display: none;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .job-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2xs);
+    }
+
+    .job-title-company {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .education-header {
+      flex-direction: column;
+      gap: var(--space-2xs);
+    }
+  }
+</style>

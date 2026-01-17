@@ -110,6 +110,39 @@ const blogSchema = z.object({
   return data;
 });
 
+// Interview round types for granular tracking
+const interviewRoundSchema = z.enum([
+  'phone-screen',
+  'recruiter-call',
+  'technical',
+  'take-home',
+  'onsite',
+  'hiring-manager',
+  'team-panel',
+  'final',
+  'other'
+]);
+
+// Application status values
+const applicationStatusEnum = z.enum([
+  'draft',
+  'preparing',
+  'applied',
+  'interviewing',
+  'offered',
+  'rejected',
+  'withdrawn',
+  'ghosted'
+]);
+
+// Status history entry - tracks each progression event
+const statusEventSchema = z.object({
+  status: applicationStatusEnum,
+  date: z.date(),
+  round: interviewRoundSchema.optional(),  // Only for 'interviewing' status
+  notes: z.string().optional(),
+});
+
 // Define application schema for job applications
 const applicationSchema = z.object({
   // Company and role info
@@ -120,7 +153,8 @@ const applicationSchema = z.object({
   jobUrl: z.string().url(),
 
   // Application status tracking
-  status: z.enum(['preparing', 'applied', 'interviewing', 'offered', 'rejected', 'withdrawn']).default('preparing'),
+  status: applicationStatusEnum.default('draft'),
+  statusHistory: z.array(statusEventSchema).default([]),
   appliedDate: z.date().optional(),
   deadline: z.date().optional(),
 
@@ -255,3 +289,5 @@ export type Artwork = z.infer<typeof artworkSchema>;
 export type Application = z.infer<typeof applicationSchema>;
 export type Experience = z.infer<typeof experienceSchema>;
 export type Link = z.infer<typeof linkSchema>;
+export type InterviewRound = z.infer<typeof interviewRoundSchema>;
+export type StatusEvent = z.infer<typeof statusEventSchema>;

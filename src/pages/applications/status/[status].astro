@@ -1,0 +1,341 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import StatusFilterWidget from '@components/applications/StatusFilterWidget.astro';
+import ApplicationsQuickStats from '@components/applications/ApplicationsQuickStats.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
+import {
+  APPLICATION_STATUSES,
+  STATUS_LABELS,
+  ACTIVE_STATUSES,
+  CLOSED_STATUSES,
+  getStatusLabel,
+  getStatusColor
+} from '@utils/applicationStatus';
+
+export const getStaticPaths = (async () => {
+  const allApplications = await getCollection('applications', ({ data }) => data.public);
+
+  // Calculate global status counts for sidebar
+  const globalStatusCounts = new Map<string, number>();
+  allApplications.forEach(app => {
+    const status = app.data.status;
+    globalStatusCounts.set(status, (globalStatusCounts.get(status) || 0) + 1);
+  });
+
+  // Calculate global quick stats
+  const totalCount = allApplications.length;
+  const activeCount = allApplications.filter(app => ACTIVE_STATUSES.includes(app.data.status as any)).length;
+
+  const closedApps = allApplications.filter(app => CLOSED_STATUSES.includes(app.data.status as any));
+  const offeredApps = allApplications.filter(app => app.data.status === 'offered');
+  const successRate = closedApps.length > 0
+    ? Math.round((offeredApps.length / closedApps.length) * 100)
+    : undefined;
+
+  return APPLICATION_STATUSES.map((status) => {
+    const filtered = allApplications
+      .filter(app => app.data.status === status)
+      .sort((a, b) => {
+        // Featured first, then by deadline (soonest first)
+        if (a.data.featured && !b.data.featured) return -1;
+        if (!a.data.featured && b.data.featured) return 1;
+        const aDate = a.data.deadline || new Date('9999-12-31');
+        const bDate = b.data.deadline || new Date('9999-12-31');
+        return aDate.getTime() - bDate.getTime();
+      });
+
+    return {
+      params: { status },
+      props: {
+        applications: filtered,
+        status,
+        statusLabel: STATUS_LABELS[status],
+        globalStatusCounts,
+        totalCount,
+        activeCount,
+        successRate
+      }
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const {
+  applications,
+  status,
+  statusLabel,
+  globalStatusCounts,
+  totalCount,
+  activeCount,
+  successRate
+} = Astro.props;
+
+const fitLabels: Record<string, string> = {
+  'very-strong': 'Very Strong Fit',
+  'strong': 'Strong Fit',
+  'moderate': 'Moderate Fit',
+  'stretch': 'Stretch'
+};
+
+const pageTitle = `${statusLabel} Applications | Joel Lithgow`;
+const pageDescription = `${applications.length} ${statusLabel.toLowerCase()} job applications.`;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="applications-page animated-bg">
+    <div class="applications-wrapper">
+      {/* Main Content */}
+      <div class="main-content">
+        <!-- Header -->
+        <header class="page-header">
+          <PageTitle
+            title={`${statusLabel} Applications`}
+            subtitle={`${applications.length} application${applications.length !== 1 ? 's' : ''} with ${statusLabel.toLowerCase()} status`}
+            name="Applications"
+            homeLink="/applications"
+          />
+        </header>
+
+        <!-- Applications grid -->
+        <div class="applications-grid">
+          {applications.map((app) => (
+            <Card
+              variant="primary"
+              as="article"
+              class="application-card"
+            >
+              <div class="card-header">
+                <Badge variant={getStatusColor(app.data.status)} size="sm">
+                  {getStatusLabel(app.data.status)}
+                </Badge>
+                {app.data.fit && (
+                  <Badge
+                    variant={app.data.fit === 'very-strong' || app.data.fit === 'strong' ? 'primary' : 'secondary'}
+                    size="sm"
+                    class={`fit-badge fit-${app.data.fit}`}
+                  >
+                    {fitLabels[app.data.fit]}
+                  </Badge>
+                )}
+              </div>
+
+              <h2 class="job-title">{app.data.position}</h2>
+              <p class="company">{app.data.company}</p>
+
+              <div class="job-meta">
+                <span class="location">{app.data.location}</span>
+                {app.data.salary && (
+                  <span class="salary">{app.data.salary}</span>
+                )}
+              </div>
+
+              {app.data.deadline && (
+                <p class="deadline">
+                  Deadline: {app.data.deadline.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </p>
+              )}
+
+              <div class="card-actions">
+                <Button href={`/applications/${app.slug}`} variant="secondary" size="sm">
+                  View Details
+                </Button>
+                <Button href={`/applications/${app.slug}/cover-letter`} variant="ghost" size="sm">
+                  Cover Letter
+                </Button>
+                <Button href={`/applications/${app.slug}/resume`} variant="ghost" size="sm">
+                  Resume
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {applications.length === 0 && (
+          <div class="empty-state">
+            <p>No {statusLabel.toLowerCase()} applications.</p>
+            <Button href="/applications" variant="secondary" size="md">
+              View all applications
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar */}
+      <aside class="sidebar">
+        <ApplicationsQuickStats
+          total={totalCount}
+          active={activeCount}
+          successRate={successRate}
+        />
+        <StatusFilterWidget
+          statusCounts={globalStatusCounts}
+          totalCount={totalCount}
+          currentStatus={status}
+        />
+      </aside>
+    </div>
+  </main>
+
+  <ThemeModal />
+
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
+</BaseLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+  @import '../../../styles/backgrounds.css';
+
+  .applications-page {
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .applications-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-3xl);
+    align-items: start;
+    position: relative;
+    z-index: 10;
+  }
+
+  .main-content {
+    min-width: 0;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-3xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .applications-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .application-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .card-header {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .job-title {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: var(--space-sm) 0 0;
+  }
+
+  .company {
+    font-size: var(--text-lg);
+    color: var(--accent-primary);
+    margin: 0;
+    font-weight: var(--font-medium);
+  }
+
+  .job-meta {
+    display: flex;
+    gap: var(--space-md);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+
+  .deadline {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: var(--space-sm) 0 0;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color, var(--gradient-primary-subtle));
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl);
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  /* Responsive: Tablet and below */
+  @media (max-width: 1024px) {
+    .applications-wrapper {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .sidebar {
+      position: relative;
+      top: 0;
+      order: -1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .applications-page {
+      padding: var(--space-xl) var(--space-md);
+    }
+
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+    }
+  }
+</style>
