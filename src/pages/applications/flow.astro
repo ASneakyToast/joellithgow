@@ -1,0 +1,464 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Button from '@components/primitives/Button.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import ApplicationsQuickStats from '@components/applications/ApplicationsQuickStats.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
+import {
+  ACTIVE_STATUSES,
+  CLOSED_STATUSES,
+} from '@utils/applicationStatus';
+import { computeSankeyData, getNodeColor, getLinkColor } from '@utils/applicationFlow';
+
+const applications = await getCollection('applications', ({ data }) => {
+  return data.public;
+});
+
+// Compute Sankey data
+const sankeyData = computeSankeyData(applications);
+
+// Calculate quick stats
+const totalCount = applications.length;
+const activeCount = applications.filter(app => ACTIVE_STATUSES.includes(app.data.status as any)).length;
+
+const closedApps = applications.filter(app => CLOSED_STATUSES.includes(app.data.status as any));
+const offeredApps = applications.filter(app => app.data.status === 'offered');
+const successRate = closedApps.length > 0
+  ? Math.round((offeredApps.length / closedApps.length) * 100)
+  : undefined;
+---
+
+<BaseLayout
+  title="Application Flow | Joel Lithgow"
+  description="Visualizing my job search journey as a flow diagram."
+>
+  <main class="flow-page animated-bg bg-accent-geometric">
+    <div class="flow-wrapper">
+      {/* Main Content */}
+      <div class="main-content">
+        <!-- Header -->
+        <header class="page-header">
+          <PageTitle
+            title="Application Flow"
+            subtitle="Visualizing the journey from application to outcome"
+          />
+          <div class="header-controls">
+            <Button href="/applications" variant="ghost" size="sm">
+              ← Back to List
+            </Button>
+          </div>
+        </header>
+
+        <!-- Sankey Chart Container -->
+        <Card variant="glass" class="sankey-card">
+          <div class="sankey-header">
+            <h2>Status Flow</h2>
+            <p class="sankey-description">
+              Each band shows how applications progress through different stages.
+              Wider bands = more applications taking that path.
+            </p>
+          </div>
+          <div id="sankey-container"></div>
+          <div id="sankey-tooltip" class="tooltip"></div>
+        </Card>
+
+        <!-- Legend -->
+        <Card variant="glass" class="legend-card">
+          <h3>Legend</h3>
+          <div class="legend-items">
+            <div class="legend-item">
+              <span class="legend-color" style="background: #3b82f6;"></span>
+              <span>Application Stages</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #8b5cf6;"></span>
+              <span>Interview Rounds</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #22c55e;"></span>
+              <span>Offered</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ef4444;"></span>
+              <span>Rejected / Withdrawn / Ghosted</span>
+            </div>
+          </div>
+        </Card>
+
+        <!-- Empty State -->
+        {sankeyData.links.length === 0 && (
+          <Card variant="glass" class="empty-state-card">
+            <p>Not enough data to show flow yet. As applications progress through stages, the visualization will populate.</p>
+          </Card>
+        )}
+      </div>
+
+      {/* Sidebar */}
+      <aside class="sidebar">
+        <ApplicationsQuickStats
+          total={totalCount}
+          active={activeCount}
+          successRate={successRate}
+        />
+        <Card variant="glass" class="sidebar-info">
+          <h3>About This View</h3>
+          <p>This Sankey diagram shows how your applications flow through different stages of the hiring process.</p>
+          <ul>
+            <li>Each node represents a status or interview round</li>
+            <li>Links show transitions between stages</li>
+            <li>Width indicates number of applications</li>
+          </ul>
+        </Card>
+      </aside>
+    </div>
+  </main>
+
+  <ThemeModal />
+
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
+</BaseLayout>
+
+<!-- Pass data to client -->
+<script define:vars={{ sankeyData }}>
+  window.__SANKEY_DATA__ = sankeyData;
+</script>
+
+<!-- D3 Sankey Visualization -->
+<script>
+  import * as d3 from 'd3';
+  import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
+
+  function initSankey() {
+    const data = (window as any).__SANKEY_DATA__;
+    if (!data || data.links.length === 0) return;
+
+    const container = document.getElementById('sankey-container');
+    const tooltip = document.getElementById('sankey-tooltip');
+    if (!container || !tooltip) return;
+
+    // Clear previous
+    container.innerHTML = '';
+
+    // Dimensions
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+    const width = container.clientWidth - margin.left - margin.right;
+    const height = Math.max(400, data.nodes.length * 50);
+
+    // Create SVG
+    const svg = d3.select(container)
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Create node index map
+    const nodeById = new Map(data.nodes.map((n: any, i: number) => [n.id, i]));
+
+    // Transform links to use indices
+    const links = data.links.map((l: any) => ({
+      source: nodeById.get(l.source),
+      target: nodeById.get(l.target),
+      value: l.value,
+      sourceName: data.nodes[nodeById.get(l.source)!].name,
+      targetName: data.nodes[nodeById.get(l.target)!].name,
+    })).filter((l: any) => l.source !== undefined && l.target !== undefined);
+
+    const nodes = data.nodes.map((n: any) => ({ ...n }));
+
+    // Create Sankey layout
+    const sankeyLayout = sankey()
+      .nodeWidth(20)
+      .nodePadding(20)
+      .extent([[0, 0], [width, height]]);
+
+    const { nodes: layoutNodes, links: layoutLinks } = sankeyLayout({
+      nodes: nodes.map((d: any) => ({ ...d })),
+      links: links.map((d: any) => ({ ...d })),
+    });
+
+    // Color function for nodes
+    const getNodeColor = (node: any) => {
+      if (node.id === 'offered') return '#22c55e';
+      if (['rejected', 'withdrawn', 'ghosted'].includes(node.id)) return '#ef4444';
+      if (['applied', 'preparing', 'draft'].includes(node.id)) return '#3b82f6';
+      return '#8b5cf6'; // interview rounds
+    };
+
+    // Draw links
+    svg.append('g')
+      .attr('fill', 'none')
+      .selectAll('path')
+      .data(layoutLinks)
+      .join('path')
+      .attr('d', sankeyLinkHorizontal())
+      .attr('stroke', (d: any) => {
+        const targetNode = d.target as any;
+        if (targetNode.id === 'offered') return 'rgba(34, 197, 94, 0.5)';
+        if (['rejected', 'withdrawn', 'ghosted'].includes(targetNode.id)) return 'rgba(239, 68, 68, 0.4)';
+        return 'rgba(139, 92, 246, 0.3)';
+      })
+      .attr('stroke-width', (d: any) => Math.max(1, d.width))
+      .attr('opacity', 0.7)
+      .on('mouseover', function(event: MouseEvent, d: any) {
+        d3.select(this).attr('opacity', 1);
+        tooltip.style.opacity = '1';
+        tooltip.innerHTML = `
+          <strong>${d.sourceName} → ${d.targetName}</strong><br/>
+          ${d.value} application${d.value !== 1 ? 's' : ''}
+        `;
+        tooltip.style.left = `${event.pageX + 10}px`;
+        tooltip.style.top = `${event.pageY - 10}px`;
+      })
+      .on('mouseout', function() {
+        d3.select(this).attr('opacity', 0.7);
+        tooltip.style.opacity = '0';
+      });
+
+    // Draw nodes
+    const nodeGroup = svg.append('g')
+      .selectAll('rect')
+      .data(layoutNodes)
+      .join('g');
+
+    nodeGroup.append('rect')
+      .attr('x', (d: any) => d.x0)
+      .attr('y', (d: any) => d.y0)
+      .attr('height', (d: any) => Math.max(1, d.y1 - d.y0))
+      .attr('width', (d: any) => d.x1 - d.x0)
+      .attr('fill', (d: any) => getNodeColor(d))
+      .attr('rx', 4)
+      .attr('opacity', 0.9)
+      .on('mouseover', function(event: MouseEvent, d: any) {
+        d3.select(this).attr('opacity', 1);
+        tooltip.style.opacity = '1';
+        const total = data.nodes.reduce((acc: number, n: any) => {
+          const node = layoutNodes.find((ln: any) => ln.id === n.id);
+          return acc + (node?.value || 0);
+        }, 0);
+        const percentage = total > 0 ? Math.round((d.value / total) * 100) : 0;
+        tooltip.innerHTML = `
+          <strong>${d.name}</strong><br/>
+          ${d.value} application${d.value !== 1 ? 's' : ''} (${percentage}%)
+        `;
+        tooltip.style.left = `${event.pageX + 10}px`;
+        tooltip.style.top = `${event.pageY - 10}px`;
+      })
+      .on('mouseout', function() {
+        d3.select(this).attr('opacity', 0.9);
+        tooltip.style.opacity = '0';
+      });
+
+    // Add labels
+    nodeGroup.append('text')
+      .attr('x', (d: any) => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+      .attr('y', (d: any) => (d.y1 + d.y0) / 2)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', (d: any) => d.x0 < width / 2 ? 'start' : 'end')
+      .attr('fill', 'var(--color-text-primary)')
+      .attr('font-size', '13px')
+      .attr('font-weight', '500')
+      .text((d: any) => `${d.name} (${d.value})`);
+  }
+
+  // Initialize on load and after Astro transitions
+  document.addEventListener('DOMContentLoaded', initSankey);
+  document.addEventListener('astro:page-load', initSankey);
+
+  // Handle resize
+  let resizeTimeout: ReturnType<typeof setTimeout>;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(initSankey, 200);
+  });
+</script>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+  @import '../../styles/backgrounds.css';
+
+  .flow-page {
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flow-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-3xl);
+    align-items: start;
+    position: relative;
+    z-index: 10;
+  }
+
+  .main-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-3xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-lg);
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-lg);
+  }
+
+  .sankey-card {
+    padding: var(--space-xl);
+  }
+
+  .sankey-header {
+    margin-bottom: var(--space-lg);
+  }
+
+  .sankey-header h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text-primary);
+  }
+
+  .sankey-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  #sankey-container {
+    width: 100%;
+    min-height: 400px;
+    overflow: visible;
+  }
+
+  #sankey-container svg {
+    overflow: visible;
+  }
+
+  .tooltip {
+    position: fixed;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .legend-card {
+    padding: var(--space-lg);
+  }
+
+  .legend-card h3 {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--color-text-primary);
+  }
+
+  .legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-sm);
+  }
+
+  .sidebar-info {
+    padding: var(--space-lg);
+  }
+
+  .sidebar-info h3 {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text-primary);
+  }
+
+  .sidebar-info p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-md);
+  }
+
+  .sidebar-info ul {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    padding-left: var(--space-lg);
+    margin: 0;
+  }
+
+  .sidebar-info li {
+    margin-bottom: var(--space-xs);
+  }
+
+  .empty-state-card {
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+  }
+
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    z-index: 50;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .flow-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+      position: static;
+      order: -1;
+    }
+  }
+</style>

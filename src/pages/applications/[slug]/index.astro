@@ -1,0 +1,269 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import PageTitle from '@components/ui/PageTitle.astro';
+import { getStatusLabel, getStatusColor } from '@utils/applicationStatus';
+
+export async function getStaticPaths() {
+  const applications = await getCollection('applications', ({ data }) => {
+    return data.public;
+  });
+
+  return applications.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'applications'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+const { company, position, location, salary, status, deadline, jobUrl, appliedDate } = entry.data;
+---
+
+<BaseLayout
+  title={`${position} at ${company} | Joel Lithgow`}
+  description={`Application details for ${position} position at ${company}`}
+>
+  <main class="application-page animated-bg">
+    <div class="application-container">
+      <!-- Header -->
+      <header class="page-header">
+        <PageTitle
+          title={position}
+          subtitle={company}
+          name="Applications"
+          homeLink="/applications"
+        />
+        <div class="header-badges">
+          <Badge variant={getStatusColor(status)}>
+            {getStatusLabel(status)}
+          </Badge>
+        </div>
+        <div class="job-details">
+          <span class="detail">
+            <strong>Location:</strong> {location}
+          </span>
+          {salary && (
+            <span class="detail">
+              <strong>Salary:</strong> {salary}
+            </span>
+          )}
+          {deadline && (
+            <span class="detail">
+              <strong>Deadline:</strong> {deadline.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
+          )}
+          {appliedDate && (
+            <span class="detail">
+              <strong>Applied:</strong> {appliedDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
+          )}
+        </div>
+      </header>
+
+      <!-- Action buttons -->
+      <div class="action-buttons">
+        <Button href={`/applications/${entry.slug}/cover-letter`} variant="primary" size="md">
+          View Cover Letter
+        </Button>
+        <Button href={`/applications/${entry.slug}/resume`} variant="secondary" size="md">
+          View Resume
+        </Button>
+        <Button href={jobUrl} variant="ghost" size="md" target="_blank" rel="noopener">
+          View Job Posting ↗
+        </Button>
+      </div>
+
+      <!-- Application content from MDX -->
+      <Card variant="primary" as="article" class="content-card">
+        <div class="application-content">
+          <Content />
+        </div>
+      </Card>
+    </div>
+  </main>
+
+  <ThemeModal />
+
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
+</BaseLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+  @import '../../../styles/backgrounds.css';
+
+  .application-page {
+    min-height: 100vh;
+    padding: var(--space-2xl) var(--space-lg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .application-container {
+    max-width: var(--content-normal);
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .header-badges {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+
+  .job-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md) var(--space-xl);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+  }
+
+  .detail strong {
+    color: var(--text-primary);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border-color, var(--gradient-primary-subtle));
+  }
+
+  .content-card {
+    padding: var(--space-2xl);
+  }
+
+  .application-content {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+  }
+
+  .application-content :global(h2) {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin: var(--space-2xl) 0 var(--space-md);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .application-content :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  .application-content :global(p) {
+    margin: var(--space-md) 0;
+  }
+
+  .application-content :global(blockquote) {
+    border-left: 4px solid var(--accent-primary);
+    padding-left: var(--space-lg);
+    margin: var(--space-lg) 0;
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+
+  .application-content :global(ul),
+  .application-content :global(ol) {
+    margin: var(--space-md) 0;
+    padding-left: var(--space-xl);
+  }
+
+  .application-content :global(li) {
+    margin: var(--space-sm) 0;
+  }
+
+  .application-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-lg) 0;
+    font-size: var(--text-base);
+  }
+
+  .application-content :global(th),
+  .application-content :global(td) {
+    padding: var(--space-sm) var(--space-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, var(--gradient-primary-subtle));
+  }
+
+  .application-content :global(th) {
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+
+  .application-content :global(strong) {
+    color: var(--accent-primary);
+    font-weight: var(--font-semibold);
+  }
+
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  @media (max-width: 768px) {
+    .application-page {
+      padding: var(--space-xl) var(--space-md);
+    }
+
+    .job-details {
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .content-card {
+      padding: var(--space-lg);
+    }
+
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+    }
+  }
+</style>

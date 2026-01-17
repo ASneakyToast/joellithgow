@@ -1,0 +1,312 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Button from '@components/primitives/Button.astro';
+
+export async function getStaticPaths() {
+  const applications = await getCollection('applications', ({ data }) => {
+    return data.public;
+  });
+
+  return applications.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'applications'>;
+}
+
+const { entry } = Astro.props;
+const { company, position, coverLetterDate, coverLetter } = entry.data;
+
+// Check if this application has custom cover letter content
+const hasCustomContent = coverLetter?.paragraphs && coverLetter.paragraphs.length > 0;
+
+const formattedDate = coverLetterDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}) || new Date().toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<BaseLayout
+  title={`Cover Letter - ${position} at ${company} | Joel Lithgow`}
+  description={`Cover letter for ${position} position at ${company}`}
+  showGlobalHeader={false}
+  robots="noindex, nofollow"
+>
+  <div class="cover-letter-page">
+    <!-- Print-hidden navigation -->
+    <nav class="page-nav no-print">
+      <Button href={`/applications/${entry.slug}`} variant="ghost" size="sm">
+        ← Back to Application
+      </Button>
+      <Button onclick="window.print()" variant="secondary" size="sm">
+        Print / Save PDF
+      </Button>
+    </nav>
+
+    <!-- Cover letter content -->
+    <article class="cover-letter">
+      <!-- Header -->
+      <header class="letter-header">
+        <div class="sender-info">
+          <h1 class="sender-name">Joel Lithgow</h1>
+          <div class="sender-contact">
+            <span>joelnotlithgow@gmail.com</span>
+            <span class="separator">|</span>
+            <span>linkedin.com/in/joellithgow</span>
+            <span class="separator">|</span>
+            <span>San Francisco Bay Area</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Date and recipient -->
+      <div class="letter-meta">
+        <time class="letter-date">{formattedDate}</time>
+        <address class="recipient">
+          <strong>Hiring Manager</strong><br>
+          {company}<br>
+          {position}
+        </address>
+      </div>
+
+      <!-- Letter body -->
+      <div class="letter-body">
+        <p class="salutation">Dear Hiring Manager,</p>
+
+        {hasCustomContent ? (
+          <>
+            {coverLetter.opening && <p>{coverLetter.opening}</p>}
+            {coverLetter.paragraphs?.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+            <p class="closing">
+              {coverLetter.closing || `Thank you for considering my application. I would welcome the opportunity to discuss how my background can contribute to ${company}'s mission.`}
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              I am writing to express my strong interest in the {position} position at {company}. After spending my career building websites for external marketing audiences in higher education, I am excited by the opportunity to shift my focus inward—contributing to educational technology that directly supports students and teachers. The mission of Smarter Balanced resonates deeply with me: the belief that a high-quality assessment system can help students succeed, regardless of disability, language, or subgroup.
+            </p>
+
+            <p>
+              I bring seven years of experience at California College of the Arts, where I started in QA while still a student and have since grown through roles as Interaction Designer and now Web Developer. This progression has given me a comprehensive understanding of the software development lifecycle from multiple perspectives. I understand what it takes to build quality software because I have tested it, designed it, and developed it. My current role involves developing frontend applications, contributing to cloud infrastructure migrations using Docker and Google Cloud Run, and implementing modern testing practices with Playwright.
+            </p>
+
+            <p>
+              Accessibility is not just a checkbox for me—it is a core value that shapes how I approach every project. At CCA, I led a systemic accessibility improvement by identifying that our brand's teal link color failed WCAG contrast requirements. I worked cross-functionally to establish new guidelines that reserved our brand navy for text and links while using teal only for accent graphics. This change improved accessibility across all digital properties and influenced our print materials as well. I am comfortable advising on and troubleshooting UI design with accessibility as a primary consideration.
+            </p>
+
+            <p>
+              My testing background is particularly relevant to this role. Having started my career in QA, I understand the importance of comprehensive test plans, systematic quality assurance processes, and the value of automation. I recently implemented Playwright-based automation for a CMS workflow that was estimated to take months of manual work, demonstrating both my technical capabilities and my ability to identify opportunities for process improvement.
+            </p>
+
+            <p>
+              While I am most experienced with Vue, Astro.js, and TypeScript, I am actively expanding my skills with Angular to align with your technology stack. I am also eager to deepen my knowledge of OAuth2, SAML, and SSO implementations in a professional context. My experience with Google Cloud Platform provides a foundation for working with AWS services, and I am committed to continuous learning.
+            </p>
+
+            <p>
+              I am drawn to this role because it combines meaningful work in educational equity with the opportunity for professional growth. The chance to contribute to tools that help students succeed, particularly those with disabilities or language barriers, aligns perfectly with my values and career goals. I thrive working remotely—I live in Oakland where I run an art gallery out of my home, and the flexibility of remote work has been essential to balancing both pursuits. That said, I grew up in Los Gatos in the Santa Cruz mountains, where my parents still live, so I would welcome opportunities to come down for in-person team events or collaboration.
+            </p>
+
+            <p class="closing">
+              Thank you for considering my application. I would welcome the opportunity to discuss how my background in accessibility, quality assurance, and frontend development can contribute to Smarter Balanced's mission.
+            </p>
+          </>
+        )}
+
+        <div class="signature">
+          <p>Sincerely,</p>
+          <p class="signature-name">Joel Lithgow</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- Footer links (print-hidden) -->
+    <footer class="page-footer no-print">
+      <Button href={`/applications/${entry.slug}/resume`} variant="primary" size="md">
+        View Resume →
+      </Button>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+
+  .cover-letter-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-xl);
+  }
+
+  .page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 8.5in;
+    margin: 0 auto var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+  }
+
+  .cover-letter {
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: var(--space-2xl);
+    background: white;
+    color: #1a1a1a;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+
+  .letter-header {
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 2px solid #1a1a1a;
+  }
+
+  .sender-name {
+    font-size: 24pt;
+    font-weight: 700;
+    margin: 0 0 var(--space-sm);
+    color: #1a1a1a;
+    font-family: var(--font-family);
+    letter-spacing: -0.02em;
+  }
+
+  .sender-contact {
+    font-size: 10pt;
+    color: #444;
+    font-family: var(--font-family);
+  }
+
+  .separator {
+    margin: 0 var(--space-sm);
+    color: #999;
+  }
+
+  .letter-meta {
+    margin-bottom: var(--space-xl);
+  }
+
+  .letter-date {
+    display: block;
+    margin-bottom: var(--space-lg);
+    font-style: normal;
+  }
+
+  .recipient {
+    font-style: normal;
+    line-height: 1.5;
+  }
+
+  .letter-body {
+    margin-top: var(--space-xl);
+  }
+
+  .letter-body p {
+    margin: 0 0 var(--space-lg);
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  .salutation {
+    margin-bottom: var(--space-lg) !important;
+  }
+
+  .closing {
+    margin-top: var(--space-lg);
+  }
+
+  .signature {
+    margin-top: var(--space-2xl);
+  }
+
+  .signature p {
+    margin: 0;
+  }
+
+  .signature-name {
+    margin-top: var(--space-xl) !important;
+    font-family: var(--font-family);
+    font-weight: 600;
+  }
+
+  .page-footer {
+    max-width: 8.5in;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-color, #e5e5e5);
+    text-align: center;
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .cover-letter-page {
+      padding: 0;
+      background: white;
+    }
+
+    .cover-letter {
+      box-shadow: none;
+      padding: 0.5in;
+      max-width: none;
+    }
+
+    .letter-body p {
+      orphans: 3;
+      widows: 3;
+    }
+
+    @page {
+      margin: 0.75in;
+      size: letter;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cover-letter-page {
+      padding: var(--space-md);
+    }
+
+    .page-nav {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .cover-letter {
+      padding: var(--space-lg);
+    }
+
+    .sender-name {
+      font-size: 20pt;
+    }
+
+    .sender-contact {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .separator {
+      display: none;
+    }
+  }
+</style>

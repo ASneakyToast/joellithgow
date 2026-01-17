@@ -1,0 +1,104 @@
+---
+/**
+ * ApplicationsQuickStats - Summary statistics card for applications sidebar
+ *
+ * Displays key metrics: total applications, active count, and success rate.
+ */
+
+import Card from '@components/primitives/Card.astro';
+
+export interface Props {
+  total: number;
+  active: number; // preparing + applied + interviewing
+  successRate?: number; // percentage (0-100)
+  class?: string;
+}
+
+const {
+  total,
+  active,
+  successRate,
+  class: className = '',
+} = Astro.props;
+---
+
+<Card variant="outlined" padding="lg" class={`quick-stats-widget ${className}`}>
+  <h3 class="widget-title">Overview</h3>
+
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-value">{total}</span>
+      <span class="stat-label">Total</span>
+    </div>
+
+    <div class="stat-item">
+      <span class="stat-value stat-active">{active}</span>
+      <span class="stat-label">Active</span>
+    </div>
+
+    {successRate !== undefined && (
+      <div class="stat-item">
+        <span class="stat-value stat-success">{successRate}%</span>
+        <span class="stat-label">Success</span>
+      </div>
+    )}
+  </div>
+</Card>
+
+<style>
+  .widget-title {
+    margin: 0 0 var(--space-md) 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .stat-value {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .stat-value.stat-active {
+    color: var(--accent-primary);
+  }
+
+  .stat-value.stat-success {
+    color: var(--accent-secondary);
+  }
+
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-top: var(--space-xs);
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
