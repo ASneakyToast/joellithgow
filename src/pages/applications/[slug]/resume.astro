@@ -26,6 +26,7 @@ const defaultSummary = "Frontend developer with 7+ years experience building acc
 
 const defaultSkills: Record<string, string> = {
   frontend: "TypeScript, JavaScript, CSS, HTML5, Vue, Astro, WebGL/Three.js",
+  backend: "Python, Django, Wagtail CMS, PostgreSQL",
   testing: "Playwright, Unit Testing, QA Processes, Test Plan Development",
   cloud: "Google Cloud Platform, Docker, CI/CD, Cloud Run",
   tools: "Git, Figma, Adobe Creative Cloud, Agile/Scrum",
@@ -48,6 +49,7 @@ Object.entries(customSkills).forEach(([key, value]) => {
 // Define display order and labels for skills
 const skillLabels: Record<string, string> = {
   frontend: "Frontend",
+  backend: "Backend",
   creative: "Creative",
   ai: "AI & Tooling",
   testing: "Testing",
@@ -58,7 +60,7 @@ const skillLabels: Record<string, string> = {
 };
 
 // Filter to only show skills that have values, in preferred order
-const skillOrder = ['frontend', 'creative', 'ai', 'testing', 'cloud', 'tools', 'accessibility', 'learning'];
+const skillOrder = ['frontend', 'backend', 'creative', 'ai', 'testing', 'cloud', 'tools', 'accessibility', 'learning'];
 const displaySkills = skillOrder
   .filter(key => skills[key])
   .map(key => ({ label: skillLabels[key], value: skills[key] }));
@@ -166,9 +168,7 @@ const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompan
         <div class="contact-info">
           <span>joelnotlithgow@gmail.com</span>
           <span class="separator">|</span>
-          <a href="https://linkedin.com/in/joellithgow">linkedin.com/in/joellithgow</a>
-          <span class="separator">|</span>
-          <a href="https://github.com/joellithgow">github.com/joellithgow</a>
+          <a href="https://joellithgow.com">joellithgow.com</a>
           <span class="separator">|</span>
           <span>San Francisco Bay Area</span>
         </div>
@@ -510,12 +510,23 @@ const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompan
       max-width: none;
     }
 
-    .resume-section {
+    /* Keep headers with their content */
+    .section-title {
+      page-break-after: avoid;
+    }
+
+    .employer-header {
+      page-break-after: avoid;
+    }
+
+    /* Keep individual roles together, but allow breaks between roles */
+    .role {
       page-break-inside: avoid;
     }
 
-    .job {
-      page-break-inside: avoid;
+    .job-duties li {
+      orphans: 2;
+      widows: 2;
     }
 
     @page {
