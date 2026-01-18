@@ -13,7 +13,8 @@ readingTime: 1
 I'm working on a website redesign for Quality Time, a design agency, and one of the things I've been prototyping is a visual editor admin experience.
 
 <video autoplay muted loop playsinline style="width: 100%; border-radius: 8px; margin: 1.5rem 0;">
-  <source src="/assets/images/blog/visual-editing-demo-1.webm" type="video/webm" />
+  <source src="/videos/blog-qualityTime-visualEditingDemo.webm" type="video/webm" />
+  <source src="/videos/blog-qualityTime-visualEditingDemo.mp4" type="video/mp4" />
   Your browser does not support the video tag.
 </video>
 

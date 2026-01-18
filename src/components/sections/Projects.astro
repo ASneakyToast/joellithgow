@@ -1,6 +1,7 @@
 ---
 // Projects section component - Clean layout with brutalist styling
 import { getCollection } from 'astro:content';
+import Video from '@components/ui/Video.astro';
 
 export interface Props {
   sectionTitle?: string;
@@ -54,9 +55,12 @@ if (limit && limit > 0) {
             <a href={`/work/${project.data.id}`} class="project-image-link">
               <figure class="project-image">
                 {heroImage.type === 'video' ? (
-                  <video autoplay muted loop playsinline>
-                    <source src={heroImage.src} type="video/webm" />
-                  </video>
+                  <Video
+                    src={heroImage.src}
+                    fallbackSrc={heroImage.fallbackSrc}
+                    poster={heroImage.poster}
+                    controls={false}
+                  />
                 ) : (
                   <img
                     src={heroImage.src}

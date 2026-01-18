@@ -10,7 +10,8 @@ draft: false
 featured: true
 readingTime: 2
 image:
-  src: "/videos/background-noise-demo.webm"
+  src: "/videos/blog-webglBackgrounds-domainWarp.webm"
+  fallbackSrc: "/videos/blog-webglBackgrounds-domainWarp.mp4"
   alt: "WebGL background noise playground with properties panel"
   link: "/backgrounds/"
   type: "video"

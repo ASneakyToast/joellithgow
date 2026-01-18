@@ -1,0 +1,54 @@
+---
+export interface Props {
+  src: string;
+  fallbackSrc?: string;
+  poster?: string;
+  class?: string;
+  autoplay?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+  controls?: boolean;
+}
+
+const {
+  src,
+  fallbackSrc,
+  poster,
+  class: className,
+  autoplay = true,
+  muted = true,
+  loop = true,
+  controls = true
+} = Astro.props;
+
+const getType = (path: string) => {
+  if (path.endsWith('.webm')) return 'video/webm';
+  if (path.endsWith('.mp4')) return 'video/mp4';
+  return 'video/mp4';
+};
+
+// Build attributes object - only include truthy boolean attrs
+const videoAttrs: Record<string, any> = {
+  class: className,
+  poster,
+  playsinline: true,
+};
+if (autoplay) videoAttrs.autoplay = true;
+if (muted) videoAttrs.muted = true;
+if (loop) videoAttrs.loop = true;
+if (controls) videoAttrs.controls = true;
+---
+
+<video {...videoAttrs}>
+  <source src={src} type={getType(src)} />
+  {fallbackSrc && <source src={fallbackSrc} type={getType(fallbackSrc)} />}
+  Your browser does not support the video tag.
+</video>
+
+<style>
+  video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>

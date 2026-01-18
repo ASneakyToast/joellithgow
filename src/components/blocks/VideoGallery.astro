@@ -1,7 +1,10 @@
 ---
+import Video from '@components/ui/Video.astro';
+
 export interface Props {
   videos: Array<{
     src: string;
+    fallbackSrc?: string;
     poster?: string;
     title: string;
     caption?: string;
@@ -18,18 +21,12 @@ const { videos, title = 'video gallery', layout = 'grid' } = Astro.props;
   <div class={`video-gallery-container ${layout}`}>
     {videos.map((video) => (
       <div class="video-item">
-        <video
-          class="gallery-video"
-          autoplay
-          muted
-          loop
-          playsinline
-          controls
+        <Video
+          src={video.src}
+          fallbackSrc={video.fallbackSrc}
           poster={video.poster}
-        >
-          <source src={video.src} type="video/webm" />
-          Your browser does not support the video tag.
-        </video>
+          class="gallery-video"
+        />
         {video.title && <div class="video-title">{video.title}</div>}
         {video.caption && <div class="video-caption">{video.caption}</div>}
       </div>
