@@ -1,0 +1,216 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+---
+
+<BaseLayout
+  title="OG Image Preview"
+  description="OG Image generator"
+  robots="noindex, nofollow"
+  showGlobalHeader={false}
+>
+  <main class="og-page">
+    <GeometricGridBackground animationType="wave" intensity={0.6} gridSize={60} speed={0.8} />
+
+    <div class="og-frame">
+      <div class="og-content">
+        <h1 class="og-name">Joel<br/>Lithgow</h1>
+      </div>
+
+      <!-- Safe Zone Guide Overlay -->
+      <div class="safe-zone-guide" id="safeZoneGuide">
+        <div class="danger-zone-left"></div>
+        <div class="danger-zone-right"></div>
+        <div class="safe-zone-center"></div>
+        <span class="zone-label safe-label">SAFE ZONE (630x630)</span>
+        <span class="zone-label danger-label-left">CROP</span>
+        <span class="zone-label danger-label-right">CROP</span>
+      </div>
+
+      <!-- Frame border to show screenshot area -->
+      <div class="frame-border"></div>
+    </div>
+
+    <!-- Instructions outside the frame -->
+    <div class="instructions">
+      <label class="toggle-label">
+        <input type="checkbox" id="toggleGuide">
+        Show safe zone guides
+      </label>
+      <p class="hint">
+        <strong>To screenshot:</strong> Set browser to 1200x630 viewport (DevTools → Device Mode),
+        or use <code>npx playwright screenshot http://localhost:4321/og-image og.png --viewport-size=1200,630</code>
+      </p>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  @import '../styles/backgrounds.css';
+
+  .og-page {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .og-frame {
+    width: 1200px;
+    height: 630px;
+    position: relative;
+    margin: 0;
+  }
+
+  .frame-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    height: 630px;
+    border: 2px solid var(--accent-primary);
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.5;
+  }
+
+  .og-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    height: 630px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    text-align: center;
+  }
+
+  .og-name {
+    font-family: var(--font-family);
+    font-size: 130px;
+    font-weight: 700;
+    line-height: 110%;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  /* Safe Zone Guide Overlay */
+  .safe-zone-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    height: 630px;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .safe-zone-guide.visible {
+    opacity: 1;
+  }
+
+  .safe-zone-center {
+    position: absolute;
+    top: 0;
+    left: 285px;
+    width: 630px;
+    height: 630px;
+    border: 3px dashed rgba(0, 255, 136, 0.8);
+  }
+
+  .danger-zone-left,
+  .danger-zone-right {
+    position: absolute;
+    top: 0;
+    width: 285px;
+    height: 630px;
+    background: rgba(255, 0, 0, 0.2);
+  }
+
+  .danger-zone-left { left: 0; }
+  .danger-zone-right { right: 0; }
+
+  .zone-label {
+    position: absolute;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .safe-label {
+    top: 10px;
+    left: 600px;
+    transform: translateX(-50%);
+    background: rgba(0, 255, 136, 0.9);
+    color: #000;
+  }
+
+  .danger-label-left {
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 0, 0, 0.9);
+    color: #fff;
+  }
+
+  .danger-label-right {
+    top: 10px;
+    left: 1090px;
+    background: rgba(255, 0, 0, 0.9);
+    color: #fff;
+  }
+
+  /* Instructions */
+  .instructions {
+    padding: var(--space-lg);
+    color: var(--text-primary);
+    position: relative;
+    z-index: 20;
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+    font-size: var(--text-base);
+    margin-bottom: var(--space-md);
+  }
+
+  .toggle-label input {
+    width: 20px;
+    height: 20px;
+  }
+
+  .hint {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    max-width: 600px;
+  }
+
+  .hint code {
+    background: var(--bg-secondary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: var(--text-xs);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('toggleGuide');
+    const guide = document.getElementById('safeZoneGuide');
+
+    if (toggle && guide) {
+      toggle.addEventListener('change', (e) => {
+        const checked = (e.target as HTMLInputElement).checked;
+        guide.classList.toggle('visible', checked);
+      });
+    }
+  });
+</script>

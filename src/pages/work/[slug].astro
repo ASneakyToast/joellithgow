@@ -38,6 +38,31 @@ const jsonLd = {
   url: `https://joellithgow.com/work/${data.id}`,
   genre: data.type,
 };
+
+// Breadcrumb structured data for search results
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://joellithgow.com',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Portfolio',
+      item: 'https://joellithgow.com/work',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: data.title,
+    },
+  ],
+};
 ---
 
 <BaseLayout
@@ -46,6 +71,7 @@ const jsonLd = {
   ogType="article"
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <main class="case-study">
     {/* Breadcrumb Header */}
