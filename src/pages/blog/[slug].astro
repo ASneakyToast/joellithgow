@@ -63,6 +63,31 @@ if (image) {
     description: image.alt || title,
   };
 }
+
+// Breadcrumb structured data for search results
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://joellithgow.com',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: 'https://joellithgow.com/blog',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: title,
+    },
+  ],
+};
 ---
 
 <BaseLayout
@@ -74,6 +99,7 @@ if (image) {
   articleTags={tags}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <main class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': entry.data.type === 'collection' }]}>
     <div class:list={['article-wrapper', { 'blog-wrapper': entry.data.type === 'collection' }]}>

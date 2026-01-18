@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow test/easter egg pages
+Disallow: /primitives-test
+Disallow: /snake
+Disallow: /og-image
+
+# Sitemap location
+Sitemap: https://joellithgow.com/sitemap-index.xml
