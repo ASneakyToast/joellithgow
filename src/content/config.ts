@@ -17,6 +17,8 @@ const projectSchema = z.object({
   overview: z.string(),
   heroMedia: z.object({
     src: z.string(),
+    fallbackSrc: z.string().optional(),
+    poster: z.string().optional(),
     alt: z.string(),
     caption: z.string().optional(),
     type: z.enum(['image', 'video']).default('image')
@@ -70,6 +72,8 @@ const blogSchema = z.object({
   author: z.string().default('Joel Lithgow'),
   image: z.object({
     src: z.string(),
+    fallbackSrc: z.string().optional(),
+    poster: z.string().optional(),
     alt: z.string(),
     /** Optional URL to link the hero image/video to. If not set, links to detail page for articles. */
     link: z.string().optional(),
