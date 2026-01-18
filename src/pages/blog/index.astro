@@ -11,6 +11,7 @@ import Button from '@components/primitives/Button.astro';
 import PageTitle from '@components/ui/PageTitle.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import CollectionWidget from '@components/blog/CollectionWidget.astro';
+import Video from '@components/ui/Video.astro';
 
 const allPosts = await getCollection('blog', ({ data }) => {
   return !data.draft;
@@ -230,9 +231,12 @@ const jsonLd = {
                         const isExternal = post.data.image.link?.startsWith('http');
 
                         const media = isVideo ? (
-                          <video autoplay loop muted playsinline>
-                            <source src={post.data.image.src} type="video/webm" />
-                          </video>
+                          <Video
+                            src={post.data.image.src}
+                            fallbackSrc={post.data.image.fallbackSrc}
+                            poster={post.data.image.poster}
+                            controls={false}
+                          />
                         ) : (
                           <img
                             src={post.data.image.src}
