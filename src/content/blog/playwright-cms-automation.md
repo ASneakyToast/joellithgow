@@ -1,7 +1,7 @@
 ---
 title: "Automating CMS Workflows with Playwright"
 description: "How I used browser automation to fix hundreds of broken links in a fraction of the time it would have taken manually."
-publishDate: 2026-01-15
+publishDate: 2025-06-11
 author: "Joel Lithgow"
 tags: ["automation", "testing", "playwright", "wagtail", "qa"]
 type: "article"

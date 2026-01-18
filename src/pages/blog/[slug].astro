@@ -29,6 +29,7 @@ const { entry } = Astro.props;
 const { Content } = await entry.render();
 
 const { title, description, publishDate, author, tags, readingTime, image, links, category } = entry.data;
+const hasContent = entry.body && entry.body.trim().length > 0;
 
 // JSON-LD structured data for BlogPosting
 const jsonLd = {
@@ -140,14 +141,16 @@ const breadcrumbSchema = {
               </div>
             </header>
 
-            {/* Collection content section - simple card */}
-            <section class="collection-content-section">
-              <Card variant="flat" as="article" class="collection-content-card">
-                <div class="collection-intro">
-                  <Content />
-                </div>
-              </Card>
-            </section>
+            {/* Collection content section - simple card (only if has content) */}
+            {hasContent && (
+              <section class="collection-content-section">
+                <Card variant="flat" as="article" class="collection-content-card">
+                  <div class="collection-intro">
+                    <Content />
+                  </div>
+                </Card>
+              </section>
+            )}
 
             {/* Collection links display */}
             {links && links.length > 0 && (

@@ -1,6 +1,6 @@
 ---
 title: "Inspo folder"
-description: "A collection of designer and creative technologist portfolios I admire"
+description: "Web design, portfolios, and cool-looking shit on the internet I like."
 publishDate: 2026-01-17
 author: "Joel Lithgow"
 tags: ["design", "portfolios", "creative-technology", "inspiration"]
@@ -22,6 +22,16 @@ links:
     tags: ["creative-technology", "art-direction", "portfolio"]
     dateAdded: 2026-01-17
     collections: ["inspo-folder"]
+  - url: "https://rtrfm.com.au/"
+    title: "RTRFM"
+    description: "Perth's community radio station. Clean information architecture with grassroots energy and multi-format content ecosystem."
+    tags: ["web-design", "community", "radio"]
+    dateAdded: 2026-01-18
+    collections: ["inspo-folder"]
+  - url: "https://conference.tdc.org/"
+    title: "Type Drives Commerce"
+    description: "Typography conference site. Bold type-first design with dramatic scale, striking color blocking, and confident font pairing."
+    tags: ["web-design", "typography", "conference"]
+    dateAdded: 2026-01-18
+    collections: ["inspo-folder"]
 ---
-
-Designer and creative technologist portfolios I find inspiring.

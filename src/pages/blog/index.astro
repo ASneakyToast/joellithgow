@@ -192,139 +192,134 @@ const jsonLd = {
             </div>
             <div class="featured-posts">
               {featuredWithContent.map(({ post, Content }) => (
-                <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.data.type}>
-                  <time
-                    datetime={post.data.publishDate.toISOString()}
-                    class="post-date"
-                  >
-                    {post.data.publishDate.toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </time>
-
-                  <h2 class="post-title">
-                    {post.data.hasDetailPage !== false ? (
-                      <a
-                        href={`/blog/${post.slug}`}
-                        class="post-title-link"
-                      >
+                post.data.type === 'collection' ? (
+                  // Minimal collection card
+                  <Card variant="flat" as="article" class="collection-card-minimal">
+                    <a href={`/blog/${post.slug}`} class="collection-card-link">
+                      <h2 class="collection-title">
                         {post.data.title}
-                      </a>
+                        <Badge variant="tertiary" size="sm" class="collection-badge">
+                          {post.data.links?.length || 0} links
+                        </Badge>
+                      </h2>
+                      <p class="collection-description">{post.data.description}</p>
+                    </a>
+                  </Card>
+                ) : (
+                  // Full post card
+                  <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.data.type}>
+                    <time
+                      datetime={post.data.publishDate.toISOString()}
+                      class="post-date"
+                    >
+                      {post.data.publishDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </time>
+
+                    <h2 class="post-title">
+                      {post.data.hasDetailPage !== false ? (
+                        <a
+                          href={`/blog/${post.slug}`}
+                          class="post-title-link"
+                        >
+                          {post.data.title}
+                        </a>
+                      ) : (
+                        <span class="post-title-text">{post.data.title}</span>
+                      )}
+                    </h2>
+
+                    {/* Hero image/video */}
+                    {post.data.image && (
+                      <div class="post-hero-image">
+                        {(() => {
+                          const isVideo = post.data.image.type === 'video';
+                          const linkHref = post.data.image.link || (post.data.hasDetailPage !== false ? `/blog/${post.slug}` : null);
+                          const isExternal = post.data.image.link?.startsWith('http');
+
+                          const media = isVideo ? (
+                            <Video
+                              src={post.data.image.src}
+                              fallbackSrc={post.data.image.fallbackSrc}
+                              poster={post.data.image.poster}
+                              controls={false}
+                            />
+                          ) : (
+                            <img
+                              src={post.data.image.src}
+                              alt={post.data.image.alt}
+                              loading="lazy"
+                            />
+                          );
+
+                          return linkHref ? (
+                            <a
+                              href={linkHref}
+                              class="post-hero-link"
+                              {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                            >
+                              {media}
+                            </a>
+                          ) : media;
+                        })()}
+                      </div>
+                    )}
+
+                    <p class="post-description">
+                      {post.data.description}
+                    </p>
+
+                    {/* Render excerpt or full content preview */}
+                    {post.data.excerpt && post.data.hasDetailPage !== false ? (
+                      <div class="post-excerpt-preview" set:html={post.data.excerpt} />
                     ) : (
-                      <span class="post-title-text">{post.data.title}</span>
-                    )}
-                    {post.data.type === 'collection' && (
-                      <Badge variant="tertiary" size="sm" class="collection-badge">
-                        {post.data.links?.length || 0} links
-                      </Badge>
-                    )}
-                  </h2>
-
-                  {/* Hero image/video */}
-                  {post.data.image && (
-                    <div class="post-hero-image">
-                      {(() => {
-                        const isVideo = post.data.image.type === 'video';
-                        const linkHref = post.data.image.link || (post.data.hasDetailPage !== false ? `/blog/${post.slug}` : null);
-                        const isExternal = post.data.image.link?.startsWith('http');
-
-                        const media = isVideo ? (
-                          <Video
-                            src={post.data.image.src}
-                            fallbackSrc={post.data.image.fallbackSrc}
-                            poster={post.data.image.poster}
-                            controls={false}
-                          />
-                        ) : (
-                          <img
-                            src={post.data.image.src}
-                            alt={post.data.image.alt}
-                            loading="lazy"
-                          />
-                        );
-
-                        return linkHref ? (
-                          <a
-                            href={linkHref}
-                            class="post-hero-link"
-                            {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                          >
-                            {media}
-                          </a>
-                        ) : media;
-                      })()}
-                    </div>
-                  )}
-
-                  <p class="post-description">
-                    {post.data.description}
-                  </p>
-
-                  {/* Render excerpt or full content preview */}
-                  {post.data.excerpt && post.data.hasDetailPage !== false ? (
-                    <div class="post-excerpt-preview" set:html={post.data.excerpt} />
-                  ) : (
-                    <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
-                      <Content />
-                    </div>
-                  )}
-
-                  {/* Collection links - show all links inline */}
-                  {post.data.type === 'collection' && post.data.links && post.data.links.length > 0 && (
-                    <div class="post-links-section">
-                      <div class="post-links-header">
-                        <h3 class="post-links-title">Links from this collection</h3>
-                        <span class="post-links-count">{post.data.links.length} link{post.data.links.length !== 1 ? 's' : ''}</span>
+                      <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
+                        <Content />
                       </div>
+                    )}
 
-                      <div class="post-links-grid">
-                        {post.data.links.map((link) => (
-                          <LinkCard link={link} variant="minimal" />
+                    {/* Link collection display for inline posts (legacy thoughts with links) */}
+                    {post.data.hasDetailPage === false && post.data.links && post.data.links.length > 0 && (
+                      <div class="post-links-section">
+                        <div class="post-links-header">
+                          <h3 class="post-links-title">Links from this collection</h3>
+                          <span class="post-links-count">{post.data.links.length} link{post.data.links.length !== 1 ? 's' : ''}</span>
+                        </div>
+
+                        <div class="post-links-grid">
+                          {post.data.links.map((link) => (
+                            <LinkCard link={link} variant="minimal" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {post.data.tags && post.data.tags.length > 0 && (
+                      <div class="post-tags">
+                        {post.data.tags.map((tag) => (
+                          <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Link collection display for inline posts (legacy thoughts with links) */}
-                  {post.data.hasDetailPage === false && post.data.links && post.data.links.length > 0 && (
-                    <div class="post-links-section">
-                      <div class="post-links-header">
-                        <h3 class="post-links-title">Links from this collection</h3>
-                        <span class="post-links-count">{post.data.links.length} link{post.data.links.length !== 1 ? 's' : ''}</span>
+                    {(post.data.readingTime || post.data.hasDetailPage !== false) && (
+                      <div class="post-meta">
+                        {post.data.readingTime && (
+                          <span class="post-reading-time">{post.data.readingTime} min read</span>
+                        )}
+
+                        {post.data.hasDetailPage !== false && (
+                          <Button href={`/blog/${post.slug}`} variant="primary" size="md">
+                            {post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
+                          </Button>
+                        )}
                       </div>
-
-                      <div class="post-links-grid">
-                        {post.data.links.map((link) => (
-                          <LinkCard link={link} variant="minimal" />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {post.data.tags && post.data.tags.length > 0 && (
-                    <div class="post-tags">
-                      {post.data.tags.map((tag) => (
-                        <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  {(post.data.readingTime || post.data.hasDetailPage !== false) && (
-                    <div class="post-meta">
-                      {post.data.readingTime && (
-                        <span class="post-reading-time">{post.data.readingTime} min read</span>
-                      )}
-
-                      {post.data.hasDetailPage !== false && (
-                        <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                          {post.data.type === 'collection' ? 'View full collection →' : post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </Card>
+                    )}
+                  </Card>
+                )
               ))}
             </div>
           </section>
@@ -624,6 +619,58 @@ const jsonLd = {
   .featured-post-card[data-post-type="thought"] {
     border-left: 3px solid var(--accent-primary);
     padding-left: calc(var(--space-2xl) - 3px); /* Maintain alignment */
+  }
+
+  /* Minimal Collection Card */
+  .collection-card-minimal {
+    padding: var(--space-lg) var(--space-xl);
+  }
+
+  .collection-card-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .collection-card-link:hover {
+    color: var(--accent-primary);
+  }
+
+  .collection-card-minimal .collection-title {
+    font-family: var(--font-family-system);
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    white-space: nowrap;
+  }
+
+  .collection-card-minimal .collection-description {
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .collection-card-link {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .collection-card-minimal .collection-description {
+      white-space: normal;
+    }
   }
 
   /* Archive Posts Styles */
