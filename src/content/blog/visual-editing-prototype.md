@@ -1,7 +1,7 @@
 ---
 title: "Visual Editing: The Admin Experience I've Always Wanted"
 description: "Prototyping a visual editor for a client project and finally seeing an admin experience I've dreamed about come together."
-publishDate: 2025-01-04
+publishDate: 2026-01-04
 author: "Joel Lithgow"
 tags: ["prototyping", "ux", "claude-code", "client-work"]
 type: "thought"
