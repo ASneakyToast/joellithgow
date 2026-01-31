@@ -3,6 +3,7 @@
  * LayersPanel - Layer management panel for Background Studio
  * Displays layer list with selection, drag-to-reorder, and pattern picker
  */
+import { PATTERNS } from './patterns/registry';
 ---
 
 <aside class="layers-panel" id="layers-panel">
@@ -38,42 +39,13 @@
       </button>
     </div>
     <div class="pattern-grid">
-      <button class="pattern-option" data-pattern="perlin">
-        <span class="pattern-icon perlin"></span>
-        <span class="pattern-name">Perlin</span>
-      </button>
-      <button class="pattern-option" data-pattern="simplex">
-        <span class="pattern-icon simplex"></span>
-        <span class="pattern-name">Simplex</span>
-      </button>
-      <button class="pattern-option" data-pattern="worley">
-        <span class="pattern-icon worley"></span>
-        <span class="pattern-name">Worley</span>
-      </button>
-      <button class="pattern-option" data-pattern="voronoiEdge">
-        <span class="pattern-icon voronoi-edge"></span>
-        <span class="pattern-name">Voronoi</span>
-      </button>
-      <button class="pattern-option" data-pattern="turbulence">
-        <span class="pattern-icon turbulence"></span>
-        <span class="pattern-name">Turbulence</span>
-      </button>
-      <button class="pattern-option" data-pattern="ridged">
-        <span class="pattern-icon ridged"></span>
-        <span class="pattern-name">Ridged</span>
-      </button>
-      <button class="pattern-option" data-pattern="domainWarp">
-        <span class="pattern-icon domain-warp"></span>
-        <span class="pattern-name">Domain Warp</span>
-      </button>
-      <button class="pattern-option" data-pattern="caustics">
-        <span class="pattern-icon caustics"></span>
-        <span class="pattern-name">Caustics</span>
-      </button>
-      <button class="pattern-option" data-pattern="marble">
-        <span class="pattern-icon marble"></span>
-        <span class="pattern-name">Marble</span>
-      </button>
+      {PATTERNS.map(p => (
+        <button class="pattern-option" data-pattern={p.internalId}>
+          <span class={`pattern-icon ${p.id}`}></span>
+          <span class="pattern-name">{p.name}</span>
+          {p.isNew && <span class="new-badge">New</span>}
+        </button>
+      ))}
     </div>
   </div>
 </aside>
@@ -615,8 +587,8 @@
       this.patternPicker.hidden = true;
     }
 
-    private addLayer(patternType: NoiseType) {
-      this.layerManager?.addLayer(patternType);
+    private async addLayer(patternType: NoiseType) {
+      await this.layerManager?.addLayer(patternType);
     }
 
     private deleteLayer(id: string) {

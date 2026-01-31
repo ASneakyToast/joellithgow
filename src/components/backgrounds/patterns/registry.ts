@@ -40,7 +40,20 @@ export type ControlGroupId =
   | 'floatingShapes' // shapeDensity, shapeSize, sizeVariation, shapeMix, edgeSoftness, rotationSpeed
   | 'constellation'  // starCount, pointSize, connectionDistance, lineThickness, lineFalloff, twinkleIntensity, driftSpeed
   | 'minimalLines'   // lineDensity, lineLength, lengthVariation, lineThickness, angleVariation, baseAngle, crosshatchChance
-  | 'blueprint';     // elementDensity, dimensionLength, lineThickness, markerSize, bracketSize, bracketRatio, tickDensity
+  | 'blueprint'       // elementDensity, dimensionLength, lineThickness, markerSize, bracketSize, bracketRatio, tickDensity
+  | 'geometricGrid';  // gridSize, lineWidth, animationType
+
+/**
+ * Describes a pattern-specific uniform field for data-driven manager creation.
+ * The uniform name is derived automatically: key 'timeScaleX' -> uniform 'uTimeScaleX'.
+ * Data attribute parsing uses container.dataset[key] (camelCase auto-conversion).
+ */
+export interface UniformField {
+  /** Config key (camelCase), also used for dataset access: 'timeScaleX' */
+  key: string;
+  /** Parse/uniform type */
+  type: 'float' | 'int' | 'bool';
+}
 
 /** Base configuration shared by all patterns */
 export interface PatternDefaults {
@@ -80,6 +93,26 @@ export interface PatternDefinition {
   isNew?: boolean;
   /** Rendering engine for the pattern */
   rendererEngine: RendererEngine;
+  /** Pattern-specific uniform fields for data-driven manager creation */
+  uniformFields: UniformField[];
+  /** Lazy import for fragment shader (WebGL patterns) */
+  shaderImport?: () => Promise<string>;
+  /** Lazy import for p5 manager class (p5js patterns) */
+  managerImport?: () => Promise<any>;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/** Derive GLSL uniform name from config key: 'timeScaleX' -> 'uTimeScaleX' */
+export function uniformNameFromKey(key: string): string {
+  return 'u' + key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+/** Derive kebab-case data attribute from camelCase key: 'timeScaleX' -> 'time-scale-x' */
+export function dataAttrFromKey(key: string): string {
+  return key.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
 }
 
 // ============================================================================
@@ -109,6 +142,14 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: true,
     controlGroups: ['fbm', 'perlinSimplex'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'octaves', type: 'int' },
+      { key: 'lacunarity', type: 'float' },
+      { key: 'gain', type: 'float' },
+      { key: 'timeScaleX', type: 'float' },
+      { key: 'timeScaleY', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/perlin.glsl').then(m => m.perlinFragmentShader),
     defaults: {
       speed: 0.5,
       intensity: 0.6,
@@ -118,11 +159,9 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FBM
       octaves: 4,
       lacunarity: 2.0,
       gain: 0.5,
-      // Perlin-specific
       timeScaleX: 1.0,
       timeScaleY: 0.7
     }
@@ -136,6 +175,14 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: true,
     controlGroups: ['fbm', 'perlinSimplex'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'octaves', type: 'int' },
+      { key: 'lacunarity', type: 'float' },
+      { key: 'gain', type: 'float' },
+      { key: 'timeScaleX', type: 'float' },
+      { key: 'timeScaleY', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/simplex.glsl').then(m => m.simplexFragmentShader),
     defaults: {
       speed: 0.4,
       intensity: 0.5,
@@ -145,11 +192,9 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FBM
       octaves: 5,
       lacunarity: 2.0,
       gain: 0.5,
-      // Simplex-specific
       timeScaleX: 0.8,
       timeScaleY: 1.0
     }
@@ -163,6 +208,12 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: false,
     controlGroups: ['worley'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'cellScale', type: 'float' },
+      { key: 'cellAnimSpeed', type: 'float' },
+      { key: 'invert', type: 'bool' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/worley.glsl').then(m => m.worleyFragmentShader),
     defaults: {
       speed: 0.3,
       intensity: 0.5,
@@ -172,7 +223,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Worley-specific
       cellScale: 2.0,
       cellAnimSpeed: 0.3,
       invert: true
@@ -187,6 +237,12 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: false,
     controlGroups: ['voronoiEdge'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'cellScale', type: 'float' },
+      { key: 'edgeThickness', type: 'float' },
+      { key: 'cellAnimSpeed', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/voronoi-edge.glsl').then(m => m.voronoiEdgeFragmentShader),
     defaults: {
       speed: 0.4,
       intensity: 0.6,
@@ -196,7 +252,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Voronoi-specific
       cellScale: 2.0,
       edgeThickness: 0.15,
       cellAnimSpeed: 0.2
@@ -211,6 +266,13 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: true,
     controlGroups: ['fbm', 'turbulence'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'octaves', type: 'int' },
+      { key: 'lacunarity', type: 'float' },
+      { key: 'gain', type: 'float' },
+      { key: 'sharpness', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/turbulence.glsl').then(m => m.turbulenceFragmentShader),
     defaults: {
       speed: 0.5,
       intensity: 0.55,
@@ -220,11 +282,9 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FBM
       octaves: 5,
       lacunarity: 2.0,
       gain: 0.5,
-      // Turbulence-specific
       sharpness: 1.0
     }
   },
@@ -237,6 +297,14 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: true,
     controlGroups: ['fbm', 'ridged'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'octaves', type: 'int' },
+      { key: 'lacunarity', type: 'float' },
+      { key: 'gain', type: 'float' },
+      { key: 'ridgeSharpness', type: 'float' },
+      { key: 'ridgeTimeScale', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/ridged.glsl').then(m => m.ridgedFragmentShader),
     defaults: {
       speed: 0.4,
       intensity: 0.6,
@@ -246,11 +314,9 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FBM
       octaves: 5,
       lacunarity: 2.0,
       gain: 0.5,
-      // Ridged-specific
       ridgeSharpness: 2.0,
       ridgeTimeScale: 0.5
     }
@@ -264,6 +330,11 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: false,
     controlGroups: ['domainWarp'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'warpStrength', type: 'float' },
+      { key: 'warpLayers', type: 'int' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/domain-warp.glsl').then(m => m.domainWarpFragmentShader),
     defaults: {
       speed: 0.3,
       intensity: 0.5,
@@ -273,7 +344,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Domain Warp-specific
       warpStrength: 4.0,
       warpLayers: 2
     }
@@ -287,6 +357,13 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: false,
     controlGroups: ['caustics'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'waveCount', type: 'int' },
+      { key: 'waveFrequency', type: 'float' },
+      { key: 'waveSharpness', type: 'float' },
+      { key: 'detailAmount', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/caustics.glsl').then(m => m.causticsFragmentShader),
     defaults: {
       speed: 0.6,
       intensity: 0.55,
@@ -296,7 +373,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Caustics-specific
       waveCount: 3,
       waveFrequency: 8.0,
       waveSharpness: 1.5,
@@ -312,6 +388,15 @@ export const PATTERNS: PatternDefinition[] = [
     supportsFBM: true,
     controlGroups: ['fbm', 'marble'],
     rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'octaves', type: 'int' },
+      { key: 'lacunarity', type: 'float' },
+      { key: 'gain', type: 'float' },
+      { key: 'lineFrequency', type: 'float' },
+      { key: 'noiseInfluence', type: 'float' },
+      { key: 'detailBlend', type: 'float' },
+    ],
+    shaderImport: () => import('./shaders/fragments/noise/marble.glsl').then(m => m.marbleFragmentShader),
     defaults: {
       speed: 0.3,
       intensity: 0.5,
@@ -321,11 +406,9 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FBM
       octaves: 4,
       lacunarity: 2.0,
       gain: 0.5,
-      // Marble-specific
       lineFrequency: 8.0,
       noiseInfluence: 6.0,
       detailBlend: 0.3
@@ -345,6 +428,15 @@ export const PATTERNS: PatternDefinition[] = [
     controlGroups: ['floatingShapes'],
     isNew: true,
     rendererEngine: 'p5js',
+    uniformFields: [
+      { key: 'shapeDensity', type: 'float' },
+      { key: 'shapeSize', type: 'float' },
+      { key: 'sizeVariation', type: 'float' },
+      { key: 'shapeMix', type: 'float' },
+      { key: 'edgeSoftness', type: 'float' },
+      { key: 'rotationSpeed', type: 'float' },
+    ],
+    managerImport: () => import('./p5/patterns/floating-shapes.p5').then(m => m.FloatingShapesP5Manager),
     defaults: {
       speed: 0.3,
       intensity: 0.5,
@@ -354,7 +446,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // FloatingShapes-specific
       shapeDensity: 1.5,
       shapeSize: 0.05,
       sizeVariation: 0.5,
@@ -373,6 +464,16 @@ export const PATTERNS: PatternDefinition[] = [
     controlGroups: ['constellation'],
     isNew: true,
     rendererEngine: 'p5js',
+    uniformFields: [
+      { key: 'starCount', type: 'int' },
+      { key: 'pointSize', type: 'float' },
+      { key: 'connectionDistance', type: 'float' },
+      { key: 'lineThickness', type: 'float' },
+      { key: 'lineFalloff', type: 'float' },
+      { key: 'twinkleIntensity', type: 'float' },
+      { key: 'driftSpeed', type: 'float' },
+    ],
+    managerImport: () => import('./p5/patterns/constellation.p5').then(m => m.ConstellationP5Manager),
     defaults: {
       speed: 0.3,
       intensity: 0.6,
@@ -382,7 +483,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Constellation-specific
       starCount: 12,
       pointSize: 0.006,
       connectionDistance: 0.15,
@@ -402,6 +502,17 @@ export const PATTERNS: PatternDefinition[] = [
     controlGroups: ['minimalLines'],
     isNew: true,
     rendererEngine: 'p5js',
+    uniformFields: [
+      { key: 'lineDensity', type: 'float' },
+      { key: 'lineLength', type: 'float' },
+      { key: 'lengthVariation', type: 'float' },
+      { key: 'lineThickness', type: 'float' },
+      { key: 'angleVariation', type: 'float' },
+      { key: 'baseAngle', type: 'float' },
+      { key: 'crosshatchChance', type: 'float' },
+      { key: 'fillRatio', type: 'float' },
+    ],
+    managerImport: () => import('./p5/patterns/minimal-lines.p5').then(m => m.MinimalLinesP5Manager),
     defaults: {
       speed: 0.3,
       intensity: 0.5,
@@ -411,7 +522,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // MinimalLines-specific
       lineDensity: 8.0,
       lineLength: 0.15,
       lengthVariation: 0.6,
@@ -432,6 +542,16 @@ export const PATTERNS: PatternDefinition[] = [
     controlGroups: ['blueprint'],
     isNew: true,
     rendererEngine: 'p5js',
+    uniformFields: [
+      { key: 'elementDensity', type: 'float' },
+      { key: 'dimensionLength', type: 'float' },
+      { key: 'lineThickness', type: 'float' },
+      { key: 'markerSize', type: 'float' },
+      { key: 'bracketSize', type: 'float' },
+      { key: 'bracketRatio', type: 'float' },
+      { key: 'tickDensity', type: 'int' },
+    ],
+    managerImport: () => import('./p5/patterns/blueprint.p5').then(m => m.BlueprintP5Manager),
     defaults: {
       speed: 0.2,
       intensity: 0.5,
@@ -441,7 +561,6 @@ export const PATTERNS: PatternDefinition[] = [
       colors: { ...DEFAULT_COLORS },
       opacity: 1,
       blendMode: 'normal',
-      // Blueprint-specific
       elementDensity: 1.0,
       dimensionLength: 0.12,
       lineThickness: 0.001,
@@ -449,6 +568,36 @@ export const PATTERNS: PatternDefinition[] = [
       bracketSize: 0.04,
       bracketRatio: 0.3,
       tickDensity: 2
+    }
+  },
+  {
+    id: 'geometric-grid',
+    internalId: 'geometricGrid',
+    name: 'Geometric Grid',
+    description: 'Procedural grid lines with animated drift, pulse, and wave effects',
+    category: 'geometric',
+    supportsFBM: false,
+    controlGroups: ['geometricGrid'],
+    isNew: true,
+    rendererEngine: 'webgl',
+    uniformFields: [
+      { key: 'gridSize', type: 'float' },
+      { key: 'lineWidth', type: 'float' },
+      { key: 'animationType', type: 'int' },
+    ],
+    shaderImport: () => import('./shaders/fragments/geometric/grid.glsl').then(m => m.geometricGridFragmentShader),
+    defaults: {
+      speed: 0.8,
+      intensity: 0.5,
+      noiseScale: 1.0,
+      animated: true,
+      animationAngle: 315,
+      colors: { ...DEFAULT_COLORS },
+      opacity: 1,
+      blendMode: 'normal',
+      gridSize: 80,
+      lineWidth: 1,
+      animationType: 0
     }
   }
 ];

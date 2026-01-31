@@ -15,9 +15,8 @@ import {
   createLayerContainer,
   createPatternManager,
   getPatternDefaults,
-  type StudioManagerConfig
+  type AnyPatternManager
 } from './managerFactory';
-import type { NoiseBackgroundManager } from '../noise/NoiseBackgroundManager';
 
 /** Maximum number of layers allowed (performance limit) */
 const MAX_LAYERS = 6;
@@ -29,7 +28,7 @@ const MAX_LAYERS = 6;
 export class LayerManager extends EventTarget {
   private container: HTMLElement;
   private layers: Map<string, LayerConfig> = new Map();
-  private managers: Map<string, NoiseBackgroundManager<StudioManagerConfig>> = new Map();
+  private managers: Map<string, AnyPatternManager> = new Map();
   private selectedLayerId: string | null = null;
   private layerOrder: string[] = []; // Maintains visual stacking order
 
@@ -44,10 +43,10 @@ export class LayerManager extends EventTarget {
    * @param initialConfig - Optional initial configuration overrides
    * @returns The ID of the newly created layer, or null if max layers reached
    */
-  addLayer(
+  async addLayer(
     patternType: NoiseType,
     initialConfig?: Partial<LayerPatternConfig>
-  ): string | null {
+  ): Promise<string | null> {
     if (this.layers.size >= MAX_LAYERS) {
       console.warn(`Maximum layer limit (${MAX_LAYERS}) reached`);
       this.dispatchEvent(new CustomEvent('max-layers-reached', {
@@ -83,9 +82,9 @@ export class LayerManager extends EventTarget {
     layerContainer.style.opacity = String(config.opacity);
     layerContainer.style.mixBlendMode = config.blendMode;
 
-    // Create and initialize the manager
-    const manager = createPatternManager(layerContainer, patternType);
-    manager.init();
+    // Create and initialize the manager (async - loads shader/manager dynamically)
+    const manager = await createPatternManager(layerContainer, patternType);
+    await manager.init();
 
     // Store references
     this.layers.set(id, layer);
@@ -189,7 +188,7 @@ export class LayerManager extends EventTarget {
   /**
    * Get the manager for the selected layer
    */
-  getSelectedLayerManager(): NoiseBackgroundManager<StudioManagerConfig> | null {
+  getSelectedLayerManager(): AnyPatternManager | null {
     if (!this.selectedLayerId) return null;
     return this.managers.get(this.selectedLayerId) || null;
   }
@@ -204,7 +203,7 @@ export class LayerManager extends EventTarget {
   /**
    * Get the manager for a specific layer
    */
-  getLayerManager(id: string): NoiseBackgroundManager<StudioManagerConfig> | null {
+  getLayerManager(id: string): AnyPatternManager | null {
     return this.managers.get(id) || null;
   }
 
@@ -352,7 +351,7 @@ export class LayerManager extends EventTarget {
   /**
    * Duplicate an existing layer
    */
-  duplicateLayer(id: string): string | null {
+  async duplicateLayer(id: string): Promise<string | null> {
     const layer = this.layers.get(id);
     if (!layer) return null;
 
@@ -372,13 +371,13 @@ export class LayerManager extends EventTarget {
   /**
    * Import layers from exported data
    */
-  importLayers(layers: LayerConfig[]): void {
+  async importLayers(layers: LayerConfig[]): Promise<void> {
     // Clear existing layers
     this.clearAllLayers();
 
     // Add each layer
     for (const layer of layers) {
-      this.addLayer(layer.patternType, layer.config);
+      await this.addLayer(layer.patternType, layer.config);
     }
   }
 

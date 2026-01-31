@@ -85,6 +85,10 @@ export interface Props {
     bracketSize?: number;
     bracketRatio?: number;
     tickDensity?: number;
+    // GeometricGrid
+    gridSize?: number;
+    lineWidth?: number;
+    animationType?: number;
   };
 }
 
@@ -111,6 +115,7 @@ const isFloatingShapes = isStudioMode || patternSlug === 'floatingShapes';
 const isConstellation = isStudioMode || patternSlug === 'constellation';
 const isMinimalLines = isStudioMode || patternSlug === 'minimalLines';
 const isBlueprint = isStudioMode || patternSlug === 'blueprint';
+const isGeometricGrid = isStudioMode || patternSlug === 'geometricGrid';
 ---
 
 <aside class="properties-panel" id="properties-panel" data-pattern={patternSlug} data-has-fbm={hasFBM} data-mode={mode}>
@@ -1115,6 +1120,51 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
             </div>
           </div>
         )}
+
+        {isGeometricGrid && (
+          <div data-pattern-group="geometricGrid" style={isStudioMode ? 'display: none' : ''}>
+            <div class="control-group">
+              <label for="gridsize-slider">Grid Size</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="gridsize-slider"
+                  min="20"
+                  max="200"
+                  step="5"
+                  value={defaults.gridSize ?? 80}
+                  data-prop="gridSize"
+                />
+                <span class="value-display" data-for="gridsize-slider">{defaults.gridSize ?? 80}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="linewidth-slider">Line Width</label>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  id="linewidth-slider"
+                  min="0.5"
+                  max="5"
+                  step="0.5"
+                  value={defaults.lineWidth ?? 1}
+                  data-prop="lineWidth"
+                />
+                <span class="value-display" data-for="linewidth-slider">{(defaults.lineWidth ?? 1).toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="animationtype-select">Animation Type</label>
+              <select id="animationtype-select" class="select-control" data-prop="animationType">
+                <option value="0" selected={defaults.animationType === 0}>Drift</option>
+                <option value="1" selected={defaults.animationType === 1}>Pulse</option>
+                <option value="2" selected={defaults.animationType === 2}>Wave</option>
+              </select>
+            </div>
+          </div>
+        )}
       </section>
 
       <!-- Colors Tab -->
@@ -1203,6 +1253,20 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
         <path d="M12 2a10 10 0 0 1 0 20"/>
+      </svg>
+    </button>
+
+    <div class="tab-spacer"></div>
+
+    <button class="tab-btn collapse-toggle" id="collapse-toggle" title="Hide panel (H)">
+      <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+      <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
       </svg>
     </button>
   </nav>
@@ -1644,6 +1708,44 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
     color: var(--accent-primary, #FF6B6B);
   }
 
+  /* Collapse Toggle */
+  .tab-spacer {
+    flex: 1;
+  }
+
+  .collapse-toggle .icon-show {
+    display: none;
+  }
+
+  .collapse-toggle .icon-hide {
+    display: block;
+  }
+
+  /* Collapsed State */
+  .properties-panel {
+    transition: all 0.3s ease;
+  }
+
+  .properties-panel.collapsed .panel-content {
+    display: none;
+  }
+
+  .properties-panel.collapsed .tab-bar .tab-btn:not(.collapse-toggle) {
+    display: none;
+  }
+
+  .properties-panel.collapsed .tab-spacer {
+    display: none;
+  }
+
+  .properties-panel.collapsed .collapse-toggle .icon-hide {
+    display: none;
+  }
+
+  .properties-panel.collapsed .collapse-toggle .icon-show {
+    display: block;
+  }
+
   /* Responsive */
   @media (max-width: 480px) {
     .properties-panel {
@@ -1680,6 +1782,7 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
       this.setupColorPickers();
       this.setupSelects();
       this.setupButtons();
+      this.setupCollapseToggle();
       this.loadTabState();
 
       // Studio mode: listen for layer manager and selection events
@@ -1749,7 +1852,8 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
         floatingShapes: 'Floating Shapes',
         constellation: 'Constellation',
         minimalLines: 'Minimal Lines',
-        blueprint: 'Blueprint'
+        blueprint: 'Blueprint',
+        geometricGrid: 'Geometric Grid'
       };
       this.updateHeader(layer.name, patternNames[layer.patternType] || layer.patternType);
 
@@ -2035,12 +2139,17 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
 
     setupSelects() {
       const selects = this.panel.querySelectorAll('select.select-control');
+      // Props that should be parsed as integers
+      const intProps = ['animationType'];
 
       selects.forEach(select => {
         const prop = select.dataset.prop;
 
         select.addEventListener('change', (e) => {
-          const value = e.target.value;
+          let value = e.target.value;
+          if (intProps.includes(prop)) {
+            value = parseInt(value, 10);
+          }
           this.currentValues[prop] = value;
           this.updateBackground({ [prop]: value });
         });
@@ -2057,6 +2166,46 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
 
       copyBtn?.addEventListener('click', () => {
         this.copyCode();
+      });
+    }
+
+    setupCollapseToggle() {
+      const toggle = this.panel.querySelector('#collapse-toggle');
+      if (!toggle) return;
+
+      // Restore saved state
+      const saved = localStorage.getItem('properties-panel-collapsed');
+      if (saved === 'true') {
+        this.panel.classList.add('collapsed');
+      }
+
+      // Click handler
+      toggle.addEventListener('click', () => {
+        this.panel.classList.toggle('collapsed');
+        localStorage.setItem(
+          'properties-panel-collapsed',
+          this.panel.classList.contains('collapsed').toString()
+        );
+      });
+
+      // Keyboard shortcut: H to toggle (when no input focused)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'h' || e.key === 'H') {
+          const active = document.activeElement;
+          const isInput = active && (
+            active.tagName === 'INPUT' ||
+            active.tagName === 'TEXTAREA' ||
+            active.tagName === 'SELECT' ||
+            active.isContentEditable
+          );
+          if (!isInput) {
+            this.panel.classList.toggle('collapsed');
+            localStorage.setItem(
+              'properties-panel-collapsed',
+              this.panel.classList.contains('collapsed').toString()
+            );
+          }
+        }
       });
     }
 
@@ -2242,6 +2391,14 @@ const isBlueprint = isStudioMode || patternSlug === 'blueprint';
   bracketSize={${this.currentValues.bracketSize ?? 0.04}}
   bracketRatio={${this.currentValues.bracketRatio ?? 0.3}}
   tickDensity={${this.currentValues.tickDensity ?? 2}}`;
+      }
+
+      // GeometricGrid
+      if (this.patternSlug === 'geometricGrid') {
+        patternProps += `
+  gridSize={${this.currentValues.gridSize ?? 80}}
+  lineWidth={${this.currentValues.lineWidth ?? 1}}
+  animationType={${this.currentValues.animationType ?? 0}}`;
       }
 
       const code = `<NoiseTextureBackground

@@ -6,6 +6,7 @@
 import BaseLayout from '@components/common/BaseLayout.astro';
 import LayersPanel from '@components/backgrounds/LayersPanel.astro';
 import PropertiesPanel from '@components/backgrounds/PropertiesPanel.astro';
+import PresentationToggle from '@components/backgrounds/PresentationToggle.astro';
 
 const pageTitle = 'Background Studio';
 const pageDescription = 'Create custom layered backgrounds with multiple noise patterns';
@@ -63,12 +64,15 @@ const defaultConfig = {
     />
 
     <!-- Back to Gallery link -->
-    <a href="/backgrounds" class="studio-back-link">
+    <a href="/backgrounds" class="studio-back-link back-to-gallery">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
       Back to Gallery
     </a>
+
+    <!-- Presentation mode toggle -->
+    <PresentationToggle />
   </main>
 </BaseLayout>
 
@@ -166,6 +170,21 @@ const defaultConfig = {
       padding: 8px 12px;
     }
   }
+
+  /* Presentation mode - hide all UI for clean screenshots/recordings */
+  .layers-panel,
+  .properties-panel,
+  .back-to-gallery {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  body.presentation-mode .layers-panel,
+  body.presentation-mode .properties-panel,
+  body.presentation-mode .back-to-gallery {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+  }
 </style>
 
 <script>
@@ -191,8 +210,8 @@ const defaultConfig = {
     }));
 
     // Add a default layer to get started
-    setTimeout(() => {
-      layerManager.addLayer('simplex');
+    setTimeout(async () => {
+      await layerManager.addLayer('simplex');
     }, 100);
   });
 </script>

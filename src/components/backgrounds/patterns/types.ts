@@ -15,7 +15,8 @@ export type {
   PatternDefaults,
   PatternDefinition,
   PatternType,
-  NoiseType
+  NoiseType,
+  UniformField
 } from './registry';
 
 export {
@@ -29,7 +30,9 @@ export {
   getAllPatternIds,
   getAllInternalIds,
   patternHasControlGroup,
-  createPatternRecord
+  createPatternRecord,
+  uniformNameFromKey,
+  dataAttrFromKey
 } from './registry';
 
 // ============================================================================
@@ -251,6 +254,16 @@ export interface BlueprintBackgroundProps extends BasePatternBackgroundProps {
   bracketRatio?: number;
   /** Tick mark density along dimension lines (0-5, default: 2) */
   tickDensity?: number;
+}
+
+/** Props for GeometricGridPatternBackground component */
+export interface GeometricGridPatternBackgroundProps extends BasePatternBackgroundProps {
+  /** Grid cell size in pixels (20-200, default: 80) */
+  gridSize?: number;
+  /** Grid line width in pixels (0.5-5, default: 1) */
+  lineWidth?: number;
+  /** Animation type: 0=drift, 1=pulse, 2=wave (default: 0) */
+  animationType?: number;
 }
 
 // ============================================================================

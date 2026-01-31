@@ -4,27 +4,13 @@
  * Full-page background with live properties panel
  *
  * Uses the pattern registry for dynamic path generation and configuration.
+ * Pattern rendering is fully data-driven via GenericPatternRenderer.
  */
 import BaseLayout from '@components/common/BaseLayout.astro';
 import PropertiesPanel from '@components/backgrounds/PropertiesPanel.astro';
+import PresentationToggle from '@components/backgrounds/PresentationToggle.astro';
+import GenericPatternRenderer from '@components/backgrounds/patterns/GenericPatternRenderer.astro';
 import { PATTERNS, getPatternById } from '@components/backgrounds/patterns/registry';
-
-// Pattern component imports - noise patterns
-import SimplexBackground from '@components/backgrounds/patterns/SimplexBackground.astro';
-import PerlinBackground from '@components/backgrounds/patterns/PerlinBackground.astro';
-import WorleyBackground from '@components/backgrounds/patterns/WorleyBackground.astro';
-import VoronoiEdgeBackground from '@components/backgrounds/patterns/VoronoiEdgeBackground.astro';
-import TurbulenceBackground from '@components/backgrounds/patterns/TurbulenceBackground.astro';
-import RidgedBackground from '@components/backgrounds/patterns/RidgedBackground.astro';
-import DomainWarpBackground from '@components/backgrounds/patterns/DomainWarpBackground.astro';
-import CausticsBackground from '@components/backgrounds/patterns/CausticsBackground.astro';
-import MarbleBackground from '@components/backgrounds/patterns/MarbleBackground.astro';
-
-// Pattern component imports - geometric patterns
-import FloatingShapesBackground from '@components/backgrounds/patterns/FloatingShapesBackground.astro';
-import ConstellationBackground from '@components/backgrounds/patterns/ConstellationBackground.astro';
-import MinimalLinesBackground from '@components/backgrounds/patterns/MinimalLinesBackground.astro';
-import BlueprintBackground from '@components/backgrounds/patterns/BlueprintBackground.astro';
 
 // Generate static paths from registry
 export function getStaticPaths() {
@@ -40,246 +26,20 @@ const patternDef = getPatternById(pattern);
 if (!patternDef) {
   return Astro.redirect('/backgrounds');
 }
-
-const pageTitle = `${patternDef.name} - Background Playground`;
-const pageDescription = patternDef.description;
-const defaults = patternDef.defaults;
-
-// Map internal IDs to component usage for conditional rendering
-const patternId = patternDef.internalId;
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription}>
+<BaseLayout title={`${patternDef.name} - Background Playground`} description={patternDef.description}>
   <main class="playground-page">
-    {/* Noise Patterns */}
-    {patternId === 'perlin' && (
-      <PerlinBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        octaves={defaults.octaves as number}
-        lacunarity={defaults.lacunarity as number}
-        gain={defaults.gain as number}
-        timeScaleX={defaults.timeScaleX as number}
-        timeScaleY={defaults.timeScaleY as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'simplex' && (
-      <SimplexBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        octaves={defaults.octaves as number}
-        lacunarity={defaults.lacunarity as number}
-        gain={defaults.gain as number}
-        timeScaleX={defaults.timeScaleX as number}
-        timeScaleY={defaults.timeScaleY as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'worley' && (
-      <WorleyBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        cellScale={defaults.cellScale as number}
-        cellAnimSpeed={defaults.cellAnimSpeed as number}
-        invert={defaults.invert as boolean}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'voronoiEdge' && (
-      <VoronoiEdgeBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        cellScale={defaults.cellScale as number}
-        edgeThickness={defaults.edgeThickness as number}
-        cellAnimSpeed={defaults.cellAnimSpeed as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'turbulence' && (
-      <TurbulenceBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        octaves={defaults.octaves as number}
-        lacunarity={defaults.lacunarity as number}
-        gain={defaults.gain as number}
-        sharpness={defaults.sharpness as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'ridged' && (
-      <RidgedBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        octaves={defaults.octaves as number}
-        lacunarity={defaults.lacunarity as number}
-        gain={defaults.gain as number}
-        ridgeSharpness={defaults.ridgeSharpness as number}
-        ridgeTimeScale={defaults.ridgeTimeScale as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'domainWarp' && (
-      <DomainWarpBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        warpStrength={defaults.warpStrength as number}
-        warpLayers={defaults.warpLayers as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'caustics' && (
-      <CausticsBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        waveCount={defaults.waveCount as number}
-        waveFrequency={defaults.waveFrequency as number}
-        waveSharpness={defaults.waveSharpness as number}
-        detailAmount={defaults.detailAmount as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'marble' && (
-      <MarbleBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        octaves={defaults.octaves as number}
-        lacunarity={defaults.lacunarity as number}
-        gain={defaults.gain as number}
-        lineFrequency={defaults.lineFrequency as number}
-        noiseInfluence={defaults.noiseInfluence as number}
-        detailBlend={defaults.detailBlend as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {/* Geometric Patterns */}
-    {patternId === 'floatingShapes' && (
-      <FloatingShapesBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        shapeDensity={defaults.shapeDensity as number}
-        shapeSize={defaults.shapeSize as number}
-        sizeVariation={defaults.sizeVariation as number}
-        shapeMix={defaults.shapeMix as number}
-        edgeSoftness={defaults.edgeSoftness as number}
-        rotationSpeed={defaults.rotationSpeed as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'constellation' && (
-      <ConstellationBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        starCount={defaults.starCount as number}
-        pointSize={defaults.pointSize as number}
-        connectionDistance={defaults.connectionDistance as number}
-        lineThickness={defaults.lineThickness as number}
-        lineFalloff={defaults.lineFalloff as number}
-        twinkleIntensity={defaults.twinkleIntensity as number}
-        driftSpeed={defaults.driftSpeed as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'minimalLines' && (
-      <MinimalLinesBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        lineDensity={defaults.lineDensity as number}
-        lineLength={defaults.lineLength as number}
-        lengthVariation={defaults.lengthVariation as number}
-        lineThickness={defaults.lineThickness as number}
-        angleVariation={defaults.angleVariation as number}
-        baseAngle={defaults.baseAngle as number}
-        crosshatchChance={defaults.crosshatchChance as number}
-        fillRatio={defaults.fillRatio as number}
-        class="fullscreen-background"
-      />
-    )}
-
-    {patternId === 'blueprint' && (
-      <BlueprintBackground
-        speed={defaults.speed}
-        intensity={defaults.intensity}
-        noiseScale={defaults.noiseScale}
-        animated={defaults.animated}
-        animationAngle={defaults.animationAngle}
-        colors={defaults.colors}
-        elementDensity={defaults.elementDensity as number}
-        dimensionLength={defaults.dimensionLength as number}
-        lineThickness={defaults.lineThickness as number}
-        markerSize={defaults.markerSize as number}
-        bracketSize={defaults.bracketSize as number}
-        bracketRatio={defaults.bracketRatio as number}
-        tickDensity={defaults.tickDensity as number}
-        class="fullscreen-background"
-      />
-    )}
+    <GenericPatternRenderer pattern={patternDef} class="fullscreen-background" />
 
     <PropertiesPanel
       patternName={patternDef.name}
       patternDescription={patternDef.description}
       patternSlug={patternDef.internalId}
-      defaults={defaults}
+      defaults={patternDef.defaults}
     />
+
+    <PresentationToggle />
   </main>
 </BaseLayout>
 
@@ -310,5 +70,16 @@ const patternId = patternDef.internalId;
     left: 0;
     width: 100% !important;
     height: 100% !important;
+  }
+
+  /* Presentation mode - hide all UI for clean screenshots/recordings */
+  .properties-panel {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  body.presentation-mode .properties-panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
   }
 </style>

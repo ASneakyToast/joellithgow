@@ -1,0 +1,84 @@
+---
+/**
+ * GenericPatternRenderer - Renders any background pattern from its registry definition
+ * Replaces all individual *Background.astro components for the playground pages.
+ * Builds the correct container with data-* attributes from the pattern defaults.
+ */
+import type { PatternDefinition } from './registry';
+import { dataAttrFromKey } from './registry';
+
+export interface Props {
+  pattern: PatternDefinition;
+  class?: string;
+}
+
+const { pattern, class: className = '' } = Astro.props;
+const defaults = pattern.defaults;
+const isP5 = pattern.rendererEngine === 'p5js';
+
+// Build pattern-specific data attributes from uniformFields
+const patternAttrs: Record<string, unknown> = {};
+for (const field of pattern.uniformFields) {
+  const attrName = `data-${dataAttrFromKey(field.key)}`;
+  patternAttrs[attrName] = defaults[field.key];
+}
+---
+
+<div
+  class:list={[
+    isP5 ? 'p5-background-container' : 'webgl-background-container noise-texture',
+    `${pattern.id}-bg`,
+    className
+  ]}
+  id={`${pattern.id}-bg-${Math.random().toString(36).substr(2, 9)}`}
+  data-effect-type={pattern.internalId}
+  data-speed={defaults.speed}
+  data-intensity={defaults.intensity}
+  data-noise-scale={defaults.noiseScale}
+  data-animated={defaults.animated}
+  data-animation-angle={defaults.animationAngle}
+  data-colors={JSON.stringify(defaults.colors || {})}
+  data-max-pixel-ratio={2}
+  data-pause-offscreen={true}
+  {...patternAttrs}
+  aria-hidden="true"
+>
+  {!isP5 && <canvas class="webgl-canvas"></canvas>}
+</div>
+
+<style>
+  .webgl-background-container,
+  .p5-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas,
+  .p5-background-container :global(canvas) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container,
+    .p5-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { initPatternContainers } from './autoInit';
+  initPatternContainers();
+</script>
