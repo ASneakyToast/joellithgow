@@ -46,6 +46,12 @@ links:
     tags: ["developer-blogs", "creative-coding", "web-experiments", "art"]
     dateAdded: 2025-01-13
     collections: ["developer-blogs-i-follow"]
+  - url: "https://www.joelsleppy.com"
+    title: "Joel Sleppy"
+    description: "Django and Wagtail developer sharing practical insights on CMS development, static site generation, and web development workflows."
+    tags: ["developer-blogs", "django", "wagtail", "python", "cms"]
+    dateAdded: 2025-01-23
+    collections: ["developer-blogs-i-follow"]
 ---
 
 A collection of developer blogs I regularly read for inspiration, learning, and staying current with the industry. These writers consistently publish thoughtful technical content that goes beyond surface-level tutorials.
