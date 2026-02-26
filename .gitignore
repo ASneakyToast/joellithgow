@@ -1,5 +1,6 @@
 # Claude Code configuration
-.claude/
+.claude/*
+!.claude/rules/
 
 # Local Netlify folder
 .netlify

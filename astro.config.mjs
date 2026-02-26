@@ -7,7 +7,12 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   output: 'static',
   site: 'https://joellithgow.com',
-  integrations: [sitemap(), mdx()],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/applications'),
+    }),
+    mdx(),
+  ],
   build: {
     assets: 'assets',
     inlineStylesheets: 'auto',
