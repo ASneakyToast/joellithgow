@@ -1,0 +1,77 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import DocSidebar from '@components/docs/DocSidebar.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  section?: 'overview' | 'foundations' | 'components' | 'patterns';
+  currentPage?: string;
+}
+
+const {
+  title,
+  description = 'Design system documentation',
+  section = 'overview',
+  currentPage = ''
+} = Astro.props;
+
+const pageTitle = `${title} - Design System - Joel Lithgow`;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={description}
+  robots="noindex, nofollow"
+  showGlobalHeader={false}
+>
+  <div class="doc-layout">
+    <DocSidebar section={section} currentPage={currentPage} />
+
+    <main id="main-content" class="doc-main">
+      <div class="doc-content">
+        <slot />
+      </div>
+    </main>
+  </div>
+
+  <ThemeModal />
+</BaseLayout>
+
+<style>
+  @import '../styles/tokens.css';
+  @import '../styles/themes.css';
+
+  .doc-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .doc-main {
+    flex: 1;
+    margin-left: var(--docs-sidebar-width);
+    min-height: 100vh;
+    background: var(--bg-primary);
+  }
+
+  .doc-content {
+    max-width: var(--docs-content-max-width);
+    margin: 0 auto;
+    padding: var(--docs-content-padding);
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-4xl);
+  }
+
+  /* Mobile: sidebar becomes drawer */
+  @media (max-width: 1024px) {
+    .doc-main {
+      margin-left: 0;
+    }
+
+    .doc-content {
+      padding: var(--space-lg);
+      padding-top: calc(var(--space-3xl) + 60px); /* Account for mobile header */
+    }
+  }
+</style>

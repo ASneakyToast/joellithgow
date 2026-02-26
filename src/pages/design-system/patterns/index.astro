@@ -1,0 +1,561 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import Button from '@components/primitives/Button.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+
+const pageTitle = 'Patterns';
+const pageDescription = 'Reusable compositions and design patterns built from primitives.';
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="patterns">
+  <header class="doc-header">
+    <h1 class="page-title">Patterns</h1>
+    <p class="page-lead">
+      Common compositions that combine primitives into reusable design solutions.
+    </p>
+  </header>
+
+  <!-- Media Frame -->
+  <section class="doc-section">
+    <h2 class="section-title">Media Frame</h2>
+    <p class="section-description">
+      Screenshots and images use a consistent frame treatment with thick borders and brutalist shadows.
+    </p>
+
+    <div class="pattern-demo">
+      <div class="media-frame">
+        <div class="media-placeholder">
+          <span>Image Content</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pattern-tokens">
+      <code>--media-border-width: var(--border-width-thick)</code>
+      <code>--media-radius: var(--radius-md)</code>
+      <code>--media-shadow: var(--shadow-lg)</code>
+      <code>--media-shadow-hover: var(--shadow-xl)</code>
+    </div>
+
+    <div class="pattern-code">
+      <code>
+        .media-frame &#123;<br/>
+        &nbsp;&nbsp;border: var(--media-border-width) solid var(--bg-dark);<br/>
+        &nbsp;&nbsp;border-radius: var(--media-radius);<br/>
+        &nbsp;&nbsp;box-shadow: var(--media-shadow) var(--accent-secondary);<br/>
+        &nbsp;&nbsp;transition: transform var(--duration-slow), box-shadow var(--duration-slow);<br/>
+        &#125;<br/>
+        <br/>
+        .media-frame:hover &#123;<br/>
+        &nbsp;&nbsp;transform: translate(-4px, -4px);<br/>
+        &nbsp;&nbsp;box-shadow: var(--media-shadow-hover) var(--accent-secondary);<br/>
+        &#125;
+      </code>
+    </div>
+  </section>
+
+  <!-- CTA Pattern -->
+  <section class="doc-section">
+    <h2 class="section-title">CTA Pattern</h2>
+    <p class="section-description">
+      Call-to-action links with arrow indicators and brutalist styling.
+    </p>
+
+    <div class="pattern-demo">
+      <a href="#" class="cta-link">View case study &rarr;</a>
+    </div>
+
+    <div class="pattern-demo" style="background: var(--bg-dark);">
+      <a href="#" class="cta-link light">View project &rarr;</a>
+    </div>
+
+    <div class="pattern-code">
+      <code>
+        .cta-link &#123;<br/>
+        &nbsp;&nbsp;font-weight: var(--font-bold);<br/>
+        &nbsp;&nbsp;color: var(--accent-primary);<br/>
+        &nbsp;&nbsp;text-decoration: none;<br/>
+        &nbsp;&nbsp;border-bottom: var(--border-width) solid var(--accent-secondary);<br/>
+        &nbsp;&nbsp;transition: color var(--duration-fast), border-color var(--duration-fast);<br/>
+        &#125;<br/>
+        <br/>
+        .cta-link:hover &#123;<br/>
+        &nbsp;&nbsp;color: var(--accent-secondary);<br/>
+        &nbsp;&nbsp;border-color: var(--accent-primary);<br/>
+        &#125;
+      </code>
+    </div>
+  </section>
+
+  <!-- Meta Display -->
+  <section class="doc-section">
+    <h2 class="section-title">Meta Display</h2>
+    <p class="section-description">
+      Project metadata with number, divider, and type pattern. Used in case study sidebars.
+    </p>
+
+    <div class="pattern-demo meta-demo">
+      <span class="meta-number">01</span>
+      <span class="meta-divider"></span>
+      <span class="meta-type">case study</span>
+    </div>
+
+    <div class="pattern-demo meta-demo">
+      <span class="meta-number">02</span>
+      <span class="meta-divider"></span>
+      <span class="meta-type">side project</span>
+    </div>
+
+    <div class="pattern-code">
+      <code>
+        .meta-number &#123;<br/>
+        &nbsp;&nbsp;font-size: var(--heading-md);<br/>
+        &nbsp;&nbsp;font-weight: var(--font-bold);<br/>
+        &nbsp;&nbsp;color: var(--accent-primary);<br/>
+        &#125;<br/>
+        <br/>
+        .meta-divider &#123;<br/>
+        &nbsp;&nbsp;width: 40px;<br/>
+        &nbsp;&nbsp;height: 2px;<br/>
+        &nbsp;&nbsp;background: var(--accent-primary);<br/>
+        &#125;<br/>
+        <br/>
+        .meta-type &#123;<br/>
+        &nbsp;&nbsp;text-transform: uppercase;<br/>
+        &nbsp;&nbsp;letter-spacing: var(--tracking-wide);<br/>
+        &nbsp;&nbsp;font-size: var(--text-sm);<br/>
+        &nbsp;&nbsp;color: var(--text-secondary);<br/>
+        &#125;
+      </code>
+    </div>
+  </section>
+
+  <!-- Card with Badge -->
+  <section class="doc-section">
+    <h2 class="section-title">Card Composition</h2>
+    <p class="section-description">
+      Common card layout with badge, title, description, and CTA.
+    </p>
+
+    <div class="pattern-demo">
+      <Card variant="interactive" padding="lg" href="#">
+        <Badge variant="tertiary" size="sm">2024</Badge>
+        <h3 class="card-title">Project Title</h3>
+        <p class="card-description">A brief description of the project and what makes it interesting.</p>
+        <span class="card-cta">View project &rarr;</span>
+      </Card>
+    </div>
+
+    <div class="pattern-structure">
+      <h4>Structure</h4>
+      <ul>
+        <li><code>Badge</code> - Date or category</li>
+        <li><code>h3</code> - Project title</li>
+        <li><code>p</code> - Brief description</li>
+        <li><code>span.cta</code> - Action indicator</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Section Header -->
+  <section class="doc-section">
+    <h2 class="section-title">Section Header</h2>
+    <p class="section-description">
+      Consistent section headers with title, description, and optional action.
+    </p>
+
+    <div class="pattern-demo section-header-demo">
+      <header class="section-header-example">
+        <div class="section-header-text">
+          <h2>Section Title</h2>
+          <p>A brief description of what this section contains.</p>
+        </div>
+        <Button variant="ghost" size="sm">View all</Button>
+      </header>
+    </div>
+
+    <div class="pattern-tokens">
+      <code>--section-spacing: var(--space-5xl)</code>
+      <code>--heading-spacing: var(--space-lg)</code>
+    </div>
+  </section>
+
+  <!-- Tag List -->
+  <section class="doc-section">
+    <h2 class="section-title">Tag List</h2>
+    <p class="section-description">
+      Horizontal list of badges for categories, skills, or technologies.
+    </p>
+
+    <div class="pattern-demo">
+      <div class="tag-list">
+        <Badge variant="ghost" size="sm">React</Badge>
+        <Badge variant="ghost" size="sm">TypeScript</Badge>
+        <Badge variant="ghost" size="sm">Astro</Badge>
+        <Badge variant="ghost" size="sm">CSS</Badge>
+        <Badge variant="ghost" size="sm">Figma</Badge>
+      </div>
+    </div>
+
+    <div class="pattern-code">
+      <code>
+        .tag-list &#123;<br/>
+        &nbsp;&nbsp;display: flex;<br/>
+        &nbsp;&nbsp;flex-wrap: wrap;<br/>
+        &nbsp;&nbsp;gap: var(--space-sm);<br/>
+        &#125;
+      </code>
+    </div>
+  </section>
+
+  <!-- Hover Lift -->
+  <section class="doc-section">
+    <h2 class="section-title">Hover Lift Effect</h2>
+    <p class="section-description">
+      Standard hover interaction for interactive elements. Lift up-left while increasing shadow.
+    </p>
+
+    <div class="pattern-demo lift-demo">
+      <div class="lift-box small">Small lift</div>
+      <div class="lift-box large">Large lift</div>
+    </div>
+
+    <div class="lift-specs">
+      <div class="lift-spec">
+        <h4>Subtle (Buttons, Badges)</h4>
+        <code>transform: translate(-2px, -2px)</code>
+        <code>shadow: md &rarr; lg</code>
+      </div>
+      <div class="lift-spec">
+        <h4>Pronounced (Cards, Media)</h4>
+        <code>transform: translate(-4px, -4px)</code>
+        <code>shadow: lg &rarr; xl</code>
+      </div>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Badge', href: '/design-system/components/badge' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Pattern Demo */
+  .pattern-demo {
+    padding: var(--space-xl);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+  }
+
+  /* Media Frame */
+  .media-frame {
+    max-width: 300px;
+    border: var(--border-width-thick) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+    overflow: hidden;
+    transition: transform var(--duration-slow), box-shadow var(--duration-slow);
+    cursor: pointer;
+  }
+
+  .media-frame:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .media-placeholder {
+    padding: var(--space-4xl) var(--space-3xl);
+    background: var(--gradient-primary-subtle);
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  /* CTA Link */
+  .cta-link {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    text-decoration: none;
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+    padding-bottom: var(--space-xs);
+    transition: color var(--duration-fast), border-color var(--duration-fast);
+  }
+
+  .cta-link:hover {
+    color: var(--accent-secondary);
+    border-color: var(--accent-primary);
+  }
+
+  .cta-link.light {
+    color: var(--text-light);
+    border-color: var(--accent-primary);
+  }
+
+  .cta-link.light:hover {
+    color: var(--accent-tertiary);
+  }
+
+  /* Meta Display */
+  .meta-demo {
+    gap: var(--space-md);
+  }
+
+  .meta-number {
+    font-size: var(--heading-md);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+
+  .meta-divider {
+    width: 40px;
+    height: 2px;
+    background: var(--accent-primary);
+  }
+
+  .meta-type {
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  /* Card Composition */
+  .card-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin: var(--space-md) 0 var(--space-sm);
+  }
+
+  .card-description {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-md);
+    line-height: var(--leading-relaxed);
+  }
+
+  .card-cta {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+
+  /* Pattern Tokens */
+  .pattern-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .pattern-tokens code {
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    background: var(--gradient-primary-subtle);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+  }
+
+  /* Pattern Code */
+  .pattern-code {
+    padding: var(--space-lg);
+    background: var(--bg-dark);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    overflow-x: auto;
+  }
+
+  .pattern-code code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--text-light);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Pattern Structure */
+  .pattern-structure {
+    padding: var(--space-lg);
+    background: var(--gradient-secondary-subtle);
+    border-left: var(--border-width-thick) solid var(--accent-secondary);
+    border-radius: var(--radius-sm);
+  }
+
+  .pattern-structure h4 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md);
+  }
+
+  .pattern-structure ul {
+    margin: 0;
+    padding-left: var(--space-lg);
+  }
+
+  .pattern-structure li {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .pattern-structure code {
+    background: var(--bg-secondary);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+  }
+
+  /* Section Header Demo */
+  .section-header-demo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header-example {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-lg);
+    width: 100%;
+  }
+
+  .section-header-text h2 {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .section-header-text p {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Tag List */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  /* Lift Demo */
+  .lift-demo {
+    gap: var(--space-xl);
+  }
+
+  .lift-box {
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .lift-box.small {
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .lift-box.small:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .lift-box.large {
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .lift-box.large:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .lift-specs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .lift-spec {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .lift-spec h4 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md);
+  }
+
+  .lift-spec code {
+    display: block;
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .section-header-example {
+      flex-direction: column;
+    }
+
+    .lift-specs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

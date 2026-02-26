@@ -1,0 +1,331 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import ComponentShowcase from '@components/docs/ComponentShowcase.astro';
+import TokenTable from '@components/docs/TokenTable.astro';
+import Button from '@components/primitives/Button.astro';
+
+const pageTitle = 'Button';
+const pageDescription = 'Interactive button component with multiple variants and sizes.';
+
+const buttonTokens = [
+  { component: '--button-padding-y', semantic: '--space-sm', primitive: '--p-space-8', value: '8px' },
+  { component: '--button-padding-x', semantic: '--space-lg', primitive: '--p-space-24', value: '24px' },
+  { component: '--button-radius', semantic: '--radius-md', primitive: '--p-radius-8', value: '8px' },
+  { component: '--button-font-size', semantic: '--text-base', primitive: '--p-font-16', value: '16px' },
+  { component: '--button-font-weight', semantic: '--font-bold', primitive: '--p-weight-bold', value: '700' },
+  { component: '--button-border-width', semantic: '--border-width-thick', primitive: '--p-border-3', value: '3px' },
+  { component: '--button-shadow', semantic: '--shadow-md', primitive: '--p-shadow-4', value: '4px 4px 0px' },
+  { component: '--button-shadow-hover', semantic: '--shadow-lg', primitive: '--p-shadow-6', value: '6px 6px 0px' },
+];
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="components" currentPage="button">
+  <header class="doc-header">
+    <h1 class="page-title">Button</h1>
+    <p class="page-lead">
+      Interactive elements for user actions. Four variants, three sizes.
+    </p>
+  </header>
+
+  <!-- Variants -->
+  <section class="doc-section">
+    <h2 class="section-title">Variants</h2>
+
+    <ComponentShowcase
+      title="Primary"
+      description="The main call-to-action. Use sparingly for the most important action."
+    >
+      <Button variant="primary">Primary Button</Button>
+    </ComponentShowcase>
+
+    <ComponentShowcase
+      title="Secondary"
+      description="Secondary actions that complement the primary button."
+    >
+      <Button variant="secondary">Secondary Button</Button>
+    </ComponentShowcase>
+
+    <ComponentShowcase
+      title="Ghost"
+      description="Subtle actions. Links disguised as buttons, or less prominent actions."
+    >
+      <Button variant="ghost">Ghost Button</Button>
+    </ComponentShowcase>
+
+    <ComponentShowcase
+      title="Danger"
+      description="Destructive actions. Delete, remove, or other irreversible operations."
+    >
+      <Button variant="danger">Danger Button</Button>
+    </ComponentShowcase>
+  </section>
+
+  <!-- Sizes -->
+  <section class="doc-section">
+    <h2 class="section-title">Sizes</h2>
+
+    <ComponentShowcase description="Three sizes to fit different contexts.">
+      <Button variant="primary" size="sm">Small</Button>
+      <Button variant="primary" size="md">Medium</Button>
+      <Button variant="primary" size="lg">Large</Button>
+    </ComponentShowcase>
+  </section>
+
+  <!-- All Combinations -->
+  <section class="doc-section">
+    <h2 class="section-title">All Combinations</h2>
+
+    <div class="combinations-grid">
+      <div class="combo-row">
+        <span class="combo-label">Primary</span>
+        <Button variant="primary" size="sm">Small</Button>
+        <Button variant="primary" size="md">Medium</Button>
+        <Button variant="primary" size="lg">Large</Button>
+      </div>
+
+      <div class="combo-row">
+        <span class="combo-label">Secondary</span>
+        <Button variant="secondary" size="sm">Small</Button>
+        <Button variant="secondary" size="md">Medium</Button>
+        <Button variant="secondary" size="lg">Large</Button>
+      </div>
+
+      <div class="combo-row">
+        <span class="combo-label">Ghost</span>
+        <Button variant="ghost" size="sm">Small</Button>
+        <Button variant="ghost" size="md">Medium</Button>
+        <Button variant="ghost" size="lg">Large</Button>
+      </div>
+
+      <div class="combo-row">
+        <span class="combo-label">Danger</span>
+        <Button variant="danger" size="sm">Small</Button>
+        <Button variant="danger" size="md">Medium</Button>
+        <Button variant="danger" size="lg">Large</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- As Link -->
+  <section class="doc-section">
+    <h2 class="section-title">As Link</h2>
+    <p class="section-description">
+      Buttons can render as anchor tags when given an <code>href</code> prop.
+    </p>
+
+    <ComponentShowcase>
+      <Button variant="primary" href="/design-system">Link Button</Button>
+      <Button variant="secondary" href="/design-system" target="_blank">External Link</Button>
+    </ComponentShowcase>
+  </section>
+
+  <!-- Token Tree -->
+  <section class="doc-section">
+    <h2 class="section-title">Token Tree</h2>
+    <p class="section-description">
+      All button styling derives from component tokens, which reference semantic and primitive values.
+    </p>
+
+    <TokenTable tokens={buttonTokens} />
+  </section>
+
+  <!-- Props API -->
+  <section class="doc-section">
+    <h2 class="section-title">Props</h2>
+
+    <div class="props-table">
+      <div class="props-row header">
+        <span>Prop</span>
+        <span>Type</span>
+        <span>Default</span>
+        <span>Description</span>
+      </div>
+      <div class="props-row">
+        <code>variant</code>
+        <span>'primary' | 'secondary' | 'ghost' | 'danger'</span>
+        <span>'primary'</span>
+        <span>Visual style variant</span>
+      </div>
+      <div class="props-row">
+        <code>size</code>
+        <span>'sm' | 'md' | 'lg'</span>
+        <span>'md'</span>
+        <span>Button size</span>
+      </div>
+      <div class="props-row">
+        <code>href</code>
+        <span>string</span>
+        <span>-</span>
+        <span>Renders as anchor tag</span>
+      </div>
+      <div class="props-row">
+        <code>target</code>
+        <span>string</span>
+        <span>-</span>
+        <span>Link target (when href)</span>
+      </div>
+      <div class="props-row">
+        <code>disabled</code>
+        <span>boolean</span>
+        <span>false</span>
+        <span>Disabled state</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage -->
+  <section class="doc-section">
+    <h2 class="section-title">Usage</h2>
+
+    <div class="code-block">
+      <code>
+        ---<br/>
+        import Button from '@components/primitives/Button.astro';<br/>
+        ---<br/>
+        <br/>
+        &lt;Button variant="primary"&gt;Click me&lt;/Button&gt;<br/>
+        &lt;Button variant="secondary" size="lg"&gt;Large Secondary&lt;/Button&gt;<br/>
+        &lt;Button variant="ghost" href="/page"&gt;Link Button&lt;/Button&gt;
+      </code>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Components', href: '/design-system/components' }}
+    nextPage={{ title: 'Card', href: '/design-system/components/card' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  .section-description code {
+    background: var(--gradient-primary-subtle);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+  }
+
+  /* Combinations Grid */
+  .combinations-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .combo-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-md);
+  }
+
+  .combo-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-secondary);
+    min-width: 80px;
+  }
+
+  /* Props Table */
+  .props-table {
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  .props-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 1fr;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+    font-size: var(--text-sm);
+  }
+
+  .props-row:last-child {
+    border-bottom: none;
+  }
+
+  .props-row.header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-weight: var(--font-bold);
+  }
+
+  .props-row code {
+    font-family: var(--font-family);
+    color: var(--accent-primary);
+  }
+
+  /* Code Block */
+  .code-block {
+    padding: var(--space-lg);
+    background: var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--text-light);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .combo-row {
+      flex-wrap: wrap;
+    }
+
+    .props-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+    }
+  }
+</style>

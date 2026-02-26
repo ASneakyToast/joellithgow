@@ -1,0 +1,109 @@
+---
+/**
+ * DocNav - Previous/Next navigation between documentation pages
+ * Provides linear navigation through the documentation
+ */
+
+export interface Props {
+  prevPage?: {
+    title: string;
+    href: string;
+  };
+  nextPage?: {
+    title: string;
+    href: string;
+  };
+}
+
+const { prevPage, nextPage } = Astro.props;
+---
+
+{(prevPage || nextPage) && (
+  <nav class="doc-nav" aria-label="Page navigation">
+    <div class="nav-prev">
+      {prevPage && (
+        <a href={prevPage.href} class="nav-link">
+          <span class="nav-direction">&larr; Previous</span>
+          <span class="nav-title">{prevPage.title}</span>
+        </a>
+      )}
+    </div>
+    <div class="nav-next">
+      {nextPage && (
+        <a href={nextPage.href} class="nav-link">
+          <span class="nav-direction">Next &rarr;</span>
+          <span class="nav-title">{nextPage.title}</span>
+        </a>
+      )}
+    </div>
+  </nav>
+)}
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .doc-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    margin-top: var(--docs-section-gap);
+    padding-top: var(--space-xl);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .nav-prev,
+  .nav-next {
+    flex: 1;
+  }
+
+  .nav-next {
+    text-align: right;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-link:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+    border-color: var(--accent-primary);
+  }
+
+  .nav-direction {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-primary);
+  }
+
+  .nav-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 768px) {
+    .doc-nav {
+      flex-direction: column;
+    }
+
+    .nav-next {
+      text-align: left;
+    }
+
+    .nav-link {
+      width: 100%;
+    }
+  }
+</style>

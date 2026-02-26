@@ -1,0 +1,129 @@
+---
+/**
+ * TokenTable - Displays token hierarchy in a table format
+ * Shows the three-tier token architecture: Component → Semantic → Primitive → Value
+ */
+
+export interface TokenRow {
+  component: string;
+  semantic: string;
+  primitive: string;
+  value: string;
+}
+
+export interface Props {
+  title?: string;
+  tokens: TokenRow[];
+}
+
+const { title, tokens } = Astro.props;
+---
+
+<div class="token-table-wrapper">
+  {title && <h4 class="table-title">{title}</h4>}
+  <div class="table-scroll">
+    <table class="token-table">
+      <thead>
+        <tr>
+          <th>Component Token</th>
+          <th>Semantic</th>
+          <th>Primitive</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tokens.map((row) => (
+          <tr>
+            <td><code class="token token-component">{row.component}</code></td>
+            <td><code class="token token-semantic">{row.semantic}</code></td>
+            <td><code class="token token-primitive">{row.primitive}</code></td>
+            <td class="value-cell">{row.value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .token-table-wrapper {
+    margin: var(--space-lg) 0;
+  }
+
+  .table-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+  }
+
+  .token-table th,
+  .token-table td {
+    padding: var(--space-sm) var(--space-md);
+    text-align: left;
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+  }
+
+  .token-table th {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .token-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .token-table tr:hover td {
+    background: var(--gradient-primary-subtle);
+  }
+
+  .token {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    border-radius: var(--radius-sm);
+  }
+
+  .token-component {
+    background: var(--gradient-primary-light);
+    border: 1px solid var(--accent-primary);
+    color: var(--text-primary);
+  }
+
+  .token-semantic {
+    background: var(--gradient-secondary-light);
+    border: 1px solid var(--accent-secondary);
+    color: var(--text-primary);
+  }
+
+  .token-primitive {
+    background: var(--gradient-tertiary-light);
+    border: 1px solid var(--accent-tertiary);
+    color: var(--text-primary);
+  }
+
+  .value-cell {
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+  }
+</style>

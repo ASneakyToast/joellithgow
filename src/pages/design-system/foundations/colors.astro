@@ -1,0 +1,378 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import ColorSwatch from '@components/docs/ColorSwatch.astro';
+
+const pageTitle = 'Colors';
+const pageDescription = 'The color system uses a vibrant palette of red, teal, and yellow accents with accessible text colors.';
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="foundations" currentPage="colors">
+  <header class="doc-header">
+    <h1 class="page-title">Colors</h1>
+    <p class="page-lead">
+      A vibrant, intentional palette. Red drives action, teal provides depth, yellow adds warmth.
+    </p>
+  </header>
+
+  <!-- Accent Palette -->
+  <section class="doc-section">
+    <h2 class="section-title">Accent Palette</h2>
+    <p class="section-description">
+      Three accent colors create visual hierarchy and personality. Use them intentionally.
+    </p>
+
+    <div class="color-grid color-grid-3">
+      <ColorSwatch
+        token="--accent-primary"
+        value="#ff6b6b"
+        label="Primary"
+        description="CTAs, links, highlights. The 'action' color."
+        textColor="light"
+      />
+      <ColorSwatch
+        token="--accent-secondary"
+        value="#4ecdc4"
+        label="Secondary"
+        description="Shadows, secondary actions, supporting elements."
+        textColor="light"
+      />
+      <ColorSwatch
+        token="--accent-tertiary"
+        value="#ffe66d"
+        label="Tertiary"
+        description="Dates, badges, subtle highlights."
+        textColor="dark"
+      />
+    </div>
+  </section>
+
+  <!-- Text & Backgrounds -->
+  <section class="doc-section">
+    <h2 class="section-title">Text & Backgrounds</h2>
+
+    <div class="color-grid color-grid-3">
+      <ColorSwatch
+        token="--text-primary"
+        value="#333333"
+        label="Text Primary"
+        description="Headings, body text, primary content."
+        textColor="light"
+      />
+      <ColorSwatch
+        token="--text-secondary"
+        value="#666666"
+        label="Text Secondary"
+        description="Captions, meta text, supporting info."
+        textColor="light"
+      />
+      <ColorSwatch
+        token="--text-light"
+        value="#ffffff"
+        label="Text Light"
+        description="Text on dark backgrounds."
+        textColor="dark"
+      />
+    </div>
+
+    <div class="color-grid color-grid-3" style="margin-top: var(--space-lg);">
+      <ColorSwatch
+        token="--bg-primary"
+        value="#f8f8f8"
+        label="Background"
+        description="Page background, large areas."
+        textColor="dark"
+      />
+      <ColorSwatch
+        token="--bg-secondary"
+        value="#ffffff"
+        label="Surface"
+        description="Cards, modals, elevated surfaces."
+        textColor="dark"
+      />
+      <ColorSwatch
+        token="--bg-dark"
+        value="#333333"
+        label="Dark"
+        description="Footer, dark sections, borders."
+        textColor="light"
+      />
+    </div>
+  </section>
+
+  <!-- Gradients -->
+  <section class="doc-section">
+    <h2 class="section-title">Gradient Utilities</h2>
+    <p class="section-description">
+      Semi-transparent gradients for subtle backgrounds, hover states, and layering effects.
+    </p>
+
+    <div class="gradient-grid">
+      <div class="gradient-card">
+        <div class="gradient-preview" style="background: var(--gradient-primary-light);"></div>
+        <code>--gradient-primary-light</code>
+        <span>Hover states</span>
+      </div>
+      <div class="gradient-card">
+        <div class="gradient-preview" style="background: var(--gradient-primary-subtle);"></div>
+        <code>--gradient-primary-subtle</code>
+        <span>Backgrounds</span>
+      </div>
+      <div class="gradient-card">
+        <div class="gradient-preview" style="background: var(--gradient-secondary-light);"></div>
+        <code>--gradient-secondary-light</code>
+        <span>Shadows</span>
+      </div>
+      <div class="gradient-card">
+        <div class="gradient-preview" style="background: var(--gradient-tertiary-light);"></div>
+        <code>--gradient-tertiary-light</code>
+        <span>Highlights</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage Guidelines -->
+  <section class="doc-section">
+    <h2 class="section-title">Usage Guidelines</h2>
+
+    <div class="guidelines">
+      <div class="guideline do">
+        <h3>Do</h3>
+        <ul>
+          <li>Use <strong>primary accent</strong> for interactive elements: buttons, links, focus states</li>
+          <li>Use <strong>secondary accent</strong> for shadows and supporting visuals</li>
+          <li>Use <strong>tertiary accent</strong> sparingly for dates, tags, subtle emphasis</li>
+          <li>Maintain sufficient contrast for accessibility (WCAG AA)</li>
+        </ul>
+      </div>
+
+      <div class="guideline dont">
+        <h3>Don't</h3>
+        <ul>
+          <li>Don't use accent colors for body text</li>
+          <li>Don't mix all three accents in a single component</li>
+          <li>Don't reduce opacity below readable contrast levels</li>
+          <li>Don't use colors that clash with the minimal theme</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Theme Comparison -->
+  <section class="doc-section">
+    <h2 class="section-title">Theme Comparison</h2>
+    <p class="section-description">
+      Colors adapt between themes. The default theme is vibrant; minimal is monochromatic.
+    </p>
+
+    <div class="theme-comparison">
+      <div class="theme-card">
+        <h3>Default Theme</h3>
+        <div class="theme-swatches">
+          <div class="mini-swatch" style="background: #ff6b6b;"></div>
+          <div class="mini-swatch" style="background: #4ecdc4;"></div>
+          <div class="mini-swatch" style="background: #ffe66d;"></div>
+        </div>
+        <p>Vibrant red, teal, and yellow. Monospace typography. Playful rotations.</p>
+      </div>
+
+      <div class="theme-card">
+        <h3>Minimal Theme</h3>
+        <div class="theme-swatches">
+          <div class="mini-swatch" style="background: #000000;"></div>
+          <div class="mini-swatch" style="background: #333333;"></div>
+          <div class="mini-swatch" style="background: #666666;"></div>
+        </div>
+        <p>Grayscale palette. System fonts. No rotations. Clean and professional.</p>
+      </div>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Foundations', href: '/design-system/foundations' }}
+    nextPage={{ title: 'Typography', href: '/design-system/foundations/typography' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Color Grid */
+  .color-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .color-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Gradient Grid */
+  .gradient-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+  }
+
+  .gradient-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .gradient-preview {
+    height: 60px;
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .gradient-card code {
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+  }
+
+  .gradient-card span {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  /* Guidelines */
+  .guidelines {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .guideline {
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+  }
+
+  .guideline.do {
+    background: var(--gradient-secondary-subtle);
+    border-left: var(--border-width-thick) solid var(--accent-secondary);
+  }
+
+  .guideline.dont {
+    background: var(--gradient-primary-subtle);
+    border-left: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .guideline h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md);
+  }
+
+  .guideline.do h3 { color: var(--accent-secondary); }
+  .guideline.dont h3 { color: var(--accent-primary); }
+
+  .guideline ul {
+    margin: 0;
+    padding-left: var(--space-lg);
+  }
+
+  .guideline li {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Theme Comparison */
+  .theme-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .theme-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .theme-card h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md);
+  }
+
+  .theme-swatches {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .mini-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--bg-dark);
+  }
+
+  .theme-card p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .color-grid-3 {
+      grid-template-columns: 1fr;
+    }
+
+    .gradient-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .guidelines,
+    .theme-comparison {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

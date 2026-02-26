@@ -1,0 +1,375 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import ComponentShowcase from '@components/docs/ComponentShowcase.astro';
+import TokenTable from '@components/docs/TokenTable.astro';
+import Badge from '@components/primitives/Badge.astro';
+
+const pageTitle = 'Badge';
+const pageDescription = 'Inline status indicators, labels, and tags with semantic variants.';
+
+const badgeTokens = [
+  { component: '--badge-padding-y', semantic: '--space-xs', primitive: '--p-space-4', value: '4px' },
+  { component: '--badge-padding-x', semantic: '--space-sm', primitive: '--p-space-8', value: '8px' },
+  { component: '--badge-radius', semantic: '--radius-sm', primitive: '--p-radius-4', value: '4px' },
+  { component: '--badge-font-size', semantic: '--text-xs', primitive: '--p-font-12', value: '12px' },
+  { component: '--badge-font-weight', semantic: '--font-semibold', primitive: '--p-weight-semibold', value: '600' },
+  { component: '--badge-letter-spacing', semantic: '--tracking-wide', primitive: '--p-tracking-wide', value: '0.02em' },
+];
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="components" currentPage="badge">
+  <header class="doc-header">
+    <h1 class="page-title">Badge</h1>
+    <p class="page-lead">
+      Compact labels for status, categories, and metadata. Seven semantic variants.
+    </p>
+  </header>
+
+  <!-- Variants -->
+  <section class="doc-section">
+    <h2 class="section-title">Variants</h2>
+
+    <ComponentShowcase title="Accent Variants" description="Match the accent color palette.">
+      <Badge variant="default">Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="tertiary">Tertiary</Badge>
+      <Badge variant="ghost">Ghost</Badge>
+    </ComponentShowcase>
+
+    <ComponentShowcase title="Semantic Variants" description="For status indication.">
+      <Badge variant="success">Success</Badge>
+      <Badge variant="warning">Warning</Badge>
+      <Badge variant="danger">Danger</Badge>
+    </ComponentShowcase>
+  </section>
+
+  <!-- Sizes -->
+  <section class="doc-section">
+    <h2 class="section-title">Sizes</h2>
+
+    <ComponentShowcase description="Three sizes for different contexts.">
+      <Badge variant="default" size="sm">Small</Badge>
+      <Badge variant="default" size="md">Medium</Badge>
+      <Badge variant="default" size="lg">Large</Badge>
+    </ComponentShowcase>
+  </section>
+
+  <!-- All Combinations -->
+  <section class="doc-section">
+    <h2 class="section-title">Size Comparison</h2>
+
+    <div class="size-grid">
+      <div class="size-row">
+        <span class="size-label">Small</span>
+        <Badge variant="default" size="sm">Default</Badge>
+        <Badge variant="secondary" size="sm">Secondary</Badge>
+        <Badge variant="tertiary" size="sm">Tertiary</Badge>
+        <Badge variant="ghost" size="sm">Ghost</Badge>
+        <Badge variant="success" size="sm">Success</Badge>
+        <Badge variant="warning" size="sm">Warning</Badge>
+        <Badge variant="danger" size="sm">Danger</Badge>
+      </div>
+
+      <div class="size-row">
+        <span class="size-label">Medium</span>
+        <Badge variant="default" size="md">Default</Badge>
+        <Badge variant="secondary" size="md">Secondary</Badge>
+        <Badge variant="tertiary" size="md">Tertiary</Badge>
+        <Badge variant="ghost" size="md">Ghost</Badge>
+        <Badge variant="success" size="md">Success</Badge>
+        <Badge variant="warning" size="md">Warning</Badge>
+        <Badge variant="danger" size="md">Danger</Badge>
+      </div>
+
+      <div class="size-row">
+        <span class="size-label">Large</span>
+        <Badge variant="default" size="lg">Default</Badge>
+        <Badge variant="secondary" size="lg">Secondary</Badge>
+        <Badge variant="tertiary" size="lg">Tertiary</Badge>
+        <Badge variant="ghost" size="lg">Ghost</Badge>
+        <Badge variant="success" size="lg">Success</Badge>
+        <Badge variant="warning" size="lg">Warning</Badge>
+        <Badge variant="danger" size="lg">Danger</Badge>
+      </div>
+    </div>
+  </section>
+
+  <!-- As Link -->
+  <section class="doc-section">
+    <h2 class="section-title">As Link</h2>
+    <p class="section-description">
+      Badges can be clickable when given an <code>href</code> prop. Useful for tag navigation.
+    </p>
+
+    <ComponentShowcase>
+      <Badge variant="default" href="/design-system">#design</Badge>
+      <Badge variant="secondary" href="/design-system">#components</Badge>
+      <Badge variant="tertiary" href="/design-system">#tokens</Badge>
+    </ComponentShowcase>
+  </section>
+
+  <!-- Use Cases -->
+  <section class="doc-section">
+    <h2 class="section-title">Use Cases</h2>
+
+    <div class="use-cases">
+      <div class="use-case">
+        <h3>Status Indicators</h3>
+        <div class="use-case-demo">
+          <Badge variant="success">Active</Badge>
+          <Badge variant="warning">Pending</Badge>
+          <Badge variant="danger">Offline</Badge>
+        </div>
+      </div>
+
+      <div class="use-case">
+        <h3>Categories & Tags</h3>
+        <div class="use-case-demo">
+          <Badge variant="default">#react</Badge>
+          <Badge variant="secondary">#typescript</Badge>
+          <Badge variant="tertiary">#design-system</Badge>
+        </div>
+      </div>
+
+      <div class="use-case">
+        <h3>Metadata</h3>
+        <div class="use-case-demo">
+          <Badge variant="ghost">v1.0</Badge>
+          <Badge variant="ghost">5 min read</Badge>
+          <Badge variant="ghost">2024</Badge>
+        </div>
+      </div>
+
+      <div class="use-case">
+        <h3>Labels</h3>
+        <div class="use-case-demo">
+          <Badge variant="default">New</Badge>
+          <Badge variant="secondary">Featured</Badge>
+          <Badge variant="warning">Beta</Badge>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Token Tree -->
+  <section class="doc-section">
+    <h2 class="section-title">Token Tree</h2>
+    <TokenTable tokens={badgeTokens} />
+  </section>
+
+  <!-- Props API -->
+  <section class="doc-section">
+    <h2 class="section-title">Props</h2>
+
+    <div class="props-table">
+      <div class="props-row header">
+        <span>Prop</span>
+        <span>Type</span>
+        <span>Default</span>
+        <span>Description</span>
+      </div>
+      <div class="props-row">
+        <code>variant</code>
+        <span>'default' | 'secondary' | 'tertiary' | 'ghost' | 'success' | 'warning' | 'danger'</span>
+        <span>'default'</span>
+        <span>Color variant</span>
+      </div>
+      <div class="props-row">
+        <code>size</code>
+        <span>'sm' | 'md' | 'lg'</span>
+        <span>'md'</span>
+        <span>Badge size</span>
+      </div>
+      <div class="props-row">
+        <code>href</code>
+        <span>string</span>
+        <span>-</span>
+        <span>Makes badge a link</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage -->
+  <section class="doc-section">
+    <h2 class="section-title">Usage</h2>
+
+    <div class="code-block">
+      <code>
+        ---<br/>
+        import Badge from '@components/primitives/Badge.astro';<br/>
+        ---<br/>
+        <br/>
+        &lt;Badge variant="default"&gt;Label&lt;/Badge&gt;<br/>
+        &lt;Badge variant="success" size="sm"&gt;Active&lt;/Badge&gt;<br/>
+        &lt;Badge variant="ghost" href="/tags/design"&gt;#design&lt;/Badge&gt;
+      </code>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Card', href: '/design-system/components/card' }}
+    nextPage={{ title: 'Patterns', href: '/design-system/patterns' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  .section-description code {
+    background: var(--gradient-primary-subtle);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+  }
+
+  /* Size Grid */
+  .size-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .size-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-md);
+    flex-wrap: wrap;
+  }
+
+  .size-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-secondary);
+    min-width: 80px;
+  }
+
+  /* Use Cases */
+  .use-cases {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .use-case {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .use-case h3 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .use-case-demo {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  /* Props Table */
+  .props-table {
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  .props-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 80px 1fr;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+    font-size: var(--text-sm);
+  }
+
+  .props-row:last-child {
+    border-bottom: none;
+  }
+
+  .props-row.header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-weight: var(--font-bold);
+  }
+
+  .props-row code {
+    font-family: var(--font-family);
+    color: var(--accent-primary);
+  }
+
+  /* Code Block */
+  .code-block {
+    padding: var(--space-lg);
+    background: var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--text-light);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .use-cases {
+      grid-template-columns: 1fr;
+    }
+
+    .props-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+    }
+  }
+</style>

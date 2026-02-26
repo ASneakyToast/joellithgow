@@ -1,0 +1,210 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+
+const pageTitle = 'Foundations';
+const pageDescription = 'The building blocks of the design system: colors, typography, spacing, and elevation.';
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="foundations">
+  <header class="doc-header">
+    <h1 class="page-title">Foundations</h1>
+    <p class="page-lead">
+      The building blocks of the design system. These tokens define the visual language used across all components.
+    </p>
+  </header>
+
+  <section class="doc-section">
+    <div class="foundations-grid">
+      <a href="/design-system/foundations/colors" class="foundation-card foundation-colors">
+        <div class="foundation-preview">
+          <div class="color-preview-stack">
+            <div class="color-dot" style="background: var(--accent-primary);"></div>
+            <div class="color-dot" style="background: var(--accent-secondary);"></div>
+            <div class="color-dot" style="background: var(--accent-tertiary);"></div>
+          </div>
+        </div>
+        <div class="foundation-content">
+          <h2>Colors</h2>
+          <p>Accent palette, text colors, backgrounds, and gradient utilities.</p>
+        </div>
+      </a>
+
+      <a href="/design-system/foundations/typography" class="foundation-card foundation-typography">
+        <div class="foundation-preview">
+          <span class="type-preview-hero">Aa</span>
+        </div>
+        <div class="foundation-content">
+          <h2>Typography</h2>
+          <p>Type hierarchy, font weights, line heights, and letter spacing.</p>
+        </div>
+      </a>
+
+      <a href="/design-system/foundations/spacing" class="foundation-card foundation-spacing">
+        <div class="foundation-preview">
+          <div class="spacing-preview">
+            <div class="spacing-line" style="width: 16px;"></div>
+            <div class="spacing-line" style="width: 24px;"></div>
+            <div class="spacing-line" style="width: 32px;"></div>
+            <div class="spacing-line" style="width: 48px;"></div>
+          </div>
+        </div>
+        <div class="foundation-content">
+          <h2>Spacing</h2>
+          <p>4px grid system, semantic spacing scale, and rhythm patterns.</p>
+        </div>
+      </a>
+
+      <a href="/design-system/foundations/elevation" class="foundation-card foundation-elevation">
+        <div class="foundation-preview">
+          <div class="elevation-preview">
+            <div class="elevation-box"></div>
+          </div>
+        </div>
+        <div class="foundation-content">
+          <h2>Elevation</h2>
+          <p>Brutalist shadows, border radius, and depth system.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Overview', href: '/design-system' }}
+    nextPage={{ title: 'Colors', href: '/design-system/foundations/colors' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .foundations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .foundation-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    overflow: hidden;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .foundation-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+    border-color: var(--accent-primary);
+  }
+
+  .foundation-preview {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary-subtle);
+    border-bottom: var(--border-width) solid var(--bg-dark);
+  }
+
+  .foundation-content {
+    padding: var(--space-lg);
+  }
+
+  .foundation-content h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .foundation-content p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Color preview */
+  .color-preview-stack {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .color-dot {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--bg-dark);
+  }
+
+  /* Typography preview */
+  .type-preview-hero {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--accent-secondary);
+  }
+
+  /* Spacing preview */
+  .spacing-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: flex-start;
+  }
+
+  .spacing-line {
+    height: 8px;
+    background: var(--accent-tertiary);
+    border: var(--border-width) solid var(--bg-dark);
+  }
+
+  /* Elevation preview */
+  .elevation-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .elevation-box {
+    width: 64px;
+    height: 64px;
+    background: var(--bg-secondary);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+    border-radius: var(--radius-md);
+  }
+
+  @media (max-width: 768px) {
+    .foundations-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

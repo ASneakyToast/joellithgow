@@ -1,0 +1,269 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import Button from '@components/primitives/Button.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+
+const pageTitle = 'Components';
+const pageDescription = 'Reusable UI primitives built on the token system.';
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="components">
+  <header class="doc-header">
+    <h1 class="page-title">Components</h1>
+    <p class="page-lead">
+      Reusable UI primitives. Each component uses Tier 3 tokens for consistent styling.
+    </p>
+  </header>
+
+  <section class="doc-section">
+    <div class="components-grid">
+      <a href="/design-system/components/button" class="component-card">
+        <div class="component-preview">
+          <Button variant="primary">Button</Button>
+        </div>
+        <div class="component-content">
+          <h2>Button</h2>
+          <p>Primary, secondary, ghost, and danger variants. Three sizes.</p>
+          <div class="component-tags">
+            <Badge variant="ghost" size="sm">Interactive</Badge>
+            <Badge variant="ghost" size="sm">4 variants</Badge>
+          </div>
+        </div>
+      </a>
+
+      <a href="/design-system/components/card" class="component-card">
+        <div class="component-preview">
+          <Card variant="elevated" padding="sm">
+            <span class="preview-card-text">Card</span>
+          </Card>
+        </div>
+        <div class="component-content">
+          <h2>Card</h2>
+          <p>Container with multiple variants including interactive and alternating styles.</p>
+          <div class="component-tags">
+            <Badge variant="ghost" size="sm">Container</Badge>
+            <Badge variant="ghost" size="sm">6 variants</Badge>
+          </div>
+        </div>
+      </a>
+
+      <a href="/design-system/components/badge" class="component-card">
+        <div class="component-preview">
+          <div class="badge-preview-row">
+            <Badge variant="default">Default</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="tertiary">Tertiary</Badge>
+          </div>
+        </div>
+        <div class="component-content">
+          <h2>Badge</h2>
+          <p>Status indicators, labels, and tags. Semantic color variants.</p>
+          <div class="component-tags">
+            <Badge variant="ghost" size="sm">Inline</Badge>
+            <Badge variant="ghost" size="sm">7 variants</Badge>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Quick Reference -->
+  <section class="doc-section">
+    <h2 class="section-title">Component Tokens</h2>
+    <p class="section-description">
+      Each component has its own Tier 3 tokens that reference semantic tokens.
+    </p>
+
+    <div class="tokens-overview">
+      <div class="token-group">
+        <h3>Button</h3>
+        <code>--button-padding-y</code>
+        <code>--button-padding-x</code>
+        <code>--button-radius</code>
+        <code>--button-shadow</code>
+      </div>
+
+      <div class="token-group">
+        <h3>Card</h3>
+        <code>--card-padding</code>
+        <code>--card-radius</code>
+        <code>--card-shadow</code>
+        <code>--card-border-width</code>
+      </div>
+
+      <div class="token-group">
+        <h3>Badge</h3>
+        <code>--badge-padding-y</code>
+        <code>--badge-padding-x</code>
+        <code>--badge-font-size</code>
+        <code>--badge-letter-spacing</code>
+      </div>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Elevation', href: '/design-system/foundations/elevation' }}
+    nextPage={{ title: 'Button', href: '/design-system/components/button' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Components Grid */
+  .components-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .component-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    overflow: hidden;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .component-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+    border-color: var(--accent-primary);
+  }
+
+  .component-preview {
+    padding: var(--space-xl);
+    background: var(--gradient-primary-subtle);
+    border-bottom: var(--border-width) solid var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+  }
+
+  .preview-card-text {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
+
+  .badge-preview-row {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .component-content {
+    padding: var(--space-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .component-content h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .component-content p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-md);
+    line-height: var(--leading-relaxed);
+    flex: 1;
+  }
+
+  .component-tags {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  /* Tokens Overview */
+  .tokens-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .token-group {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .token-group h3 {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .token-group code {
+    display: block;
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+    padding: var(--space-xs) 0;
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+  }
+
+  .token-group code:last-child {
+    border-bottom: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .components-grid,
+    .tokens-overview {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

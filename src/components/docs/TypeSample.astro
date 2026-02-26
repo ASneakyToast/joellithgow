@@ -1,0 +1,78 @@
+---
+/**
+ * TypeSample - Typography sample with live token demonstration
+ * Shows text at a specific size with its token information
+ */
+
+export interface Props {
+  role: string;
+  token: string;
+  sampleText?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  additionalStyles?: string;
+}
+
+const {
+  role,
+  token,
+  sampleText = 'The quick brown fox jumps over the lazy dog',
+  fontWeight = 'var(--font-bold)',
+  lineHeight = 'var(--leading-tight)',
+  additionalStyles = ''
+} = Astro.props;
+---
+
+<div class="type-sample">
+  <div class="type-meta">
+    <span class="type-role">{role}</span>
+    <code class="type-token">{token}</code>
+  </div>
+  <span
+    class="type-preview"
+    style={`font-size: var(${token}); font-weight: ${fontWeight}; line-height: ${lineHeight}; ${additionalStyles}`}
+  >
+    {sampleText}
+  </span>
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .type-sample {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+  }
+
+  .type-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .type-role {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-primary);
+    background: var(--gradient-primary-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+  }
+
+  .type-token {
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+  }
+
+  .type-preview {
+    color: var(--text-primary);
+    overflow-wrap: break-word;
+  }
+</style>

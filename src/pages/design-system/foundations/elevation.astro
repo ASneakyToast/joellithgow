@@ -1,0 +1,540 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+
+const pageTitle = 'Elevation';
+const pageDescription = 'Brutalist shadows with hard offsets, border radius, and depth system.';
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="foundations" currentPage="elevation">
+  <header class="doc-header">
+    <h1 class="page-title">Elevation</h1>
+    <p class="page-lead">
+      Brutalist shadows use hard offsets with no blur. Combined with thick borders, they create a bold, tactile depth system.
+    </p>
+  </header>
+
+  <!-- Shadow Scale -->
+  <section class="doc-section">
+    <h2 class="section-title">Shadow Scale</h2>
+    <p class="section-description">
+      Shadows increase in offset distance. The secondary accent color gives them personality.
+    </p>
+
+    <div class="elevation-grid">
+      <div class="elevation-card" style="box-shadow: none; border: 1px solid var(--text-secondary);">
+        <span class="elevation-label">Flat</span>
+        <code>No shadow</code>
+        <p>Forms, inputs, subtle containers</p>
+      </div>
+
+      <div class="elevation-card" style="box-shadow: var(--shadow-sm) var(--accent-secondary);">
+        <span class="elevation-label">Subtle</span>
+        <code>--shadow-sm</code>
+        <p>Badges, tags, inline elements</p>
+      </div>
+
+      <div class="elevation-card" style="box-shadow: var(--shadow-md) var(--accent-secondary);">
+        <span class="elevation-label">Default</span>
+        <code>--shadow-md</code>
+        <p>Buttons, interactive cards</p>
+      </div>
+
+      <div class="elevation-card" style="box-shadow: var(--shadow-lg) var(--accent-secondary);">
+        <span class="elevation-label">Raised</span>
+        <code>--shadow-lg</code>
+        <p>Cards, media frames, dropdowns</p>
+      </div>
+
+      <div class="elevation-card" style="box-shadow: var(--shadow-xl) var(--accent-secondary);">
+        <span class="elevation-label">Prominent</span>
+        <code>--shadow-xl</code>
+        <p>Modals, popovers, hover states</p>
+      </div>
+
+      <div class="elevation-card" style="box-shadow: var(--shadow-2xl) var(--accent-secondary);">
+        <span class="elevation-label">Maximum</span>
+        <code>--shadow-2xl</code>
+        <p>Hero elements, special emphasis</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shadow Values -->
+  <section class="doc-section">
+    <h2 class="section-title">Shadow Values</h2>
+    <p class="section-description">
+      All shadows are hard offsets (no blur) for the brutalist aesthetic.
+    </p>
+
+    <div class="value-table">
+      <div class="value-row header">
+        <span>Token</span>
+        <span>Offset</span>
+        <span>CSS Value</span>
+      </div>
+      <div class="value-row">
+        <code>--shadow-sm</code>
+        <span>2px</span>
+        <span class="css-value">2px 2px 0px</span>
+      </div>
+      <div class="value-row">
+        <code>--shadow-md</code>
+        <span>4px</span>
+        <span class="css-value">4px 4px 0px</span>
+      </div>
+      <div class="value-row">
+        <code>--shadow-lg</code>
+        <span>6px</span>
+        <span class="css-value">6px 6px 0px</span>
+      </div>
+      <div class="value-row">
+        <code>--shadow-xl</code>
+        <span>8px</span>
+        <span class="css-value">8px 8px 0px</span>
+      </div>
+      <div class="value-row">
+        <code>--shadow-2xl</code>
+        <span>12px</span>
+        <span class="css-value">12px 12px 0px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Border Radius -->
+  <section class="doc-section">
+    <h2 class="section-title">Border Radius</h2>
+    <p class="section-description">
+      Subtle rounding softens the brutalist edges slightly. Use sparingly.
+    </p>
+
+    <div class="radius-grid">
+      <div class="radius-item" style="border-radius: var(--radius-none);">
+        <code>--radius-none</code>
+        <span>0</span>
+      </div>
+
+      <div class="radius-item" style="border-radius: var(--radius-sm);">
+        <code>--radius-sm</code>
+        <span>4px</span>
+      </div>
+
+      <div class="radius-item" style="border-radius: var(--radius-md);">
+        <code>--radius-md</code>
+        <span>8px</span>
+      </div>
+
+      <div class="radius-item" style="border-radius: var(--radius-lg);">
+        <code>--radius-lg</code>
+        <span>12px</span>
+      </div>
+
+      <div class="radius-item" style="border-radius: var(--radius-xl);">
+        <code>--radius-xl</code>
+        <span>16px</span>
+      </div>
+
+      <div class="radius-item" style="border-radius: var(--radius-full);">
+        <code>--radius-full</code>
+        <span>9999px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Border Widths -->
+  <section class="doc-section">
+    <h2 class="section-title">Border Widths</h2>
+    <p class="section-description">
+      Thick borders are a signature of the brutalist style.
+    </p>
+
+    <div class="border-grid">
+      <div class="border-item" style="border-width: var(--border-width-thin);">
+        <code>--border-width-thin</code>
+        <span>1px - Subtle dividers</span>
+      </div>
+
+      <div class="border-item" style="border-width: var(--border-width);">
+        <code>--border-width</code>
+        <span>2px - Default borders</span>
+      </div>
+
+      <div class="border-item" style="border-width: var(--border-width-thick);">
+        <code>--border-width-thick</code>
+        <span>3px - Emphasis, buttons</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo -->
+  <section class="doc-section">
+    <h2 class="section-title">Hover Interaction</h2>
+    <p class="section-description">
+      Elements lift on hover by translating up-left while increasing shadow depth.
+    </p>
+
+    <div class="hover-demo">
+      <div class="hover-card">
+        <span>Hover me</span>
+        <p>Transform: translate(-2px, -2px)</p>
+        <p>Shadow: md &rarr; lg</p>
+      </div>
+
+      <div class="hover-card large">
+        <span>Hover me</span>
+        <p>Transform: translate(-4px, -4px)</p>
+        <p>Shadow: lg &rarr; xl</p>
+      </div>
+    </div>
+
+    <div class="code-example">
+      <code>
+        .card:hover &#123;<br/>
+        &nbsp;&nbsp;transform: translate(-2px, -2px);<br/>
+        &nbsp;&nbsp;box-shadow: var(--shadow-lg) var(--accent-secondary);<br/>
+        &#125;
+      </code>
+    </div>
+  </section>
+
+  <!-- Theme Comparison -->
+  <section class="doc-section">
+    <h2 class="section-title">Theme Differences</h2>
+
+    <div class="theme-comparison">
+      <div class="theme-card">
+        <h3>Default Theme</h3>
+        <div class="theme-demo">
+          <div class="demo-box default-theme">
+            Colored shadows
+          </div>
+        </div>
+        <p>Shadows use the secondary accent color (teal) for personality.</p>
+      </div>
+
+      <div class="theme-card">
+        <h3>Minimal Theme</h3>
+        <div class="theme-demo">
+          <div class="demo-box minimal-theme">
+            Subtle shadows
+          </div>
+        </div>
+        <p>Shadows use soft blur with neutral grays for a cleaner look.</p>
+      </div>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Spacing', href: '/design-system/foundations/spacing' }}
+    nextPage={{ title: 'Components', href: '/design-system/components' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Elevation Grid */
+  .elevation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .elevation-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    text-align: center;
+    transition: all var(--duration-fast);
+  }
+
+  .elevation-card:hover {
+    transform: translate(-2px, -2px);
+  }
+
+  .elevation-label {
+    display: block;
+    font-weight: var(--font-bold);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-xs);
+  }
+
+  .elevation-card code {
+    display: block;
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .elevation-card p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  /* Value Table */
+  .value-table {
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .value-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+  }
+
+  .value-row:last-child {
+    border-bottom: none;
+  }
+
+  .value-row.header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-weight: var(--font-bold);
+    font-size: var(--text-sm);
+  }
+
+  .value-row code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--accent-primary);
+  }
+
+  .css-value {
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  /* Radius Grid */
+  .radius-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+  }
+
+  .radius-item {
+    width: 100px;
+    height: 100px;
+    background: var(--accent-primary);
+    border: var(--border-width) solid var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    color: var(--text-light);
+    transition: transform var(--duration-fast);
+  }
+
+  .radius-item:hover {
+    transform: scale(1.05);
+  }
+
+  .radius-item code {
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+  }
+
+  .radius-item span {
+    font-size: var(--text-xs);
+    opacity: 0.8;
+  }
+
+  /* Border Grid */
+  .border-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .border-item {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border-style: solid;
+    border-color: var(--bg-dark);
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  .border-item code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--accent-primary);
+    min-width: 180px;
+  }
+
+  .border-item span {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  /* Hover Demo */
+  .hover-demo {
+    display: flex;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-lg);
+  }
+
+  .hover-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .hover-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .hover-card.large {
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .hover-card.large:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  }
+
+  .hover-card span {
+    display: block;
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
+  }
+
+  .hover-card p {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .code-example {
+    padding: var(--space-md);
+    background: var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .code-example code {
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    color: var(--text-light);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Theme Comparison */
+  .theme-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .theme-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .theme-card h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-md);
+  }
+
+  .theme-demo {
+    padding: var(--space-lg);
+    background: var(--gradient-primary-subtle);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .demo-box {
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    font-size: var(--text-sm);
+    text-align: center;
+  }
+
+  .demo-box.default-theme {
+    box-shadow: var(--shadow-lg) var(--accent-secondary);
+  }
+
+  .demo-box.minimal-theme {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-card p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .elevation-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .radius-grid {
+      justify-content: center;
+    }
+
+    .hover-demo {
+      flex-direction: column;
+    }
+
+    .theme-comparison {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

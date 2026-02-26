@@ -1,0 +1,466 @@
+---
+import DocLayout from '@layouts/DocLayout.astro';
+import DocNav from '@components/docs/DocNav.astro';
+import SpacingScale from '@components/docs/SpacingScale.astro';
+
+const pageTitle = 'Spacing';
+const pageDescription = 'A 4px grid system with semantic spacing tokens for consistent rhythm and layout.';
+
+const spacingTokens = [
+  { token: '--space-xs', value: '4px', description: 'Tight gaps, badge padding' },
+  { token: '--space-sm', value: '8px', description: 'Button padding, list gaps' },
+  { token: '--space-md', value: '16px', description: 'Card internal spacing' },
+  { token: '--space-lg', value: '24px', description: 'Section internal padding' },
+  { token: '--space-xl', value: '32px', description: 'Component separation' },
+  { token: '--space-2xl', value: '48px', description: 'Section padding' },
+  { token: '--space-3xl', value: '64px', description: 'Large section gaps' },
+  { token: '--space-4xl', value: '96px', description: 'Major section separation' },
+  { token: '--space-5xl', value: '128px', description: 'Page-level sections' },
+];
+---
+
+<DocLayout title={pageTitle} description={pageDescription} section="foundations" currentPage="spacing">
+  <header class="doc-header">
+    <h1 class="page-title">Spacing</h1>
+    <p class="page-lead">
+      Based on a 4px grid. Use semantic names that describe intent, not pixel values.
+    </p>
+  </header>
+
+  <!-- Spacing Scale -->
+  <section class="doc-section">
+    <h2 class="section-title">Spacing Scale</h2>
+    <p class="section-description">
+      All spacing derives from primitives on a 4px grid, but you should use semantic tokens in your components.
+    </p>
+
+    <SpacingScale items={spacingTokens} />
+  </section>
+
+  <!-- Rhythm Patterns -->
+  <section class="doc-section">
+    <h2 class="section-title">Rhythm Patterns</h2>
+    <p class="section-description">
+      Group spacing tokens by their typical usage patterns.
+    </p>
+
+    <div class="rhythm-grid">
+      <div class="rhythm-card">
+        <h3>Within Components</h3>
+        <div class="rhythm-tokens">
+          <code>xs</code>
+          <span class="arrow">&rarr;</span>
+          <code>sm</code>
+          <span class="arrow">&rarr;</span>
+          <code>md</code>
+        </div>
+        <p>Tight relationships. Elements that belong together.</p>
+        <div class="rhythm-example">
+          <div class="example-box" style="padding: var(--space-sm); gap: var(--space-xs);">
+            <span class="example-item"></span>
+            <span class="example-item"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rhythm-card">
+        <h3>Between Components</h3>
+        <div class="rhythm-tokens">
+          <code>lg</code>
+          <span class="arrow">&rarr;</span>
+          <code>xl</code>
+          <span class="arrow">&rarr;</span>
+          <code>2xl</code>
+        </div>
+        <p>Clear separation. Visual breathing room.</p>
+        <div class="rhythm-example">
+          <div class="example-box-group" style="gap: var(--space-lg);">
+            <div class="example-box small"></div>
+            <div class="example-box small"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rhythm-card">
+        <h3>Page Sections</h3>
+        <div class="rhythm-tokens">
+          <code>3xl</code>
+          <span class="arrow">&rarr;</span>
+          <code>4xl</code>
+          <span class="arrow">&rarr;</span>
+          <code>5xl</code>
+        </div>
+        <p>Major divisions. Signals new context.</p>
+        <div class="rhythm-example">
+          <div class="example-sections">
+            <div class="example-section"></div>
+            <div class="example-divider" style="height: var(--space-3xl);"></div>
+            <div class="example-section"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Common Combinations -->
+  <section class="doc-section">
+    <h2 class="section-title">Common Combinations</h2>
+
+    <div class="combinations-grid">
+      <div class="combo-card">
+        <h4>Button Padding</h4>
+        <div class="combo-demo button-demo">
+          <button class="demo-button">Button</button>
+        </div>
+        <code>padding: var(--space-sm) var(--space-lg)</code>
+      </div>
+
+      <div class="combo-card">
+        <h4>Card Padding</h4>
+        <div class="combo-demo card-demo">
+          <div class="demo-card">Card Content</div>
+        </div>
+        <code>padding: var(--space-xl)</code>
+      </div>
+
+      <div class="combo-card">
+        <h4>Section Margin</h4>
+        <div class="combo-demo section-demo">
+          <div class="demo-section">Section</div>
+          <div class="demo-gap"></div>
+          <div class="demo-section">Section</div>
+        </div>
+        <code>margin-bottom: var(--space-3xl)</code>
+      </div>
+
+      <div class="combo-card">
+        <h4>List Gap</h4>
+        <div class="combo-demo list-demo">
+          <div class="demo-list-item"></div>
+          <div class="demo-list-item"></div>
+          <div class="demo-list-item"></div>
+        </div>
+        <code>gap: var(--space-sm)</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grid System -->
+  <section class="doc-section">
+    <h2 class="section-title">The 4px Grid</h2>
+    <p class="section-description">
+      All primitive spacing values are multiples of 4px. This creates consistent vertical rhythm.
+    </p>
+
+    <div class="grid-visual">
+      <div class="grid-row">
+        <span class="grid-label">4px</span>
+        <div class="grid-boxes">
+          {[...Array(32)].map((_, i) => (
+            <div class="grid-box" data-highlight={i % 2 === 0}></div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-note">
+      <p>
+        <strong>Why 4px?</strong> It's small enough for fine-tuning, large enough to be visible,
+        and divides evenly into common screen widths. Most designers' favorite base unit.
+      </p>
+    </div>
+  </section>
+
+  <DocNav
+    prevPage={{ title: 'Typography', href: '/design-system/foundations/typography' }}
+    nextPage={{ title: 'Elevation', href: '/design-system/foundations/elevation' }}
+  />
+</DocLayout>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .doc-header {
+    margin-bottom: var(--docs-section-gap);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width-thick) solid var(--accent-primary);
+  }
+
+  .page-title {
+    font-size: var(--heading-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page-lead {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .doc-section {
+    margin-bottom: var(--docs-section-gap);
+  }
+
+  .section-title {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) solid var(--accent-secondary);
+  }
+
+  .section-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Rhythm Grid */
+  .rhythm-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .rhythm-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .rhythm-card h3 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .rhythm-tokens {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .rhythm-tokens code {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+  }
+
+  .rhythm-tokens .arrow {
+    color: var(--accent-primary);
+  }
+
+  .rhythm-card p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .rhythm-example {
+    padding: var(--space-md);
+    background: var(--gradient-primary-subtle);
+    border-radius: var(--radius-sm);
+  }
+
+  .example-box {
+    display: flex;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-sm);
+  }
+
+  .example-box.small {
+    width: 40px;
+    height: 40px;
+  }
+
+  .example-item {
+    width: 24px;
+    height: 24px;
+    background: var(--accent-primary);
+    border-radius: var(--radius-sm);
+  }
+
+  .example-box-group {
+    display: flex;
+  }
+
+  .example-sections {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .example-section {
+    height: 20px;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-sm);
+  }
+
+  .example-divider {
+    background: transparent;
+  }
+
+  /* Combinations Grid */
+  .combinations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .combo-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .combo-card h4 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .combo-demo {
+    padding: var(--space-md);
+    background: var(--gradient-primary-subtle);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .combo-card code {
+    font-size: var(--text-xs);
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+  }
+
+  .demo-button {
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--accent-primary);
+    color: var(--text-light);
+    border: var(--border-width-thick) solid var(--bg-dark);
+    font-family: var(--font-family);
+    font-weight: var(--font-bold);
+    cursor: pointer;
+  }
+
+  .demo-card {
+    padding: var(--space-xl);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    font-size: var(--text-sm);
+  }
+
+  .section-demo {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .demo-section {
+    padding: var(--space-sm);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+
+  .demo-gap {
+    height: var(--space-3xl);
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent-tertiary) 0,
+      var(--accent-tertiary) 2px,
+      transparent 2px,
+      transparent 8px
+    );
+    opacity: 0.5;
+  }
+
+  .list-demo {
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: stretch;
+  }
+
+  .demo-list-item {
+    height: 20px;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Grid Visual */
+  .grid-visual {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  .grid-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .grid-label {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    min-width: 40px;
+  }
+
+  .grid-boxes {
+    display: flex;
+    gap: 0;
+  }
+
+  .grid-box {
+    width: 4px;
+    height: 24px;
+    background: var(--gradient-primary-subtle);
+    border-right: 1px solid var(--bg-primary);
+  }
+
+  .grid-box[data-highlight="true"] {
+    background: var(--accent-primary);
+  }
+
+  .grid-note {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--gradient-tertiary-subtle);
+    border-left: var(--border-width-thick) solid var(--accent-tertiary);
+    border-radius: var(--radius-sm);
+  }
+
+  .grid-note p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .rhythm-grid,
+    .combinations-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
