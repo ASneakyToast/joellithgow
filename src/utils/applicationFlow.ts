@@ -102,15 +102,18 @@ export function computeSankeyData(applications: { data: Application }[]): Sankey
   }
 
   // Convert maps to arrays
-  const nodes = Array.from(nodeMap.values());
   const links: SankeyLink[] = Array.from(linkMap.entries()).map(([key, value]) => {
     const [source, target] = key.split('->');
     return { source, target, value };
   });
 
+  // Only include nodes that participate in at least one link
+  const linkedNodeIds = new Set(links.flatMap(l => [l.source, l.target]));
+  const nodes = Array.from(nodeMap.values()).filter(n => linkedNodeIds.has(n.id));
+
   // Sort nodes by typical flow order
   const statusOrder = [
-    'draft', 'preparing', 'applied',
+    'draft', 'applied',
     'interview-recruiter-call', 'interview-phone-screen',
     'interview-technical', 'interview-take-home',
     'interview-onsite', 'interview-hiring-manager',
@@ -139,7 +142,6 @@ export function getNodeColor(node: SankeyNode): string {
     case 'ghosted':
       return '#ef4444'; // red-500
     case 'applied':
-    case 'preparing':
     case 'draft':
       return '#3b82f6'; // blue-500
     default:

@@ -8,7 +8,6 @@
 // Status values in order of workflow progression
 export const APPLICATION_STATUSES = [
   'draft',
-  'preparing',
   'applied',
   'interviewing',
   'offered',
@@ -37,7 +36,6 @@ export type InterviewRound = typeof INTERVIEW_ROUNDS[number];
 // Display labels for each status
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   draft: 'Draft',
-  preparing: 'Preparing',
   applied: 'Applied',
   interviewing: 'Interviewing',
   offered: 'Offered',
@@ -62,7 +60,6 @@ export const ROUND_LABELS: Record<InterviewRound, string> = {
 // Badge color variants for each status
 export const STATUS_COLORS: Record<ApplicationStatus, 'primary' | 'secondary'> = {
   draft: 'secondary',
-  preparing: 'secondary',
   applied: 'primary',
   interviewing: 'primary',
   offered: 'primary',
@@ -72,7 +69,7 @@ export const STATUS_COLORS: Record<ApplicationStatus, 'primary' | 'secondary'> =
 };
 
 // Status groupings for calculations
-export const ACTIVE_STATUSES: ApplicationStatus[] = ['draft', 'preparing', 'applied', 'interviewing'];
+export const ACTIVE_STATUSES: ApplicationStatus[] = ['draft', 'applied', 'interviewing'];
 export const CLOSED_STATUSES: ApplicationStatus[] = ['offered', 'rejected', 'withdrawn', 'ghosted'];
 
 // Helper to get label for a status
