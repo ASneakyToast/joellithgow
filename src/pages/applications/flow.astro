@@ -11,6 +11,9 @@ import {
   CLOSED_STATUSES,
 } from '@utils/applicationStatus';
 import { computeSankeyData, getNodeColor, getLinkColor } from '@utils/applicationFlow';
+import { shouldBuildApplications } from '@/utils/buildConfig';
+
+if (!shouldBuildApplications()) return Astro.redirect('/404');
 
 const applications = await getCollection('applications', ({ data }) => {
   return data.public;
@@ -142,7 +145,12 @@ const successRate = closedApps.length > 0
 
   function initSankey() {
     const data = (window as any).__SANKEY_DATA__;
-    if (!data || data.links.length === 0) return;
+    console.log('Sankey data:', JSON.stringify(data, null, 2));
+    if (!data || data.links.length === 0) {
+      console.log('No sankey links to render');
+      return;
+    }
+    try {
 
     const container = document.getElementById('sankey-container');
     const tooltip = document.getElementById('sankey-tooltip');
@@ -193,7 +201,7 @@ const successRate = closedApps.length > 0
     const getNodeColor = (node: any) => {
       if (node.id === 'offered') return '#22c55e';
       if (['rejected', 'withdrawn', 'ghosted'].includes(node.id)) return '#ef4444';
-      if (['applied', 'preparing', 'draft'].includes(node.id)) return '#3b82f6';
+      if (['applied', 'draft'].includes(node.id)) return '#3b82f6';
       return '#8b5cf6'; // interview rounds
     };
 
@@ -271,6 +279,9 @@ const successRate = closedApps.length > 0
       .attr('font-size', '13px')
       .attr('font-weight', '500')
       .text((d: any) => `${d.name} (${d.value})`);
+    } catch (err) {
+      console.error('Sankey render error:', err);
+    }
   }
 
   // Initialize on load and after Astro transitions

@@ -6,7 +6,6 @@ import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import StatusFilterWidget from '@components/applications/StatusFilterWidget.astro';
 import ApplicationsQuickStats from '@components/applications/ApplicationsQuickStats.astro';
 import PageTitle from '@components/ui/PageTitle.astro';
 import {
@@ -17,8 +16,11 @@ import {
   getStatusLabel,
   getStatusColor
 } from '@utils/applicationStatus';
+import { shouldBuildApplications } from '@/utils/buildConfig';
 
 export const getStaticPaths = (async () => {
+  if (!shouldBuildApplications()) return [];
+
   const allApplications = await getCollection('applications', ({ data }) => data.public);
 
   // Calculate global status counts for sidebar
@@ -42,12 +44,10 @@ export const getStaticPaths = (async () => {
     const filtered = allApplications
       .filter(app => app.data.status === status)
       .sort((a, b) => {
-        // Featured first, then by deadline (soonest first)
-        if (a.data.featured && !b.data.featured) return -1;
-        if (!a.data.featured && b.data.featured) return 1;
-        const aDate = a.data.deadline || new Date('9999-12-31');
-        const bDate = b.data.deadline || new Date('9999-12-31');
-        return aDate.getTime() - bDate.getTime();
+        // Company A-Z, then position A-Z
+        const companyCompare = a.data.company.localeCompare(b.data.company);
+        if (companyCompare !== 0) return companyCompare;
+        return a.data.position.localeCompare(b.data.position);
       });
 
     return {
@@ -100,6 +100,25 @@ const pageDescription = `${applications.length} ${statusLabel.toLowerCase()} job
             homeLink="/applications"
           />
         </header>
+
+        <!-- Status filters -->
+        <div class="status-filters">
+          <Badge variant="secondary" size="sm" href="/applications">
+            All ({totalCount})
+          </Badge>
+          {APPLICATION_STATUSES.map((key) => {
+            const count = globalStatusCounts.get(key) || 0;
+            return (
+              <Badge
+                variant={key === status ? "default" : "secondary"}
+                size="sm"
+                href={`/applications/status/${key}`}
+              >
+                {STATUS_LABELS[key]} ({count})
+              </Badge>
+            );
+          })}
+        </div>
 
         <!-- Applications grid -->
         <div class="applications-grid">
@@ -154,6 +173,11 @@ const pageDescription = `${applications.length} ${statusLabel.toLowerCase()} job
                 <Button href={`/applications/${app.slug}/resume`} variant="ghost" size="sm">
                   Resume
                 </Button>
+                {app.data.outreach && (
+                  <Button href={`/applications/${app.slug}/outreach`} variant="ghost" size="sm">
+                    Outreach
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
@@ -176,11 +200,13 @@ const pageDescription = `${applications.length} ${statusLabel.toLowerCase()} job
           active={activeCount}
           successRate={successRate}
         />
-        <StatusFilterWidget
-          statusCounts={globalStatusCounts}
-          totalCount={totalCount}
-          currentStatus={status}
-        />
+        <Card variant="outlined" padding="lg">
+          <h3 class="widget-title">Resources</h3>
+          <nav class="resource-links">
+            <a href="/applications/flow" class="resource-link">Application Flow</a>
+            <a href="/applications/outreach" class="resource-link">Outreach Template</a>
+          </nav>
+        </Card>
       </aside>
     </div>
   </main>
@@ -237,6 +263,37 @@ const pageDescription = `${applications.length} ${statusLabel.toLowerCase()} job
 
   .page-header {
     margin-bottom: var(--space-3xl);
+  }
+
+  .status-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .widget-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+  }
+
+  .resource-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .resource-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: color 0.2s;
+  }
+
+  .resource-link:hover {
+    text-decoration: underline;
   }
 
   .applications-grid {

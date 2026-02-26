@@ -2,8 +2,11 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Button from '@components/primitives/Button.astro';
+import { shouldBuildApplications } from '@/utils/buildConfig';
 
 export async function getStaticPaths() {
+  if (!shouldBuildApplications()) return [];
+
   const applications = await getCollection('applications', ({ data }) => {
     return data.public;
   });
@@ -43,7 +46,7 @@ const skills: Record<string, string> = { ...defaultSkills };
 
 // Override defaults with custom skills if provided
 Object.entries(customSkills).forEach(([key, value]) => {
-  if (value) skills[key] = value;
+  if (value !== undefined) skills[key] = value;
 });
 
 // Define display order and labels for skills
@@ -64,6 +67,14 @@ const skillOrder = ['frontend', 'backend', 'creative', 'ai', 'testing', 'cloud',
 const displaySkills = skillOrder
   .filter(key => skills[key])
   .map(key => ({ label: skillLabels[key], value: skills[key] }));
+
+// Projects - use custom if provided, otherwise defaults
+const defaultProjects = [
+  { name: "WebGL Background Playground", description: "Interactive shader-based generative art system with real-time controls", link: "joellithgow.com/backgrounds" },
+  { name: "CMS Automation Case Study", description: "Playwright test automation reducing months of manual work to automated processes" },
+  { name: "Accessibility Standards Initiative", description: "Cross-functional effort to establish WCAG-compliant color guidelines for brand identity" },
+];
+const projects = resumeCustomizations?.projects || defaultProjects;
 
 // Get all experience entries
 const allExperience = await getCollection('experience');
@@ -239,16 +250,12 @@ const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompan
       <section class="resume-section">
         <h2 class="section-title">Projects</h2>
         <ul class="projects-list">
-          <li>
-            <strong>WebGL Background Playground</strong> – Interactive shader-based generative art system with real-time controls
-            <span class="project-link">joellithgow.com/backgrounds</span>
-          </li>
-          <li>
-            <strong>CMS Automation Case Study</strong> – Playwright test automation reducing months of manual work to automated processes
-          </li>
-          <li>
-            <strong>Accessibility Standards Initiative</strong> – Cross-functional effort to establish WCAG-compliant color guidelines for brand identity
-          </li>
+          {projects.map((project) => (
+            <li>
+              <strong>{project.name}</strong> – {project.description}
+              {project.link && <span class="project-link">{project.link}</span>}
+            </li>
+          ))}
         </ul>
       </section>
     </article>
@@ -506,17 +513,39 @@ const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompan
 
     .resume {
       box-shadow: none;
-      padding: 0.25in;
+      padding: 0;
       max-width: none;
     }
 
-    /* Keep headers with their content */
+    /* Tighten header spacing for print */
+    .resume-header {
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+    }
+
+    .name {
+      font-size: 24pt;
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+
+    /* Tighten section spacing for print */
+    .resume-section {
+      margin-bottom: 18px;
+    }
+
     .section-title {
+      margin-bottom: 8px;
+      padding-bottom: 4px;
       page-break-after: avoid;
     }
 
     .employer-header {
       page-break-after: avoid;
+    }
+
+    .employer-group {
+      margin-bottom: 14px;
     }
 
     /* Keep individual roles together, but allow breaks between roles */
@@ -530,7 +559,7 @@ const groupedExperience: GroupedExperience[] = Object.entries(experienceByCompan
     }
 
     @page {
-      margin: 0.5in;
+      margin: 0.3in 0.5in 0.5in;
       size: letter;
     }
   }

@@ -2,8 +2,11 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Button from '@components/primitives/Button.astro';
+import { shouldBuildApplications } from '@/utils/buildConfig';
 
 export async function getStaticPaths() {
+  if (!shouldBuildApplications()) return [];
+
   const applications = await getCollection('applications', ({ data }) => {
     return data.public;
   });

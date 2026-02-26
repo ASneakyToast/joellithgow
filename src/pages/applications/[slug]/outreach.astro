@@ -1,0 +1,381 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Button from '@components/primitives/Button.astro';
+import Badge from '@components/primitives/Badge.astro';
+import { shouldBuildApplications } from '@/utils/buildConfig';
+
+export async function getStaticPaths() {
+  if (!shouldBuildApplications()) return [];
+
+  const applications = await getCollection('applications', ({ data }) => {
+    return data.public;
+  });
+
+  return applications.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'applications'>;
+}
+
+const { entry } = Astro.props;
+const { company, position, outreach } = entry.data;
+
+const hasLinkedIn = !!outreach?.linkedin;
+const hasEmail = !!outreach?.email;
+const hasContent = hasLinkedIn || hasEmail;
+
+// Default to whichever tab has content
+const defaultTab = hasLinkedIn ? 'linkedin' : 'email';
+---
+
+<BaseLayout
+  title={`Outreach Messages - ${position} at ${company} | Joel Lithgow`}
+  description={`Outreach messages for ${position} position at ${company}`}
+  showGlobalHeader={false}
+  robots="noindex, nofollow"
+>
+  <div class="outreach-page">
+    <!-- Navigation -->
+    <nav class="page-nav">
+      <Button href={`/applications/${entry.slug}`} variant="ghost" size="sm">
+        &larr; Back to Application
+      </Button>
+    </nav>
+
+    {hasContent ? (
+      <article class="outreach-container">
+        <header class="outreach-header">
+          <h1>Outreach Messages</h1>
+          <p class="subtitle">{position} at {company}</p>
+        </header>
+
+        <!-- Tab bar -->
+        <div class="tab-bar">
+          {hasLinkedIn && (
+            <button
+              class={`tab ${defaultTab === 'linkedin' ? 'active' : ''}`}
+              data-tab="linkedin"
+              type="button"
+            >
+              LinkedIn
+            </button>
+          )}
+          {hasEmail && (
+            <button
+              class={`tab ${defaultTab === 'email' ? 'active' : ''}`}
+              data-tab="email"
+              type="button"
+            >
+              Email
+            </button>
+          )}
+        </div>
+
+        <!-- LinkedIn panel -->
+        {hasLinkedIn && (
+          <div class={`tab-panel ${defaultTab === 'linkedin' ? 'active' : ''}`} id="linkedin-panel">
+            <div class="message-card">
+              <div class="message-header">
+                <Badge variant="default" size="sm">LinkedIn Message</Badge>
+                <button class="copy-btn" data-target="linkedin-message" type="button">
+                  Copy
+                </button>
+              </div>
+              <div class="message-content" id="linkedin-message">
+                {outreach!.linkedin!.message}
+              </div>
+              <p class="char-count">
+                {outreach!.linkedin!.message.length} / 300 characters
+                {outreach!.linkedin!.message.length > 300 && (
+                  <span class="over-limit"> (over limit)</span>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <!-- Email panel -->
+        {hasEmail && (
+          <div class={`tab-panel ${defaultTab === 'email' ? 'active' : ''}`} id="email-panel">
+            <div class="message-card">
+              <div class="message-header">
+                <Badge variant="default" size="sm">Email</Badge>
+                <button class="copy-btn" data-target="email-message" type="button">
+                  Copy
+                </button>
+              </div>
+              <div class="subject-line">
+                <strong>Subject:</strong> {outreach!.email!.subject}
+              </div>
+              <div class="message-content" id="email-message">
+                {outreach!.email!.message.split('\n').map((line) => (
+                  line === '' ? <br /> : <p>{line}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </article>
+    ) : (
+      <div class="empty-state">
+        <p>No outreach messages for this application yet.</p>
+        <Button href={`/applications/${entry.slug}`} variant="secondary" size="md">
+          Back to Application
+        </Button>
+      </div>
+    )}
+
+    <!-- Footer links -->
+    <footer class="page-footer">
+      <Button href={`/applications/${entry.slug}/cover-letter`} variant="secondary" size="sm">
+        View Cover Letter
+      </Button>
+      <Button href={`/applications/${entry.slug}/resume`} variant="secondary" size="sm">
+        View Resume
+      </Button>
+    </footer>
+  </div>
+</BaseLayout>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).dataset.tab;
+
+      // Update active tab
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Update active panel
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`${target}-panel`)?.classList.add('active');
+    });
+  });
+
+  // Copy to clipboard
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = (btn as HTMLElement).dataset.target;
+      const el = document.getElementById(targetId!);
+      if (!el) return;
+
+      const text = el.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch {
+        // Fallback for older browsers
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    });
+  });
+</script>
+
+<style>
+  @import '../../../styles/tokens.css';
+
+  .outreach-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-xl);
+  }
+
+  .page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 8.5in;
+    margin: 0 auto var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+  }
+
+  .outreach-container {
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: var(--space-2xl);
+    background: var(--card-bg, white);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: var(--radius-lg);
+  }
+
+  .outreach-header {
+    margin-bottom: var(--space-xl);
+  }
+
+  .outreach-header h1 {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-xs);
+    color: var(--text-primary);
+  }
+
+  .subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    gap: var(--space-xs);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+    margin-bottom: var(--space-xl);
+  }
+
+  .tab {
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    background: none;
+    font-size: var(--text-base);
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+  }
+
+  .tab:hover {
+    color: var(--text-primary);
+  }
+
+  .tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+    font-weight: var(--font-medium);
+  }
+
+  /* Panels */
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  /* Message card */
+  .message-card {
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .copy-btn {
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+
+  .copy-btn.copied {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: var(--bg-secondary, #f5f5f5);
+  }
+
+  .subject-line {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-secondary, #f5f5f5);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-lg);
+    font-size: var(--text-sm);
+  }
+
+  .message-content {
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+
+  .message-content p {
+    margin: 0;
+  }
+
+  .char-count {
+    margin: var(--space-md) 0 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .over-limit {
+    color: var(--status-danger, #dc2626);
+    font-weight: var(--font-medium);
+  }
+
+  /* Empty state */
+  .empty-state {
+    max-width: 8.5in;
+    margin: var(--space-3xl) auto;
+    text-align: center;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  /* Footer */
+  .page-footer {
+    max-width: 8.5in;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-color, #e5e5e5);
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .outreach-page {
+      padding: var(--space-md);
+    }
+
+    .outreach-container {
+      padding: var(--space-lg);
+    }
+
+    .outreach-header h1 {
+      font-size: var(--heading-md);
+    }
+  }
+</style>

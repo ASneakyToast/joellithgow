@@ -7,8 +7,11 @@ import Button from '@components/primitives/Button.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import PageTitle from '@components/ui/PageTitle.astro';
 import { getStatusLabel, getStatusColor } from '@utils/applicationStatus';
+import { shouldBuildApplications } from '@/utils/buildConfig';
 
 export async function getStaticPaths() {
+  if (!shouldBuildApplications()) return [];
+
   const applications = await getCollection('applications', ({ data }) => {
     return data.public;
   });
@@ -85,6 +88,11 @@ const { company, position, location, salary, status, deadline, jobUrl, appliedDa
         <Button href={`/applications/${entry.slug}/resume`} variant="secondary" size="md">
           View Resume
         </Button>
+        {entry.data.outreach && (
+          <Button href={`/applications/${entry.slug}/outreach`} variant="secondary" size="md">
+            Outreach Messages
+          </Button>
+        )}
         <Button href={jobUrl} variant="ghost" size="md" target="_blank" rel="noopener">
           View Job Posting ↗
         </Button>

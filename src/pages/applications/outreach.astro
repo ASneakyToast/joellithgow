@@ -1,0 +1,224 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import Button from '@components/primitives/Button.astro';
+import Badge from '@components/primitives/Badge.astro';
+import { shouldBuildApplications } from '@/utils/buildConfig';
+
+if (!shouldBuildApplications()) return Astro.redirect('/404');
+---
+
+<BaseLayout
+  title="Outreach Template | Joel Lithgow"
+  description="Default cold outreach message template for networking and job search."
+  showGlobalHeader={false}
+  robots="noindex, nofollow"
+>
+  <div class="outreach-page">
+    <!-- Navigation -->
+    <nav class="page-nav">
+      <Button href="/applications" variant="ghost" size="sm">
+        &larr; Back to Applications
+      </Button>
+    </nav>
+
+    <article class="outreach-container">
+      <header class="outreach-header">
+        <h1>Outreach Template</h1>
+        <p class="subtitle">Default cold outreach message for networking</p>
+      </header>
+
+      <div class="message-card">
+        <div class="message-header">
+          <Badge variant="default" size="sm">Default Template</Badge>
+          <button class="copy-btn" data-target="template-message" type="button">
+            Copy
+          </button>
+        </div>
+        <div class="message-content" id="template-message">Hi &lt;first name&gt;,
+
+I'm looking for advice on how to be considered for employment in your company.
+
+My experience and passion is &lt;e.g. Customer facing engineering&gt;.
+
+I appreciate any suggestions or referrals to hiring managers.
+
+Regards</div>
+      </div>
+
+      <div class="template-notes">
+        <h2>Usage Notes</h2>
+        <ul>
+          <li>Replace <code>&lt;first name&gt;</code> with the recipient's first name</li>
+          <li>Replace the experience line with your specific angle for that company</li>
+          <li>Keep it short — this is a conversation starter, not a pitch</li>
+          <li>For application-specific outreach messages, add them to individual application files</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = (btn as HTMLElement).dataset.target;
+      const el = document.getElementById(targetId!);
+      if (!el) return;
+
+      const text = el.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    });
+  });
+</script>
+
+<style>
+  @import '../../styles/tokens.css';
+
+  .outreach-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-xl);
+  }
+
+  .page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 8.5in;
+    margin: 0 auto var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+  }
+
+  .outreach-container {
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: var(--space-2xl);
+    background: var(--card-bg, white);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: var(--radius-lg);
+  }
+
+  .outreach-header {
+    margin-bottom: var(--space-xl);
+  }
+
+  .outreach-header h1 {
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-xs);
+    color: var(--text-primary);
+  }
+
+  .subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .message-card {
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .copy-btn {
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+
+  .copy-btn.copied {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: var(--bg-secondary, #f5f5f5);
+  }
+
+  .message-content {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: var(--text-base);
+  }
+
+  .template-notes {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--border-color, #e5e5e5);
+  }
+
+  .template-notes h2 {
+    font-size: var(--heading-sm);
+    font-weight: var(--font-semibold);
+    margin: 0 0 var(--space-md);
+    color: var(--text-primary);
+  }
+
+  .template-notes ul {
+    margin: 0;
+    padding-left: var(--space-xl);
+  }
+
+  .template-notes li {
+    margin: var(--space-sm) 0;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .template-notes code {
+    background: var(--bg-secondary, #f5f5f5);
+    padding: 0.1em 0.4em;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+  }
+
+  @media (max-width: 768px) {
+    .outreach-page {
+      padding: var(--space-md);
+    }
+
+    .outreach-container {
+      padding: var(--space-lg);
+    }
+
+    .outreach-header h1 {
+      font-size: var(--heading-md);
+    }
+  }
+</style>
