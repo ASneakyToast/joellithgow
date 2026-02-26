@@ -1,0 +1,217 @@
+/**
+ * Typography System - Composite Type Sets
+ *
+ * Instead of remembering individual tokens for size, weight, line-height, etc.,
+ * use these utility classes that bundle everything for a specific text role.
+ *
+ * Usage: <h1 class="type-hero">Big Impact</h1>
+ *        <p class="type-body">Regular content...</p>
+ *
+ * Each type set is a complete recipe - just add the class and you're done.
+ */
+
+/* =============================================================================
+   TYPE SETS - Headings
+   ============================================================================= */
+
+/**
+ * Hero - Maximum impact moments
+ * Use for: Landing page headlines, major announcements
+ */
+.type-hero {
+  font-size: var(--heading-2xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+/**
+ * Page Title - Primary page headers
+ * Use for: Page titles, main headings (h1)
+ */
+.type-page-title {
+  font-size: var(--heading-xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+/**
+ * Section Title - Major section headers
+ * Use for: Section headings (h2), card group titles
+ */
+.type-section-title {
+  font-size: var(--heading-lg);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+/**
+ * Subsection Title - Secondary headers
+ * Use for: Subsection headings (h3), card titles
+ */
+.type-subsection-title {
+  font-size: var(--heading-md);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+}
+
+/**
+ * Card Title - Compact headings
+ * Use for: Card headers (h4), list item titles
+ */
+.type-card-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+}
+
+/* =============================================================================
+   TYPE SETS - Body Text
+   ============================================================================= */
+
+/**
+ * Lead - Introductory paragraphs
+ * Use for: Page intros, hero descriptions, emphasized paragraphs
+ */
+.type-lead {
+  font-size: var(--text-xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+}
+
+/**
+ * Body - Standard content
+ * Use for: Paragraphs, list items, general content
+ */
+.type-body {
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+}
+
+/**
+ * Body Small - Compact content
+ * Use for: Sidebar text, secondary descriptions, tight layouts
+ */
+.type-body-small {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+}
+
+/* =============================================================================
+   TYPE SETS - Supporting Text
+   ============================================================================= */
+
+/**
+ * Meta - Secondary information
+ * Use for: Dates, reading time, author names, descriptions
+ */
+.type-meta {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+/**
+ * Caption - Fine print and labels
+ * Use for: Image captions, form labels, timestamps, badges
+ */
+.type-caption {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/**
+ * Code - Monospace text
+ * Use for: Inline code, technical values, tokens
+ */
+.type-code {
+  font-size: var(--text-sm);
+  font-family: var(--font-family);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/* =============================================================================
+   TYPE SETS - Interactive
+   ============================================================================= */
+
+/**
+ * Button - Interactive element text
+ * Use for: Buttons, CTAs (usually applied by component)
+ */
+.type-button {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: normal;
+  color: inherit; /* Inherits from button variant */
+}
+
+/**
+ * Link - Inline links
+ * Use for: Text links within paragraphs
+ */
+.type-link {
+  font-size: inherit;
+  font-weight: var(--font-medium);
+  line-height: inherit;
+  color: var(--accent-primary);
+  text-decoration: none;
+  border-bottom: var(--border-width-thin) solid var(--accent-secondary);
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.type-link:hover {
+  color: var(--accent-secondary);
+  border-color: var(--accent-primary);
+}
+
+/* =============================================================================
+   COLOR MODIFIERS
+   If you need to override the default color for a type set
+   ============================================================================= */
+
+.type-primary { color: var(--text-primary); }
+.type-secondary { color: var(--text-secondary); }
+.type-accent { color: var(--accent-primary); }
+.type-light { color: var(--text-light); }
+
+/* =============================================================================
+   RESPONSIVE ADJUSTMENTS
+   Type sets automatically scale down on mobile
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .type-hero {
+    font-size: var(--heading-xl);
+  }
+
+  .type-page-title {
+    font-size: var(--heading-lg);
+  }
+
+  .type-section-title {
+    font-size: var(--heading-md);
+  }
+
+  .type-lead {
+    font-size: var(--text-lg);
+  }
+}

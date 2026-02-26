@@ -144,18 +144,20 @@ const {
 </body>
 </html>
 
-<style>
+<style is:global>
   /* Import design system */
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
+  @import '../../styles/utilities.css';
+  @import '../../styles/typography.css';
 
   /* Base styles and CSS custom properties */
-  :global(html) {
-    font-family: system-ui, sans-serif;
+  html {
+    font-family: var(--font-family);
     scroll-behavior: smooth;
   }
 
-  :global(body) {
+  body {
     margin: 0;
     padding: 0;
     background: var(--bg-primary);
@@ -166,7 +168,7 @@ const {
   /* No padding needed - header appears on scroll and overlays content */
 
   /* Accessibility styles */
-  :global(.sr-only) {
+  .sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -195,14 +197,14 @@ const {
   }
 
   /* Focus styles */
-  :global(:focus) {
+  :focus {
     outline: var(--border-width) solid var(--accent-primary);
     outline-offset: var(--space-xs);
   }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    :global(*) {
+    * {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;

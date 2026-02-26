@@ -1,0 +1,27 @@
+/**
+ * Utility Classes - Reusable patterns
+ */
+
+/* Media Frame - border, shadow, radius for screenshots/media */
+.media-frame {
+  border: var(--border-width-thick) solid var(--bg-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl) var(--accent-secondary);
+  overflow: hidden;
+  transition: transform var(--duration-slow) var(--ease-out),
+              box-shadow var(--duration-slow) var(--ease-out);
+}
+
+.media-frame:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: var(--shadow-2xl) var(--accent-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-frame {
+    transition: none;
+  }
+  .media-frame:hover {
+    transform: none;
+  }
+}

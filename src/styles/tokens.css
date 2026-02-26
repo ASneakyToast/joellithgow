@@ -1,218 +1,299 @@
 /**
- * Design Tokens - Foundational design system values
+ * Design Tokens - Three-Tier Architecture
  *
- * These tokens work WITH themes.css to provide consistent spacing,
- * typography, and layout patterns across the site.
+ * TIER 1: Primitives - Raw values, the "allowed palette"
+ * TIER 2: Semantic - Purpose-driven aliases
+ * TIER 3: Component - Specific usage in components
  *
- * Theme-specific tokens (colors, shadows) remain in themes.css
+ * Theme-specific tokens (colors) remain in themes.css
  */
 
 :root {
-  /* ========================================
-     SPACING SCALE
-     Used for: margins, padding, gaps
-     ======================================== */
-  --space-xs: 0.25rem;    /* 4px */
-  --space-sm: 0.5rem;     /* 8px */
-  --space-md: 1rem;       /* 16px */
-  --space-lg: 1.5rem;     /* 24px */
-  --space-xl: 2rem;       /* 32px */
-  --space-2xl: 3rem;      /* 48px */
-  --space-3xl: 4rem;      /* 64px */
-  --space-4xl: 6rem;      /* 96px */
-  --space-5xl: 8rem;      /* 128px */
+  /* =====================================================================
+     TIER 1: PRIMITIVES
+     Raw values only. These define what's "allowed" in the system.
+     Never use primitives directly in components - use semantic tokens.
+     ===================================================================== */
 
-  /* ========================================
-     TYPOGRAPHY SCALE
-     Fluid typography using clamp() for responsiveness
-     ======================================== */
-  --text-xs: 0.75rem;     /* 12px */
-  --text-sm: 0.875rem;    /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg: 1.125rem;    /* 18px */
-  --text-xl: 1.25rem;     /* 20px */
-  --text-2xl: 1.5rem;     /* 24px */
-  --text-3xl: 1.875rem;   /* 30px */
-  --text-4xl: 2.25rem;    /* 36px */
-  --text-5xl: 3rem;       /* 48px */
+  /* Primitive: Spacing (based on 4px grid) */
+  --p-space-4: 0.25rem;     /* 4px */
+  --p-space-8: 0.5rem;      /* 8px */
+  --p-space-12: 0.75rem;    /* 12px */
+  --p-space-16: 1rem;       /* 16px */
+  --p-space-24: 1.5rem;     /* 24px */
+  --p-space-32: 2rem;       /* 32px */
+  --p-space-48: 3rem;       /* 48px */
+  --p-space-64: 4rem;       /* 64px */
+  --p-space-96: 6rem;       /* 96px */
+  --p-space-128: 8rem;      /* 128px */
 
-  /* Fluid heading sizes */
-  --heading-sm: clamp(1.25rem, 3vw, 1.5rem);
-  --heading-md: clamp(1.5rem, 4vw, 2rem);
-  --heading-lg: clamp(2rem, 5vw, 2.5rem);
-  --heading-xl: clamp(2.5rem, 6vw, 3.5rem);
-  --heading-2xl: clamp(3rem, 8vw, 4.5rem);
+  /* Primitive: Font Sizes (fixed) */
+  --p-font-12: 0.75rem;     /* 12px - tiny */
+  --p-font-14: 0.875rem;    /* 14px - small */
+  --p-font-16: 1rem;        /* 16px - base */
+  --p-font-18: 1.125rem;    /* 18px - large */
+  --p-font-20: 1.25rem;     /* 20px - xl */
+  --p-font-24: 1.5rem;      /* 24px - 2xl */
+  --p-font-30: 1.875rem;    /* 30px - 3xl */
+  --p-font-36: 2.25rem;     /* 36px - 4xl */
+  --p-font-48: 3rem;        /* 48px - 5xl */
 
-  /* Font weights */
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
+  /* Primitive: Font Weights */
+  --p-weight-regular: 400;
+  --p-weight-medium: 500;
+  --p-weight-semibold: 600;
+  --p-weight-bold: 700;
 
-  /* Line heights */
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
+  /* Primitive: Line Heights */
+  --p-leading-tight: 1.25;
+  --p-leading-snug: 1.375;
+  --p-leading-normal: 1.5;
+  --p-leading-relaxed: 1.625;
+  --p-leading-loose: 2;
 
-  /* Letter spacing */
-  --tracking-tight: -0.02em;
-  --tracking-normal: 0;
-  --tracking-wide: 0.02em;
+  /* Primitive: Letter Spacing */
+  --p-tracking-tight: -0.02em;
+  --p-tracking-normal: 0;
+  --p-tracking-wide: 0.02em;
 
-  /* ========================================
-     BORDER RADIUS
-     Modern, flexible radius scale
-     ======================================== */
-  --radius-none: 0;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
+  /* Primitive: Border Radius */
+  --p-radius-0: 0;
+  --p-radius-4: 4px;
+  --p-radius-8: 8px;
+  --p-radius-12: 12px;
+  --p-radius-16: 16px;
+  --p-radius-24: 24px;
+  --p-radius-full: 9999px;
 
-  /* ========================================
-     BORDERS
-     Border widths for consistency
-     ======================================== */
-  --border-width-thin: 1px;
-  --border-width: 2px;
-  --border-width-thick: 3px;
+  /* Primitive: Border Widths */
+  --p-border-1: 1px;
+  --p-border-2: 2px;
+  --p-border-3: 3px;
 
-  /* ========================================
-     SHADOWS
-     Elevation and depth scale
-     ======================================== */
-  --shadow-sm: 2px 2px 0px;
-  --shadow-md: 4px 4px 0px;
-  --shadow-lg: 6px 6px 0px;
-  --shadow-xl: 8px 8px 0px;
-  --shadow-2xl: 12px 12px 0px;
+  /* Primitive: Shadows (brutalist offset, no blur) */
+  --p-shadow-2: 2px 2px 0px;
+  --p-shadow-4: 4px 4px 0px;
+  --p-shadow-6: 6px 6px 0px;
+  --p-shadow-8: 8px 8px 0px;
+  --p-shadow-12: 12px 12px 0px;
 
-  /* ========================================
-     LAYOUT
-     Container and breakpoint values
-     ======================================== */
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1536px;
+  /* Primitive: Durations */
+  --p-duration-150: 150ms;
+  --p-duration-200: 200ms;
+  --p-duration-300: 300ms;
+  --p-duration-500: 500ms;
 
-  /* Content width constraints
-   * Usage guide:
-   * --content-narrow (600px):  Forms, single-column text, focused content
-   * --content-normal (800px):  Blog posts, articles, reading content
-   * --content-wide (1000px):   Section headers, about sections, wider text blocks
-   * --content-container (1200px): Gallery grids, card layouts, wide content areas
-   * --content-full (1400px):   Maximum container width for very wide layouts
-   */
-  --content-narrow: 600px;
-  --content-normal: 800px;
-  --content-wide: 1000px;
-  --content-container: 1200px;
-  --content-full: 1400px;
+  /* Primitive: Easings */
+  --p-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --p-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --p-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Page-level horizontal spacing */
-  --page-gutter: var(--space-xl);  /* 2rem - consistent horizontal padding for all sections */
+  /* Primitive: Breakpoints (for reference, used in @media) */
+  --p-breakpoint-sm: 640px;
+  --p-breakpoint-md: 768px;
+  --p-breakpoint-lg: 1024px;
+  --p-breakpoint-xl: 1280px;
+  --p-breakpoint-2xl: 1536px;
 
-  /* ========================================
-     Z-INDEX SCALE
-     Consistent layering
-     ======================================== */
-  --z-base: 0;
-  --z-dropdown: 10;
-  --z-sticky: 100;
-  --z-overlay: 1000;
-  --z-modal: 10000;
+  /* Primitive: Content Widths */
+  --p-width-600: 600px;
+  --p-width-800: 800px;
+  --p-width-1000: 1000px;
+  --p-width-1200: 1200px;
+  --p-width-1400: 1400px;
+
+  /* Primitive: Z-Index Layers */
+  --p-z-0: 0;
+  --p-z-10: 10;
+  --p-z-100: 100;
+  --p-z-1000: 1000;
+  --p-z-10000: 10000;
+
+  /* =====================================================================
+     TIER 2: SEMANTIC TOKENS
+     Purpose-driven. These describe WHAT something is, not raw values.
+     Components should primarily use these tokens.
+     ===================================================================== */
+
+  /* --- Spacing (semantic names) --- */
+  --space-xs: var(--p-space-4);       /* Tight: inline gaps, badge padding */
+  --space-sm: var(--p-space-8);       /* Small: button padding, list gaps */
+  --space-md: var(--p-space-16);      /* Medium: card internal spacing */
+  --space-lg: var(--p-space-24);      /* Large: section internal padding */
+  --space-xl: var(--p-space-32);      /* XL: major component separation */
+  --space-2xl: var(--p-space-48);     /* 2XL: section padding */
+  --space-3xl: var(--p-space-64);     /* 3XL: large section gaps */
+  --space-4xl: var(--p-space-96);     /* 4XL: major section separation */
+  --space-5xl: var(--p-space-128);    /* 5XL: page-level sections */
+
+  /* --- Typography: Text Sizes --- */
+  --text-xs: var(--p-font-12);        /* Badges, timestamps, fine print */
+  --text-sm: var(--p-font-14);        /* Labels, captions, meta text */
+  --text-base: var(--p-font-16);      /* Body text, default size */
+  --text-lg: var(--p-font-18);        /* Lead paragraphs, emphasis */
+  --text-xl: var(--p-font-20);        /* Large body, intro text */
+  --text-2xl: var(--p-font-24);       /* Small headings */
+  --text-3xl: var(--p-font-30);       /* Medium headings */
+  --text-4xl: var(--p-font-36);       /* Large headings (reserved) */
+  --text-5xl: var(--p-font-48);       /* Hero text (reserved) */
+
+  /* --- Typography: Heading Sizes (fluid/responsive) --- */
+  --heading-sm: clamp(1.25rem, 3vw, 1.5rem);    /* Subsection titles */
+  --heading-md: clamp(1.5rem, 4vw, 2rem);       /* Card titles, h3 */
+  --heading-lg: clamp(2rem, 5vw, 2.5rem);       /* Section titles, h2 */
+  --heading-xl: clamp(2.5rem, 6vw, 3.5rem);     /* Page titles, h1 */
+  --heading-2xl: clamp(3rem, 8vw, 4.5rem);      /* Hero titles */
+
+  /* --- Typography: Weights --- */
+  --font-normal: var(--p-weight-regular);
+  --font-medium: var(--p-weight-medium);
+  --font-semibold: var(--p-weight-semibold);
+  --font-bold: var(--p-weight-bold);
+
+  /* --- Typography: Line Heights --- */
+  --leading-tight: var(--p-leading-tight);      /* Headings */
+  --leading-snug: var(--p-leading-snug);        /* Tight body */
+  --leading-normal: var(--p-leading-normal);    /* Default */
+  --leading-relaxed: var(--p-leading-relaxed);  /* Body text */
+  --leading-loose: var(--p-leading-loose);      /* Spacious */
+
+  /* --- Typography: Letter Spacing --- */
+  --tracking-tight: var(--p-tracking-tight);    /* Large headings */
+  --tracking-normal: var(--p-tracking-normal);  /* Default */
+  --tracking-wide: var(--p-tracking-wide);      /* Uppercase, labels */
+
+  /* --- Border Radius --- */
+  --radius-none: var(--p-radius-0);     /* Sharp corners */
+  --radius-sm: var(--p-radius-4);       /* Subtle rounding */
+  --radius-md: var(--p-radius-8);       /* Default rounding */
+  --radius-lg: var(--p-radius-12);      /* Soft rounding */
+  --radius-xl: var(--p-radius-16);      /* Large rounding (rarely used) */
+  --radius-2xl: var(--p-radius-24);     /* Very large (reserved) */
+  --radius-full: var(--p-radius-full);  /* Pills, circles */
+
+  /* --- Border Widths --- */
+  --border-width-thin: var(--p-border-1);   /* Subtle borders */
+  --border-width: var(--p-border-2);        /* Default borders */
+  --border-width-thick: var(--p-border-3);  /* Emphasis borders */
+
+  /* --- Shadows (brutalist offset) --- */
+  --shadow-sm: var(--p-shadow-2);       /* Subtle depth */
+  --shadow-md: var(--p-shadow-4);       /* Default elevation */
+  --shadow-lg: var(--p-shadow-6);       /* Raised elements */
+  --shadow-xl: var(--p-shadow-8);       /* Prominent elements */
+  --shadow-2xl: var(--p-shadow-12);     /* Maximum elevation */
+
+  /* --- Timing --- */
+  --duration-fast: var(--p-duration-150);     /* Micro-interactions */
+  --duration-base: var(--p-duration-200);     /* Default transitions */
+  --duration-slow: var(--p-duration-300);     /* Deliberate animations */
+  --duration-slower: var(--p-duration-500);   /* Page transitions */
+
+  --ease-in: var(--p-ease-in);
+  --ease-out: var(--p-ease-out);
+  --ease-in-out: var(--p-ease-in-out);
+
+  /* --- Layout: Content Widths --- */
+  --content-narrow: var(--p-width-600);       /* Forms, focused content */
+  --content-normal: var(--p-width-800);       /* Articles, blog posts */
+  --content-wide: var(--p-width-1000);        /* Section headers */
+  --content-container: var(--p-width-1200);   /* Card grids, galleries */
+  --content-full: var(--p-width-1400);        /* Maximum width */
+
+  /* --- Layout: Z-Index --- */
+  --z-base: var(--p-z-0);
+  --z-dropdown: var(--p-z-10);
+  --z-sticky: var(--p-z-100);
+  --z-overlay: var(--p-z-1000);
+  --z-modal: var(--p-z-10000);
   --z-popover: 10001;
   --z-tooltip: 10002;
 
-  /* ========================================
-     TRANSITIONS
-     Standard timing functions
-     ======================================== */
-  --duration-fast: 150ms;
-  --duration-base: 200ms;
-  --duration-slow: 300ms;
-  --duration-slower: 500ms;
+  /* --- Layout: Page Spacing --- */
+  --page-gutter: var(--space-xl);
 
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  /* =====================================================================
+     TIER 3: COMPONENT TOKENS
+     Specific to components. Reference semantic tokens.
+     Makes components self-documenting and easy to update globally.
+     ===================================================================== */
 
-  /* ========================================
-     COMPONENT-SPECIFIC TOKENS
-     Common patterns extracted
-     ======================================== */
-
-  /* Card defaults */
-  --card-padding: var(--space-xl);
-  --card-radius: var(--radius-lg);
-  --card-gap: var(--space-lg);
-
-  /* Button defaults */
+  /* --- Button Component --- */
   --button-padding-y: var(--space-sm);
   --button-padding-x: var(--space-lg);
   --button-radius: var(--radius-md);
+  --button-font-size: var(--text-base);
+  --button-font-weight: var(--font-bold);
+  --button-border-width: var(--border-width-thick);
+  --button-shadow: var(--shadow-md);
+  --button-shadow-hover: var(--shadow-lg);
 
-  /* Badge defaults */
+  /* --- Card Component --- */
+  --card-padding: var(--space-xl);
+  --card-padding-sm: var(--space-md);
+  --card-padding-lg: var(--space-2xl);
+  --card-radius: var(--radius-lg);
+  --card-gap: var(--space-lg);
+  --card-border-width: var(--border-width);
+  --card-shadow: var(--shadow-lg);
+  --card-shadow-hover: var(--shadow-xl);
+
+  /* --- Badge Component --- */
   --badge-padding-y: var(--space-xs);
   --badge-padding-x: var(--space-sm);
   --badge-radius: var(--radius-sm);
   --badge-font-size: var(--text-xs);
+  --badge-font-weight: var(--font-semibold);
+  --badge-letter-spacing: var(--tracking-wide);
 
-  /* Modal defaults */
+  /* --- Modal Component --- */
   --modal-padding: var(--space-2xl);
   --modal-radius: var(--radius-xl);
   --modal-max-width: 800px;
+  --modal-backdrop-blur: 4px;
 
-  /* ========================================
-     LAYOUT SPACING PATTERNS
-     Semantic tokens for consistent spacing
-     ======================================== */
+  /* --- Media Frame (images/screenshots) --- */
+  --media-border-width: var(--border-width-thick);
+  --media-radius: var(--radius-md);
+  --media-shadow: var(--shadow-lg);
+  --media-shadow-hover: var(--shadow-xl);
 
-  /* Section spacing */
-  --section-spacing: var(--space-5xl);      /* 128px - Between major sections */
-  --section-spacing-compact: var(--space-4xl); /* 96px - Between related sections */
+  /* --- Sidebar (case study pages) --- */
+  --sidebar-title-size: var(--heading-lg);
+  --sidebar-date-size: var(--text-sm);
+  --sidebar-meta-size: var(--text-base);
+  --sidebar-cta-size: var(--text-sm);
 
-  /* Content spacing */
-  --heading-spacing: var(--space-lg);       /* 24px - After headings */
-  --paragraph-spacing: var(--space-xl);     /* 32px - Between paragraphs */
-  --element-spacing: var(--space-md);       /* 16px - Between related elements */
+  /* --- Section Layout --- */
+  --section-spacing: var(--space-5xl);
+  --section-spacing-compact: var(--space-4xl);
+  --heading-spacing: var(--space-lg);
+  --paragraph-spacing: var(--space-xl);
+  --element-spacing: var(--space-md);
+
+  /* --- Documentation Layout --- */
+  --docs-sidebar-width: 280px;
+  --docs-sidebar-padding: var(--space-lg);
+  --docs-content-max-width: var(--content-normal);
+  --docs-content-padding: var(--space-2xl);
+  --docs-nav-link-padding-y: var(--space-sm);
+  --docs-nav-link-padding-x: var(--space-md);
+  --docs-section-gap: var(--space-3xl);
 }
 
-/* ========================================
-   RESPONSIVE BREAKPOINTS
-   Mobile-first approach
-   ======================================== */
-
-/* Tablet and up */
-@custom-media --tablet (min-width: 768px);
-
-/* Desktop and up */
-@custom-media --desktop (min-width: 1024px);
-
-/* Large desktop and up */
-@custom-media --wide (min-width: 1280px);
-
-/* ========================================
-   RESPONSIVE: Page Gutter
-   Smaller on mobile devices
-   ======================================== */
+/* =====================================================================
+   RESPONSIVE ADJUSTMENTS
+   ===================================================================== */
 
 @media (max-width: 768px) {
   :root {
-    --page-gutter: var(--space-lg);  /* 1.5rem on mobile */
+    --page-gutter: var(--space-lg);
   }
 }
 
-/* ========================================
-   UTILITY: Reduced Motion
-   Respect user preferences
-   ======================================== */
+/* =====================================================================
+   REDUCED MOTION
+   ===================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   :root {
