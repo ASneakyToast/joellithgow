@@ -3,32 +3,39 @@ import { defineCollection, z } from 'astro:content';
 // Define project schema for MDX-based case studies
 // Content sections (challenge, approach, process, etc.) are now in MDX body, not frontmatter
 const projectSchema = z.object({
-  // Card/listing metadata
+  // Core identification
   id: z.string(),
+  title: z.string(),
+  description: z.string(), // Used for cards and SEO
+
+  // Card/listing metadata (required for work index cards)
   number: z.number(),
   type: z.string(),
-  title: z.string(),
-  description: z.string(),
-  impact: z.string(),
   technologies: z.array(z.string()).optional(),
 
-  // Hero metadata
-  subtitle: z.string(),
-  overview: z.string(),
+  // NEW: Personal format fields
+  dateRange: z.string().optional(), // e.g., "2024, March - April"
+  intro: z.string().optional(), // 2-3 sentence personal description
+
+  // LEGACY: Academic format fields (optional for backward compat)
+  subtitle: z.string().optional(),
+  overview: z.string().optional(),
+
+  // Hero media
   heroMedia: z.object({
     src: z.string(),
     fallbackSrc: z.string().optional(),
     poster: z.string().optional(),
     alt: z.string(),
-    caption: z.string().optional(),
     type: z.enum(['image', 'video']).default('image')
   }).optional(),
 
-  // Meta information
-  duration: z.string(),
-  team: z.string(),
-  role: z.string(),
-  tools: z.string(),
+  // Meta information (optional in new format)
+  duration: z.string().optional(),
+  team: z.string().optional(),
+  role: z.string().optional(),
+  tools: z.string().optional(),
+  metadata: z.array(z.string()).optional(), // Flexible bullet points for sidebar
 
   // Live links (optional)
   liveLink: z.object({
@@ -130,7 +137,6 @@ const interviewRoundSchema = z.enum([
 // Application status values
 const applicationStatusEnum = z.enum([
   'draft',
-  'preparing',
   'applied',
   'interviewing',
   'offered',
@@ -172,11 +178,23 @@ const applicationSchema = z.object({
     closing: z.string().optional(),
   }).optional(),
 
+  // Outreach messages for cold networking
+  outreach: z.object({
+    linkedin: z.object({
+      message: z.string(),
+    }).optional(),
+    email: z.object({
+      subject: z.string(),
+      message: z.string(),
+    }).optional(),
+  }).optional(),
+
   // Resume customizations
   resume: z.object({
     summary: z.string().optional(),
     skills: z.object({
       frontend: z.string().optional(),
+      backend: z.string().optional(),
       testing: z.string().optional(),
       cloud: z.string().optional(),
       tools: z.string().optional(),
@@ -186,10 +204,14 @@ const applicationSchema = z.object({
       creative: z.string().optional(),
       ai: z.string().optional(),
     }).optional(),
+    projects: z.array(z.object({
+      name: z.string(),
+      description: z.string(),
+      link: z.string().optional(),
+    })).optional(),
   }).optional(),
 
   // Display options
-  featured: z.boolean().default(false),
   public: z.boolean().default(true), // Can hide sensitive applications
   fit: z.enum(['very-strong', 'strong', 'moderate', 'stretch']).optional(),
 

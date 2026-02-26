@@ -4,38 +4,42 @@ number: 5
 type: "technical growth / collaboration"
 title: "learning cloud infrastructure through contribution"
 description: "strategically seeking out learning opportunities by contributing to cca.edu's cloud run migration, building the development workflow and deployment pipeline alongside a senior developer"
-impact: "gained cloud infrastructure proficiency"
 technologies: ["google cloud run", "docker", "docker compose", "webpack", "cloud build"]
-subtitle: "technical growth"
-overview: "When Ngoc, a senior integrations developer and mentor of mine, began modernizing CCA's infrastructure from Kubernetes to Cloud Run, I recognized an opportunity. By joining the project as a key contributor, I helped build the development workflow and deployment pipeline while gaining hands-on cloud infrastructure experience."
-duration: "dec 2024 – feb 2025 (~2.5 months)"
-team: "Ngoc (project lead, senior integrations developer) + Joel (contributor)"
-role: "contributor (build pipeline & deployment)"
-tools: "google cloud run, docker, docker compose, webpack, cloud build"
+
+dateRange: "2024-2025, December - February"
+intro: "When Ngoc, a senior integrations developer and mentor of mine, began modernizing CCA's infrastructure from Kubernetes to Cloud Run, I recognized an opportunity. By joining the project as a key contributor, I helped build the development workflow and deployment pipeline while gaining hands-on cloud infrastructure experience."
+
+heroMedia:
+  src: "/assets/images/projects/infrastructure-migration-placeholder.png"
+  alt: "Cloud infrastructure migration workflow"
+  type: "image"
+
+metadata:
+  - "Cloud infrastructure migration contribution"
+  - "Contributor alongside senior integrations developer"
+  - "Built with Google Cloud Run, Docker, Webpack"
+
 featured: false
 tags: ["cloud run", "docker", "webpack", "cloud build", "technical-growth", "collaboration", "mentorship"]
 ---
 
-import CaseStudyHero from '@components/blocks/CaseStudyHero.astro';
-import CaseStudyMeta from '@components/blocks/CaseStudyMeta.astro';
+import FullWidthMedia from '@components/blocks/FullWidthMedia.astro';
 import ChallengeSection from '@components/blocks/ChallengeSection.astro';
 import ApproachSection from '@components/blocks/ApproachSection.astro';
 import ProcessSteps from '@components/blocks/ProcessSteps.astro';
 import InsightsSection from '@components/blocks/InsightsSection.astro';
-import MetricsGrid from '@components/blocks/MetricsGrid.astro';
+import DisplayStatement from '@components/blocks/DisplayStatement.astro';
 
-<CaseStudyHero
-  title={frontmatter.title}
-  subtitle={frontmatter.subtitle}
-  overview={frontmatter.overview}
+<FullWidthMedia
+  src="/assets/images/projects/infrastructure-migration-placeholder.png"
+  alt="Cloud infrastructure migration workflow"
+  type="image"
+  framed
 />
 
-<CaseStudyMeta
-  duration={frontmatter.duration}
-  team={frontmatter.team}
-  role={frontmatter.role}
-  tools={frontmatter.tools}
-/>
+<DisplayStatement>
+When Ngoc, a senior integrations developer and mentor of mine, began modernizing CCA's infrastructure from Kubernetes to Cloud Run, I recognized an opportunity. By joining the project as a key contributor, I helped build the development workflow and deployment pipeline while gaining hands-on cloud infrastructure experience.
+</DisplayStatement>
 
 <ChallengeSection insight="The best way to learn complex technical skills is by contributing to real systems with real stakes, not just tutorials">
 My marketing team needed deployment autonomy, but I lacked the cloud infrastructure skills to make that happen. When Ngoc began leading the Cloud Run migration for CCA.edu, I recognized this as an opportunity to learn by doing—contributing to a real migration rather than just studying documentation.
@@ -59,8 +63,3 @@ I asked Ngoc if I could contribute to the CCA.edu Cloud Run migration. Starting 
   "Taking ownership of specific pieces (like the dev workflow) lets you contribute meaningfully while learning the broader system"
 ]} />
 
-<MetricsGrid metrics={[
-  { number: "32", label: "infrastructure commits" },
-  { number: "2.5mo", label: "active contribution" },
-  { number: "0→1", label: "GCP proficiency" }
-]} />

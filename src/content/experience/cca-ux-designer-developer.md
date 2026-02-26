@@ -8,7 +8,7 @@ featured: true
 showOnResume: true
 order: 1
 responsibilities:
-  - "Develop and maintain frontend applications for marketing and communications department"
+  - "Develop and maintain full-stack applications for marketing and communications department"
   - "Led systemic accessibility improvement by establishing color contrast standards across digital properties, replacing non-compliant teal link color with WCAG AA-compliant navy"
   - "Implement Playwright-based test automation, reducing manual QA time for CMS workflows from weeks to hours"
   - "Contribute to cloud infrastructure migration from legacy systems to Docker and Google Cloud Run"

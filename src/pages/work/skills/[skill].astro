@@ -71,14 +71,6 @@ const pageDescription = `Projects featuring ${skill}`;
             <h2 class="project-title">{project.data.title}</h2>
             <p class="project-description">{project.data.description}</p>
 
-            {/* Impact */}
-            {project.data.impact && (
-              <div class="project-impact">
-                <span class="impact-label">impact:</span>
-                <span class="impact-value">{project.data.impact}</span>
-              </div>
-            )}
-
             {/* Tags - highlight current skill */}
             {project.data.tags && project.data.tags.length > 0 && (
               <div class="project-tags">
@@ -193,27 +185,6 @@ const pageDescription = `Projects featuring ${skill}`;
   .project-description {
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
-    color: var(--text-secondary);
-  }
-
-  .project-impact {
-    display: flex;
-    gap: var(--space-xs);
-    padding: var(--space-sm) 0;
-    border-top: 1px solid var(--border-secondary);
-    border-bottom: 1px solid var(--border-secondary);
-  }
-
-  .impact-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--text-tertiary);
-    font-weight: var(--font-bold);
-  }
-
-  .impact-value {
-    font-size: var(--text-xs);
     color: var(--text-secondary);
   }
 

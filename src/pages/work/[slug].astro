@@ -23,6 +23,9 @@ const data = project.data;
 // Render the MDX content
 const { Content } = await render(project);
 
+// Build metadata items
+const metadataItems = data.metadata || [data.role, data.tools].filter(Boolean);
+
 // JSON-LD structured data for case study
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -74,46 +77,53 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <main class="case-study">
-    {/* Breadcrumb Header */}
-    <header class="breadcrumb-header">
-      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
-        <ol class="breadcrumb-list">
-          <li class="breadcrumb-item">
-            <a href="/" class="breadcrumb-link">Joel Lithgow</a>
-          </li>
-          <li class="breadcrumb-separator" aria-hidden="true">/</li>
-          <li class="breadcrumb-item">
-            <a href="/work" class="breadcrumb-link">Portfolio</a>
-          </li>
-          <li class="breadcrumb-separator" aria-hidden="true">/</li>
-          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-            {data.title}
-          </li>
-        </ol>
-      </nav>
-    </header>
+    {/* Two-column layout: Fixed sidebar + Scrolling content */}
+    <div class="case-study-wrapper">
+      {/* Fixed Sidebar */}
+      <aside class="case-study-sidebar">
+        {data.dateRange && (
+          <time class="sidebar-date">{data.dateRange}</time>
+        )}
+        <h1 class="sidebar-title">{data.title}</h1>
 
-    {/* MDX Content */}
-    <article class="article">
-      <div class="case-study-content">
-        <Content />
-      </div>
+        {metadataItems.length > 0 && (
+          <div class="sidebar-meta">
+            {metadataItems.map((item, i) => (
+              <>
+                <span class="sidebar-meta-item">{item}</span>
+                {i < metadataItems.length - 1 && <span class="sidebar-meta-divider">/</span>}
+              </>
+            ))}
+          </div>
+        )}
 
-      {/* Footer Navigation */}
-      <footer class="article-footer">
-        <Button href="/work" variant="primary" size="lg">
-          <span aria-hidden="true">&larr;</span> Back to all projects
-        </Button>
-      </footer>
-    </article>
+        {data.liveLink && (
+          <a href={data.liveLink.url} target="_blank" rel="noopener noreferrer" class="sidebar-cta">
+            {data.liveLink.title}
+          </a>
+        )}
+
+        <a href="/work" class="sidebar-back">
+          <span class="back-arrow">←</span> All projects
+        </a>
+      </aside>
+
+      {/* Scrolling Main Content */}
+      <article class="case-study-main animated-bg">
+        <div class="case-study-content">
+          <Content />
+        </div>
+      </article>
+    </div>
   </main>
 
   <ThemeModal />
 </BaseLayout>
 
-<style is:global>
+<style>
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
+  @import '../../styles/backgrounds.css';
 
   /* Page Layout */
   .case-study {
@@ -121,129 +131,235 @@ const breadcrumbSchema = {
     min-height: 100vh;
   }
 
-  /* Breadcrumb Header */
-  .breadcrumb-header {
-    background: var(--bg-primary);
-    padding: var(--space-md) var(--page-gutter);
-    border-bottom: 2px solid var(--bg-dark);
+  /* Two-column wrapper */
+  .case-study-wrapper {
+    display: grid;
+    grid-template-columns: 3fr 7fr;
   }
 
-  .breadcrumb-nav {
-    max-width: var(--content-container);
-    margin: 0 auto;
+  /* Fixed Sidebar */
+  .case-study-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2xl) var(--space-2xl) var(--space-2xl) var(--page-gutter);
+    border-right: 1px solid var(--bg-dark);
+    text-wrap: pretty;
   }
 
-  .breadcrumb-list {
+  .sidebar-date {
+    display: block;
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    color: var(--accent-primary);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin-bottom: var(--space-lg);
+  }
+
+  .sidebar-title {
+    font-family: var(--font-family);
+    font-size: var(--heading-lg);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-lg);
+  }
+
+  .sidebar-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-xl);
+    list-style: disc;
+    padding-left: var(--space-md);
+  }
+
+  .sidebar-meta-item {
+    display: list-item;
+  }
+
+  .sidebar-meta-divider {
+    display: none;
+  }
+
+  .sidebar-cta {
+    width: fit-content;
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-primary);
+    text-underline-offset: 3px;
+    transition: color var(--duration-base) var(--ease-out);
+    margin-bottom: var(--space-md);
+  }
+
+  .sidebar-cta:hover {
+    color: var(--accent-primary);
+  }
+
+  .sidebar-back {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    flex-wrap: wrap;
-  }
-
-  .breadcrumb-item {
+    width: fit-content;
+    margin-top: auto;
     font-family: var(--font-family);
     font-size: var(--text-sm);
-  }
-
-  .breadcrumb-link {
     color: var(--text-secondary);
     text-decoration: none;
     transition: color var(--duration-base) var(--ease-out);
   }
 
-  .breadcrumb-link:hover {
-    color: var(--accent-primary);
-  }
-
-  .breadcrumb-separator {
-    color: var(--text-secondary);
-    opacity: 0.5;
-    font-size: var(--text-sm);
-  }
-
-  .breadcrumb-current {
+  .sidebar-back:hover {
     color: var(--text-primary);
-    font-weight: var(--font-bold);
   }
 
-  /* Article Container */
-  .article {
-    max-width: var(--content-container);
-    margin: 0 auto;
-    padding: 0 var(--page-gutter);
+  .back-arrow {
+    transition: transform var(--duration-base) var(--ease-out);
   }
 
-  /* Case Study Content - styles for MDX blocks */
-  .case-study-content {
-    container-type: inline-size;
-    container-name: case-study;
+  .sidebar-back:hover .back-arrow {
+    transform: translateX(-2px);
   }
 
-  .case-hero {
-    padding: var(--space-3xl) 0;
+  /* Main Content */
+  .case-study-main {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    padding: var(--space-2xl) var(--page-gutter) var(--space-2xl) var(--space-xl);
     background: var(--bg-secondary);
   }
 
-  .case-title {
-    font-size: var(--heading-2xl);
-    margin-bottom: var(--space-md);
-    color: var(--text-primary);
-    line-height: var(--leading-tight);
+  /* Override z-index so grid appears above background */
+  .case-study-main::before {
+    z-index: 1;
   }
 
-  .case-subtitle {
-    font-size: var(--text-sm);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    color: var(--accent-secondary);
-    margin-bottom: var(--space-lg);
+  .case-study-main::after {
+    z-index: 2;
   }
 
-  .case-overview {
-    font-size: var(--text-lg);
-    line-height: var(--leading-relaxed);
-    color: var(--text-secondary);
-    margin-bottom: var(--space-2xl);
-    max-width: var(--content-normal);
+  .case-study-content {
+    container-type: inline-size;
+    container-name: case-study;
+    position: relative;
+    z-index: 10;
   }
 
-  .case-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: var(--space-md);
-    margin-top: var(--space-2xl);
+  /* Mobile: Stack vertically */
+  @media (max-width: 1024px) {
+    .case-study-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .case-study-sidebar {
+      position: static;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--bg-dark);
+      padding: var(--space-xl) var(--page-gutter);
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-md);
+    }
+
+    .case-study-main {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .sidebar-date {
+      margin-bottom: 0;
+    }
+
+    .sidebar-title {
+      flex: 1 1 100%;
+      margin-bottom: var(--space-sm);
+    }
+
+    .sidebar-meta {
+      flex-direction: row;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .sidebar-meta-item {
+      display: inline;
+    }
+
+    .sidebar-meta-divider {
+      display: inline;
+      margin: 0 var(--space-xs);
+      color: var(--accent-primary);
+    }
+
+    .sidebar-cta {
+      margin-bottom: 0;
+    }
+
+    .sidebar-back {
+      margin-top: 0;
+      margin-left: auto;
+    }
   }
 
-  .meta-item {
-    background: var(--bg-primary);
-    border: 2px solid var(--bg-dark);
-    padding: var(--space-lg);
+  @media (max-width: 768px) {
+    .case-study-sidebar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .sidebar-title {
+      font-size: var(--heading-md);
+    }
+
+    .sidebar-back {
+      margin-left: 0;
+      margin-top: var(--space-md);
+    }
   }
 
-  .meta-item:nth-child(even) {
-    background: var(--accent-tertiary);
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar-cta,
+    .sidebar-back,
+    .back-arrow {
+      transition: none;
+    }
+
+    .sidebar-back:hover .back-arrow {
+      transform: none;
+    }
   }
 
-  .meta-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    margin-bottom: var(--space-xs);
-    color: var(--text-secondary);
-    display: block;
+  /* Focus states */
+  .sidebar-cta:focus,
+  .sidebar-back:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
   }
+</style>
 
-  .meta-value {
-    font-size: var(--text-sm);
-    font-weight: var(--font-bold);
-    color: var(--text-primary);
-  }
-
+<!-- Global styles for MDX content -->
+<style is:global>
+  /* Legacy styles for MDX blocks */
   .case-section {
-    padding: var(--space-3xl) 0;
+    margin: var(--space-2xl) 0;
     border-bottom: 2px solid var(--bg-primary);
   }
 
@@ -271,74 +387,6 @@ const breadcrumbSchema = {
     margin-bottom: var(--space-lg);
   }
 
-  .insight-box {
-    background: var(--accent-secondary);
-    color: var(--text-light);
-    padding: var(--space-lg);
-    margin: var(--space-xl) 0;
-    border: 2px solid var(--bg-dark);
-    position: relative;
-    max-width: var(--content-normal);
-  }
-
-  .metric-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: var(--space-md);
-    margin: var(--space-lg) 0;
-  }
-
-  .metric-card {
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: var(--space-lg);
-    text-align: center;
-    border: 2px solid var(--bg-dark);
-  }
-
-  .metric-card:nth-child(even) {
-    background: var(--accent-primary);
-  }
-
-  .metric-number {
-    font-size: var(--heading-md);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-xs);
-  }
-
-  .metric-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .process-step-detailed {
-    background: var(--bg-primary);
-    border: 2px solid var(--bg-dark);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-lg);
-  }
-
-  .step-number-detailed {
-    font-size: var(--heading-sm);
-    font-weight: var(--font-bold);
-    color: var(--accent-primary);
-    margin-bottom: var(--space-sm);
-  }
-
-  .step-title-detailed {
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-sm);
-    color: var(--text-primary);
-  }
-
-  .step-description-detailed {
-    font-size: var(--text-base);
-    line-height: var(--leading-relaxed);
-    color: var(--text-secondary);
-  }
-
   .case-image-gallery,
   .image-grid {
     margin: var(--space-xl) 0;
@@ -358,18 +406,6 @@ const breadcrumbSchema = {
     border-radius: var(--radius-md);
   }
 
-  .primary-image {
-    max-height: 600px;
-    object-fit: cover;
-  }
-
-  .image-caption {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    margin-top: var(--space-sm);
-    text-align: center;
-  }
-
   .image-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -382,78 +418,28 @@ const breadcrumbSchema = {
     }
   }
 
-  .quote-block {
-    background: var(--bg-primary);
-    border-left: 4px solid var(--accent-primary);
-    padding: var(--space-lg);
-    margin: var(--space-lg) 0;
-    font-style: italic;
-    font-size: var(--text-lg);
-    max-width: var(--content-normal);
-  }
-
   .live-link-container,
   .live-links-container {
     margin: var(--space-lg) 0;
   }
 
-  .live-link-button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    font-weight: var(--font-bold);
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .live-link-button:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
-  }
-
-  .link-arrow {
-    font-size: var(--text-xl);
-  }
-
-  .live-link-description,
-  .live-links-description {
+  /* Prose styles for MDX body content */
+  .case-study-content > p {
     font-size: var(--text-base);
-    color: var(--text-secondary);
-    margin: var(--space-md) 0;
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    max-width: var(--content-normal);
+    margin-bottom: var(--space-lg);
   }
 
-  .live-links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
+  /* First paragraph gets intro styling */
+  .case-study-content > p:first-of-type {
+    font-size: var(--text-lg);
   }
 
-  /* Article Footer */
-  .article-footer {
-    padding: var(--space-4xl) 0;
-    margin-top: var(--space-2xl);
-    border-top: 3px solid var(--bg-dark);
-    text-align: center;
-  }
-
-  /* Responsive */
   @media (max-width: 768px) {
-    .case-title {
-      font-size: var(--heading-xl);
+    .case-study-content > p:first-of-type {
+      font-size: var(--text-base);
     }
-
-    .case-meta {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  /* Focus states */
-  .breadcrumb-link:focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
   }
 </style>

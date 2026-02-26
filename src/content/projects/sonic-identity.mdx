@@ -4,51 +4,49 @@ number: 4
 type: "interactive prototype"
 title: "Sonic Identity: Interactive Headphone Brand Experience"
 description: "exploratory prototype for a headphone brand's digital identity, featuring 3D product visualization and real-time audio EQ theming that communicates sonic profiles through web-based visualization"
-impact: "demonstrated interactive brand experience capabilities through working prototype"
 technologies: ["three.js", "javascript", "vite"]
-subtitle: "interactive prototype"
-overview: "A speculative client project that became a working prototype exploring how brands can communicate sonic identity through interactive web experiences. While the commercial project didn't materialize, I developed a fully functional prototype featuring 3D headphone models and multiple sound profile themes—demonstrating how interactive experiences can communicate product value propositions more effectively than static marketing."
+
+dateRange: "2024, 1-2 weeks"
+intro: "A speculative client project that became a working prototype exploring how brands can communicate sonic identity through interactive web experiences. While the commercial project didn't materialize, I developed a fully functional prototype featuring 3D headphone models and multiple sound profile themes—demonstrating how interactive experiences can communicate product value propositions more effectively than static marketing."
+
 heroMedia:
   src: "/assets/images/projects/sonic-identity-hero--processed.png"
   alt: "Sonic Identity interactive prototype showing 3D headphone model with theme visualization"
-  caption: "Interactive landing page featuring 3D product model and theme-based visual identity system"
   type: "image"
-duration: "1-2 weeks (exploratory prototype)"
-team: "solo project (speculative client work)"
-role: "creative technologist (design + development)"
-tools: "three.js, vite, javascript"
+
+metadata:
+  - "Interactive 3D prototype for headphone brand"
+  - "Solo creative technologist project"
+  - "Built with Three.js, Vite, JavaScript"
+
 liveLink:
   title: "try the prototype"
   url: "DEPLOYMENT_URL_PLACEHOLDER"
   description: "Explore the interactive 3D headphone experience and sound profile themes"
+
 featured: true
 draft: true
 tags: ["three.js", "javascript", "vite", "3d web graphics", "creative-coding", "3d-web", "brand-experience", "interactive-design"]
 ---
 
-import CaseStudyHero from '@components/blocks/CaseStudyHero.astro';
-import CaseStudyMeta from '@components/blocks/CaseStudyMeta.astro';
+import FullWidthMedia from '@components/blocks/FullWidthMedia.astro';
 import ChallengeSection from '@components/blocks/ChallengeSection.astro';
 import ApproachSection from '@components/blocks/ApproachSection.astro';
 import ProcessSteps from '@components/blocks/ProcessSteps.astro';
-import ImageGrid from '@components/blocks/ImageGrid.astro';
-import FullWidthMedia from '@components/blocks/FullWidthMedia.astro';
+import MediaGallery from '@components/blocks/MediaGallery.astro';
 import InsightsSection from '@components/blocks/InsightsSection.astro';
-import MetricsGrid from '@components/blocks/MetricsGrid.astro';
+import DisplayStatement from '@components/blocks/DisplayStatement.astro';
 
-<CaseStudyHero
-  title={frontmatter.title}
-  subtitle={frontmatter.subtitle}
-  overview={frontmatter.overview}
-  media={frontmatter.heroMedia}
+<FullWidthMedia
+  src="/assets/images/projects/sonic-identity-hero--processed.png"
+  alt="Sonic Identity interactive prototype showing 3D headphone model with theme visualization"
+  type="image"
+  framed
 />
 
-<CaseStudyMeta
-  duration={frontmatter.duration}
-  team={frontmatter.team}
-  role={frontmatter.role}
-  tools={frontmatter.tools}
-/>
+<DisplayStatement>
+A speculative client project that became a working prototype exploring how brands can communicate sonic identity through interactive web experiences. While the commercial project didn't materialize, I developed a fully functional prototype featuring 3D headphone models and multiple sound profile themes—demonstrating how interactive experiences can communicate product value propositions more effectively than static marketing.
+</DisplayStatement>
 
 <ChallengeSection insight="Interactive brand experiences can communicate product differentiators (like sound profiles) more effectively than traditional marketing copy or static product photography">
 How do you communicate a headphone brand's sonic identity through digital experience? A friend's headphone startup needed a landing page that went beyond traditional product photography and marketing copy. The brand's core differentiator was customizable sound profiles ('theme settings'), but static images couldn't demonstrate this auditory experience. We needed a way to translate sonic identity into visual, interactive form.
@@ -69,14 +67,13 @@ I built an interactive prototype that lets users experience the brand's sound pr
   src="/assets/images/projects/sonic-identity-demo.webm"
   fallbackSrc="/assets/images/projects/sonic-identity-demo.mp4"
   alt="Demo video showing theme switching and 3D interaction"
-  caption="Demonstration of four sound profile themes with corresponding visual changes and camera controls"
   type="video"
 />
 
-<ImageGrid images={[
-  { src: "/assets/images/projects/sonic-identity-bass-theme--processed.png", alt: "Bass-heavy theme with warm colors and bold visual treatment", caption: "Bass-heavy theme featuring warm color palette and prominent visual emphasis" },
-  { src: "/assets/images/projects/sonic-identity-balanced-theme--processed.png", alt: "Balanced theme with neutral colors and even visual distribution", caption: "Balanced theme with neutral aesthetic and harmonious visual composition" },
-  { src: "/assets/images/projects/sonic-identity-treble-theme--processed.png", alt: "Treble-focused theme with cool colors and crisp visual treatment", caption: "Treble-focused theme featuring cool color palette and refined visual presentation" }
+<MediaGallery items={[
+  { src: "/assets/images/projects/sonic-identity-bass-theme--processed.png", alt: "Bass-heavy theme with warm colors and bold visual treatment" },
+  { src: "/assets/images/projects/sonic-identity-balanced-theme--processed.png", alt: "Balanced theme with neutral colors and even visual distribution" },
+  { src: "/assets/images/projects/sonic-identity-treble-theme--processed.png", alt: "Treble-focused theme with cool colors and crisp visual treatment" }
 ]} />
 
 <InsightsSection insights={[
@@ -86,9 +83,3 @@ I built an interactive prototype that lets users experience the brand's sound pr
   "Even when commercial projects don't materialize, the prototypes built during exploration become portfolio pieces that demonstrate capabilities for future opportunities"
 ]} />
 
-<MetricsGrid metrics={[
-  { number: "60fps", label: "3D render performance" },
-  { number: "4", label: "sound profile themes" },
-  { number: "100%", label: "browser-based (no plugins)" },
-  { number: "<3s", label: "initial load time" }
-]} />

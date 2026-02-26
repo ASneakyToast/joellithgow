@@ -1,100 +1,63 @@
 ---
 id: "after-intelligence"
-number: 1
-type: "event website"
-title: "After Intelligence Event Series"
-description: "A multi-purpose event website built under tight deadlines by prototyping ahead of design decisions, using a configurable color system that unblocked marketing teams and enabled rapid iteration once branding finalized"
-impact: "Unblocked cross-team marketing workflows"
+title: "After Intelligence Event Website"
+description: "Built a site that could rebrand itself instantly using CSS custom properties—marketing shipped while design was still deciding"
 technologies: ["astro.js", "css custom properties", "figma", "mailchimp"]
-subtitle: "event website"
-overview: "A website for CCA's After Intelligence event series, produced in collaboration with the Kari Marboe Endowment. The site serves multiple purposes: marketing and save-the-date collection before the event, live information during, and a permanent archive of photos and resources afterward."
+
+# New format fields
+dateRange: "2026, January - February"
+intro: "I built a multi-page event website for CCA's AI symposium using Astro.js. The site features landing pages for different event tracks, speaker profiles, and integrated registration through Mailchimp."
+
 heroMedia:
   src: "/videos/caseStudy-cca-afterIntelligence-hero.webm"
   fallbackSrc: "/videos/caseStudy-cca-afterIntelligence-hero.mp4"
   alt: "After Intelligence event website homepage"
-  caption: "Homepage featuring dynamic event information and registration integration"
   type: "video"
-duration: "3 weeks"
-team: "Joel Lithgow (Dev/Design), Julian (Lead Designer), Nikol Plass (PM)"
-role: "full-stack developer & digital designer"
-tools: "astro.js, css, figma, mailchimp"
+
+metadata:
+  - "Event microsite with landing pages and registration"
+  - "Sole developer alongside a Project Manager and Lead Designer"
+  - "Built with Astro.js, Claude Code, and Mailchimp integration"
+
 liveLink:
-  title: "visit the site"
+  title: "Visit the Site"
   url: "https://after-intelligence.cca.edu"
   description: "Explore the After Intelligence event series website"
+
+# Card display fields
+number: 1
+type: "event website"
 featured: true
 tags: ["event-website", "astro.js", "rapid-prototyping", "design-systems", "css-custom-properties", "email-templates"]
 ---
 
-import CaseStudyHero from '@components/blocks/CaseStudyHero.astro';
-import CaseStudyMeta from '@components/blocks/CaseStudyMeta.astro';
-import ChallengeSection from '@components/blocks/ChallengeSection.astro';
-import ApproachSection from '@components/blocks/ApproachSection.astro';
-import ProcessSteps from '@components/blocks/ProcessSteps.astro';
-import ImageGrid from '@components/blocks/ImageGrid.astro';
 import FullWidthMedia from '@components/blocks/FullWidthMedia.astro';
-import InsightsSection from '@components/blocks/InsightsSection.astro';
-import MetricsGrid from '@components/blocks/MetricsGrid.astro';
-import LiveLinkCTA from '@components/blocks/LiveLinkCTA.astro';
+import MediaGallery from '@components/blocks/MediaGallery.astro';
+import DisplayStatement from '@components/blocks/DisplayStatement.astro';
 
-<CaseStudyHero
-  title={frontmatter.title}
-  subtitle={frontmatter.subtitle}
-  overview={frontmatter.overview}
-  media={frontmatter.heroMedia}
+<FullWidthMedia
+  src="/videos/caseStudy-cca-afterIntelligence-hero.webm"
+  fallbackSrc="/videos/caseStudy-cca-afterIntelligence-hero.mp4"
+  alt="After Intelligence event website homepage"
+  type="video"
+  framed
 />
 
-<CaseStudyMeta
-  duration={frontmatter.duration}
-  team={frontmatter.team}
-  role={frontmatter.role}
-  tools={frontmatter.tools}
-/>
-
-<ChallengeSection insight="When timelines are tight and decisions are still in progress, build systems that can absorb change - a configurable foundation keeps everyone moving">
-The event had a tight timeline with multiple teams needing to work in parallel - marketing, communications, social, and web all had deliverables due before the branding direction was finalized. Traditional waterfall workflows would have created delays across the board.
-</ChallengeSection>
-
-<ApproachSection>
-I prototyped the website ahead of the finalized design direction, building a configurable color design system using CSS custom properties. This allowed the entire site's visual identity to be updated through a single configuration file, so when branding decisions landed, we could pivot instantly and keep all teams moving forward together.
-</ApproachSection>
-
-<ProcessSteps steps={[
-  { title: "rapid prototyping", description: "Built a functional website prototype using placeholder branding, establishing information architecture and user flows before visual design was finalized." },
-  { title: "configurable design system", description: "Created a CSS custom properties-based theming system where colors, typography, and spacing could be swapped globally through a single configuration, enabling instant rebranding." },
-  { title: "template development", description: "Extended the design system to email templates and social media assets, ensuring brand consistency across all marketing touchpoints." },
-  { title: "launch & archive transition", description: "Launched the marketing site, then transitioned it post-event into a permanent archive featuring photo galleries and speaker resources." }
-]} />
+<DisplayStatement>
+I built a multi-page event website for CCA's AI symposium using Astro.js. The site features landing pages for different event tracks, speaker profiles, and integrated registration through Mailchimp.
+</DisplayStatement>
 
 <FullWidthMedia
   src="/videos/caseStudy-cca-afterIntelligence-lightDark.webm"
   fallbackSrc="/videos/caseStudy-cca-afterIntelligence-lightDark.mp4"
   alt="Light and dark mode switching demonstration"
-  caption="The configurable design system enables seamless light and dark mode switching"
   type="video"
+  framed
 />
 
-<ImageGrid images={[
-  { src: "/assets/images/projects/after-intelligence-email.png", alt: "After Intelligence email template design", caption: "Custom email templates maintaining brand consistency across communications" },
-  { src: "/assets/images/projects/after-intelligence-social.png", alt: "After Intelligence social media template", caption: "Social media templates enabling consistent marketing across platforms" },
-  { src: "/assets/images/projects/after-intelligence-design-system.png", alt: "Configurable color design system", caption: "CSS custom properties powering the configurable design system" },
-  { src: "/assets/images/projects/after-intelligence-archive.png", alt: "Event archive and photo gallery", caption: "Post-event archive serving as a permanent resource for attendees and speakers" }
+<MediaGallery items={[
+  { src: "/assets/images/projects/after-intelligence-email.png", alt: "After Intelligence email template design" },
+  { src: "/assets/images/projects/after-intelligence-social.png", alt: "After Intelligence social media template" },
+  { src: "/assets/images/projects/after-intelligence-design-system.png", alt: "Configurable color design system" },
+  { src: "/assets/images/projects/after-intelligence-archive.png", alt: "Event archive and photo gallery" }
 ]} />
-
-<InsightsSection insights={[
-  "When timelines are tight and decisions are still in progress, build systems that can absorb change - a configurable foundation keeps everyone moving",
-  "Event websites have distinct lifecycle phases (marketing, live, archive) - planning for all three upfront prevents rebuild work later",
-  "CSS custom properties aren't just for theming - they're a collaboration tool that lets design and development work in parallel"
-]} />
-
-<MetricsGrid metrics={[
-  { number: "TBD", label: "total page views" },
-  { number: "TBD", label: "conversion rate" },
-  { number: "TBD", label: "avg engagement time" }
-]} />
-
-<LiveLinkCTA
-  title={frontmatter.liveLink.title}
-  description={frontmatter.liveLink.description}
-  url={frontmatter.liveLink.url}
-/>
