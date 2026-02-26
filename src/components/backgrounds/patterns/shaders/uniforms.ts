@@ -125,6 +125,13 @@ uniform float uBracketRatio;
 uniform int uTickDensity;
 `;
 
+/** GeometricGrid specific uniform declarations */
+export const geometricGridUniformDeclarations = `
+uniform float uGridSize;
+uniform float uLineWidth;
+uniform int uAnimationType;
+`;
+
 /** Colors configuration type */
 export interface ColorsConfig {
   primary?: string;

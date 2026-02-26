@@ -1,0 +1,143 @@
+---
+/**
+ * GeometricGridPatternBackground - Registry-compatible grid pattern
+ * Procedural grid lines with drift, pulse, and wave animation types
+ */
+import type { GeometricGridPatternBackgroundProps } from './types';
+
+export interface Props extends GeometricGridPatternBackgroundProps {}
+
+const {
+  speed = 0.8,
+  intensity = 0.5,
+  noiseScale = 1.0,
+  animated = true,
+  animationAngle = 315,
+  colors,
+  maxPixelRatio = 2,
+  pauseOffscreen = true,
+  class: className = '',
+  id = `geometric-grid-pattern-${Math.random().toString(36).substr(2, 9)}`,
+  // GeometricGrid-specific
+  gridSize = 80,
+  lineWidth = 1,
+  animationType = 0
+} = Astro.props;
+---
+
+<div
+  class:list={['webgl-background-container', 'noise-texture', 'geometric-grid-pattern-bg', className]}
+  id={id}
+  data-effect-type="geometricGrid"
+  data-speed={speed}
+  data-intensity={intensity}
+  data-noise-scale={noiseScale}
+  data-animated={animated}
+  data-animation-angle={animationAngle}
+  data-colors={JSON.stringify(colors || {})}
+  data-max-pixel-ratio={maxPixelRatio}
+  data-pause-offscreen={pauseOffscreen}
+  data-grid-size={gridSize}
+  data-line-width={lineWidth}
+  data-animation-type={animationType}
+  aria-hidden="true"
+>
+  <canvas class="webgl-canvas"></canvas>
+</div>
+
+<style>
+  .webgl-background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .webgl-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global([data-theme="minimal"]) .noise-texture {
+    opacity: 0.15;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .webgl-background-container {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { PatternBackgroundManager } from './PatternBackgroundManager';
+  import { geometricGridFragmentShader } from './shaders/fragments/geometric/grid.glsl';
+
+  interface GeometricGridConfig {
+    speed: number;
+    intensity: number;
+    noiseScale: number;
+    animated: boolean;
+    animationAngle: number;
+    maxPixelRatio: number;
+    pauseOffscreen: boolean;
+    colors: Record<string, string>;
+    gridSize: number;
+    lineWidth: number;
+    animationType: number;
+  }
+
+  class GeometricGridPatternManager extends PatternBackgroundManager<GeometricGridConfig> {
+    protected getFragmentShader(): string {
+      return geometricGridFragmentShader;
+    }
+
+    protected parsePatternConfig(container: HTMLElement): Partial<GeometricGridConfig> {
+      return {
+        gridSize: parseFloat(container.dataset.gridSize || '80'),
+        lineWidth: parseFloat(container.dataset.lineWidth || '1'),
+        animationType: parseInt(container.dataset.animationType || '0')
+      };
+    }
+
+    protected createPatternUniforms() {
+      return {
+        uGridSize: { value: this.config.gridSize },
+        uLineWidth: { value: this.config.lineWidth },
+        uAnimationType: { value: this.config.animationType }
+      };
+    }
+
+    protected updatePatternUniforms(props: Partial<GeometricGridConfig>): void {
+      if (!this.material) return;
+
+      if (props.gridSize !== undefined) {
+        this.config.gridSize = props.gridSize;
+        this.material.uniforms.uGridSize.value = props.gridSize;
+      }
+      if (props.lineWidth !== undefined) {
+        this.config.lineWidth = props.lineWidth;
+        this.material.uniforms.uLineWidth.value = props.lineWidth;
+      }
+      if (props.animationType !== undefined) {
+        this.config.animationType = props.animationType;
+        this.material.uniforms.uAnimationType.value = props.animationType;
+      }
+    }
+  }
+
+  // Auto-initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.geometric-grid-pattern-bg').forEach(container => {
+      const manager = new GeometricGridPatternManager(container as HTMLElement);
+      manager.init();
+      (container as any)._webglManager = manager;
+    });
+  });
+</script>
