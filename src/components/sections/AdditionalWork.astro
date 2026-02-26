@@ -41,13 +41,6 @@ const projects = allProjects
             <h3 class="project-title">{project.data.title}</h3>
             <p class="project-description">{project.data.description}</p>
 
-            {/* Impact metric if available */}
-            {project.data.impact && (
-              <div class="project-impact">
-                <span class="impact-label">impact:</span>
-                <span class="impact-value">{project.data.impact}</span>
-              </div>
-            )}
           </Card>
         ))}
       </div>
@@ -158,30 +151,6 @@ const projects = allProjects
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
     margin-bottom: var(--space-md);
-  }
-
-  /* Impact */
-  .project-impact {
-    display: flex;
-    gap: var(--space-xs);
-    padding: var(--space-sm) 0;
-    border-top: 2px solid var(--bg-dark);
-    margin-top: auto;
-  }
-
-  .impact-label {
-    font-family: var(--font-family);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    color: var(--accent-secondary);
-    font-weight: var(--font-bold);
-  }
-
-  .impact-value {
-    font-family: var(--font-family);
-    font-size: var(--text-xs);
-    color: var(--text-secondary);
   }
 
   /* Responsive adjustments */

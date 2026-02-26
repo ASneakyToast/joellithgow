@@ -1,0 +1,117 @@
+---
+import Video from '@components/ui/Video.astro';
+
+export interface Props {
+  intro: string;
+  media?: {
+    src: string;
+    fallbackSrc?: string;
+    poster?: string;
+    alt: string;
+    caption?: string;
+    type?: 'image' | 'video';
+  };
+}
+
+const { intro, media } = Astro.props;
+---
+
+<div class="work-hero">
+  {/* Hero Media */}
+  {media && (
+    <figure class="work-hero__figure">
+      <div class="work-hero__media">
+        {media.type === 'video' ? (
+          <Video
+            src={media.src}
+            fallbackSrc={media.fallbackSrc}
+            poster={media.poster}
+            class="work-hero__asset"
+          />
+        ) : (
+          <img
+            src={media.src}
+            alt={media.alt}
+            class="work-hero__asset"
+            loading="eager"
+          />
+        )}
+      </div>
+      {media.caption && (
+        <figcaption class="work-hero__caption">{media.caption}</figcaption>
+      )}
+    </figure>
+  )}
+
+  {/* Intro paragraph */}
+  <p class="work-hero__intro">{intro}</p>
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .work-hero {
+    margin-bottom: var(--space-2xl);
+  }
+
+  /* Hero Figure */
+  .work-hero__figure {
+    margin: 0 0 var(--space-2xl);
+  }
+
+  /* Hero Media */
+  .work-hero__media {
+    overflow: hidden;
+    border: var(--border-width-thick) solid var(--bg-dark);
+    box-shadow: var(--shadow-xl) var(--accent-secondary);
+    transition: transform var(--duration-slow) var(--ease-out),
+                box-shadow var(--duration-slow) var(--ease-out);
+  }
+
+  .work-hero__media:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--shadow-2xl) var(--accent-secondary);
+  }
+
+  .work-hero__asset {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .work-hero__caption {
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+  }
+
+  /* Intro paragraph */
+  .work-hero__intro {
+    font-family: var(--font-family);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    margin: 0;
+    max-width: var(--content-normal);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .work-hero__media {
+      transition: none;
+    }
+
+    .work-hero__media:hover {
+      transform: none;
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .work-hero__intro {
+      font-size: var(--text-base);
+    }
+  }
+</style>

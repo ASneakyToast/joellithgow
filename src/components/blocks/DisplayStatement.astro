@@ -1,0 +1,25 @@
+---
+// A typographically distinct callout for key narrative statements
+// in case study content. Larger type + generous spacing.
+---
+
+<div class="display-statement">
+  <slot />
+</div>
+
+<style>
+  .display-statement {
+    font-size: var(--text-xl);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    max-width: var(--content-normal);
+    margin: var(--space-3xl) 0;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 768px) {
+    .display-statement {
+      font-size: var(--text-lg);
+    }
+  }
+</style>

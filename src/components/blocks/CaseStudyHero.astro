@@ -10,7 +10,6 @@ export interface Props {
     fallbackSrc?: string;
     poster?: string;
     alt: string;
-    caption?: string;
     type?: 'image' | 'video';
   };
 }
@@ -35,7 +34,6 @@ const { title, subtitle, overview, media } = Astro.props;
       ) : (
         <img src={media.src} alt={media.alt} class="case-image primary-image" loading="eager" />
       )}
-      {media.caption && <div class="image-caption">{media.caption}</div>}
     </div>
   )}
 </div>

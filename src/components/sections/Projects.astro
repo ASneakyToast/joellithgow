@@ -53,7 +53,7 @@ if (limit && limit > 0) {
           {/* Image - clickable link */}
           {heroImage && (
             <a href={`/work/${project.data.id}`} class="project-image-link">
-              <figure class="project-image">
+              <figure class="project-image media-frame">
                 {heroImage.type === 'video' ? (
                   <Video
                     src={heroImage.src}
@@ -190,15 +190,6 @@ if (limit && limit > 0) {
   .project-image {
     margin: 0;
     overflow: hidden;
-    border: var(--border-width-thick) solid var(--bg-dark);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
-    transition: transform var(--duration-slow) var(--ease-out),
-                box-shadow var(--duration-slow) var(--ease-out);
-  }
-
-  .project-image-link:hover .project-image {
-    transform: translate(-4px, -4px);
-    box-shadow: var(--shadow-2xl) var(--accent-secondary);
   }
 
   .project-image img {
@@ -317,12 +308,10 @@ if (limit && limit > 0) {
 
   /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
-    .project-image,
     .project-cta {
       transition: none;
     }
 
-    .project-image-link:hover .project-image,
     .project-cta:hover {
       transform: none;
     }
@@ -332,11 +321,6 @@ if (limit && limit > 0) {
   .project-image-link:focus {
     outline: var(--border-width-thick) solid var(--accent-primary);
     outline-offset: var(--space-xs);
-  }
-
-  .project-image-link:focus .project-image {
-    transform: translate(-4px, -4px);
-    box-shadow: var(--shadow-2xl) var(--accent-secondary);
   }
 
   .project-cta:focus {

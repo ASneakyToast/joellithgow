@@ -1,0 +1,25 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+  links: Array<{
+    title: string;
+    url: string;
+  }>;
+}
+
+const { title, description, links } = Astro.props;
+---
+
+<div class="case-section">
+  <h2 class="section-title">{title}</h2>
+  {description && <p class="live-links-description">{description}</p>}
+  <div class="live-links-grid">
+    {links.map((link) => (
+      <a href={link.url} target="_blank" rel="noopener noreferrer" class="live-link-button">
+        {link.title}
+        <span class="link-arrow">&rarr;</span>
+      </a>
+    ))}
+  </div>
+</div>

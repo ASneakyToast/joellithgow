@@ -1,0 +1,78 @@
+---
+export interface Props {
+  title?: string;
+  code?: string;
+  codeLanguage?: string;
+  image?: {
+    src: string;
+    alt: string;
+  };
+}
+
+const {
+  title = "the craft",
+  code,
+  codeLanguage = "css",
+  image
+} = Astro.props;
+---
+
+<div class="case-section craft-section">
+  <h2 class="section-title">{title}</h2>
+
+  <div class="section-content">
+    <slot />
+  </div>
+
+  {code && (
+    <div class="craft-code">
+      <pre><code class={`language-${codeLanguage}`}>{code}</code></pre>
+    </div>
+  )}
+
+  {image && (
+    <figure class="craft-image">
+      <img src={image.src} alt={image.alt} loading="lazy" />
+    </figure>
+  )}
+</div>
+
+<style>
+  .craft-section {
+    padding: var(--space-3xl) 0;
+    border-bottom: 2px solid var(--bg-primary);
+  }
+
+  .craft-code {
+    margin: var(--space-xl) 0;
+    background: var(--bg-dark);
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  .craft-code pre {
+    margin: 0;
+    padding: var(--space-lg);
+    overflow-x: auto;
+  }
+
+  .craft-code code {
+    font-family: var(--font-mono, 'SF Mono', 'Fira Code', 'Consolas', monospace);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--text-light);
+    white-space: pre;
+  }
+
+  .craft-image {
+    margin: var(--space-xl) 0;
+  }
+
+  .craft-image img {
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+</style>

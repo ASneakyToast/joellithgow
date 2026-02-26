@@ -6,11 +6,11 @@ export interface Props {
   fallbackSrc?: string;
   poster?: string;
   alt: string;
-  caption?: string;
   type?: 'image' | 'video';
+  framed?: boolean; // Add border, shadow, and border-radius for screenshots
 }
 
-const { src, fallbackSrc, poster, alt, caption, type = 'image' } = Astro.props;
+const { src, fallbackSrc, poster, alt, type = 'image', framed = false } = Astro.props;
 ---
 
 <div class="case-section full-width-media">
@@ -20,12 +20,16 @@ const { src, fallbackSrc, poster, alt, caption, type = 'image' } = Astro.props;
         src={src}
         fallbackSrc={fallbackSrc}
         poster={poster}
-        class="full-width-asset"
+        class={framed ? "full-width-asset media-frame" : "full-width-asset"}
       />
     ) : (
-      <img src={src} alt={alt} class="full-width-asset" loading="lazy" />
+      <img
+        src={src}
+        alt={alt}
+        class:list={["full-width-asset", { "media-frame": framed }]}
+        loading="lazy"
+      />
     )}
-    {caption && <div class="image-caption">{caption}</div>}
   </div>
 </div>
 
@@ -43,11 +47,6 @@ const { src, fallbackSrc, poster, alt, caption, type = 'image' } = Astro.props;
     width: 100%;
     height: auto;
     display: block;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  .full-width-media .image-caption {
-    padding: var(--space-md) var(--space-xl);
-  }
 </style>

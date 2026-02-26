@@ -107,7 +107,7 @@ const renderedProjects = await Promise.all(
   }
 
   .case-section {
-    padding: var(--space-xl);
+    margin: var(--space-xl);
     border-bottom: 2px solid var(--bg-primary);
   }
 
@@ -247,13 +247,6 @@ const renderedProjects = await Promise.all(
     object-fit: cover;
   }
 
-  .image-caption {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    margin-top: var(--space-sm);
-    text-align: center;
-  }
-
   .image-grid {
     display: grid;
     grid-template-columns: 1fr !important;
@@ -311,9 +304,11 @@ const renderedProjects = await Promise.all(
 
   /* Container-based responsive design (responds to modal width, not viewport) */
   @container case-study (min-width: 600px) {
-    .case-hero,
-    .case-section {
+    .case-hero {
       padding: var(--space-2xl);
+    }
+    .case-section {
+      margin: var(--space-2xl);
     }
 
     .case-meta {
@@ -334,9 +329,11 @@ const renderedProjects = await Promise.all(
   }
 
   @container case-study (min-width: 800px) {
-    .case-hero,
-    .case-section {
+    .case-hero {
       padding: var(--space-3xl);
+    }
+    .case-section {
+      margin: var(--space-3xl);
     }
 
     .case-title {

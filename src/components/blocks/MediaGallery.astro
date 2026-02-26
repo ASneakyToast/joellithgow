@@ -1,0 +1,33 @@
+---
+import Video from '@components/ui/Video.astro';
+
+export interface Props {
+  items: Array<{
+    src: string;
+    fallbackSrc?: string;
+    alt: string;
+    type?: 'image' | 'video';
+  }>;
+  title?: string;
+}
+
+const { items, title = 'visual documentation' } = Astro.props;
+---
+
+<div class="case-section">
+  <div class="image-grid">
+    {items.map((item) => (
+      <div class="image-item">
+        {item.type === 'video' ? (
+          <Video
+            src={item.src}
+            fallbackSrc={item.fallbackSrc}
+            class="case-image gallery-image"
+          />
+        ) : (
+          <img src={item.src} alt={item.alt} class="case-image gallery-image" loading="lazy" />
+        )}
+      </div>
+    ))}
+  </div>
+</div>
