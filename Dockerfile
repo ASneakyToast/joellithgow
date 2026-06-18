@@ -5,8 +5,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Copy astraeus package so pyproject.toml's ../astraeus/... path resolves
+# Copy astraeus packages so pyproject.toml's ../astraeus/... paths resolve
 COPY astraeus/packages/starlette-cms ./astraeus/packages/starlette-cms
+COPY astraeus/packages/starlette-editor ./astraeus/packages/starlette-editor
 
 # Copy project manifest and sync deps
 COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
