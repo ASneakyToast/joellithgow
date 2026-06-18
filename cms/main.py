@@ -9,7 +9,7 @@ from starlette.applications import Starlette
 from starlette_cms import CMS
 from cms.schema import register_documents
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///cms/data/content.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms/data/content.db")
 API_KEY = os.environ.get("CMS_API_KEY", "dev-secret")
 
 cms = CMS(
