@@ -3,7 +3,7 @@ import BaseLayout from '@components/common/BaseLayout.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
-import { getCollection } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths = (async () => {
@@ -14,19 +14,19 @@ export const getStaticPaths = (async () => {
     'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
   ];
 
-  const allProjects = await getCollection('projects', ({ data }) => !data.draft);
+  const allProjects = await fetchProjects();
 
   // Get all unique tags/skills from projects AND the about section
   const allSkills = new Set<string>(aboutSkills);
   allProjects.forEach((project) => {
-    project.data.tags?.forEach((tag) => allSkills.add(tag));
+    project.tags?.forEach((tag) => allSkills.add(tag));
   });
 
   // Create a path for each skill
   return Array.from(allSkills).map((skill) => {
     const projectsWithSkill = allProjects
-      .filter((project) => project.data.tags?.includes(skill))
-      .sort((a, b) => a.data.number - b.data.number); // Sort by project number
+      .filter((project) => project.tags?.includes(skill))
+      .sort((a, b) => (a.number ?? 0) - (b.number ?? 0)); // Sort by project number
 
     return {
       params: { skill },
@@ -62,27 +62,27 @@ const pageDescription = `Projects featuring ${skill}`;
     {projects.length > 0 ? (
       <div class="projects-grid">
         {projects.map((project) => (
-          <Card variant="interactive" href={`/work/${project.data.id}`}>
+          <Card variant="interactive" href={`/work/${project.slug}`}>
             <div class="project-header">
-              <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
-              <span class="project-type">{project.data.type}</span>
+              <span class="project-number">{String(project.number).padStart(2, '0')}</span>
+              <span class="project-type">{project.project_type}</span>
             </div>
 
-            <h2 class="project-title">{project.data.title}</h2>
-            <p class="project-description">{project.data.description}</p>
+            <h2 class="project-title">{project.title}</h2>
+            <p class="project-description">{project.description}</p>
 
             {/* Impact */}
-            {project.data.impact && (
+            {project.impact && (
               <div class="project-impact">
                 <span class="impact-label">impact:</span>
-                <span class="impact-value">{project.data.impact}</span>
+                <span class="impact-value">{project.impact}</span>
               </div>
             )}
 
             {/* Tags - highlight current skill */}
-            {project.data.tags && project.data.tags.length > 0 && (
+            {project.tags && project.tags.length > 0 && (
               <div class="project-tags">
-                {project.data.tags.slice(0, 5).map((tag) => (
+                {project.tags.slice(0, 5).map((tag) => (
                   <Badge
                     variant={tag === skill ? "primary" : "secondary"}
                     size="sm"

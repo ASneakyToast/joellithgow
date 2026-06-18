@@ -1,5 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { fetchExperience } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Button from '@components/primitives/Button.astro';
 
@@ -65,8 +66,8 @@ const displaySkills = skillOrder
   .filter(key => skills[key])
   .map(key => ({ label: skillLabels[key], value: skills[key] }));
 
-// Get all experience entries
-const allExperience = await getCollection('experience');
+// Get all experience entries from Astraeus CMS
+const allExperience = await fetchExperience();
 
 // Helper to format date range
 function formatDateRange(startDate: string, endDate?: string): string {
@@ -89,20 +90,20 @@ interface GroupedExperience {
 
 // Process and group experience
 const experienceByCompany = allExperience
-  .filter(exp => exp.data.showOnResume)
+  .filter(exp => exp.show_on_resume)
   .reduce((acc, exp) => {
-    const company = exp.data.company;
+    const company = exp.company;
     if (!acc[company]) {
       acc[company] = [];
     }
     acc[company].push({
-      title: exp.data.title,
-      dateRange: formatDateRange(exp.data.startDate, exp.data.endDate),
-      type: exp.data.type,
-      responsibilities: exp.data.responsibilities,
-      order: exp.data.order || 99,
-      startYear: parseInt(exp.data.startDate.split('-')[0]),
-      endYear: exp.data.endDate ? parseInt(exp.data.endDate.split('-')[0]) : new Date().getFullYear(),
+      title: exp.title,
+      dateRange: formatDateRange(exp.start_date, exp.end_date),
+      type: exp.employment_type,
+      responsibilities: exp.responsibilities,
+      order: exp.order || 99,
+      startYear: parseInt(exp.start_date.split('-')[0]),
+      endYear: exp.end_date ? parseInt(exp.end_date.split('-')[0]) : new Date().getFullYear(),
     });
     return acc;
   }, {} as Record<string, Array<{

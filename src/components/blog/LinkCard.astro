@@ -24,7 +24,10 @@ export interface LinkData {
   title: string;
   description: string;
   author?: string;
-  dateAdded: Date;
+  /** Legacy: Date object. Prefer date_added (ISO string) from CMS. */
+  dateAdded?: Date;
+  /** ISO 8601 string from Astraeus CMS */
+  date_added?: string;
   tags?: string[];
   sourcePost?: SourcePost;
 }
@@ -42,6 +45,15 @@ const {
   showSourceInfo = false,
   class: className = '',
 } = Astro.props;
+
+// Resolve display date from either date_added (ISO string) or legacy dateAdded (Date)
+const displayDate = link.date_added
+  ? new Date(link.date_added)
+  : link.dateAdded instanceof Date
+    ? link.dateAdded
+    : link.dateAdded
+      ? new Date(link.dateAdded as unknown as string)
+      : null;
 
 const cardClasses = [
   'link-card',

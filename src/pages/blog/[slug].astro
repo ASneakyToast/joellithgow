@@ -1,5 +1,7 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { marked } from 'marked';
+import { fetchBlogPosts } from '@lib/astraeus';
+import type { AstraeusDocument, BlogPost } from '@lib/astraeus-types';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -11,25 +13,24 @@ import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog', ({ data }) => {
-    return !data.draft;
-  });
-  
-  return blogEntries.map(entry => ({
-    params: { slug: entry.slug }, 
-    props: { entry },
+  const blogPosts = await fetchBlogPosts();
+  const postsWithDetailPage = blogPosts.filter(p => p.has_detail_page !== false);
+
+  return postsWithDetailPage.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
   }));
 }
 
 interface Props {
-  entry: CollectionEntry<'blog'>;
+  post: AstraeusDocument<BlogPost>;
 }
 
-const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { post } = Astro.props;
 
-const { title, description, publishDate, author, tags, readingTime, image, links, category } = entry.data;
-const hasContent = entry.body && entry.body.trim().length > 0;
+const { title, description, publish_date, author, tags, reading_time, image, links, post_type } = post;
+const hasContent = post.body_markdown && post.body_markdown.trim().length > 0;
+const publishDate = new Date(publish_date);
 
 // JSON-LD structured data for BlogPosting
 const jsonLd = {
@@ -45,10 +46,10 @@ const jsonLd = {
   datePublished: publishDate.toISOString(),
   dateModified: publishDate.toISOString(),
   keywords: tags?.join(', '),
-  url: `https://joellithgow.com/blog/${entry.slug}`,
+  url: `https://joellithgow.com/blog/${post.slug}`,
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://joellithgow.com/blog/${entry.slug}`,
+    '@id': `https://joellithgow.com/blog/${post.slug}`,
   },
   publisher: {
     '@type': 'Person',
@@ -102,19 +103,19 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
-  <main class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': entry.data.type === 'collection' }]}>
-    <div class:list={['article-wrapper', { 'blog-wrapper': entry.data.type === 'collection' }]}>
+  <main class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': post_type === 'collection' }]}>
+    <div class:list={['article-wrapper', { 'blog-wrapper': post_type === 'collection' }]}>
       {/* Main content column (for collections) or article (for regular posts) */}
-      <div class={entry.data.type === 'collection' ? 'main-content' : ''}>
+      <div class={post_type === 'collection' ? 'main-content' : ''}>
         {/* Back to blog link */}
-        <nav class:list={['article-nav', { 'breadcrumb-nav': entry.data.type === 'collection' }]}>
-          <Button href="/blog" variant={entry.data.type === 'collection' ? 'ghost' : 'secondary'} size={entry.data.type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
-            ← Back to {entry.data.type === 'collection' ? 'Blog' : 'blog'}
+        <nav class:list={['article-nav', { 'breadcrumb-nav': post_type === 'collection' }]}>
+          <Button href="/blog" variant={post_type === 'collection' ? 'ghost' : 'secondary'} size={post_type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
+            ← Back to {post_type === 'collection' ? 'Blog' : 'blog'}
           </Button>
         </nav>
 
         {/* COLLECTION LAYOUT */}
-        {entry.data.type === 'collection' ? (
+        {post_type === 'collection' ? (
           <>
             {/* Collection header - matches tag/links page style */}
             <header class="collection-header">
@@ -145,9 +146,7 @@ const breadcrumbSchema = {
             {hasContent && (
               <section class="collection-content-section">
                 <Card variant="flat" as="article" class="collection-content-card">
-                  <div class="collection-intro">
-                    <Content />
-                  </div>
+                  <div class="collection-intro" set:html={marked.parse(post.body_markdown ?? '')}></div>
                 </Card>
               </section>
             )}
@@ -161,7 +160,7 @@ const breadcrumbSchema = {
                 </h2>
                 <div class="links-grid">
                   {links.map((link) => (
-                    <LinkCard link={link} variant="minimal" />
+                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
               </section>
@@ -211,8 +210,8 @@ const breadcrumbSchema = {
               <div class="article-meta">
                 <div class="author-info">
                   <span>By {author}</span>
-                  {readingTime && (
-                    <span> • {readingTime} min read</span>
+                  {reading_time && (
+                    <span> • {reading_time} min read</span>
                   )}
                 </div>
 
@@ -227,9 +226,7 @@ const breadcrumbSchema = {
             </header>
 
             {/* Article content */}
-            <div class="article-content">
-              <Content />
-            </div>
+            <div class="article-content" set:html={marked.parse(post.body_markdown ?? '')}></div>
 
             {/* Link collection display (for non-collections with links) */}
             {links && links.length > 0 && (
@@ -243,7 +240,7 @@ const breadcrumbSchema = {
 
                 <div class="links-grid">
                   {links.map((link) => (
-                    <LinkCard link={link} variant="minimal" />
+                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
               </section>
@@ -253,7 +250,7 @@ const breadcrumbSchema = {
       </div>
 
       {/* Sidebar for collections */}
-      {entry.data.type === 'collection' && (
+      {post_type === 'collection' && (
         <aside class="sidebar">
           <Card variant="outlined" padding="lg" class="sidebar-widget">
             <h3 class="widget-title">Collection Info</h3>
@@ -290,7 +287,7 @@ const breadcrumbSchema = {
       )}
 
         {/* Footer navigation (only for non-collections) */}
-        {entry.data.type !== 'collection' && (
+        {post_type !== 'collection' && (
           <footer class="article-footer">
             <nav class="footer-nav">
               <Button href="/blog" variant="tertiary" size="md" class="footer-nav-btn footer-nav-back">
@@ -1163,4 +1160,3 @@ const breadcrumbSchema = {
     }
   }
 </style>
-

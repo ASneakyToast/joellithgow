@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { fetchBlogPosts } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -11,26 +11,26 @@ import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 
 // Get all blog posts that have links
-const allPosts = await getCollection('blog', ({ data }) => {
-  return !data.draft && data.links && data.links.length > 0;
-});
+const allPosts = await fetchBlogPosts();
+const postsWithLinks = allPosts.filter(p => p.links && p.links.length > 0);
 
 // Aggregate all links from all posts
-const allLinks = allPosts.flatMap(post =>
-  post.data.links.map(link => ({
+const allLinks = postsWithLinks.flatMap(post =>
+  (post.links ?? []).map(link => ({
     ...link,
+    dateAdded: new Date(link.date_added),
     sourcePost: {
-      title: post.data.title,
+      title: post.title,
       slug: post.slug,
-      publishDate: post.data.publishDate,
-      author: post.data.author
+      publishDate: new Date(post.publish_date),
+      author: post.author
     }
   }))
 );
 
 // Sort links by date added (newest first)
 const sortedLinks = allLinks.sort(
-  (a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf()
+  (a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf()
 );
 
 // Get unique tags for filtering (sorted by frequency)
@@ -47,7 +47,7 @@ const popularTags = Object.entries(tagCounts)
 
 // Get some stats
 const totalLinks = allLinks.length;
-const totalPosts = allPosts.length;
+const totalPosts = postsWithLinks.length;
 const uniqueDomains = [...new Set(allLinks.map(link => {
   try {
     return new URL(link.url).hostname;

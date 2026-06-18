@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  cms:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./cms:/app/cms
+      - cms_data:/app/cms/data
+    environment:
+      - DATABASE_URL=sqlite:///cms/data/content.db
+      - CMS_API_KEY=${CMS_API_KEY:-dev-secret}
+    restart: unless-stopped
+
+volumes:
+  cms_data:
+    driver: local
