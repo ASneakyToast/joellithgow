@@ -2,9 +2,13 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies
+# Copy starlette-cms from local monorepo and install it first
+COPY starlette_cms_local/ ./starlette_cms_local/
+RUN pip install --no-cache-dir ./starlette_cms_local/
+
+# Install remaining dependencies (starlette-cms already satisfied above)
 COPY cms/requirements.txt ./cms/requirements.txt
-RUN pip install --no-cache-dir -r cms/requirements.txt
+RUN grep -v "starlette-cms" cms/requirements.txt | pip install --no-cache-dir -r /dev/stdin
 
 # Copy CMS source
 COPY cms/ ./cms/
