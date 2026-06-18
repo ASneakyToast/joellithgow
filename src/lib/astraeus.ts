@@ -56,7 +56,7 @@ async function fetchDocuments<T>(docType: string, extraParams: string = ''): Pro
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
       },
     });
 
@@ -106,7 +106,7 @@ async function fetchDocumentBySlug<T>(docType: string, slug: string): Promise<As
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
       },
     });
 
