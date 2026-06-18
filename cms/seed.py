@@ -704,7 +704,7 @@ class CMSClient:
 
     def create_document(self, doc_type: str, fields: dict[str, Any]) -> tuple[str | None, str]:
         """POST /api/documents. Returns (id, error_message)."""
-        payload = {"type": doc_type, "fields": fields}
+        payload = {"doc_type": doc_type, "body": fields}
         status, body = self.post("/api/documents", payload)
         if status in (200, 201):
             doc_id = body.get("id") or (body.get("document") or {}).get("id")
