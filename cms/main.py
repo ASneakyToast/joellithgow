@@ -6,7 +6,9 @@ and mounts everything under the Starlette app lifespan.
 """
 import os
 from starlette.applications import Starlette
+from starlette.routing import Mount
 from starlette_cms import CMS
+from starlette_editor import Editor
 from cms.schema import register_documents
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms/data/content.db")
@@ -21,5 +23,12 @@ cms = CMS(
 
 register_documents(cms)
 
-app = Starlette(lifespan=cms.lifespan)
-app.mount("/", app=cms.app)
+editor = Editor(cms=cms)
+
+app = Starlette(
+    routes=[
+        Mount("/editor", app=editor.app),
+        Mount("/", app=cms.app),
+    ],
+    lifespan=cms.lifespan,
+)

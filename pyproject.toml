@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "starlette-cms[mcp]>=0.4.0",
+    "starlette-editor>=0.2.0",
     "uvicorn[standard]>=0.30.0",
     "piccolo[sqlite]>=1.0.0",
     "httpx>=0.27.0",
@@ -16,3 +17,4 @@ dependencies = [
 
 [tool.uv.sources]
 starlette-cms = { path = "../astraeus/packages/starlette-cms", editable = true }
+starlette-editor = { path = "../astraeus/packages/starlette-editor", editable = true }
