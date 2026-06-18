@@ -1,11 +1,13 @@
 services:
   cms:
-    build: .
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./cms:/app/cms
-      - cms_data:/app/cms/data
+      - ./cms:/app/joellithgow/cms
+      - cms_data:/app/joellithgow/cms/data
     environment:
       - DATABASE_URL=sqlite:///cms/data/content.db
       - CMS_API_KEY=${CMS_API_KEY:-dev-secret}

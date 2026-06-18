@@ -1,21 +1,22 @@
 FROM python:3.12-slim
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
-# Copy starlette-cms from local monorepo and install it first
-COPY starlette_cms_local/ ./starlette_cms_local/
-RUN pip install --no-cache-dir ./starlette_cms_local/
+# Copy astraeus package so pyproject.toml's ../astraeus/... path resolves
+COPY astraeus/packages/starlette-cms ./astraeus/packages/starlette-cms
 
-# Install remaining dependencies (starlette-cms already satisfied above)
-COPY cms/requirements.txt ./cms/requirements.txt
-RUN grep -v "starlette-cms" cms/requirements.txt | pip install --no-cache-dir -r /dev/stdin
+# Copy project manifest and sync deps
+COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
+WORKDIR /app/joellithgow
+RUN uv sync --no-dev
 
 # Copy CMS source
-COPY cms/ ./cms/
-
-# Create data directory for SQLite
+COPY joellithgow/cms/ ./cms/
 RUN mkdir -p cms/data
 
 EXPOSE 8000
 
-CMD ["uvicorn", "cms.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uv", "run", "uvicorn", "cms.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
