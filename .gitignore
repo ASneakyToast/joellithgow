@@ -1,5 +1,6 @@
 # Claude Code configuration
 .claude/
+.mcp.json
 
 # Local Netlify folder
 .netlify
@@ -26,3 +27,8 @@ dist/
 *.log
 cms/__pycache__/
 starlette_cms_local/
+
+# Stale seed content — superseded by Astraeus CMS API loaders
+src/content/blog/
+src/content/experience/
+src/content/projects/
