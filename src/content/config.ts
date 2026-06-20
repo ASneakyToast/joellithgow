@@ -17,11 +17,13 @@ const blogImageSchema = z.object({
 const linkItemSchema = z.object({
   url: z.string(),
   title: z.string(),
-  description: z.string().nullable().optional(),
+  description: z.string().optional(),
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   author: z.string().nullable().optional(),
-  tags: z.array(z.string()).nullable().optional(),
-  /** ISO 8601 — wrap with new Date() at use site */
-  date_added: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
+  /** TODO: make required after reseed — some legacy link items are missing this */
+  date_added: z.string().optional(),
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   collections: z.array(z.string()).nullable().optional(),
 });
 
@@ -61,6 +63,7 @@ const blogPostSchema = z.object({
   /** ISO 8601 — wrap with new Date() at use site */
   publish_date: z.string(),
   post_type: z.enum(['article', 'thought', 'collection']),
+  /** TODO: legacy nulls in pre-ADR-016 data — remove .nullable() after reseed */
   body_markdown: z.string().nullable().optional(),
   excerpt: z.string().nullable().optional(),
   author: z.string().nullable().optional(),
@@ -70,6 +73,7 @@ const blogPostSchema = z.object({
   draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   has_detail_page: z.boolean().optional(),
+  /** null = reading time explicitly unset; absent = not calculated */
   reading_time: z.number().nullable().optional(),
   // CMS metadata
   _id: z.string(),
@@ -88,23 +92,26 @@ const projectPageSchema = z.object({
   project_type: z.string(),
   title: z.string(),
   description: z.string(),
-  impact: z.string().nullable().optional(),
-  technologies: z.array(z.string()).nullable().optional(),
-  subtitle: z.string().nullable().optional(),
-  overview: z.string().nullable().optional(),
+  impact: z.string().optional(),
+  technologies: z.array(z.string()).optional(),
+  subtitle: z.string().optional(),
+  overview: z.string().optional(),
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   hero_media: heroMediaSchema.nullable().optional(),
-  duration: z.string().nullable().optional(),
-  team: z.string().nullable().optional(),
-  role: z.string().nullable().optional(),
-  tools: z.string().nullable().optional(),
+  duration: z.string().optional(),
+  team: z.string().optional(),
+  role: z.string().optional(),
+  tools: z.string().optional(),
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   live_link: liveLinkSchema.nullable().optional(),
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   live_links: liveLinksSchema.nullable().optional(),
-  /** ISO 8601 — wrap with new Date() at use site */
+  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
   publish_date: z.string().nullable().optional(),
   draft: z.boolean().optional(),
   featured: z.boolean().optional(),
-  tags: z.array(z.string()).nullable().optional(),
-  body_blocks: z.array(bodyBlockSchema).nullable().optional(),
+  tags: z.array(z.string()).optional(),
+  body_blocks: z.array(bodyBlockSchema).optional(),
   // CMS metadata
   _id: z.string(),
   _published: z.boolean().optional(),
@@ -120,18 +127,18 @@ const experienceEntrySchema = z.object({
   // slug is a CMS system field — exposed as the Astro entry id, not in body
   company: z.string(),
   title: z.string(),
-  location: z.string().nullable().optional(),
+  location: z.string().optional(),
   /** Format: "2017" or "2017-03" */
   start_date: z.string(),
-  /** Format: "2017" or "2017-03" — absent means current role */
+  /** Format: "2017" or "2017-03" — null means current role (intentional), absent means unknown */
   end_date: z.string().nullable().optional(),
   employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
+  /** TODO: fill in descriptions during next reseed — currently null in legacy data */
   description: z.string().nullable().optional(),
-  responsibilities: z.array(z.string()).nullable().optional(),
-  achievements: z.array(z.string()).nullable().optional(),
+  responsibilities: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   show_on_resume: z.boolean().optional(),
-  order: z.number().nullable().optional(),
+  order: z.number().optional(),
   // CMS metadata
   _id: z.string(),
   _published: z.boolean().optional(),

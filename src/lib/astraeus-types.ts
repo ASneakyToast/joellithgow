@@ -118,10 +118,9 @@ export interface ExperienceEntry {
   /** Format: "2017" or "2017-03" — absent means current role */
   end_date?: string;
   employment_type: 'full-time' | 'part-time' | 'contract' | 'student' | 'internship';
-  description?: string;
-  responsibilities?: string[] | null;
-  achievements?: string[] | null;
+  description?: string | null;
+  responsibilities?: string[];
   featured?: boolean;
   show_on_resume?: boolean;
-  order?: number | null;
+  order?: number;
 }
