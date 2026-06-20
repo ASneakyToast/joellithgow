@@ -17,12 +17,12 @@ const blogImageSchema = z.object({
 const linkItemSchema = z.object({
   url: z.string(),
   title: z.string(),
-  description: z.string(),
-  author: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  description: z.string().nullable().optional(),
+  author: z.string().nullable().optional(),
+  tags: z.array(z.string()).nullable().optional(),
   /** ISO 8601 — wrap with new Date() at use site */
-  date_added: z.string(),
-  collections: z.array(z.string()).optional(),
+  date_added: z.string().nullable().optional(),
+  collections: z.array(z.string()).nullable().optional(),
 });
 
 const heroMediaSchema = z.object({
@@ -55,16 +55,15 @@ const bodyBlockSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const blogPostSchema = z.object({
-  // Astro entry id (slug) is hoisted from body.slug by the loader
-  slug: z.string(),
+  // slug is a CMS system field — exposed as the Astro entry id, not in body
   title: z.string(),
   description: z.string(),
   /** ISO 8601 — wrap with new Date() at use site */
   publish_date: z.string(),
   post_type: z.enum(['article', 'thought', 'collection']),
-  body_markdown: z.string().optional(),
-  excerpt: z.string().optional(),
-  author: z.string().optional(),
+  body_markdown: z.string().nullable().optional(),
+  excerpt: z.string().nullable().optional(),
+  author: z.string().nullable().optional(),
   image: blogImageSchema.nullable().optional(),
   links: z.array(linkItemSchema).nullable().optional(),
   tags: z.array(z.string()).nullable().optional(),
@@ -84,24 +83,24 @@ const blogPostSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const projectPageSchema = z.object({
-  slug: z.string(),
+  // slug is a CMS system field — exposed as the Astro entry id, not in body
   number: z.number(),
   project_type: z.string(),
   title: z.string(),
   description: z.string(),
-  impact: z.string().optional(),
+  impact: z.string().nullable().optional(),
   technologies: z.array(z.string()).nullable().optional(),
-  subtitle: z.string().optional(),
-  overview: z.string().optional(),
+  subtitle: z.string().nullable().optional(),
+  overview: z.string().nullable().optional(),
   hero_media: heroMediaSchema.nullable().optional(),
-  duration: z.string().optional(),
-  team: z.string().optional(),
-  role: z.string().optional(),
-  tools: z.string().optional(),
+  duration: z.string().nullable().optional(),
+  team: z.string().nullable().optional(),
+  role: z.string().nullable().optional(),
+  tools: z.string().nullable().optional(),
   live_link: liveLinkSchema.nullable().optional(),
   live_links: liveLinksSchema.nullable().optional(),
   /** ISO 8601 — wrap with new Date() at use site */
-  publish_date: z.string().optional(),
+  publish_date: z.string().nullable().optional(),
   draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   tags: z.array(z.string()).nullable().optional(),
@@ -118,16 +117,16 @@ const projectPageSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const experienceEntrySchema = z.object({
-  slug: z.string(),
+  // slug is a CMS system field — exposed as the Astro entry id, not in body
   company: z.string(),
   title: z.string(),
-  location: z.string().optional(),
+  location: z.string().nullable().optional(),
   /** Format: "2017" or "2017-03" */
   start_date: z.string(),
   /** Format: "2017" or "2017-03" — absent means current role */
-  end_date: z.string().optional(),
+  end_date: z.string().nullable().optional(),
   employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   responsibilities: z.array(z.string()).nullable().optional(),
   achievements: z.array(z.string()).nullable().optional(),
   featured: z.boolean().optional(),
@@ -225,7 +224,7 @@ export const collections = {
     loader: async () => {
       const docs = await loadAstraeusDocuments('blog_post');
       return docs.map((d) => ({
-        id: d.body['slug'] as string,
+        id: d.slug,
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
@@ -241,7 +240,7 @@ export const collections = {
     loader: async () => {
       const docs = await loadAstraeusDocuments('project_page');
       return docs.map((d) => ({
-        id: d.body['slug'] as string,
+        id: d.slug,
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
@@ -257,7 +256,7 @@ export const collections = {
     loader: async () => {
       const docs = await loadAstraeusDocuments('experience_entry');
       return docs.map((d) => ({
-        id: d.body['slug'] as string,
+        id: d.slug,
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,

@@ -18,7 +18,6 @@ def register_documents(cms: CMS) -> None:
 
     @cms.document("blog_post")
     class BlogPostDocument:
-        slug: str = TextField(required=True, immutable=True, unique_per_type=True)
         title: str = TextField(required=True, max_length=500)
         description: str = TextField(required=True, max_length=1000)
         publish_date: str = TextField(required=True)          # ISO 8601 — wrap with new Date()
@@ -36,7 +35,6 @@ def register_documents(cms: CMS) -> None:
 
     @cms.document("project_page")
     class ProjectPageDocument:
-        slug: str = TextField(required=True, immutable=True, unique_per_type=True)  # = original id field
         number: float = NumberField(required=True, precision=0)
         project_type: str = TextField(required=True)
         title: str = TextField(required=True, max_length=300)
@@ -60,7 +58,6 @@ def register_documents(cms: CMS) -> None:
 
     @cms.document("experience_entry")
     class ExperienceEntryDocument:
-        slug: str = TextField(required=True, immutable=True, unique_per_type=True)
         company: str = TextField(required=True, max_length=300)
         title: str = TextField(required=True, max_length=300)
         location: str = TextField(max_length=200)

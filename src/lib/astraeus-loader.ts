@@ -9,6 +9,7 @@
 
 export interface RawAstraeusDoc {
   id: string;
+  slug: string;           // top-level CMS system field — use this as the Astro entry ID
   doc_type: string;
   body: Record<string, unknown>;
   published: boolean;
@@ -17,13 +18,20 @@ export interface RawAstraeusDoc {
 }
 
 function getBaseUrl(): string {
-  // import.meta.env is not available in this context (plain Node.js module),
-  // so we read exclusively from process.env.
-  return process.env.ASTRAEUS_URL || 'http://localhost:8000';
+  // Try import.meta.env first (Vite/Astro dev context), fall back to process.env (Node.js / CI)
+  try {
+    return import.meta.env.ASTRAEUS_URL || process.env.ASTRAEUS_URL || 'http://localhost:8000';
+  } catch {
+    return process.env.ASTRAEUS_URL || 'http://localhost:8000';
+  }
 }
 
 function getApiKey(): string | undefined {
-  return process.env.ASTRAEUS_API_KEY;
+  try {
+    return import.meta.env.ASTRAEUS_API_KEY || process.env.ASTRAEUS_API_KEY;
+  } catch {
+    return process.env.ASTRAEUS_API_KEY;
+  }
 }
 
 /**
@@ -57,8 +65,9 @@ export async function loadAstraeusDocuments(docType: string): Promise<RawAstraeu
 
     const data = await response.json();
     const raw: RawAstraeusDoc[] = (data.documents || []).map(
-      (d: { id: string; doc_type: string; body: Record<string, unknown>; published: boolean; created_at: string; updated_at: string }) => ({
+      (d: { id: string; slug: string; doc_type: string; body: Record<string, unknown>; published: boolean; created_at: string; updated_at: string }) => ({
         id: d.id,
+        slug: d.slug,
         doc_type: d.doc_type,
         body: d.body,
         published: d.published,
