@@ -693,18 +693,21 @@ class CMSClient:
     def find_by_slug(self, doc_type: str, slug: str) -> str | None:
         """Return existing document ID if one exists with this slug, else None."""
         status, body = self.get(
-            f"/api/documents",
+            "/api/documents",
             params={"type": doc_type, "slug": slug},
         )
         if status == 200 and isinstance(body, dict):
-            items = body.get("items") or body.get("results") or []
+            # API returns { documents: [...], total: N }
+            items = body.get("documents") or body.get("items") or body.get("results") or []
             if isinstance(items, list) and items:
                 return str(items[0].get("id"))
         return None
 
     def create_document(self, doc_type: str, fields: dict[str, Any]) -> tuple[str | None, str]:
         """POST /api/documents. Returns (id, error_message)."""
-        payload = {"doc_type": doc_type, "body": fields}
+        # slug is a CMS system field — hoist it out of body into the top-level payload
+        slug = fields.pop("slug", "") or ""
+        payload = {"doc_type": doc_type, "slug": slug, "body": fields}
         status, body = self.post("/api/documents", payload)
         if status in (200, 201):
             doc_id = body.get("id") or (body.get("document") or {}).get("id")
