@@ -18,13 +18,10 @@ const linkItemSchema = z.object({
   url: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  author: z.string().nullable().optional(),
+  author: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  /** TODO: make required after reseed — some legacy link items are missing this */
-  date_added: z.string().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  collections: z.array(z.string()).nullable().optional(),
+  date_added: z.string(),
+  collections: z.array(z.string()).optional(),
 });
 
 const heroMediaSchema = z.object({
@@ -63,13 +60,12 @@ const blogPostSchema = z.object({
   /** ISO 8601 — wrap with new Date() at use site */
   publish_date: z.string(),
   post_type: z.enum(['article', 'thought', 'collection']),
-  /** TODO: legacy nulls in pre-ADR-016 data — remove .nullable() after reseed */
-  body_markdown: z.string().nullable().optional(),
-  excerpt: z.string().nullable().optional(),
-  author: z.string().nullable().optional(),
-  image: blogImageSchema.nullable().optional(),
-  links: z.array(linkItemSchema).nullable().optional(),
-  tags: z.array(z.string()).nullable().optional(),
+  body_markdown: z.string().optional(),
+  excerpt: z.string().optional(),
+  author: z.string().optional(),
+  image: blogImageSchema.optional(),
+  links: z.array(linkItemSchema).optional(),
+  tags: z.array(z.string()).optional(),
   draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   has_detail_page: z.boolean().optional(),
@@ -96,18 +92,14 @@ const projectPageSchema = z.object({
   technologies: z.array(z.string()).optional(),
   subtitle: z.string().optional(),
   overview: z.string().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  hero_media: heroMediaSchema.nullable().optional(),
+  hero_media: heroMediaSchema.optional(),
   duration: z.string().optional(),
   team: z.string().optional(),
   role: z.string().optional(),
   tools: z.string().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  live_link: liveLinkSchema.nullable().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  live_links: liveLinksSchema.nullable().optional(),
-  /** TODO: legacy null in pre-ADR-016 data — remove .nullable() after reseed */
-  publish_date: z.string().nullable().optional(),
+  live_link: liveLinkSchema.optional(),
+  live_links: liveLinksSchema.optional(),
+  publish_date: z.string().optional(),
   draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
@@ -133,8 +125,7 @@ const experienceEntrySchema = z.object({
   /** Format: "2017" or "2017-03" — null means current role (intentional), absent means unknown */
   end_date: z.string().nullable().optional(),
   employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
-  /** TODO: fill in descriptions during next reseed — currently null in legacy data */
-  description: z.string().nullable().optional(),
+  description: z.string(),
   responsibilities: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   show_on_resume: z.boolean().optional(),
