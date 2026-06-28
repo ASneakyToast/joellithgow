@@ -1041,14 +1041,18 @@ name = "starlette-editor"
 version = "0.2.0"
 source = { editable = "../astraeus/packages/starlette-editor" }
 dependencies = [
+    { name = "opentelemetry-api" },
     { name = "starlette" },
     { name = "starlette-cms" },
+    { name = "structlog" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "opentelemetry-api", specifier = ">=1.25" },
     { name = "starlette", specifier = ">=1.0" },
     { name = "starlette-cms", editable = "../astraeus/packages/starlette-cms" },
+    { name = "structlog", specifier = ">=24.0" },
 ]
 
 [[package]]
