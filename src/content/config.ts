@@ -57,7 +57,7 @@ const bodyBlockSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const blogPostSchema = z.object({
-  // slug is a CMS system field — exposed as the Astro entry id, not in body
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
   title: z.string(),
   description: z.string(),
   /** ISO 8601 — wrap with new Date() at use site */
@@ -87,7 +87,7 @@ const blogPostSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const projectPageSchema = z.object({
-  // slug is a CMS system field — exposed as the Astro entry id, not in body
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
   number: z.number(),
   project_type: z.string(),
   title: z.string(),
@@ -124,7 +124,7 @@ const projectPageSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const experienceEntrySchema = z.object({
-  // slug is a CMS system field — exposed as the Astro entry id, not in body
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
   company: z.string(),
   title: z.string(),
   location: z.string().optional(),
@@ -232,6 +232,7 @@ export const collections = {
       const docs = await loadAstraeusDocuments('blog_post');
       return docs.map((d) => ({
         id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
@@ -248,6 +249,7 @@ export const collections = {
       const docs = await loadAstraeusDocuments('project_page');
       return docs.map((d) => ({
         id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
@@ -264,6 +266,7 @@ export const collections = {
       const docs = await loadAstraeusDocuments('experience_entry');
       return docs.map((d) => ({
         id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
