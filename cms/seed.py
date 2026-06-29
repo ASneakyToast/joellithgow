@@ -534,15 +534,21 @@ def load_blog_post(path: Path) -> dict[str, Any]:
                     date_added = date_added.isoformat()
                 elif date_added is not None:
                     date_added = str(date_added)
-                normalized_links.append({
+                entry: dict[str, Any] = {
                     "url": link.get("url"),
                     "title": link.get("title"),
-                    "description": link.get("description"),
-                    "author": link.get("author"),
-                    "tags": link.get("tags"),
-                    "dateAdded": date_added,
-                    "collections": link.get("collections"),
-                })
+                }
+                if link.get("description") is not None:
+                    entry["description"] = link["description"]
+                if link.get("author") is not None:
+                    entry["author"] = link["author"]
+                if link.get("tags") is not None:
+                    entry["tags"] = link["tags"]
+                if date_added is not None:
+                    entry["date_added"] = date_added
+                if link.get("collections") is not None:
+                    entry["collections"] = link["collections"]
+                normalized_links.append(entry)
         links = normalized_links
 
     publish_date = fm.get("publishDate")
