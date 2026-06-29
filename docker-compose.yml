@@ -1,5 +1,5 @@
 services:
-  cms:
+  cms-prod:
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile
@@ -7,14 +7,32 @@ services:
       - "8000:8000"
     volumes:
       - ./cms:/app/joellithgow/cms
-      - cms_data:/app/joellithgow/cms/data
+      - cms_data_prod:/app/joellithgow/cms/data
     environment:
       - DATABASE_URL=sqlite:////app/joellithgow/cms/data/content.db
-      - CMS_API_KEY=${CMS_API_KEY:-dev-secret}
+      - CMS_API_KEY=${CMS_API_KEY}
+      - PICCOLO_CONF=piccolo_conf
+      - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+    restart: unless-stopped
+
+  cms-staging:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./cms:/app/joellithgow/cms
+      - cms_data_staging:/app/joellithgow/cms/data
+    environment:
+      - DATABASE_URL=sqlite:////app/joellithgow/cms/data/content.db
+      - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
     restart: unless-stopped
 
 volumes:
-  cms_data:
+  cms_data_prod:
+    driver: local
+  cms_data_staging:
     driver: local
