@@ -716,6 +716,17 @@ class CMSClient:
             return None, f"No id in response: {body}"
         return None, f"HTTP {status}: {body}"
 
+    def update_document(self, doc_id: str, fields: dict[str, Any]) -> str:
+        """PATCH /api/documents/{id}. Returns error message or ''."""
+        slug = fields.pop("slug", None)
+        payload: dict[str, Any] = {"body": fields}
+        if slug:
+            payload["slug"] = slug
+        status, body = self._request("PATCH", f"/api/documents/{doc_id}", json=payload)
+        if status in (200, 201, 204):
+            return ""
+        return f"HTTP {status}: {body}"
+
     def publish_document(self, doc_id: str) -> str:
         """POST /api/documents/{id}/publish. Returns error message or ''."""
         status, body = self.post(f"/api/documents/{doc_id}/publish", {})
@@ -739,11 +750,13 @@ def seed_document(
     slug: str,
     fields: dict[str, Any],
     label: str,
+    update: bool = False,
 ) -> bool:
     """
     Create + publish one document. Returns True on success.
 
-    Skips gracefully if a document with the same slug already exists.
+    If update=True and a document with this slug already exists, patches it
+    in place instead of skipping.
     """
     # Check for existing
     try:
@@ -753,7 +766,20 @@ def seed_document(
         existing_id = None
 
     if existing_id:
-        print(f"  [SKIP] {label} — already exists (id={existing_id})")
+        if not update:
+            print(f"  [SKIP] {label} — already exists (id={existing_id})")
+            return True
+        # Update in place
+        clean_fields = _strip_none_values(fields)
+        err = client.update_document(existing_id, clean_fields)
+        if err:
+            print(f"  [FAIL] Update {label} (id={existing_id}): {err}")
+            return False
+        pub_err = client.publish_document(existing_id)
+        if pub_err:
+            print(f"  [WARN] Publish {label} (id={existing_id}): {pub_err}")
+        else:
+            print(f"  [UPDATE] {label} (id={existing_id})")
         return True
 
     # Create
@@ -774,7 +800,7 @@ def seed_document(
     return True
 
 
-def run_seed(cms_url: str, api_key: str) -> None:
+def run_seed(cms_url: str, api_key: str, update: bool = False) -> None:
     client = CMSClient(cms_url, api_key)
 
     # --- Blog posts ---
@@ -785,7 +811,7 @@ def run_seed(cms_url: str, api_key: str) -> None:
         try:
             data = load_blog_post(path)
             slug = data["slug"]
-            seed_document(client, "blog_post", slug, data, label)
+            seed_document(client, "blog_post", slug, data, label, update=update)
         except Exception as exc:
             print(f"  [FAIL] Load {label}: {exc}")
 
@@ -797,7 +823,7 @@ def run_seed(cms_url: str, api_key: str) -> None:
         try:
             data = load_project(path)
             slug = data["slug"]
-            seed_document(client, "project_page", slug, data, label)
+            seed_document(client, "project_page", slug, data, label, update=update)
         except Exception as exc:
             print(f"  [FAIL] Load {label}: {exc}")
 
@@ -809,7 +835,7 @@ def run_seed(cms_url: str, api_key: str) -> None:
         try:
             data = load_experience(path)
             slug = data["slug"]
-            seed_document(client, "experience_entry", slug, data, label)
+            seed_document(client, "experience_entry", slug, data, label, update=update)
         except Exception as exc:
             print(f"  [FAIL] Load {label}: {exc}")
 
@@ -825,13 +851,14 @@ def main() -> None:
     parser.add_argument("--cms-url", default="http://localhost:8000", help="Base URL of the CMS API")
     parser.add_argument("--api-key", required=True, help="API key (X-API-Key header)")
     parser.add_argument("--dry-run", action="store_true", help="Parse files but do not make HTTP calls")
+    parser.add_argument("--update", action="store_true", help="Patch existing documents instead of skipping them")
     args = parser.parse_args()
 
     if args.dry_run:
         _dry_run()
         return
 
-    run_seed(args.cms_url, args.api_key)
+    run_seed(args.cms_url, args.api_key, update=args.update)
 
 
 def _dry_run() -> None:
