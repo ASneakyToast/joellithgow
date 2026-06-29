@@ -125,7 +125,7 @@ const experienceEntrySchema = z.object({
   /** Format: "2017" or "2017-03" — null means current role (intentional), absent means unknown */
   end_date: z.string().nullable().optional(),
   employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
-  description: z.string(),
+  description: z.string().optional(),
   responsibilities: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   show_on_resume: z.boolean().optional(),
