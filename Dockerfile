@@ -16,8 +16,9 @@ COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
 WORKDIR /app/joellithgow
 RUN uv sync --no-dev
 
-# Copy CMS source
+# Copy CMS source and piccolo migration config
 COPY joellithgow/cms/ ./cms/
+COPY joellithgow/piccolo_conf.py ./piccolo_conf.py
 RUN mkdir -p cms/data
 
 EXPOSE 8000
