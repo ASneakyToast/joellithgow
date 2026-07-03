@@ -29,6 +29,9 @@
   publish = "dist"
   command = "npm run build"
 
+  [context.branch-deploy.environment]
+    ASTRAEUS_URL = "https://cms-staging.joellithgow.com"
+
 # Security headers for all pages
 [[headers]]
   for = "/*"
