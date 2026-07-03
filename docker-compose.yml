@@ -22,7 +22,6 @@ services:
     ports:
       - "8001:8000"
     volumes:
-      - ./cms:/app/joellithgow/cms
       - cms_data_staging:/app/joellithgow/cms/data
     environment:
       - DATABASE_URL=sqlite:////app/joellithgow/cms/data/content.db
