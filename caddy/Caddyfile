@@ -1,0 +1,7 @@
+cms.joellithgow.com {
+    reverse_proxy localhost:8000
+}
+
+cms-staging.joellithgow.com {
+    reverse_proxy localhost:8001
+}
