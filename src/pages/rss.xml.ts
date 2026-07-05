@@ -17,9 +17,11 @@ export async function GET(context: APIContext) {
     site: context.site || 'https://joellithgow.com',
     items: sortedPosts.map((post) => ({
       title: post.title,
-      description: post.description,
+      // description may be absent on new post types — fall back gracefully
+      description: ('description' in post && (post as any).description) || post.title,
       pubDate: new Date(post.publish_date),
-      author: post.author,
+      // author only exists on BlogPost
+      author: ('author' in post && (post as any).author) || undefined,
       categories: post.tags || [],
       link: `/blog/${post.slug}/`,
     })),

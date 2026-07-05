@@ -152,6 +152,45 @@ docker push gcr.io/YOUR_PROJECT/astraeus-cms
 
 ---
 
+## Gateways
+
+Gateways are Python workers that pull external data into the CMS as draft documents. They run against the staging instance, are reviewed, and published manually.
+
+### Available gateways
+
+| Gateway | Document type | Source |
+|---|---|---|
+| `SpotifyLikedDumpGateway` | `spotify_liked_dump` | Spotify liked tracks, grouped by month |
+| `INaturalistFieldTripsGateway` | `inaturalist_outing` | iNaturalist observations, grouped by date |
+
+### Running a sync
+
+1. Start the staging CMS: `docker compose up -d cms-staging`
+2. Open the gateway admin UI: `http://localhost:8001/gateways/shell`
+3. Click **Sync now** for the gateway you want to run
+4. Review the created draft documents at `http://localhost:8001/editor`
+5. Publish the ones you want to appear on the site
+
+### Environment variables (staging only)
+
+| Variable | Description |
+|---|---|
+| `SPOTIPY_CLIENT_ID` | Spotify app client ID |
+| `SPOTIPY_CLIENT_SECRET` | Spotify app client secret |
+| `SPOTIPY_REFRESH_TOKEN` | OAuth refresh token — run `cms/gateways/get_spotify_token.py` once to obtain |
+| `INATURALIST_USERNAME` | iNaturalist username to sync (defaults to `joel583`) |
+
+### Adding a new gateway
+
+1. Create a new file in `cms/gateways/` subclassing `BaseGateway`
+2. Register it as an entry point in `pyproject.toml` under `[project.entry-points."starlette_cms_gateways.gateways"]`
+3. Register the document type in `cms/schema.py`
+4. Add Zod schema + Content Layer loader in `src/content/config.ts`
+5. Add TypeScript interfaces in `src/lib/astraeus-types.ts`
+6. Add fetch helper in `src/lib/astraeus.ts`
+
+---
+
 ## Known gaps / future work
 
 | Gap | Phase | Notes |

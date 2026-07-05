@@ -32,3 +32,6 @@ starlette_cms_local/
 src/content/blog/
 src/content/experience/
 src/content/projects/
+.cache/
+cms/gateways/__pycache__/
+src/*.egg-info/

@@ -10,11 +10,12 @@ WORKDIR /app
 COPY astraeus/pyproject.toml ./astraeus/pyproject.toml
 COPY astraeus/packages/starlette-cms ./astraeus/packages/starlette-cms
 COPY astraeus/packages/starlette-editor ./astraeus/packages/starlette-editor
+COPY astraeus/packages/starlette-cms-gateways ./astraeus/packages/starlette-cms-gateways
 
-# Copy project manifest and sync deps
+# Copy project manifest and sync deps (including the project itself so entry points register)
 COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
 WORKDIR /app/joellithgow
-RUN uv sync --no-dev
+RUN uv sync --no-dev && uv pip install -e .
 
 # Copy CMS source and piccolo migration config
 COPY joellithgow/cms/ ./cms/

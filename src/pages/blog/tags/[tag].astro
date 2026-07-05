@@ -21,11 +21,13 @@ export const getStaticPaths = (async () => {
     post.tags?.forEach((tag) => allTags.add(tag));
   });
 
-  // Also get tags from links
+  // Also get tags from links (blog posts only — new types have no links)
   allPosts.forEach((post) => {
-    post.links?.forEach((link) => {
-      link.tags?.forEach((tag: string) => allTags.add(tag));
-    });
+    if ('links' in post) {
+      (post as any).links?.forEach((link: any) => {
+        link.tags?.forEach((tag: string) => allTags.add(tag));
+      });
+    }
   });
 
   // Create a path for each tag
@@ -34,22 +36,23 @@ export const getStaticPaths = (async () => {
       .filter((post) => post.tags?.includes(tag))
       .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
 
-    // Get all links with this tag
+    // Get all links with this tag (blog posts only — new types have no links)
     const linksWithTag = allPosts
-      .flatMap((post) =>
-        post.links
-          ?.filter((link) => link.tags?.includes(tag))
-          .map((link) => ({
+      .flatMap((post) => {
+        if (!('links' in post) || !(post as any).links) return [];
+        return ((post as any).links as any[])
+          .filter((link: any) => link.tags?.includes(tag))
+          .map((link: any) => ({
             ...link,
             dateAdded: new Date(link.date_added),
             sourcePost: {
               title: post.title,
               slug: post.slug,
               publishDate: new Date(post.publish_date),
-              author: post.author,
+              author: ('author' in post && (post as any).author) || undefined,
             },
-          })) || []
-      )
+          }));
+      })
       .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf());
 
     return {
@@ -100,7 +103,7 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             </time>
 
             <h2 class="post-title">
-              {post.has_detail_page !== false ? (
+              {(post as any).has_detail_page !== false ? (
                 <a
                   href={`/blog/${post.slug}`}
                   class="post-title-link"
@@ -112,31 +115,45 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
               )}
               {post.post_type === 'collection' && (
                 <Badge variant="tertiary" size="sm" class="collection-badge">
-                  {post.links?.length || 0} links
+                  {('links' in post && (post as any).links?.length) || 0} links
+                </Badge>
+              )}
+              {post.post_type === 'spotify_dump' && (
+                <Badge variant="tertiary" size="sm" class="collection-badge">
+                  🎵 {(post as any).song_count || 0} tracks
+                </Badge>
+              )}
+              {post.post_type === 'nature_outing' && (
+                <Badge variant="tertiary" size="sm" class="collection-badge">
+                  🌿 {(post as any).observation_count || 0} obs
                 </Badge>
               )}
             </h2>
 
-            <p class="post-description">
-              {post.description}
-            </p>
+            {'description' in post && (post as any).description && (
+              <p class="post-description">
+                {(post as any).description}
+              </p>
+            )}
 
-            {/* Render actual content preview */}
-            <div
-              class:list={['post-content-preview', { 'full-content': post.has_detail_page === false }]}
-              set:html={marked.parse(post.body_markdown ?? '')}
-            />
+            {/* Render content preview (blog posts only) */}
+            {'body_markdown' in post && (
+              <div
+                class:list={['post-content-preview', { 'full-content': (post as any).has_detail_page === false }]}
+                set:html={marked.parse((post as any).body_markdown ?? '')}
+              />
+            )}
 
             {/* Link collection display for inline posts */}
-            {post.has_detail_page === false && post.links && post.links.length > 0 && (
+            {'links' in post && (post as any).has_detail_page === false && (post as any).links && (post as any).links.length > 0 && (
               <div class="post-links-section">
                 <div class="post-links-header">
                   <h3 class="post-links-title">Links from this collection</h3>
-                  <span class="post-links-count">{post.links.length} link{post.links.length !== 1 ? 's' : ''}</span>
+                  <span class="post-links-count">{(post as any).links.length} link{(post as any).links.length !== 1 ? 's' : ''}</span>
                 </div>
 
                 <div class="post-links-grid">
-                  {post.links.map((link) => (
+                  {(post as any).links.map((link: any) => (
                     <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
@@ -158,14 +175,16 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             )}
 
             <div class="post-meta">
-              <span class="post-author">
-                By {post.author}
-                {post.reading_time && (
-                  <span> • {post.reading_time} min read</span>
-                )}
-              </span>
+              {'author' in post && (post as any).author && (
+                <span class="post-author">
+                  By {(post as any).author}
+                  {'reading_time' in post && (post as any).reading_time && (
+                    <span> • {(post as any).reading_time} min read</span>
+                  )}
+                </span>
+              )}
 
-              {post.has_detail_page !== false && (
+              {(post as any).has_detail_page !== false && (
                 <Button href={`/blog/${post.slug}`} variant="primary" size="md">
                   Continue reading →
                 </Button>
