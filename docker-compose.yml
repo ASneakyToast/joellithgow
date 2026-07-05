@@ -29,6 +29,10 @@ services:
       - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+      - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
+      - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
+      - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
+      - SPOTIPY_REFRESH_TOKEN=${SPOTIPY_REFRESH_TOKEN}
     restart: unless-stopped
 
 volumes:

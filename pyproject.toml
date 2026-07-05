@@ -11,6 +11,8 @@ dependencies = [
     "python-frontmatter>=1.1.0",
     "markdown>=3.7",
     "pyyaml>=6.0",
+    "starlette-cms-gateways>=0.1.0",
+    "spotipy>=2.23",
 ]
 
 [tool.uv]
@@ -18,3 +20,8 @@ dependencies = [
 [tool.uv.sources]
 starlette-cms = { path = "../astraeus/packages/starlette-cms", editable = true }
 starlette-editor = { path = "../astraeus/packages/starlette-editor", editable = true }
+starlette-cms-gateways = { path = "../astraeus/packages/starlette-cms-gateways", editable = true }
+
+[project.entry-points."starlette_cms_gateways.gateways"]
+spotify-liked-dump      = "cms.gateways.spotify_liked_dump:SpotifyLikedDumpGateway"
+inaturalist-field-trips = "cms.gateways.inaturalist_field_trips:INaturalistFieldTripsGateway"
