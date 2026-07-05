@@ -1,6 +1,6 @@
 ---
 // Additional Work section - showcases non-featured projects in a lighter format
-import { getCollection } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 import Card from '@components/primitives/Card.astro';
 
 export interface Props {
@@ -13,11 +13,9 @@ const {
   sectionSubtitle = 'technical projects and infrastructure work'
 } = Astro.props;
 
-// Get non-featured projects from content collection (exclude drafts)
-const allProjects = await getCollection('projects', ({ data }) => !data.draft);
-const projects = allProjects
-  .filter(project => !project.data.featured)
-  .sort((a, b) => a.data.number - b.data.number);
+// Get non-featured projects from Astraeus (fetchProjects already filters drafts and sorts by number)
+const allProjects = await fetchProjects();
+const projects = allProjects.filter(project => !project.featured);
 ---
 
 {projects.length > 0 && (
@@ -32,20 +30,20 @@ const projects = allProjects
       <!-- Projects Grid -->
       <div class="projects-grid">
         {projects.map((project) => (
-          <Card variant="interactive" padding="xl" href={`/work/${project.data.id}`}>
+          <Card variant="interactive" padding="xl" href={`/work/${project.slug}`}>
             <div class="project-header">
-              <span class="project-number">{String(project.data.number).padStart(2, '0')}</span>
-              <span class="project-type">{project.data.type}</span>
+              <span class="project-number">{String(project.number).padStart(2, '0')}</span>
+              <span class="project-type">{project.project_type}</span>
             </div>
 
-            <h3 class="project-title">{project.data.title}</h3>
-            <p class="project-description">{project.data.description}</p>
+            <h3 class="project-title">{project.title}</h3>
+            <p class="project-description">{project.description}</p>
 
             {/* Impact metric if available */}
-            {project.data.impact && (
+            {project.impact && (
               <div class="project-impact">
                 <span class="impact-label">impact:</span>
-                <span class="impact-value">{project.data.impact}</span>
+                <span class="impact-value">{project.impact}</span>
               </div>
             )}
           </Card>

@@ -1,25 +1,21 @@
 ---
 // Project Cards Component - Handles project display and case study modal integration
 // Enhanced with loading states, error handling, and accessibility features
-import { getCollection } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 
-// Get project data from content collections (exclude drafts)
+// Get project data from Astraeus (already filters drafts)
 let projects = [];
 try {
-  projects = await getCollection('projects', ({ data }) => !data.draft);
+  projects = await fetchProjects();
 } catch (error) {
   console.error('Error loading projects:', error);
 }
 
-// Sort projects by priority or date
-projects = projects.sort((a, b) => {
-  const priorityA = a.data.priority || 999;
-  const priorityB = b.data.priority || 999;
-  return priorityA - priorityB;
-});
+// Sort projects by number (fetchProjects already sorts, but keep consistent behaviour)
+projects = projects.sort((a, b) => (a.number ?? 999) - (b.number ?? 999));
 ---
 
 <div class="projects-container" data-projects-loaded="false">
@@ -27,17 +23,17 @@ projects = projects.sort((a, b) => {
     <div class="loading-spinner"></div>
     <span>Loading projects...</span>
   </div>
-  
+
   <div class="projects-error hidden" role="alert" aria-live="assertive">
     <h3>Unable to load projects</h3>
     <p>Please check your connection and try again.</p>
     <Button class="retry-btn">Retry</Button>
   </div>
-  
+
   <div class="projects-grid" role="grid" aria-label="Portfolio projects">
     {projects.map((project, index) => (
-      <article 
-        class="project-card animate-on-scroll interactive-hover" 
+      <article
+        class="project-card animate-on-scroll interactive-hover"
         data-project-id={project.slug}
         data-index={index}
         role="gridcell"
@@ -46,9 +42,9 @@ projects = projects.sort((a, b) => {
       >
         <div class="project-card-inner">
           <div class="project-image-container">
-            <img 
-              src={project.data.thumbnail || project.data.image || '/assets/images/ui/landscape-placeholder.svg'} 
-              alt={project.data.title}
+            <img
+              src={project.hero_media?.src || '/assets/images/ui/landscape-placeholder.svg'}
+              alt={project.hero_media?.alt || project.title}
               class="project-image"
               loading="lazy"
               decoding="async"
@@ -57,26 +53,28 @@ projects = projects.sort((a, b) => {
               <span class="view-case-study" aria-hidden="true">View Case Study</span>
             </div>
           </div>
-          
+
           <div class="project-content">
             <header class="project-header">
-              <h3 class="project-title">{project.data.title}</h3>
-              <span class="project-category">{project.data.category}</span>
+              <h3 class="project-title">{project.title}</h3>
+              <span class="project-category">{project.project_type}</span>
             </header>
-            
+
             <div class="project-description" id={`project-${index}-desc`}>
-              <p>{project.data.description}</p>
+              <p>{project.description}</p>
             </div>
-            
+
             <div class="project-meta">
-              <span class="project-date">{project.data.date}</span>
-              {project.data.technologies && (
+              {project.publish_date && (
+                <span class="project-date">{new Date(project.publish_date).getFullYear()}</span>
+              )}
+              {project.technologies && (
                 <div class="project-tech" role="list" aria-label="Technologies used">
-                  {project.data.technologies.slice(0, 3).map((tech) => (
+                  {project.technologies.slice(0, 3).map((tech) => (
                     <Badge variant="secondary" size="sm" role="listitem">{tech}</Badge>
                   ))}
-                  {project.data.technologies.length > 3 && (
-                    <span class="tech-more">+{project.data.technologies.length - 3}</span>
+                  {project.technologies.length > 3 && (
+                    <span class="tech-more">+{project.technologies.length - 3}</span>
                   )}
                 </div>
               )}
@@ -170,7 +168,7 @@ projects = projects.sort((a, b) => {
   .project-card:hover,
   .project-card:focus {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 
+    box-shadow:
       0 25px 50px rgba(0, 0, 0, 0.15),
       0 0 0 2px var(--accent-primary);
     border-color: var(--accent-primary);
@@ -480,13 +478,13 @@ projects = projects.sort((a, b) => {
     async loadProjects() {
       try {
         this.showLoading();
-        
+
         // Simulate network delay for better UX
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         // Get project data (already rendered by Astro)
         const projectCards = document.querySelectorAll('.project-card');
-        
+
         if (projectCards.length === 0) {
           throw new Error('No projects found');
         }
@@ -497,7 +495,7 @@ projects = projects.sort((a, b) => {
         });
 
         this.showSuccess();
-        
+
       } catch (error) {
         console.error('Error loading projects:', error);
         this.showError();
@@ -508,10 +506,10 @@ projects = projects.sort((a, b) => {
       // Add enhanced accessibility attributes
       card.setAttribute('aria-label', `Project: ${card.querySelector('.project-title')?.textContent}`);
       card.setAttribute('role', 'button');
-      
+
       // Add loading state
       card.classList.add('loading');
-      
+
       // Remove loading state after a brief delay for visual feedback
       setTimeout(() => {
         card.classList.remove('loading');
@@ -552,14 +550,15 @@ projects = projects.sort((a, b) => {
         card.style.transform = '';
       }, 150);
 
-      // Open case study modal with project ID (for MDX pre-rendered content)
-      if (window.caseStudyModal && typeof window.caseStudyModal.open === 'function') {
+      // Navigate to project page
+      if (projectId) {
+        window.location.href = `/work/${projectId}`;
+      } else if (window.caseStudyModal && typeof window.caseStudyModal.open === 'function') {
         window.caseStudyModal.open(projectId);
       } else if (window.openCaseStudy) {
         window.openCaseStudy(projectId);
       } else {
         console.warn('Case study modal not available');
-        // Fallback: navigate to project page if available
         if (projectData.link) {
           window.open(projectData.link, '_blank', 'noopener,noreferrer');
         }

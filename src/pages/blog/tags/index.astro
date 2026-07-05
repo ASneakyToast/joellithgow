@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { fetchBlogPosts } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -10,12 +10,12 @@ import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 
 // Get all blog posts
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const allPosts = await fetchBlogPosts();
 
 // Extract and count all tags
 const tagCounts = new Map<string, number>();
 allPosts.forEach((post) => {
-  post.data.tags?.forEach((tag) => {
+  post.tags?.forEach((tag) => {
     tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
   });
 });

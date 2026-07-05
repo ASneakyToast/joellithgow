@@ -11,6 +11,8 @@
 [build.environment]
   # Set the version of Node to use in builds
   NODE_VERSION = "18"
+  # ASTRAEUS_URL = "https://your-cms-host.com"  # Set in Netlify dashboard
+  # ASTRAEUS_API_KEY = "your-api-key"            # Set in Netlify dashboard — required for build
 
 # Production context: all deploys from the Production branch
 [context.production]

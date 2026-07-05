@@ -1,30 +1,29 @@
 ---
-import { getCollection } from 'astro:content';
+import { fetchBlogPosts } from '@lib/astraeus';
 
 // Get all blog posts that have links
-const allPosts = await getCollection('blog', ({ data }) => {
-  return !data.draft && data.links && data.links.length > 0;
-});
+const allPosts = await fetchBlogPosts();
+const postsWithLinks = allPosts.filter(p => p.links && p.links.length > 0);
 
 // Aggregate all links from all posts
-const allLinks = allPosts.flatMap(post =>
-  post.data.links.map(link => ({
+const allLinks = postsWithLinks.flatMap(post =>
+  (post.links ?? []).map(link => ({
     ...link,
     sourcePost: {
-      title: post.data.title,
+      title: post.title,
       slug: post.slug,
-      publishDate: post.data.publishDate
+      publishDate: new Date(post.publish_date)
     }
   }))
 );
 
 // Calculate statistics
 const totalLinks = allLinks.length;
-const totalPosts = allPosts.length;
+const totalPosts = postsWithLinks.length;
 
 // Get unique categories and their counts
 const categoryStats = allLinks.reduce((acc, link) => {
-  const category = link.category || 'Uncategorized';
+  const category = (link as any).category || 'Uncategorized';
   acc[category] = (acc[category] || 0) + 1;
   return acc;
 }, {} as Record<string, number>);
@@ -70,7 +69,7 @@ const thirtyDaysAgo = new Date();
 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
 const recentLinks = allLinks.filter(link =>
-  new Date(link.dateAdded) >= thirtyDaysAgo
+  new Date(link.date_added) >= thirtyDaysAgo
 );
 
 export interface Props {

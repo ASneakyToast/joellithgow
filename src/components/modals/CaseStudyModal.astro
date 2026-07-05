@@ -1,34 +1,37 @@
 ---
-// Case study modal for project details - MDX-based rendering
+// Case study modal for project details - Astraeus CMS fetch
 import Modal from '@components/primitives/Modal.astro';
-import { getCollection, render } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 
-// Pre-render all case studies at build time
-const projects = await getCollection('projects', ({ data }) => !data.draft);
-
-// Render each project's MDX content
-const renderedProjects = await Promise.all(
-  projects.map(async (project) => {
-    const { Content } = await render(project);
-    return {
-      id: project.data.id,
-      data: project.data,
-      Content
-    };
-  })
-);
+// Pre-fetch all case studies at build time (no MDX rendering needed)
+const projects = await fetchProjects();
 ---
 
 <Modal id="caseStudyModal" title="case study" size="lg" closeButton={true}>
   <div class="case-study-content">
-    <!-- Pre-rendered content stored in hidden divs -->
-    {renderedProjects.map((project) => (
+    <!-- Pre-rendered project summaries stored in hidden divs -->
+    {projects.map((project) => (
       <div
         class="case-study-rendered"
-        data-project-id={project.id}
+        data-project-id={project.slug}
         style="display: none;"
       >
-        <project.Content />
+        <div class="modal-project-summary">
+          <h2 class="modal-project-title">{project.title}</h2>
+          {project.subtitle && <p class="modal-project-subtitle">{project.subtitle}</p>}
+          <p class="modal-project-description">{project.overview || project.description}</p>
+          {project.hero_media && project.hero_media.type !== 'video' && (
+            <img
+              src={project.hero_media.src}
+              alt={project.hero_media.alt}
+              class="modal-project-image"
+              loading="lazy"
+            />
+          )}
+          <a href={`/work/${project.slug}`} class="modal-view-full">
+            View full case study &rarr;
+          </a>
+        </div>
       </div>
     ))}
     <!-- Active content container -->
@@ -44,6 +47,64 @@ const renderedProjects = await Promise.all(
   .case-study-content {
     container-type: inline-size;
     container-name: case-study;
+  }
+
+  /* Modal project summary */
+  .modal-project-summary {
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .modal-project-title {
+    font-size: var(--heading-md);
+    color: var(--text-primary);
+    text-shadow: 2px 2px 0px var(--accent-primary);
+    margin: 0;
+  }
+
+  .modal-project-subtitle {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .modal-project-description {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .modal-project-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border: 2px solid var(--bg-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .modal-view-full {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--accent-primary);
+    color: var(--text-light);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: var(--font-bold);
+    transition: all var(--duration-base) var(--ease-out);
+    align-self: flex-start;
+  }
+
+  .modal-view-full:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
   }
 
   .case-hero {
@@ -372,7 +433,7 @@ const renderedProjects = await Promise.all(
 </style>
 
 <script>
-  // Case Study Modal Management - MDX Pre-rendered Version
+  // Case Study Modal Management - Astraeus CMS Version
   class CaseStudyModal {
     private modal: HTMLElement | null;
     private content: HTMLElement | null;
@@ -387,7 +448,7 @@ const renderedProjects = await Promise.all(
     open(projectId: string) {
       if (!this.modal || !this.content || !this.activeContainer) return;
 
-      // Find pre-rendered content by project ID
+      // Find pre-rendered content by project slug
       const renderedContent = this.content.querySelector(
         `.case-study-rendered[data-project-id="${projectId}"]`
       );

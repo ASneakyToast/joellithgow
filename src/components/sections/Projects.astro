@@ -1,6 +1,6 @@
 ---
 // Projects section component - Clean layout with brutalist styling
-import { getCollection } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 import Video from '@components/ui/Video.astro';
 
 export interface Props {
@@ -19,12 +19,9 @@ const {
   showHeader = true
 } = Astro.props;
 
-// Get projects from content collection (exclude drafts)
-const allProjects = await getCollection('projects', ({ data }) => !data.draft);
-let projects = featuredOnly ? allProjects.filter(project => project.data.featured) : allProjects;
-
-// Sort by number (ascending)
-projects = projects.sort((a, b) => a.data.number - b.data.number);
+// Get projects from Astraeus (fetchProjects already filters drafts and sorts by number)
+const allProjects = await fetchProjects();
+let projects = featuredOnly ? allProjects.filter(project => project.featured) : allProjects;
 
 // Apply limit if specified
 if (limit && limit > 0) {
@@ -44,15 +41,14 @@ if (limit && limit > 0) {
   {/* Projects Grid */}
   <div class="projects-grid">
     {projects.map((project, index) => {
-      // Use heroMedia from frontmatter (MDX schema)
-      const heroImage = project.data.heroMedia || null;
+      const heroImage = project.hero_media || null;
       const isEven = index % 2 === 1;
 
       return (
         <article class={`project-card ${isEven ? 'project-card--reversed' : ''}`}>
           {/* Image - clickable link */}
           {heroImage && (
-            <a href={`/work/${project.data.id}`} class="project-image-link">
+            <a href={`/work/${project.slug}`} class="project-image-link">
               <figure class="project-image">
                 {heroImage.type === 'video' ? (
                   <Video
@@ -77,12 +73,12 @@ if (limit && limit > 0) {
             <div class="project-meta">
               <span class="project-number">{String(index + 1).padStart(2, '0')}</span>
               <span class="project-divider">─────</span>
-              <span class="project-type">{project.data.type}</span>
+              <span class="project-type">{project.project_type}</span>
             </div>
-            <h3 class="project-title">{project.data.title}</h3>
-            <p class="project-excerpt">{project.data.description}</p>
+            <h3 class="project-title">{project.title}</h3>
+            <p class="project-excerpt">{project.description}</p>
             <div class="project-actions">
-              <a href={`/work/${project.data.id}`} class="project-cta">view case study →</a>
+              <a href={`/work/${project.slug}`} class="project-cta">view case study →</a>
             </div>
           </div>
         </article>
