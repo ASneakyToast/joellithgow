@@ -1,6 +1,7 @@
 ---
-import { getCollection } from 'astro:content';
+import { marked } from 'marked';
 import type { GetStaticPaths } from 'astro';
+import { fetchBlogPosts } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -15,9 +16,9 @@ import CollectionWidget from '@components/blog/CollectionWidget.astro';
 import Video from '@components/ui/Video.astro';
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const allPosts = await fetchBlogPosts();
   const sortedPosts = allPosts.sort(
-    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+    (a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf()
   );
   return paginate(sortedPosts, { pageSize: 10 });
 }) satisfies GetStaticPaths;
@@ -25,25 +26,11 @@ export const getStaticPaths = (async ({ paginate }) => {
 const { page } = Astro.props;
 
 // Get all posts for sidebar stats (need full collection, not just current page)
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-
-// Render markdown content for current page posts (only if no excerpt for performance)
-const postsWithContent = await Promise.all(
-  page.data.map(async (post) => {
-    // Skip render if post has custom excerpt and a detail page
-    if (post.data.excerpt && post.data.hasDetailPage !== false) {
-      return { post, Content: null };
-    }
-    const { Content } = await post.render();
-    return { post, Content };
-  })
-);
+const allPosts = await fetchBlogPosts();
 
 // Helper function to truncate HTML content to first N paragraphs
 function truncateContent(html: string, maxParagraphs: number = 3): { content: string; isTruncated: boolean } {
-  const tempDiv = { innerHTML: html };
   const paragraphs: string[] = [];
-  let pCount = 0;
 
   // Simple regex-based approach to extract first few paragraphs
   const pRegex = /<p[^>]*>.*?<\/p>/gs;
@@ -56,30 +43,31 @@ function truncateContent(html: string, maxParagraphs: number = 3): { content: st
 }
 
 // Calculate link collection stats
-const linkCollectionPosts = allPosts.filter(post => post.data.links && post.data.links.length > 0);
-const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.data.links?.length || 0), 0);
+const linkCollectionPosts = allPosts.filter(post => post.links && post.links.length > 0);
+const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.links?.length || 0), 0);
 
 // Get featured links (most recent 6)
 const allLinks = linkCollectionPosts
   .flatMap(post =>
-    post.data.links.map(link => ({
+    (post.links ?? []).map(link => ({
       ...link,
+      dateAdded: new Date(link.date_added),
       sourcePost: {
-        title: post.data.title,
+        title: post.title,
         slug: post.slug,
-        publishDate: post.data.publishDate,
-        author: post.data.author
+        publishDate: new Date(post.publish_date),
+        author: post.author
       }
     }))
   )
-  .sort((a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf())
+  .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf())
   .slice(0, 6);
 
 // Calculate tag counts
 const tagCounts = new Map<string, number>();
 allPosts.forEach(post => {
-  if (post.data.tags) {
-    post.data.tags.forEach(tag => {
+  if (post.tags) {
+    post.tags.forEach(tag => {
       tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
     });
   }
@@ -93,29 +81,30 @@ const topTags = Array.from(tagCounts.entries())
 
 // Get all collection posts for sidebar widgets
 const collectionPosts = allPosts
-  .filter(post => post.data.type === 'collection')
-  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+  .filter(post => post.post_type === 'collection')
+  .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
 
 // Aggregate links by collection tags
 // For each collection post, gather all links from other posts that are tagged for it
 const collectionPostsWithLinks = collectionPosts.map(collectionPost => {
   // Find all links across all posts that are tagged for this collection
   const aggregatedLinks = allPosts
-    .filter(post => post.data.links && post.data.links.length > 0)
+    .filter(post => post.links && post.links.length > 0)
     .flatMap(post =>
-      post.data.links
+      (post.links ?? [])
         .filter(link => link.collections?.includes(collectionPost.slug))
         .map(link => ({
           ...link,
+          dateAdded: new Date(link.date_added),
           sourcePost: {
-            title: post.data.title,
+            title: post.title,
             slug: post.slug,
-            publishDate: post.data.publishDate,
-            author: post.data.author
+            publishDate: new Date(post.publish_date),
+            author: post.author
           }
         }))
     )
-    .sort((a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf());
+    .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf());
 
   return {
     ...collectionPost,
@@ -185,34 +174,34 @@ const jsonLd = {
         </section>
 
         {/* Featured Posts Section */}
-        {postsWithContent.length > 0 && (
+        {page.data.length > 0 && (
           <section id="featured-posts" class="featured-posts-section">
             <div class="posts-header">
               <h2 class="section-heading">recent posts</h2>
             </div>
             <div class="featured-posts">
-              {postsWithContent.map(({ post, Content }) => (
-                post.data.type === 'collection' ? (
+              {page.data.map((post) => (
+                post.post_type === 'collection' ? (
                   // Minimal collection card
                   <Card variant="flat" as="article" class="collection-card-minimal">
                     <a href={`/blog/${post.slug}`} class="collection-card-link">
                       <h2 class="collection-title">
-                        {post.data.title}
+                        {post.title}
                         <Badge variant="tertiary" size="sm" class="collection-badge">
-                          {post.data.links?.length || 0} links
+                          {post.links?.length || 0} links
                         </Badge>
                       </h2>
-                      <p class="collection-description">{post.data.description}</p>
+                      <p class="collection-description">{post.description}</p>
                     </a>
                   </Card>
                 ) : (
                   // Full post card
-                  <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.data.type}>
+                  <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.post_type}>
                     <time
-                      datetime={post.data.publishDate.toISOString()}
+                      datetime={new Date(post.publish_date).toISOString()}
                       class="post-date"
                     >
-                      {post.data.publishDate.toLocaleDateString('en-US', {
+                      {new Date(post.publish_date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -220,37 +209,37 @@ const jsonLd = {
                     </time>
 
                     <h2 class="post-title">
-                      {post.data.hasDetailPage !== false ? (
+                      {post.has_detail_page !== false ? (
                         <a
                           href={`/blog/${post.slug}`}
                           class="post-title-link"
                         >
-                          {post.data.title}
+                          {post.title}
                         </a>
                       ) : (
-                        <span class="post-title-text">{post.data.title}</span>
+                        <span class="post-title-text">{post.title}</span>
                       )}
                     </h2>
 
                     {/* Hero image/video */}
-                    {post.data.image && (
+                    {post.image && (
                       <div class="post-hero-image">
                         {(() => {
-                          const isVideo = post.data.image.type === 'video';
-                          const linkHref = post.data.image.link || (post.data.hasDetailPage !== false ? `/blog/${post.slug}` : null);
-                          const isExternal = post.data.image.link?.startsWith('http');
+                          const isVideo = post.image.type === 'video';
+                          const linkHref = post.image.link || (post.has_detail_page !== false ? `/blog/${post.slug}` : null);
+                          const isExternal = post.image.link?.startsWith('http');
 
                           const media = isVideo ? (
                             <Video
-                              src={post.data.image.src}
-                              fallbackSrc={post.data.image.fallbackSrc}
-                              poster={post.data.image.poster}
+                              src={post.image.src}
+                              fallbackSrc={post.image.fallbackSrc}
+                              poster={post.image.poster}
                               controls={false}
                             />
                           ) : (
                             <img
-                              src={post.data.image.src}
-                              alt={post.data.image.alt}
+                              src={post.image.src}
+                              alt={post.image.alt}
                               loading="lazy"
                             />
                           );
@@ -269,51 +258,51 @@ const jsonLd = {
                     )}
 
                     <p class="post-description">
-                      {post.data.description}
+                      {post.description}
                     </p>
 
                     {/* Render excerpt or full content preview */}
-                    {post.data.excerpt && post.data.hasDetailPage !== false ? (
-                      <div class="post-excerpt-preview" set:html={post.data.excerpt} />
+                    {post.excerpt && post.has_detail_page !== false ? (
+                      <div class="post-excerpt-preview" set:html={post.excerpt} />
                     ) : (
-                      <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
-                        <Content />
-                      </div>
+                      <div class:list={['post-content-preview', { 'full-content': post.has_detail_page === false }]}
+                        set:html={marked.parse(post.body_markdown ?? '')}
+                      />
                     )}
 
                     {/* Link collection display for inline posts (legacy thoughts with links) */}
-                    {post.data.hasDetailPage === false && post.data.links && post.data.links.length > 0 && (
+                    {post.has_detail_page === false && post.links && post.links.length > 0 && (
                       <div class="post-links-section">
                         <div class="post-links-header">
                           <h3 class="post-links-title">Links from this collection</h3>
-                          <span class="post-links-count">{post.data.links.length} link{post.data.links.length !== 1 ? 's' : ''}</span>
+                          <span class="post-links-count">{post.links.length} link{post.links.length !== 1 ? 's' : ''}</span>
                         </div>
 
                         <div class="post-links-grid">
-                          {post.data.links.map((link) => (
-                            <LinkCard link={link} variant="minimal" />
+                          {post.links.map((link) => (
+                            <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {post.data.tags && post.data.tags.length > 0 && (
+                    {post.tags && post.tags.length > 0 && (
                       <div class="post-tags">
-                        {post.data.tags.map((tag) => (
+                        {post.tags.map((tag) => (
                           <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                         ))}
                       </div>
                     )}
 
-                    {(post.data.readingTime || post.data.hasDetailPage !== false) && (
+                    {(post.reading_time || post.has_detail_page !== false) && (
                       <div class="post-meta">
-                        {post.data.readingTime && (
-                          <span class="post-reading-time">{post.data.readingTime} min read</span>
+                        {post.reading_time && (
+                          <span class="post-reading-time">{post.reading_time} min read</span>
                         )}
 
-                        {post.data.hasDetailPage !== false && (
+                        {post.has_detail_page !== false && (
                           <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                            {post.data.excerpt ? 'Read the full story →' : 'Continue reading →'}
+                            {post.excerpt ? 'Read the full story →' : 'Continue reading →'}
                           </Button>
                         )}
                       </div>
@@ -391,8 +380,8 @@ const jsonLd = {
         {collectionPostsWithLinks.map((collection) => (
           collection.aggregatedLinks && collection.aggregatedLinks.length > 0 && (
             <CollectionWidget
-              title={collection.data.title}
-              description={collection.data.description}
+              title={collection.title}
+              description={collection.description}
               links={collection.aggregatedLinks}
               linkLimit={4}
               viewAllHref={`/blog/${collection.slug}`}
@@ -1218,4 +1207,3 @@ const jsonLd = {
     }
   }
 </style>
-

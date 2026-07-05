@@ -1,120 +1,146 @@
 import { defineCollection, z } from 'astro:content';
+import { loadAstraeusDocuments } from '../lib/astraeus-loader';
 
-// Define project schema for MDX-based case studies
-// Content sections (challenge, approach, process, etc.) are now in MDX body, not frontmatter
-const projectSchema = z.object({
-  // Card/listing metadata
-  id: z.string(),
-  number: z.number(),
-  type: z.string(),
-  title: z.string(),
-  description: z.string(),
-  impact: z.string(),
-  technologies: z.array(z.string()).optional(),
+// ---------------------------------------------------------------------------
+// Shared sub-schemas (mirror astraeus-types.ts interfaces)
+// ---------------------------------------------------------------------------
 
-  // Hero metadata
-  subtitle: z.string(),
-  overview: z.string(),
-  heroMedia: z.object({
-    src: z.string(),
-    fallbackSrc: z.string().optional(),
-    poster: z.string().optional(),
-    alt: z.string(),
-    caption: z.string().optional(),
-    type: z.enum(['image', 'video']).default('image')
-  }).optional(),
-
-  // Meta information
-  duration: z.string(),
-  team: z.string(),
-  role: z.string(),
-  tools: z.string(),
-
-  // Live links (optional)
-  liveLink: z.object({
-    title: z.string(),
-    url: z.string(),
-    description: z.string()
-  }).optional(),
-  liveLinks: z.object({
-    title: z.string(),
-    description: z.string(),
-    links: z.array(z.object({
-      title: z.string(),
-      url: z.string()
-    }))
-  }).optional(),
-
-  // SEO and organization
-  publishDate: z.date().optional(),
-  draft: z.boolean().default(false),
-  featured: z.boolean().default(false),
-  tags: z.array(z.string()).optional()
+const blogImageSchema = z.object({
+  src: z.string(),
+  alt: z.string(),
+  type: z.enum(['image', 'video']).optional(),
+  fallbackSrc: z.string().optional(),
+  poster: z.string().optional(),
+  link: z.string().optional(),
 });
 
-// Define schema for individual links within link collections
-const linkSchema = z.object({
-  url: z.string().url(),
+const linkItemSchema = z.object({
+  url: z.string(),
   title: z.string(),
-  description: z.string(),
-  author: z.string().optional(), // Blogger/creator name
+  description: z.string().optional(),
+  author: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  dateAdded: z.date(),
-  collections: z.array(z.string()).optional() // Which collection slugs this link should appear in
+  date_added: z.string(),
+  collections: z.array(z.string()).optional(),
 });
 
-// Define blog schema for future use
-const blogSchema = z.object({
+const heroMediaSchema = z.object({
+  src: z.string(),
+  alt: z.string(),
+  type: z.enum(['image', 'video']),
+  fallbackSrc: z.string().optional(),
+  poster: z.string().optional(),
+  caption: z.string().optional(),
+});
+
+const liveLinkSchema = z.object({
+  title: z.string(),
+  url: z.string(),
+  description: z.string().optional(),
+});
+
+const liveLinksSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  links: z.array(z.object({ title: z.string(), url: z.string() })),
+});
+
+const bodyBlockSchema = z.object({
+  block_type: z.string(),
+}).catchall(z.unknown());
+
+// ---------------------------------------------------------------------------
+// Blog post schema
+// ---------------------------------------------------------------------------
+
+const blogPostSchema = z.object({
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
   title: z.string(),
   description: z.string(),
+  /** ISO 8601 — wrap with new Date() at use site */
+  publish_date: z.string(),
+  post_type: z.enum(['article', 'thought', 'collection']),
+  body_markdown: z.string().optional(),
   excerpt: z.string().optional(),
-  publishDate: z.date(),
-  author: z.string().default('Joel Lithgow'),
-  image: z.object({
-    src: z.string(),
-    fallbackSrc: z.string().optional(),
-    poster: z.string().optional(),
-    alt: z.string(),
-    /** Optional URL to link the hero image/video to. If not set, links to detail page for articles. */
-    link: z.string().optional(),
-    /** Media type - 'image' (default) or 'video' */
-    type: z.enum(['image', 'video']).default('image')
-  }).optional(),
+  author: z.string().optional(),
+  image: blogImageSchema.optional(),
+  links: z.array(linkItemSchema).optional(),
   tags: z.array(z.string()).optional(),
-  draft: z.boolean().default(false),
-  featured: z.boolean().default(false),
-  readingTime: z.number().optional(),
-  /**
-   * Content type classification
-   * - 'article': Full-length post with detail page (default)
-   * - 'thought': Short-form post displayed inline without detail page
-   * - 'collection': Curated links with commentary and dedicated detail page
-   */
-  type: z.enum(['article', 'thought', 'collection']).default('article'),
-  // Link collection support
-  links: z.array(linkSchema).optional(),
-  /**
-   * Controls navigation behavior
-   * - true: Post has dedicated detail page at /blog/[slug]
-   * - false: Post content displayed fully inline on blog index
-   *
-   * When not explicitly set, automatically derived from type:
-   * - 'article' → true
-   * - 'thought' → false
-   * - 'collection' → true
-   */
-  hasDetailPage: z.boolean().optional(),
-  // Legacy category field (deprecated in favor of type)
-  category: z.string().optional()
-}).transform((data) => {
-  // Auto-derive hasDetailPage from type if not explicitly set
-  if (data.hasDetailPage === undefined) {
-    data.hasDetailPage = data.type === 'article' || data.type === 'collection';
-  }
-  return data;
+  draft: z.boolean().optional(),
+  featured: z.boolean().optional(),
+  has_detail_page: z.boolean().optional(),
+  /** null = reading time explicitly unset; absent = not calculated */
+  reading_time: z.number().nullable().optional(),
+  // CMS metadata
+  _id: z.string(),
+  _published: z.boolean().optional(),
+  _created_at: z.string().optional(),
+  _updated_at: z.string().optional(),
 });
 
-// Interview round types for granular tracking
+// ---------------------------------------------------------------------------
+// Project page schema
+// ---------------------------------------------------------------------------
+
+const projectPageSchema = z.object({
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
+  number: z.number(),
+  project_type: z.string(),
+  title: z.string(),
+  description: z.string(),
+  impact: z.string().optional(),
+  technologies: z.array(z.string()).optional(),
+  subtitle: z.string().optional(),
+  overview: z.string().optional(),
+  hero_media: heroMediaSchema.optional(),
+  duration: z.string().optional(),
+  team: z.string().optional(),
+  role: z.string().optional(),
+  tools: z.string().optional(),
+  live_link: liveLinkSchema.optional(),
+  live_links: liveLinksSchema.optional(),
+  publish_date: z.string().optional(),
+  draft: z.boolean().optional(),
+  featured: z.boolean().optional(),
+  tags: z.array(z.string()).optional(),
+  body_blocks: z.array(bodyBlockSchema).optional(),
+  // CMS metadata
+  _id: z.string(),
+  _published: z.boolean().optional(),
+  _created_at: z.string().optional(),
+  _updated_at: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Experience entry schema
+// ---------------------------------------------------------------------------
+
+const experienceEntrySchema = z.object({
+  slug: z.string(),  // convenience alias for entry.id, injected by loader from CMS system field
+  company: z.string(),
+  title: z.string(),
+  location: z.string().optional(),
+  /** Format: "2017" or "2017-03" */
+  start_date: z.string(),
+  /** Format: "2017" or "2017-03" — null means current role (intentional), absent means unknown */
+  end_date: z.string().nullable().optional(),
+  employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
+  description: z.string().optional(),
+  responsibilities: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
+  show_on_resume: z.boolean().optional(),
+  order: z.number().optional(),
+  // CMS metadata
+  _id: z.string(),
+  _published: z.boolean().optional(),
+  _created_at: z.string().optional(),
+  _updated_at: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Interview round types for applications collection (unchanged)
+// ---------------------------------------------------------------------------
+
 const interviewRoundSchema = z.enum([
   'phone-screen',
   'recruiter-call',
@@ -127,7 +153,6 @@ const interviewRoundSchema = z.enum([
   'other'
 ]);
 
-// Application status values
 const applicationStatusEnum = z.enum([
   'draft',
   'preparing',
@@ -139,40 +164,29 @@ const applicationStatusEnum = z.enum([
   'ghosted'
 ]);
 
-// Status history entry - tracks each progression event
 const statusEventSchema = z.object({
   status: applicationStatusEnum,
   date: z.date(),
-  round: interviewRoundSchema.optional(),  // Only for 'interviewing' status
+  round: interviewRoundSchema.optional(),
   notes: z.string().optional(),
 });
 
-// Define application schema for job applications
 const applicationSchema = z.object({
-  // Company and role info
   company: z.string(),
   position: z.string(),
   location: z.string(),
   salary: z.string().optional(),
   jobUrl: z.string().url(),
-
-  // Application status tracking
   status: applicationStatusEnum.default('draft'),
   statusHistory: z.array(statusEventSchema).default([]),
   appliedDate: z.date().optional(),
   deadline: z.date().optional(),
-
-  // Cover letter metadata
   coverLetterDate: z.date().optional(),
-
-  // Cover letter content (array of paragraphs)
   coverLetter: z.object({
     opening: z.string().optional(),
     paragraphs: z.array(z.string()).optional(),
     closing: z.string().optional(),
   }).optional(),
-
-  // Resume customizations
   resume: z.object({
     summary: z.string().optional(),
     skills: z.object({
@@ -182,116 +196,86 @@ const applicationSchema = z.object({
       tools: z.string().optional(),
       accessibility: z.string().optional(),
       learning: z.string().optional(),
-      // Allow custom skill categories
       creative: z.string().optional(),
       ai: z.string().optional(),
     }).optional(),
   }).optional(),
-
-  // Display options
   featured: z.boolean().default(false),
-  public: z.boolean().default(true), // Can hide sensitive applications
+  public: z.boolean().default(true),
   fit: z.enum(['very-strong', 'strong', 'moderate', 'stretch']).optional(),
-
-  // SEO
-  description: z.string().optional()
-});
-
-// Define experience schema for work history
-const experienceSchema = z.object({
-  // Job identification
-  company: z.string(),
-  title: z.string(),
-  location: z.string().optional(),
-
-  // Timeline
-  startDate: z.string(), // Format: "2017" or "2017-03"
-  endDate: z.string().optional(), // Optional = current job
-
-  // Classification
-  type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']).default('full-time'),
-
-  // Content
   description: z.string().optional(),
-  responsibilities: z.array(z.string()).optional(),
-  achievements: z.array(z.string()).optional(),
-
-  // Display options
-  featured: z.boolean().default(false), // Show on about page
-  showOnResume: z.boolean().default(true),
-  order: z.number().optional(), // Manual sort order within same company
 });
 
-// Define artwork schema for fine art portfolio
-const artworkSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  projectTitle: z.string(),
-  projectDescription: z.string(),
-  creationDate: z.string().transform((str) => new Date(str)),
-  medium: z.string(),
-  dimensions: z.string().optional(),
-  images: z.array(z.object({
-    src: z.string(),
-    srcThumbnail: z.string().optional(),
-    srcLarge: z.string().optional(),
-    alt: z.string(),
-    caption: z.string(),
-    type: z.enum(['main', 'detail', 'process', 'context']).default('main'),
-    width: z.number().optional(),
-    height: z.number().optional()
-  })),
-  // Artistic details
-  materials: z.array(z.string()).optional(),
-  techniques: z.array(z.string()).optional(),
-  series: z.string().optional(),
-  collaborators: z.array(z.string()).optional(),
-  // Rich content
-  artistStatement: z.string().optional(),
-  processNotes: z.string().optional(),
-  inspiration: z.string().optional(),
-  technicalNotes: z.string().optional(),
-  // Organization and metadata
-  featured: z.boolean().default(false),
-  draft: z.boolean().default(false),
-  tags: z.array(z.string()).optional(),
-  category: z.enum(['printmedia', 'sculpture', 'exhibition', 'collaborative', 'mixed-media']).optional(),
-  // Exhibition/context
-  exhibitions: z.array(z.object({
-    name: z.string(),
-    location: z.string(),
-    date: z.string(),
-    type: z.enum(['solo', 'group', 'online']).optional()
-  })).optional()
-});
+// ---------------------------------------------------------------------------
+// Collection definitions
+// ---------------------------------------------------------------------------
 
-// Define collections
 export const collections = {
-  'projects': defineCollection({
+  // ── Local MDX (unchanged) ────────────────────────────────────────────────
+  applications: defineCollection({
     type: 'content',
-    schema: projectSchema
+    schema: applicationSchema,
   }),
-  'blog': defineCollection({
-    type: 'content',
-    schema: blogSchema
+
+  // ── Astraeus CMS — blog posts ─────────────────────────────────────────────
+  blog: defineCollection({
+    loader: async () => {
+      const docs = await loadAstraeusDocuments('blog_post');
+      return docs.map((d) => ({
+        id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
+        ...(d.body as Record<string, unknown>),
+        _id: d.id,
+        _published: d.published,
+        _created_at: d.created_at,
+        _updated_at: d.updated_at,
+      }));
+    },
+    schema: blogPostSchema,
   }),
-  'applications': defineCollection({
-    type: 'content',
-    schema: applicationSchema
+
+  // ── Astraeus CMS — project pages ─────────────────────────────────────────
+  projects: defineCollection({
+    loader: async () => {
+      const docs = await loadAstraeusDocuments('project_page');
+      return docs.map((d) => ({
+        id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
+        ...(d.body as Record<string, unknown>),
+        _id: d.id,
+        _published: d.published,
+        _created_at: d.created_at,
+        _updated_at: d.updated_at,
+      }));
+    },
+    schema: projectPageSchema,
   }),
-  'experience': defineCollection({
-    type: 'content',
-    schema: experienceSchema
-  })
+
+  // ── Astraeus CMS — experience entries ────────────────────────────────────
+  experience: defineCollection({
+    loader: async () => {
+      const docs = await loadAstraeusDocuments('experience_entry');
+      return docs.map((d) => ({
+        id: d.slug,
+        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
+        ...(d.body as Record<string, unknown>),
+        _id: d.id,
+        _published: d.published,
+        _created_at: d.created_at,
+        _updated_at: d.updated_at,
+      }));
+    },
+    schema: experienceEntrySchema,
+  }),
 };
 
-// Export types for use in components
-export type Project = z.infer<typeof projectSchema>;
-export type BlogPost = z.infer<typeof blogSchema>;
-export type Artwork = z.infer<typeof artworkSchema>;
+// ---------------------------------------------------------------------------
+// Re-exported types (kept for backward compat; prefer z.infer<> at use sites)
+// ---------------------------------------------------------------------------
+
 export type Application = z.infer<typeof applicationSchema>;
-export type Experience = z.infer<typeof experienceSchema>;
-export type Link = z.infer<typeof linkSchema>;
 export type InterviewRound = z.infer<typeof interviewRoundSchema>;
 export type StatusEvent = z.infer<typeof statusEventSchema>;
+export type BlogPost = z.infer<typeof blogPostSchema>;
+export type ProjectPage = z.infer<typeof projectPageSchema>;
+export type ExperienceEntry = z.infer<typeof experienceEntrySchema>;

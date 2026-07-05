@@ -1,42 +1,50 @@
 ---
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
+import type { AstraeusDocument, ProjectPage } from '@lib/astraeus-types';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import Button from '@components/primitives/Button.astro';
+import CaseStudyHero from '@components/blocks/CaseStudyHero.astro';
+import CaseStudyMeta from '@components/blocks/CaseStudyMeta.astro';
+import ChallengeSection from '@components/blocks/ChallengeSection.astro';
+import ApproachSection from '@components/blocks/ApproachSection.astro';
+import ProcessSteps from '@components/blocks/ProcessSteps.astro';
+import ImageGrid from '@components/blocks/ImageGrid.astro';
+import FullWidthMedia from '@components/blocks/FullWidthMedia.astro';
+import InsightsSection from '@components/blocks/InsightsSection.astro';
+import MetricsGrid from '@components/blocks/MetricsGrid.astro';
+import LiveLinkCTA from '@components/blocks/LiveLinkCTA.astro';
+import VideoGallery from '@components/blocks/VideoGallery.astro';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  const projects = await fetchProjects();
 
   return projects.map(project => ({
-    params: { slug: project.data.id },
+    params: { slug: project.slug },
     props: { project },
   }));
 }
 
 interface Props {
-  project: CollectionEntry<'projects'>;
+  project: AstraeusDocument<ProjectPage>;
 }
 
 const { project } = Astro.props;
-const data = project.data;
-
-// Render the MDX content
-const { Content } = await render(project);
 
 // JSON-LD structured data for case study
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CreativeWork',
-  name: data.title,
-  description: data.overview || data.description,
+  name: project.title,
+  description: project.overview || project.description,
   author: {
     '@type': 'Person',
     name: 'Joel Lithgow',
     url: 'https://joellithgow.com',
   },
-  keywords: data.tags?.join(', '),
-  url: `https://joellithgow.com/work/${data.id}`,
-  genre: data.type,
+  keywords: project.tags?.join(', '),
+  url: `https://joellithgow.com/work/${project.slug}`,
+  genre: project.project_type,
 };
 
 // Breadcrumb structured data for search results
@@ -59,15 +67,15 @@ const breadcrumbSchema = {
     {
       '@type': 'ListItem',
       position: 3,
-      name: data.title,
+      name: project.title,
     },
   ],
 };
 ---
 
 <BaseLayout
-  title={`${data.title} - Joel Lithgow`}
-  description={data.overview || data.description}
+  title={`${project.title} - Joel Lithgow`}
+  description={project.overview || project.description}
   ogType="article"
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
@@ -87,16 +95,95 @@ const breadcrumbSchema = {
           </li>
           <li class="breadcrumb-separator" aria-hidden="true">/</li>
           <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-            {data.title}
+            {project.title}
           </li>
         </ol>
       </nav>
     </header>
 
-    {/* MDX Content */}
+    {/* Body Blocks Content */}
     <article class="article">
       <div class="case-study-content">
-        <Content />
+        {project.body_blocks?.map((block) => (
+          <>
+            {block.block_type === 'case_study_hero' && (
+              <CaseStudyHero
+                title={block.title as string}
+                subtitle={block.subtitle as string}
+                overview={block.overview as string}
+                media={block.media as any}
+              />
+            )}
+            {block.block_type === 'case_study_meta' && (
+              <CaseStudyMeta
+                duration={block.duration as string}
+                team={block.team as string}
+                role={block.role as string}
+                tools={block.tools as string}
+              />
+            )}
+            {block.block_type === 'challenge_section' && (
+              <ChallengeSection insight={block.insight as string}>
+                <Fragment set:html={block.children as string} />
+              </ChallengeSection>
+            )}
+            {block.block_type === 'approach_section' && (
+              <ApproachSection>
+                <Fragment set:html={block.children as string} />
+              </ApproachSection>
+            )}
+            {block.block_type === 'process_steps' && (
+              <ProcessSteps steps={block.steps as any[]} />
+            )}
+            {block.block_type === 'image_grid' && (
+              <ImageGrid images={block.images as any[]} />
+            )}
+            {block.block_type === 'full_width_media' && (
+              <FullWidthMedia
+                src={block.src as string}
+                fallbackSrc={block.fallback_src as string}
+                alt={block.alt as string}
+                caption={block.caption as string}
+                type={block.type as 'image' | 'video'}
+              />
+            )}
+            {block.block_type === 'insights_section' && (
+              <InsightsSection insights={block.insights as string[]} />
+            )}
+            {block.block_type === 'metrics_grid' && (
+              <MetricsGrid
+                title={block.title as string}
+                metrics={block.metrics as any[]}
+              />
+            )}
+            {block.block_type === 'live_link_cta' && (
+              <LiveLinkCTA
+                title={block.title as string}
+                url={block.url as string}
+                description={block.description as string}
+              />
+            )}
+            {block.block_type === 'live_links_cta' && (
+              <div class="case-section live-links-cta">
+                <h2 class="section-title">{block.title as string}</h2>
+                {block.description && (
+                  <p class="live-links-description">{block.description as string}</p>
+                )}
+                <div class="live-links-grid">
+                  {(block.links as any[])?.map((link) => (
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" class="live-link-button">
+                      {link.title}
+                      <span class="link-arrow">&rarr;</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {block.block_type === 'video_gallery' && (
+              <VideoGallery videos={block.videos as any[]} />
+            )}
+          </>
+        ))}
       </div>
 
       {/* Footer Navigation */}
@@ -176,7 +263,7 @@ const breadcrumbSchema = {
     padding: 0 var(--page-gutter);
   }
 
-  /* Case Study Content - styles for MDX blocks */
+  /* Case Study Content - styles for body blocks */
   .case-study-content {
     container-type: inline-size;
     container-name: case-study;
