@@ -14,6 +14,7 @@ import PageTitle from '@components/ui/PageTitle.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import CollectionWidget from '@components/blog/CollectionWidget.astro';
 import Video from '@components/ui/Video.astro';
+import ImageGallery from '@components/modals/ImageGallery.astro';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const allPosts = await fetchBlogPosts();
@@ -42,28 +43,29 @@ function truncateContent(html: string, maxParagraphs: number = 3): { content: st
   return { content: truncated, isTruncated };
 }
 
-// Calculate link collection stats
-const linkCollectionPosts = allPosts.filter(post => post.links && post.links.length > 0);
-const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (post.links?.length || 0), 0);
+// Calculate link collection stats (blog posts only — new types have no links)
+const linkCollectionPosts = allPosts.filter(post => post.post_type !== 'spotify_dump' && post.post_type !== 'nature_outing' && 'links' in post && (post as any).links && (post as any).links.length > 0);
+const totalLinks = linkCollectionPosts.reduce((sum, post) => sum + (('links' in post && (post as any).links?.length) || 0), 0);
 
 // Get featured links (most recent 6)
 const allLinks = linkCollectionPosts
-  .flatMap(post =>
-    (post.links ?? []).map(link => ({
+  .flatMap(post => {
+    const links = ('links' in post && (post as any).links) ? (post as any).links : [];
+    return links.map((link: any) => ({
       ...link,
       dateAdded: new Date(link.date_added),
       sourcePost: {
         title: post.title,
         slug: post.slug,
         publishDate: new Date(post.publish_date),
-        author: post.author
+        author: ('author' in post && (post as any).author) || undefined,
       }
-    }))
-  )
-  .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf())
+    }));
+  })
+  .sort((a: any, b: any) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf())
   .slice(0, 6);
 
-// Calculate tag counts
+// Calculate tag counts (all post types contribute tags)
 const tagCounts = new Map<string, number>();
 allPosts.forEach(post => {
   if (post.tags) {
@@ -79,7 +81,7 @@ const topTags = Array.from(tagCounts.entries())
   .sort((a, b) => b[1] - a[1])
   .slice(0, 5); // Show top 5 tags
 
-// Get all collection posts for sidebar widgets
+// Get all collection posts for sidebar widgets (blog posts only)
 const collectionPosts = allPosts
   .filter(post => post.post_type === 'collection')
   .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
@@ -89,22 +91,22 @@ const collectionPosts = allPosts
 const collectionPostsWithLinks = collectionPosts.map(collectionPost => {
   // Find all links across all posts that are tagged for this collection
   const aggregatedLinks = allPosts
-    .filter(post => post.links && post.links.length > 0)
+    .filter(post => 'links' in post && (post as any).links && (post as any).links.length > 0)
     .flatMap(post =>
-      (post.links ?? [])
-        .filter(link => link.collections?.includes(collectionPost.slug))
-        .map(link => ({
+      (('links' in post && (post as any).links) || [])
+        .filter((link: any) => link.collections?.includes(collectionPost.slug))
+        .map((link: any) => ({
           ...link,
           dateAdded: new Date(link.date_added),
           sourcePost: {
             title: post.title,
             slug: post.slug,
             publishDate: new Date(post.publish_date),
-            author: post.author
+            author: ('author' in post && (post as any).author) || undefined,
           }
         }))
     )
-    .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf());
+    .sort((a: any, b: any) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf());
 
   return {
     ...collectionPost,
@@ -188,14 +190,126 @@ const jsonLd = {
                       <h2 class="collection-title">
                         {post.title}
                         <Badge variant="tertiary" size="sm" class="collection-badge">
-                          {post.links?.length || 0} links
+                          {('links' in post && (post as any).links?.length) || 0} links
                         </Badge>
                       </h2>
                       <p class="collection-description">{post.description}</p>
                     </a>
                   </Card>
+                ) : post.post_type === 'spotify_dump' ? (
+                  // Spotify liked song dump — full inline card
+                  <Card variant="flat" as="article" class="featured-post-card spotify-dump-card">
+                    <header class="gateway-card-header">
+                      <div class="gateway-card-meta">
+                        <time datetime={new Date(post.publish_date).toISOString()} class="post-date">
+                          {new Date(post.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                        </time>
+                      </div>
+                      <a href={`/blog/${post.slug}`} class="gateway-permalink" title="Permalink">
+                        ↗
+                      </a>
+                    </header>
+
+                    <h2 class="post-title post-title-text">{post.title}</h2>
+
+                    {(post as any).songs && (post as any).songs.length > 0 && (
+                      <div class="spotify-track-list">
+                        {((post as any).songs as any[]).map((song: any, i: number) => (
+                          <div class="spotify-track">
+                            {song.album_art_url && (
+                              <img src={song.album_art_url} alt={song.album_name || ''} class="track-album-art" loading="lazy" />
+                            )}
+                            <span class="track-num">{i + 1}</span>
+                            <div class="track-info">
+                              <span class="track-name">
+                                {song.spotify_url ? (
+                                  <a href={song.spotify_url} target="_blank" rel="noopener noreferrer" class="track-link">
+                                    {song.track_name}
+                                  </a>
+                                ) : song.track_name}
+                              </span>
+                              <span class="track-artist">{song.artist_name}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {post.tags && post.tags.length > 0 && (
+                      <div class="post-tags">
+                        {post.tags.map((tag) => (
+                          <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                ) : post.post_type === 'nature_outing' ? (
+                  // iNaturalist outing — full inline card
+                  <Card variant="flat" as="article" class="featured-post-card nature-outing-card">
+                    <header class="gateway-card-header">
+                      <div class="gateway-card-meta">
+                        <time datetime={new Date(post.publish_date).toISOString()} class="post-date">
+                          {new Date(post.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </time>
+                      </div>
+                      <a href={`/blog/${post.slug}`} class="gateway-permalink" title="Permalink">
+                        ↗
+                      </a>
+                    </header>
+
+                    <h2 class="post-title post-title-text">{post.title}</h2>
+
+                    {(post as any).photo_urls && (post as any).photo_urls.length > 0 && (
+                      <div
+                        class="nature-photo-grid"
+                        data-gallery-urls={JSON.stringify(((post as any).photo_urls as string[]).slice(0, 6))}
+                      >
+                        {((post as any).photo_urls as string[]).slice(0, 6).map((url: string, i: number) => (
+                          <img
+                            src={url}
+                            alt="iNaturalist observation photo"
+                            loading="lazy"
+                            class="nature-photo"
+                            data-gallery-index={i}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {(post as any).species_list && (post as any).species_list.length > 0 && (
+                      <div class="species-chips">
+                        {((post as any).species_list as string[]).slice(0, 10).map((species: string) => (
+                          <span class="species-chip">{species}</span>
+                        ))}
+                        {(post as any).species_list.length > 10 && (
+                          <a href={`/blog/${post.slug}`} class="species-overflow">
+                            +{(post as any).species_list.length - 10} more
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    <div class="nature-outing-stats">
+                      <span class="outing-stat">
+                        <strong>{(post as any).observation_count || 0}</strong> observations
+                      </span>
+                      {(post as any).species_list && (
+                        <span class="outing-stat">
+                          <strong>{(post as any).species_list.length}</strong> species
+                        </span>
+                      )}
+                    </div>
+
+                    {post.tags && post.tags.length > 0 && (
+                      <div class="post-tags">
+                        {post.tags.map((tag) => (
+                          <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
                 ) : (
-                  // Full post card
+                  // Full post card (article / thought)
                   <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.post_type}>
                     <time
                       datetime={new Date(post.publish_date).toISOString()}
@@ -209,7 +323,7 @@ const jsonLd = {
                     </time>
 
                     <h2 class="post-title">
-                      {post.has_detail_page !== false ? (
+                      {(post as any).has_detail_page !== false ? (
                         <a
                           href={`/blog/${post.slug}`}
                           class="post-title-link"
@@ -222,24 +336,25 @@ const jsonLd = {
                     </h2>
 
                     {/* Hero image/video */}
-                    {post.image && (
+                    {'image' in post && (post as any).image && (
                       <div class="post-hero-image">
                         {(() => {
-                          const isVideo = post.image.type === 'video';
-                          const linkHref = post.image.link || (post.has_detail_page !== false ? `/blog/${post.slug}` : null);
-                          const isExternal = post.image.link?.startsWith('http');
+                          const img = (post as any).image;
+                          const isVideo = img.type === 'video';
+                          const linkHref = img.link || ((post as any).has_detail_page !== false ? `/blog/${post.slug}` : null);
+                          const isExternal = img.link?.startsWith('http');
 
                           const media = isVideo ? (
                             <Video
-                              src={post.image.src}
-                              fallbackSrc={post.image.fallbackSrc}
-                              poster={post.image.poster}
+                              src={img.src}
+                              fallbackSrc={img.fallbackSrc}
+                              poster={img.poster}
                               controls={false}
                             />
                           ) : (
                             <img
-                              src={post.image.src}
-                              alt={post.image.alt}
+                              src={img.src}
+                              alt={img.alt}
                               loading="lazy"
                             />
                           );
@@ -257,29 +372,31 @@ const jsonLd = {
                       </div>
                     )}
 
-                    <p class="post-description">
-                      {post.description}
-                    </p>
+                    {'description' in post && (post as any).description && (
+                      <p class="post-description">
+                        {(post as any).description}
+                      </p>
+                    )}
 
-                    {/* Render excerpt or full content preview */}
-                    {post.excerpt && post.has_detail_page !== false ? (
-                      <div class="post-excerpt-preview" set:html={post.excerpt} />
+                    {/* Render excerpt or full content preview (blog posts only) */}
+                    {'excerpt' in post && (post as any).excerpt && (post as any).has_detail_page !== false ? (
+                      <div class="post-excerpt-preview" set:html={(post as any).excerpt} />
                     ) : (
-                      <div class:list={['post-content-preview', { 'full-content': post.has_detail_page === false }]}
-                        set:html={marked.parse(post.body_markdown ?? '')}
+                      <div class:list={['post-content-preview', { 'full-content': (post as any).has_detail_page === false }]}
+                        set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}
                       />
                     )}
 
                     {/* Link collection display for inline posts (legacy thoughts with links) */}
-                    {post.has_detail_page === false && post.links && post.links.length > 0 && (
+                    {(post as any).has_detail_page === false && 'links' in post && (post as any).links && (post as any).links.length > 0 && (
                       <div class="post-links-section">
                         <div class="post-links-header">
                           <h3 class="post-links-title">Links from this collection</h3>
-                          <span class="post-links-count">{post.links.length} link{post.links.length !== 1 ? 's' : ''}</span>
+                          <span class="post-links-count">{(post as any).links.length} link{(post as any).links.length !== 1 ? 's' : ''}</span>
                         </div>
 
                         <div class="post-links-grid">
-                          {post.links.map((link) => (
+                          {(post as any).links.map((link: any) => (
                             <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                           ))}
                         </div>
@@ -294,15 +411,15 @@ const jsonLd = {
                       </div>
                     )}
 
-                    {(post.reading_time || post.has_detail_page !== false) && (
+                    {('reading_time' in post && (post as any).reading_time || (post as any).has_detail_page !== false) && (
                       <div class="post-meta">
-                        {post.reading_time && (
-                          <span class="post-reading-time">{post.reading_time} min read</span>
+                        {'reading_time' in post && (post as any).reading_time && (
+                          <span class="post-reading-time">{(post as any).reading_time} min read</span>
                         )}
 
-                        {post.has_detail_page !== false && (
+                        {(post as any).has_detail_page !== false && (
                           <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                            {post.excerpt ? 'Read the full story →' : 'Continue reading →'}
+                            {'excerpt' in post && (post as any).excerpt ? 'Read the full story →' : 'Continue reading →'}
                           </Button>
                         )}
                       </div>
@@ -392,6 +509,9 @@ const jsonLd = {
     </div>
   </main>
 
+  <!-- Image Gallery Lightbox -->
+  <ImageGallery />
+
   <!-- Theme Modal -->
   <ThemeModal />
 
@@ -403,6 +523,21 @@ const jsonLd = {
 
   <!-- Performance Optimization and Monitoring -->
   <PerformanceOptimizer />
+
+  <script>
+    // Wire up nature photo grids to the image gallery lightbox
+    document.querySelectorAll('.nature-photo-grid').forEach((grid) => {
+      const urls = JSON.parse((grid as HTMLElement).dataset.galleryUrls || '[]');
+      const images = urls.map((url: string) => ({ src: url, alt: 'iNaturalist observation', caption: '' }));
+      grid.querySelectorAll('.nature-photo').forEach((img) => {
+        (img as HTMLElement).style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+          const idx = parseInt((img as HTMLElement).dataset.galleryIndex || '0', 10);
+          (window as any).openGallery?.(images, idx);
+        });
+      });
+    });
+  </script>
 
   <!-- Theme toggle button -->
   <Button
@@ -611,6 +746,7 @@ const jsonLd = {
   .featured-posts {
     display: grid;
     gap: var(--space-3xl);
+    min-width: 0;
   }
 
   .featured-post-card {
@@ -619,6 +755,7 @@ const jsonLd = {
     gap: var(--space-lg);
     transform: var(--rotation-sm);
     padding: var(--space-2xl);
+    min-width: 0;
   }
 
   .featured-post-card:nth-child(even) {
@@ -1185,6 +1322,232 @@ const jsonLd = {
     .section-heading {
       font-size: var(--heading-md);
     }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Gateway cards — Spotify & iNaturalist                              */
+  /* ------------------------------------------------------------------ */
+
+  .gateway-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .gateway-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .gateway-card-icon {
+    font-size: var(--text-xl);
+    line-height: 1;
+  }
+
+  .gateway-place {
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .gateway-permalink {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: var(--space-xs) var(--space-sm);
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-sm);
+    transition: all var(--duration-base) var(--ease-out);
+    flex-shrink: 0;
+  }
+
+  .gateway-permalink:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  /* Spotify */
+  .spotify-dump-card {
+    border-left: 3px solid #1db954;
+    min-width: 0;
+    max-width: 100%;
+    contain: layout;
+  }
+
+  .spotify-track-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--border-radius);
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 360px;
+    margin: var(--space-lg) 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+  }
+
+  .spotify-track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
+    transition: background var(--duration-base) var(--ease-out);
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .spotify-track:last-child {
+    border-bottom: none;
+  }
+
+  .spotify-track:hover {
+    background: var(--bg-secondary);
+  }
+
+  .track-album-art {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+  }
+
+  .track-num {
+    font-family: var(--font-family);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    width: 1.5rem;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .track-name {
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  .track-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .track-link:hover {
+    color: #1db954;
+    text-decoration: underline;
+  }
+
+  .track-artist {
+    font-family: var(--font-family);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  /* iNaturalist */
+  .nature-outing-card {
+    border-left: 3px solid #74ac00;
+  }
+
+  .nature-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin: var(--space-lg) 0;
+  }
+
+  @media (min-width: 600px) {
+    .nature-photo-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .nature-photo {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-sm);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  .nature-photo:hover {
+    transform: scale(1.03);
+  }
+
+  .species-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: var(--space-lg) 0 var(--space-md);
+  }
+
+  .species-chip {
+    font-family: var(--font-family);
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid #74ac00;
+    border-radius: var(--radius-full);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .species-overflow {
+    font-family: var(--font-family);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: var(--space-xs) var(--space-sm);
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--radius-full);
+  }
+
+  .species-overflow:hover {
+    color: #74ac00;
+    border-color: #74ac00;
+  }
+
+  .nature-outing-stats {
+    display: flex;
+    gap: var(--space-xl);
+    font-family: var(--font-family);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: var(--space-md) 0 var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .outing-stat strong {
+    color: var(--text-primary);
+    font-weight: var(--font-bold);
   }
 
   /* Theme toggle button */
