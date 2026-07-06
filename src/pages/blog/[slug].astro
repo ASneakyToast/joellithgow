@@ -141,13 +141,13 @@ const breadcrumbSchema = {
                 </time>
               </div>
               <h1 class="article-title" data-cms-field="title">🎵 {spotifyDump.title}</h1>
-              {spotifyDump.description && <p class="article-description">{spotifyDump.description}</p>}
+              {spotifyDump.description && <p class="article-description" data-cms-field="description">{spotifyDump.description}</p>}
               <div class="article-meta">
                 <div class="author-info">
                   <span>{spotifyDump.song_count ?? spotifyDump.songs?.length ?? 0} tracks</span>
                 </div>
                 {tags && tags.length > 0 && (
-                  <div class="article-tags">
+                  <div class="article-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}
@@ -189,7 +189,7 @@ const breadcrumbSchema = {
                 </time>
               </div>
               <h1 class="article-title" data-cms-field="title">🌿 {natureOuting.title}</h1>
-              {natureOuting.description && <p class="article-description">{natureOuting.description}</p>}
+              {natureOuting.description && <p class="article-description" data-cms-field="description">{natureOuting.description}</p>}
               <div class="article-meta">
                 <div class="author-info">
                   <span>{natureOuting.observation_count ?? natureOuting.observations?.length ?? 0} observations</span>
@@ -197,7 +197,7 @@ const breadcrumbSchema = {
                   {natureOuting.place_guess && <span> · 📍 {natureOuting.place_guess}</span>}
                 </div>
                 {tags && tags.length > 0 && (
-                  <div class="article-tags">
+                  <div class="article-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}
@@ -251,7 +251,7 @@ const breadcrumbSchema = {
             {/* Collection header - matches tag/links page style */}
             <header class="collection-header">
               <h1 class="collection-title" data-cms-field="title">{title}</h1>
-              <p class="collection-description">{description}</p>
+              <p class="collection-description" data-cms-field="description">{description}</p>
               <div class="collection-stats">
                 <div class="stat-item">
                   <span class="stat-number">{links?.length || 0}</span>
@@ -277,7 +277,7 @@ const breadcrumbSchema = {
             {hasContent && (
               <section class="collection-content-section">
                 <Card variant="flat" as="article" class="collection-content-card">
-                  <div class="collection-intro" data-cms-field="body_markdown" set:html={marked.parse(post.body_markdown ?? '')}></div>
+                  <div class="collection-intro" data-cms-field="body_markdown" data-cms-field-type="markdown" set:html={marked.parse(post.body_markdown ?? '')}></div>
                 </Card>
               </section>
             )}
@@ -302,7 +302,7 @@ const breadcrumbSchema = {
           <article class="blog-article">
             {/* Hero-style header with featured image/video */}
             {image && (
-              <div class="article-hero">
+              <div class="article-hero" data-cms-field="image">
                 {image.type === 'video' ? (
                   <video autoplay loop muted playsinline class="hero-image">
                     <source src={image.src} type="video/webm" />
@@ -334,7 +334,7 @@ const breadcrumbSchema = {
 
               <h1 class="article-title" data-cms-field="title">{title}</h1>
 
-              <p class="article-description">
+              <p class="article-description" data-cms-field="description">
                 {description}
               </p>
 
@@ -347,7 +347,7 @@ const breadcrumbSchema = {
                 </div>
 
                 {tags && tags.length > 0 && (
-                  <div class="article-tags">
+                  <div class="article-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}
@@ -357,7 +357,7 @@ const breadcrumbSchema = {
             </header>
 
             {/* Article content */}
-            <div class="article-content" data-cms-field="body_markdown" set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}></div>
+            <div class="article-content" data-cms-field="body_markdown" data-cms-field-type="markdown" set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}></div>
 
             {/* Link collection display (for non-collections with links) */}
             {links && links.length > 0 && (
@@ -405,7 +405,7 @@ const breadcrumbSchema = {
               {tags && tags.length > 0 && (
                 <div class="meta-item">
                   <span class="meta-label">Tags</span>
-                  <div class="meta-tags">
+                  <div class="meta-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}

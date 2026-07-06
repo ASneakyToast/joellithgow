@@ -128,6 +128,8 @@ const {
     <script
       src={`${import.meta.env.PUBLIC_CMS_BASE}/editor/embed.js`}
       data-cms-base={import.meta.env.PUBLIC_CMS_BASE}
+      data-cms-media-base={import.meta.env.PUBLIC_MEDIA_BASE}
+      data-reload-url={import.meta.env.DEV ? `${Astro.url.origin}/__cms-reload` : undefined}
       is:inline
     />
   )}
