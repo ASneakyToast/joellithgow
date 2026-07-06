@@ -12,16 +12,18 @@ Personal portfolio site for Joel Lithgow — creative technologist. Built with A
 │  Astro SSG — fetches content from CMS at build   │
 └────────────────────┬────────────────────────────┘
                      │ ASTRAEUS_URL (build-time)
-┌────────────────────▼────────────────────────────┐
-│  Astraeus CMS (EC2 / Docker)                     │
-│  cms-prod  :8000  ←── nginx → cms.joellithgow.com│
-│  cms-staging :8001 ←─────── local / direct       │
-└─────────────────────────────────────────────────┘
+         ┌───────────┼───────────────┐
+         ▼           ▼               ▼
+    localhost:8001  cms-staging     cms-prod
+    (local dev)     .joellithgow    .joellithgow
+                    .com            .com
+                    (EC2 :8001)     (EC2 :8000)
 ```
 
 - **Frontend**: Astro 5 static site, deployed to Netlify. Fetches all content via Astro Content Layer loaders at build time — no client-side CMS calls.
 - **CMS**: Astraeus (starlette-cms) running in Docker on EC2. Exposes a REST API. Content is published manually via the editor UI or gateway syncs.
 - **Gateways**: Python workers that pull external data (Spotify liked tracks, iNaturalist observations) into the CMS as draft documents for review and publish.
+- **Backups**: Prod DB backed up nightly (2am UTC) to `~/backups/` on EC2 as a gzipped SQLite binary. Local dev and staging restore from this file.
 
 ---
 
@@ -40,6 +42,8 @@ joellithgow/
 ├── nginx/
 │   └── cms.conf                # Nginx reverse proxy for prod + staging subdomains
 ├── scripts/
+│   ├── backup-prod-db.sh       # EC2: backup prod container → ~/backups/latest.db.gz
+│   ├── restore-db.sh           # EC2: restore .db.gz into a named container
 │   ├── backfill_slugs.py       # One-time migration helper
 │   └── sync-starlette-cms.sh   # Dev helper: sync local astraeus package
 ├── src/
@@ -54,7 +58,9 @@ joellithgow/
 │   ├── pages/                  # Route pages
 │   └── styles/                 # Global CSS + theme system
 ├── Dockerfile                  # CMS image (uv + starlette-cms workspace)
-├── docker-compose.yml          # cms-prod (:8000) + cms-staging (:8001)
+├── docker-compose.yml          # EC2: cms-prod (:8000) + cms-staging (:8001)
+├── docker-compose.local.yml    # Local dev: cms-local (:8001)
+├── Makefile                    # Dev/ops commands — start here
 ├── piccolo_conf.py             # Piccolo ORM config for SQLite migrations
 ├── pyproject.toml              # Python project manifest (uv workspace member)
 └── .env.example                # Required environment variables
@@ -66,35 +72,41 @@ joellithgow/
 
 ### Prerequisites
 
-- Node.js 18+
+- [Bun](https://bun.sh)
 - Docker and Docker Compose
 - The [astraeus](https://github.com/ASneakyToast/astraeus) monorepo checked out as a sibling directory (`../astraeus/`)
 
-### Start the CMS
+### First-time setup
 
 ```bash
 cp .env.example .env
-# Fill in CMS_API_KEY and CMS_STAGING_API_KEY
+# .env is pre-configured for local dev — no changes needed to get started
 
-docker compose up -d
-# cms-staging available at http://localhost:8001
+bun install
 ```
 
-### Start the Astro frontend
+### Daily workflow
 
 ```bash
-npm install
-npm run dev
-# Frontend available at http://localhost:4321
-# Set ASTRAEUS_URL=http://localhost:8001 and ASTRAEUS_API_KEY=<staging key> in .env
+make db-sync   # pull latest prod backup from EC2 → restore local CMS
+               # skip this if you synced recently and don't need fresh content
+
+make dev       # start local CMS (http://localhost:8001) + Astro HMR (http://localhost:4321)
 ```
 
-### Seed content (first time only)
+`make dev` starts both processes together. If you want them separately:
 
 ```bash
-uv run python -m cms.seed \
-  --cms-url http://localhost:8001 \
-  --api-key <CMS_STAGING_API_KEY>
+make cms-up    # CMS only
+bun run dev    # Astro only (requires cms-up to be running)
+```
+
+### Rebuild the CMS image
+
+Only needed after changes to `Dockerfile`, `cms/`, or the astraeus packages:
+
+```bash
+make cms-build
 ```
 
 ---
@@ -112,11 +124,45 @@ Gateway-sourced content (Spotify dumps, iNat outings) lives in the CMS as additi
 
 ---
 
+## Operations
+
+All ops commands run through `make`. Run `make help` to see the full list.
+
+### Backups
+
+Prod DB is backed up nightly at 2am UTC to `~/backups/` on EC2 as `latest.db.gz` (gzipped SQLite binary). To trigger a backup immediately:
+
+```bash
+make backup
+```
+
+### Syncing environments
+
+```bash
+make db-sync          # EC2 latest backup → local dev container
+make staging-restore  # EC2 latest backup → staging container + restart
+make staging-restart  # restart staging container only (no DB change)
+```
+
+To get staging/local in sync with prod *right now*: run `make backup` first, then the restore command.
+
+### SSH access
+
+```bash
+make ssh   # → ssh joellithgow-cms
+```
+
+### Cron (already installed)
+
+Nightly backup cron is installed on EC2 (`crontab -l` to verify). To reinstall: `make cron-install`.
+
+---
+
 ## Deployment
 
-The CMS runs on EC2 behind Nginx. See `cms/README.md` for full deployment instructions.
+The CMS runs on EC2 behind Nginx. See `nginx/cms.conf` for the reverse proxy config and `cms/README.md` for full deployment instructions.
 
-The Astro frontend deploys automatically to Netlify on push to `main`. The build requires `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` set in the Netlify environment variables dashboard.
+The Astro frontend deploys automatically to Netlify on push to `main`. The build requires `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` set in Netlify environment variables.
 
 ---
 
