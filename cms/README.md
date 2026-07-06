@@ -14,22 +14,27 @@ The `applications` collection remains file-based (local MDX) and is not served t
 
 ## Local development
 
+> **TL;DR** — use `make dev` from the repo root. See the root `README.md` for the full workflow.
+
 ### Prerequisites
 
 - Docker and Docker Compose
-- Python 3.11+ (for the seed script)
+- [Bun](https://bun.sh) (for the Astro frontend)
 
-### Start the CMS
+### Start everything
 
 ```bash
-docker compose up -d
+# From repo root:
+make db-sync   # pull latest prod backup from EC2 (first time / when you need fresh content)
+make dev       # start local CMS + Astro HMR
 ```
 
-The CMS will be available at `http://localhost:8000`.
+The local CMS runs at `http://localhost:8001` via `docker-compose.local.yml`.  
+The Astro frontend at `http://localhost:4321` points at it automatically.
 
 ### Environment variables
 
-Copy `.env.example` to `.env` and fill in values:
+Copy `.env.example` to `.env` from the repo root — it's pre-configured for local dev:
 
 ```bash
 cp .env.example .env
@@ -39,10 +44,11 @@ Key variables:
 
 | Variable | Description |
 |---|---|
-| `CMS_API_KEY` | API key for the production CMS instance (`cms-prod`, port 8000) |
-| `CMS_STAGING_API_KEY` | API key for the staging CMS instance (`cms-staging`, port 8001) |
-| `ASTRAEUS_URL` | CMS base URL used by the Astro frontend at build time (e.g. `http://localhost:8000`) |
-| `ASTRAEUS_API_KEY` | API key used by the Astro frontend at build time — matches `CMS_API_KEY` for prod |
+| `ASTRAEUS_URL` | CMS URL for the Astro frontend. Default: `http://localhost:8001` |
+| `ASTRAEUS_API_KEY` | API key for the Astro frontend. Default: `local-secret` |
+| `CMS_LOCAL_API_KEY` | API key for `cms-local` container. Default: `local-secret` |
+| `CMS_API_KEY` | API key for the EC2 prod instance (`cms-prod`) |
+| `CMS_STAGING_API_KEY` | API key for the EC2 staging instance (`cms-staging`) |
 | `DATABASE_URL` | SQLite path — set automatically by Docker Compose |
 
 ---
@@ -85,19 +91,19 @@ After seeding, confirm documents are present via the API:
 
 ```bash
 # List all projects
-curl -s http://localhost:8000/api/projects \
+curl -s http://localhost:8001/api/projects \
   -H "Authorization: Bearer $ASTRAEUS_API_KEY" | jq '.data | length'
 
 # Fetch a single document by slug
-curl -s http://localhost:8000/api/projects/your-slug \
+curl -s http://localhost:8001/api/projects/your-slug \
   -H "Authorization: Bearer $ASTRAEUS_API_KEY" | jq .
 
 # List blog posts
-curl -s http://localhost:8000/api/blog \
+curl -s http://localhost:8001/api/blog \
   -H "Authorization: Bearer $ASTRAEUS_API_KEY" | jq '.[].title'
 
 # List experience entries
-curl -s http://localhost:8000/api/experience \
+curl -s http://localhost:8001/api/experience \
   -H "Authorization: Bearer $ASTRAEUS_API_KEY" | jq '.[].company'
 ```
 
@@ -112,7 +118,7 @@ To trigger a Netlify build when content is published in Astraeus:
 2. In the Astraeus admin panel (or via API), register the webhook:
 
 ```bash
-curl -X POST http://localhost:8000/api/webhooks \
+curl -X POST http://localhost:8001/api/webhooks \
   -H "Authorization: Bearer $ASTRAEUS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -129,26 +135,18 @@ The build environment variables `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` must be se
 
 ## Production deployment
 
-### EC2 (recommended for low traffic)
-
-1. Provision a t3.small or larger instance running Ubuntu 22.04.
-2. Install Docker and Docker Compose.
-3. Clone this repository and `cd cms`.
-4. Copy `.env.example` to `.env` and set production values.
-5. Run `docker compose -f docker-compose.prod.yml up -d`.
-6. Point a subdomain (e.g. `cms.joellithgow.com`) at the instance and terminate TLS at nginx or via Caddy.
-
-### GCP Cloud Run (serverless option)
-
-1. Build and push the image to Artifact Registry:
+The CMS runs on EC2 behind Nginx. Both `cms-prod` (port 8000) and `cms-staging` (port 8001) are defined in `docker-compose.yml` and managed via `make` from the repo root.
 
 ```bash
-docker build -t gcr.io/YOUR_PROJECT/astraeus-cms .
-docker push gcr.io/YOUR_PROJECT/astraeus-cms
+make ssh              # SSH into EC2
+make staging-restart  # restart staging container
+make staging-restore  # restore latest backup into staging
+make backup           # trigger a prod backup right now
 ```
 
-2. Deploy to Cloud Run with a Cloud SQL Postgres instance as the database backend.
-3. Set `ASTRAEUS_URL` in Netlify to the Cloud Run service URL.
+Nginx config: `nginx/cms.conf`. SSL provisioned via Let's Encrypt (`/ssl-setup`).
+
+Nightly prod backups run at 2am UTC via cron (`make cron-install` to set up).
 
 ---
 
@@ -165,7 +163,7 @@ Gateways are Python workers that pull external data into the CMS as draft docume
 
 ### Running a sync
 
-1. Start the staging CMS: `docker compose up -d cms-staging`
+1. Start the local CMS: `make cms-up` (from repo root)
 2. Open the gateway admin UI: `http://localhost:8001/gateways/shell`
 3. Click **Sync now** for the gateway you want to run
 4. Review the created draft documents at `http://localhost:8001/editor`
