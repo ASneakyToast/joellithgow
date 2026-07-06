@@ -24,6 +24,20 @@ export default defineConfig({
   },
   compressHTML: true,
   vite: {
+    plugins: [
+      // In dev mode, expose /__cms-reload so the local CMS webhook can trigger
+      // a full-page reload after a publish (content layer re-runs on next request).
+      {
+        name: 'cms-reload',
+        configureServer(server) {
+          server.middlewares.use('/__cms-reload', (_req, res) => {
+            server.ws.send({ type: 'full-reload' });
+            res.writeHead(204);
+            res.end();
+          });
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
