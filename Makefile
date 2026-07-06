@@ -59,7 +59,7 @@ cms-webhook-local:
 	@curl -sf -X POST http://localhost:8001/api/webhooks \
 		-H "Authorization: Bearer local-secret" \
 		-H "Content-Type: application/json" \
-		-d '{"url":"http://localhost:4321/__cms-reload","events":["document.published","changeset.published"]}' \
+		-d '{"url":"http://localhost:4322/__cms-reload","events":["document.published","changeset.published"]}' \
 		| grep -q '"active":true' && echo "✅ Local reload webhook registered" \
 		|| echo "⚠️  Already registered or CMS not running"
 
