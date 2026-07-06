@@ -24,6 +24,10 @@ services:
       - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
       - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
       - SPOTIPY_REFRESH_TOKEN=${SPOTIPY_REFRESH_TOKEN}
+      # Inline editor session auth — set CMS_SESSION_SECRET + CMS_ADMIN_USERS in .env for real creds
+      # Default local dev values: user=joel password=admin
+      - CMS_SESSION_SECRET=${CMS_SESSION_SECRET:-b5e51d3bc4cf77baf73ef30fabdadf74a7252ce7820c473e3dfac4676b675d2c}
+      - CMS_ADMIN_USERS=${CMS_ADMIN_USERS:-{"joel":"$$2b$$12$$GrL0yeSElwUQl1fhzu9RwO4ZhTJSYz30F/CLiJ6iJnHbEv9X4dwk2"}}
 
 volumes:
   cms_data_local:
