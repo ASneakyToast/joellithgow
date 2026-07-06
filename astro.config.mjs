@@ -26,15 +26,18 @@ export default defineConfig({
   compressHTML: true,
   vite: {
     plugins: [
-      // In dev mode, expose /__cms-reload so the local CMS webhook can trigger
-      // a full-page reload after a publish (content layer re-runs on next request).
+      // In dev mode, expose /__cms-reload so the browser can trigger a dev-server
+      // restart after a CMS publish. Restart re-runs the content layer loaders so
+      // the freshly-published data is available when the page reloads.
       {
         name: 'cms-reload',
         configureServer(server) {
           server.middlewares.use('/__cms-reload', (_req, res) => {
-            server.ws.send({ type: 'full-reload' });
             res.writeHead(204);
             res.end();
+            // Restart Vite so Astro re-runs content layer loaders with fresh CMS data.
+            // The browser will reconnect via HMR after the restart.
+            server.restart();
           });
         },
       },
