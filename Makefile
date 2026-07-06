@@ -20,10 +20,11 @@ cms-up:
 cms-down:
 	docker compose -f docker-compose.local.yml down
 
-## Pull the latest backup from EC2 and restore into the local CMS container
+## Pull the latest prod backup from EC2 and restore into the local CMS container
+## Note: prod DB is intentionally empty before launch — use db-sync-staging for content
 .PHONY: db-sync
 db-sync: cms-up
-	@echo "⬇️  Pulling latest backup from $(EC2_HOST)..."
+	@echo "⬇️  Pulling latest prod backup from $(EC2_HOST)..."
 	scp $(EC2_HOST):~/backups/latest.db.gz $(LOCAL_BACKUP)
 	@echo "🔄 Restoring into cms-local..."
 	@CONTAINER=$$(docker compose -f docker-compose.local.yml ps -q cms-local); \
@@ -31,7 +32,41 @@ db-sync: cms-up
 	docker cp /tmp/joellithgow-restore.db $$CONTAINER:/app/joellithgow/cms/data/content.db; \
 	rm -f /tmp/joellithgow-restore.db
 	@docker compose -f docker-compose.local.yml restart cms-local
-	@echo "✅ Local DB restored and cms-local restarted"
+	@make cms-migrate
+	@echo "✅ Local DB restored (prod) and cms-local restarted"
+
+## Pull the live staging DB from EC2 and restore locally — use this to get real content
+.PHONY: db-sync-staging
+db-sync-staging: cms-up
+	@echo "⬇️  Pulling staging DB from $(EC2_HOST)..."
+	@ssh $(EC2_HOST) "docker exec joellithgow-cms-staging-1 cat /app/joellithgow/cms/data/content.db" \
+		| gzip > $(LOCAL_BACKUP)
+	@echo "🔄 Restoring into cms-local..."
+	@CONTAINER=$$(docker compose -f docker-compose.local.yml ps -q cms-local); \
+	gunzip -c $(LOCAL_BACKUP) > /tmp/joellithgow-restore.db; \
+	docker cp /tmp/joellithgow-restore.db $$CONTAINER:/app/joellithgow/cms/data/content.db; \
+	rm -f /tmp/joellithgow-restore.db
+	@docker compose -f docker-compose.local.yml restart cms-local
+	@make cms-migrate
+	@echo "✅ Local DB restored (staging) and cms-local restarted"
+
+## Run pending Piccolo migrations on the local CMS container
+## Fakes migrations for tables that already exist (safe to run on a restored DB)
+.PHONY: cms-migrate
+cms-migrate:
+	@echo "🔄 Running migrations on cms-local..."
+	@CONTAINER=$$(docker compose -f docker-compose.local.yml ps -q cms-local); \
+	docker exec $$CONTAINER sh -c " \
+		uv run piccolo migrations forwards starlette_cms --fake 2>/dev/null | grep -q 'already complete' && \
+		uv run piccolo migrations forwards starlette_cms 2>&1 | grep -v 'already exists' || true \
+	" 2>&1 || \
+	docker exec $$CONTAINER sh -c " \
+		for id in \$$(uv run piccolo migrations check 2>&1 | awk '/False/{print \$$1}'); do \
+			uv run piccolo migrations forwards starlette_cms --migration_id=\$$id --fake 2>/dev/null || \
+			uv run piccolo migrations forwards starlette_cms --migration_id=\$$id 2>/dev/null || true; \
+		done \
+	"
+	@echo "✅ Migrations complete"
 
 ## Rebuild the local CMS Docker image (after Dockerfile or CMS source changes)
 .PHONY: cms-build
@@ -89,7 +124,9 @@ help:
 	@echo "  make dev              Start CMS + Astro HMR"
 	@echo "  make cms-up           Start local CMS only"
 	@echo "  make cms-down         Stop local CMS"
-	@echo "  make db-sync          Pull latest EC2 backup → restore local DB"
+	@echo "  make db-sync          Pull latest prod backup → restore local DB (usually empty)"
+	@echo "  make db-sync-staging  Pull live staging DB → restore local (has real content)"
+	@echo "  make cms-migrate      Run pending migrations on local CMS container"
 	@echo "  make cms-build        Rebuild local CMS image"
 	@echo ""
 	@echo "EC2 / Production"
