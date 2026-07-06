@@ -94,7 +94,7 @@ const breadcrumbSchema = {
             <a href="/work" class="breadcrumb-link">Portfolio</a>
           </li>
           <li class="breadcrumb-separator" aria-hidden="true">/</li>
-          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+          <li class="breadcrumb-item breadcrumb-current" aria-current="page" data-cms-field="title">
             {project.title}
           </li>
         </ol>
@@ -102,8 +102,12 @@ const breadcrumbSchema = {
     </header>
 
     {/* Body Blocks Content */}
-    <article class="article">
-      <div class="case-study-content">
+    <article
+      class="article"
+      data-cms-id={project._id}
+      data-cms-type="project_page"
+    >
+      <div class="case-study-content" data-cms-field="body_blocks">
         {project.body_blocks?.map((block) => (
           <>
             {block.block_type === 'case_study_hero' && (
