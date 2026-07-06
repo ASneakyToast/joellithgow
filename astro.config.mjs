@@ -7,6 +7,7 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   output: 'static',
   site: 'https://joellithgow.com',
+  server: { port: 4322 },
   integrations: [sitemap(), mdx()],
   build: {
     assets: 'assets',
