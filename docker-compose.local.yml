@@ -28,6 +28,8 @@ services:
       # Default local dev values: user=joel password=admin
       - CMS_SESSION_SECRET=${CMS_SESSION_SECRET:-b5e51d3bc4cf77baf73ef30fabdadf74a7252ce7820c473e3dfac4676b675d2c}
       - CMS_ADMIN_USERS=${CMS_ADMIN_USERS:-{"joel":"$$2b$$12$$GrL0yeSElwUQl1fhzu9RwO4ZhTJSYz30F/CLiJ6iJnHbEv9X4dwk2"}}
+      # CORS origins for the embed script — covers both common Astro dev ports
+      - CMS_CORS_ORIGINS=${CMS_CORS_ORIGINS:-http://localhost:4321,http://localhost:4322,http://localhost:4323}
 
 volumes:
   cms_data_local:

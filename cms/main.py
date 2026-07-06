@@ -24,6 +24,12 @@ SESSION_SECRET = os.environ.get("CMS_SESSION_SECRET")
 _admin_users_raw = os.environ.get("CMS_ADMIN_USERS")
 ADMIN_USERS: dict[str, str] | None = json.loads(_admin_users_raw) if _admin_users_raw else None
 
+# CORS origins for the inline editor embed script.
+# Allows the Astro site to make credentialed cross-origin requests to the CMS.
+# CMS_CORS_ORIGINS: comma-separated list, e.g. "http://localhost:4321,https://joellithgow.com"
+_cors_raw = os.environ.get("CMS_CORS_ORIGINS", "")
+CORS_ORIGINS: list[str] = [o.strip() for o in _cors_raw.split(",") if o.strip()]
+
 cms = CMS(
     database_url=DATABASE_URL,
     auth="apikey",
@@ -32,6 +38,7 @@ cms = CMS(
     mount_path="/",
     session_secret=SESSION_SECRET,
     admin_users=ADMIN_USERS,
+    cors_origins=CORS_ORIGINS,
 )
 
 register_documents(cms)
