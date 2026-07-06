@@ -33,6 +33,7 @@ db-sync: cms-up
 	rm -f /tmp/joellithgow-restore.db
 	@docker compose -f docker-compose.local.yml restart cms-local
 	@make cms-migrate
+	@make cms-webhook-local
 	@echo "✅ Local DB restored (prod) and cms-local restarted"
 
 ## Pull the live staging DB from EC2 and restore locally — use this to get real content
@@ -48,7 +49,19 @@ db-sync-staging: cms-up
 	rm -f /tmp/joellithgow-restore.db
 	@docker compose -f docker-compose.local.yml restart cms-local
 	@make cms-migrate
+	@make cms-webhook-local
 	@echo "✅ Local DB restored (staging) and cms-local restarted"
+
+## Register the local dev reload webhook on the local CMS (re-run after db-sync wipes it)
+## Enables: publish in inline editor → browser auto-reloads at localhost:4321
+.PHONY: cms-webhook-local
+cms-webhook-local:
+	@curl -sf -X POST http://localhost:8001/api/webhooks \
+		-H "Authorization: Bearer local-secret" \
+		-H "Content-Type: application/json" \
+		-d '{"url":"http://localhost:4321/__cms-reload","events":["document.published","changeset.published"]}' \
+		| grep -q '"active":true' && echo "✅ Local reload webhook registered" \
+		|| echo "⚠️  Already registered or CMS not running"
 
 ## Run pending Piccolo migrations on the local CMS container
 ## Fakes migrations for tables that already exist (safe to run on a restored DB)
@@ -128,6 +141,7 @@ help:
 	@echo "  make db-sync-staging  Pull live staging DB → restore local (has real content)"
 	@echo "  make cms-migrate      Run pending migrations on local CMS container"
 	@echo "  make cms-build        Rebuild local CMS image"
+	@echo "  make cms-webhook-local  Re-register local reload webhook (auto-runs after db-sync)"
 	@echo ""
 	@echo "EC2 / Production"
 	@echo "  make ssh              SSH into EC2"
