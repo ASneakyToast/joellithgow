@@ -13,6 +13,8 @@ dev: cms-up
 .PHONY: cms-up
 cms-up:
 	docker compose -f docker-compose.local.yml up -d
+	@echo "⏳ Waiting for CMS to be ready..."
+	@until curl -s -o /dev/null http://localhost:8001/ 2>/dev/null; do sleep 0.5; done
 	@echo "✅ CMS local running at http://localhost:8001"
 
 ## Stop the local CMS container
