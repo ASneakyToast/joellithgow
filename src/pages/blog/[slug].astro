@@ -116,7 +116,11 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
-  <main class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': post_type === 'collection' }]}>
+  <main
+    class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': post_type === 'collection' }]}
+    data-cms-id={post._id}
+    data-cms-type="blog_post"
+  >
     <div class:list={['article-wrapper', { 'blog-wrapper': post_type === 'collection' }]}>
       {/* Main content column (for collections) or article (for regular posts) */}
       <div class={post_type === 'collection' ? 'main-content' : ''}>
@@ -136,7 +140,7 @@ const breadcrumbSchema = {
                   {new Date(spotifyDump.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
                 </time>
               </div>
-              <h1 class="article-title">🎵 {spotifyDump.title}</h1>
+              <h1 class="article-title" data-cms-field="title">🎵 {spotifyDump.title}</h1>
               {spotifyDump.description && <p class="article-description">{spotifyDump.description}</p>}
               <div class="article-meta">
                 <div class="author-info">
@@ -184,7 +188,7 @@ const breadcrumbSchema = {
                   {new Date(natureOuting.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </time>
               </div>
-              <h1 class="article-title">🌿 {natureOuting.title}</h1>
+              <h1 class="article-title" data-cms-field="title">🌿 {natureOuting.title}</h1>
               {natureOuting.description && <p class="article-description">{natureOuting.description}</p>}
               <div class="article-meta">
                 <div class="author-info">
@@ -246,7 +250,7 @@ const breadcrumbSchema = {
           <>
             {/* Collection header - matches tag/links page style */}
             <header class="collection-header">
-              <h1 class="collection-title">{title}</h1>
+              <h1 class="collection-title" data-cms-field="title">{title}</h1>
               <p class="collection-description">{description}</p>
               <div class="collection-stats">
                 <div class="stat-item">
@@ -273,7 +277,7 @@ const breadcrumbSchema = {
             {hasContent && (
               <section class="collection-content-section">
                 <Card variant="flat" as="article" class="collection-content-card">
-                  <div class="collection-intro" set:html={marked.parse(post.body_markdown ?? '')}></div>
+                  <div class="collection-intro" data-cms-field="body_markdown" set:html={marked.parse(post.body_markdown ?? '')}></div>
                 </Card>
               </section>
             )}
@@ -328,7 +332,7 @@ const breadcrumbSchema = {
                 </time>
               </div>
 
-              <h1 class="article-title">{title}</h1>
+              <h1 class="article-title" data-cms-field="title">{title}</h1>
 
               <p class="article-description">
                 {description}
@@ -353,7 +357,7 @@ const breadcrumbSchema = {
             </header>
 
             {/* Article content */}
-            <div class="article-content" set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}></div>
+            <div class="article-content" data-cms-field="body_markdown" set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}></div>
 
             {/* Link collection display (for non-collections with links) */}
             {links && links.length > 0 && (
