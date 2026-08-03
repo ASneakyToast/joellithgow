@@ -4,6 +4,12 @@ CMS application entrypoint.
 Wires the CMS instance, registers document types from schema.py,
 and mounts everything under the Starlette app lifespan.
 """
+# Bootstrap OTEL before any Starlette objects are constructed —
+# StarletteInstrumentor patches at import time.
+from astraeus_otel import TelemetryConfig, setup_telemetry
+
+setup_telemetry(TelemetryConfig(service_name="joellithgow-cms"))
+
 import json
 import os
 from starlette.applications import Starlette
