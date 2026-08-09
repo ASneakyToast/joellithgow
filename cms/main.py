@@ -81,6 +81,7 @@ chat = ChatAPI(
     ),
     session_db_url=CHAT_DB_URL,
     session_secret=SESSION_SECRET,  # validates cms_session cookie — no API key in HTML
+    cors_origins=CORS_ORIGINS,      # same origins as the CMS so cross-origin cookie auth works
 )
 
 app = Starlette(
