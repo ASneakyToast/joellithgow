@@ -12,6 +12,7 @@ setup_telemetry(TelemetryConfig(service_name="joellithgow-cms"))
 
 import json
 import os
+from contextlib import asynccontextmanager
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from starlette_cms import CMS
@@ -84,6 +85,14 @@ chat = ChatAPI(
     cors_origins=CORS_ORIGINS,      # same origins as the CMS so cross-origin cookie auth works
 )
 
+@asynccontextmanager
+async def lifespan(app):
+    # Init chat.db tables before the first request
+    if chat._store is not None:
+        await chat._store.init_db()
+    async with cms.lifespan_context(app):
+        yield
+
 app = Starlette(
     routes=[
         Mount("/editor", app=editor.app),
@@ -91,5 +100,5 @@ app = Starlette(
         Mount("/chat", app=chat.app),
         Mount("/", app=cms.app),
     ],
-    lifespan=cms.lifespan,
+    lifespan=lifespan,
 )
