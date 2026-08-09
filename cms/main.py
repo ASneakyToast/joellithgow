@@ -17,7 +17,7 @@ from starlette.routing import Mount
 from starlette_cms import CMS
 from starlette_editor import Editor
 from starlette_cms_gateways.admin import GatewayAdmin
-from starlette_chat import ChatAPI, register_blocks
+from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
 from cms.schema import register_documents
 
@@ -50,7 +50,7 @@ cms = CMS(
 )
 
 register_documents(cms)
-register_blocks(cms)  # chat block types — must come before cms.app is accessed
+register_editorial_blocks(cms)  # system_prompt + model_config only — chat_session/chat_message go to chat.db
 
 editor = Editor(cms=cms)
 gateway_admin = GatewayAdmin(cms=cms)
@@ -62,6 +62,15 @@ _chat_api_key = os.environ.get("OPENAI_API_KEY", "lm-studio")
 _chat_model = os.environ.get("CHAT_MODEL", "local-model")
 _cms_base_url = os.environ.get("CMS_BASE_URL", "http://localhost:8000")
 
+# Separate SQLite DB for chat sessions + messages — keeps runtime state out of
+# the CMS document table (and out of the changeset panel).
+# Note: chat.db is NOT included in the make backup / make db-sync flow; chat
+# history is ephemeral. If persistent history matters later, extend
+# scripts/backup-prod-db.sh to also cp chat.db alongside content.db.
+CHAT_DB_URL = os.environ.get(
+    "CHAT_DB_URL", "sqlite:////app/joellithgow/cms/data/chat.db"
+)
+
 chat = ChatAPI(
     cms_base_url=_cms_base_url,
     cms_api_key=API_KEY,
@@ -70,6 +79,7 @@ chat = ChatAPI(
         api_key=_chat_api_key,
         default_model=_chat_model,
     ),
+    session_db_url=CHAT_DB_URL,
 )
 
 app = Starlette(
