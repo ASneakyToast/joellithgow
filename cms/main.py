@@ -80,6 +80,7 @@ chat = ChatAPI(
         default_model=_chat_model,
     ),
     session_db_url=CHAT_DB_URL,
+    session_secret=SESSION_SECRET,  # validates cms_session cookie — no API key in HTML
 )
 
 app = Starlette(
