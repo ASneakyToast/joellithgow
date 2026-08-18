@@ -32,6 +32,8 @@ starlette_cms_local/
 src/content/blog/
 src/content/experience/
 src/content/projects/
+# Spotipy OAuth token cache — file form (.cache) and dir form (.cache/). Never commit: contains live tokens.
+.cache
 .cache/
 cms/gateways/__pycache__/
 src/*.egg-info/

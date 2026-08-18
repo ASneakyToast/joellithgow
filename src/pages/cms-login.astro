@@ -1,0 +1,23 @@
+---
+/**
+ * Bookmarkable CMS login redirect.
+ *
+ * Visiting /cms-login sends Joel to the CMS login page, with a `next`
+ * param pointing back to the referring page so the embed toolbar lands
+ * on the right document after auth.
+ *
+ * Only works when PUBLIC_CMS_BASE is set in the build environment.
+ * Falls back to the homepage otherwise (e.g. preview builds without the var).
+ */
+
+const cmsBase = import.meta.env.PUBLIC_CMS_BASE;
+
+if (!cmsBase) {
+  return Astro.redirect('/');
+}
+
+const referer = Astro.request.headers.get('referer') || '/';
+const next = encodeURIComponent(referer);
+
+return Astro.redirect(`${cmsBase}/api/auth/login?next=${next}`);
+---

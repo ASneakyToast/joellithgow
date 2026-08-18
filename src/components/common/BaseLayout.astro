@@ -1,10 +1,6 @@
 ---
 import GlobalHeader from './GlobalHeader.astro';
 
-// PUBLIC_CMS_URL is the browser-accessible CMS origin (mirrors ASTRAEUS_URL).
-// Set in .env for local dev; set per Netlify context in netlify.toml for prod/staging.
-const cmsUrl = import.meta.env.PUBLIC_CMS_URL;
-
 export interface Props {
   title?: string;
   description?: string;
@@ -126,9 +122,17 @@ const {
   <!-- RSS Feed -->
   <link rel="alternate" type="application/rss+xml" title="Joel Lithgow's Blog" href="/rss.xml" />
 
-  <!-- Astraeus inline editor — loads only when CMS URL is configured.
-       Checks /api/auth/me at runtime and exits silently for non-editors. -->
-  {cmsUrl && <script is:inline defer src={`${cmsUrl}/editor/embed.js`}></script>}
+  <!-- Astraeus inline editor — loaded only when PUBLIC_CMS_BASE is set.
+       No defer/async: the embed script reads document.currentScript synchronously. -->
+  {import.meta.env.PUBLIC_CMS_BASE && (
+    <script
+      src={`${import.meta.env.PUBLIC_CMS_BASE}/editor/embed.js`}
+      data-cms-base={import.meta.env.PUBLIC_CMS_BASE}
+      data-cms-media-base={import.meta.env.PUBLIC_MEDIA_BASE}
+      data-reload-url={import.meta.env.DEV ? `${Astro.url.origin}/__cms-reload` : undefined}
+      is:inline
+    />
+  )}
 </head>
 <body class={showGlobalHeader ? 'has-global-header' : ''}>
   <!-- Google Tag Manager (noscript) -->
