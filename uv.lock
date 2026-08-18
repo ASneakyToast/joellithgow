@@ -1888,6 +1888,8 @@ openai = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiosqlite", marker = "extra == 'dev'", specifier = ">=0.20" },
+    { name = "aiosqlite", marker = "extra == 'session-db'", specifier = ">=0.20" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27" },
     { name = "langchain-anthropic", marker = "extra == 'anthropic'", specifier = ">=0.3" },
@@ -1904,7 +1906,7 @@ requires-dist = [
     { name = "structlog", specifier = ">=24.0" },
     { name = "websockets", specifier = ">=13.0" },
 ]
-provides-extras = ["anthropic", "openai", "full", "dev"]
+provides-extras = ["anthropic", "openai", "full", "session-db", "dev"]
 
 [[package]]
 name = "starlette-cms"

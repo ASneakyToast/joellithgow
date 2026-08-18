@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -802,6 +803,38 @@ def seed_document(
     return True
 
 
+def seed_chat_config(client: CMSClient) -> None:
+    """Seed the default ModelConfig and SystemPrompt for the chat session."""
+    print("\n=== Chat config ===")
+    seed_document(
+        client, "model_config", "default",
+        {
+            "slug": "default",
+            "persona": "default",
+            "provider": "openai",
+            "model_name": os.environ.get("CHAT_MODEL", "local-model"),
+            "temperature": 1.0,
+            "max_tokens": 4096,
+        },
+        "model_config/default",
+    )
+    seed_document(
+        client, "system_prompt", "default",
+        {
+            "slug": "default",
+            "persona": "default",
+            "content": (
+                "You are an AI editor assistant for Joel Lithgow's personal site. "
+                "You help draft, edit, and improve content. Be concise and direct. "
+                "When editing documents, explain your changes briefly."
+            ),
+            "change_rationale": "Initial default prompt",
+            "authored_by": "joel",
+        },
+        "system_prompt/default",
+    )
+
+
 def run_seed(cms_url: str, api_key: str, update: bool = False) -> None:
     client = CMSClient(cms_url, api_key)
 
@@ -854,10 +887,17 @@ def main() -> None:
     parser.add_argument("--api-key", required=True, help="API key (X-API-Key header)")
     parser.add_argument("--dry-run", action="store_true", help="Parse files but do not make HTTP calls")
     parser.add_argument("--update", action="store_true", help="Patch existing documents instead of skipping them")
+    parser.add_argument("--chat-config", action="store_true", help="Seed ModelConfig + SystemPrompt for AI chat")
     args = parser.parse_args()
 
     if args.dry_run:
         _dry_run()
+        return
+
+    if args.chat_config:
+        client = CMSClient(args.cms_url, args.api_key)
+        seed_chat_config(client)
+        print("\nChat config seed complete.")
         return
 
     run_seed(args.cms_url, args.api_key, update=args.update)

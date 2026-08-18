@@ -70,6 +70,15 @@ cms-migrate:
 	"
 	@echo "✅ Migrations complete"
 
+## Seed ModelConfig + SystemPrompt for AI chat (run once after cms-up)
+.PHONY: chat-seed
+chat-seed:
+	docker exec $$(docker compose -f docker-compose.local.yml ps -q cms-local) \
+		uv run python -m cms.seed \
+		--cms-url http://localhost:8000 \
+		--api-key $${CMS_API_KEY:-local-secret} \
+		--chat-config
+
 ## Rebuild the local CMS Docker image (after Dockerfile or CMS source changes)
 .PHONY: cms-build
 cms-build:
@@ -130,6 +139,7 @@ help:
 	@echo "  make db-sync-staging  Pull live staging DB → restore local (has real content)"
 	@echo "  make cms-migrate      Run pending migrations on local CMS container"
 	@echo "  make cms-build        Rebuild local CMS image"
+	@echo "  make chat-seed        Seed system_prompt + model_config for AI chat (run once)"
 	@echo ""
 	@echo "EC2 / Production"
 	@echo "  make ssh              SSH into EC2"
