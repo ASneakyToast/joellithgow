@@ -1,0 +1,6 @@
+starlette-cms>=0.4.0
+uvicorn[standard]>=0.30.0
+piccolo[sqlite]>=1.0.0
+httpx>=0.27.0
+python-frontmatter>=1.1.0
+markdown>=3.7

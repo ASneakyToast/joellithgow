@@ -1,5 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
+import { marked } from 'marked';
+import { fetchBlogPosts } from '@lib/astraeus';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
@@ -12,43 +13,47 @@ import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 
 export const getStaticPaths = (async () => {
-  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const allPosts = await fetchBlogPosts();
 
   // Get all unique tags from posts
   const allTags = new Set<string>();
   allPosts.forEach((post) => {
-    post.data.tags?.forEach((tag) => allTags.add(tag));
+    post.tags?.forEach((tag) => allTags.add(tag));
   });
 
-  // Also get tags from links
+  // Also get tags from links (blog posts only — new types have no links)
   allPosts.forEach((post) => {
-    post.data.links?.forEach((link) => {
-      link.tags?.forEach((tag: string) => allTags.add(tag));
-    });
+    if ('links' in post) {
+      (post as any).links?.forEach((link: any) => {
+        link.tags?.forEach((tag: string) => allTags.add(tag));
+      });
+    }
   });
 
   // Create a path for each tag
   return Array.from(allTags).map((tag) => {
     const postsWithTag = allPosts
-      .filter((post) => post.data.tags?.includes(tag))
-      .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+      .filter((post) => post.tags?.includes(tag))
+      .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
 
-    // Get all links with this tag
+    // Get all links with this tag (blog posts only — new types have no links)
     const linksWithTag = allPosts
-      .flatMap((post) =>
-        post.data.links
-          ?.filter((link) => link.tags?.includes(tag))
-          .map((link) => ({
+      .flatMap((post) => {
+        if (!('links' in post) || !(post as any).links) return [];
+        return ((post as any).links as any[])
+          .filter((link: any) => link.tags?.includes(tag))
+          .map((link: any) => ({
             ...link,
+            dateAdded: new Date(link.date_added),
             sourcePost: {
-              title: post.data.title,
+              title: post.title,
               slug: post.slug,
-              publishDate: post.data.publishDate,
-              author: post.data.author,
+              publishDate: new Date(post.publish_date),
+              author: ('author' in post && (post as any).author) || undefined,
             },
-          })) || []
-      )
-      .sort((a, b) => new Date(b.dateAdded).valueOf() - new Date(a.dateAdded).valueOf());
+          }));
+      })
+      .sort((a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf());
 
     return {
       params: { tag },
@@ -58,14 +63,6 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { posts, links, tag } = Astro.props;
-
-// Render markdown content for all posts
-const postsWithContent = await Promise.all(
-  posts.map(async (post) => {
-    const { Content } = await post.render();
-    return { post, Content };
-  })
-);
 
 const pageTitle = `Posts tagged "${tag}"`;
 const pageDescription = `All blog posts tagged with ${tag}.`;
@@ -92,13 +89,13 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             {links.length > 0 && <span>{links.length} {links.length === 1 ? 'link' : 'links'}</span>}
           </h2>
           <div class="blog-posts">
-        {postsWithContent.map(({ post, Content }) => (
+        {posts.map((post) => (
           <Card variant="flat" as="article" class="blog-post-card">
             <time
-              datetime={post.data.publishDate.toISOString()}
+              datetime={new Date(post.publish_date).toISOString()}
               class="post-date"
             >
-              {post.data.publishDate.toLocaleDateString('en-US', {
+              {new Date(post.publish_date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -106,51 +103,66 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             </time>
 
             <h2 class="post-title">
-              {post.data.hasDetailPage !== false ? (
+              {(post as any).has_detail_page !== false ? (
                 <a
                   href={`/blog/${post.slug}`}
                   class="post-title-link"
                 >
-                  {post.data.title}
+                  {post.title}
                 </a>
               ) : (
-                <span class="post-title-text">{post.data.title}</span>
+                <span class="post-title-text">{post.title}</span>
               )}
-              {post.data.type === 'collection' && (
+              {post.post_type === 'collection' && (
                 <Badge variant="tertiary" size="sm" class="collection-badge">
-                  {post.data.links?.length || 0} links
+                  {('links' in post && (post as any).links?.length) || 0} links
+                </Badge>
+              )}
+              {post.post_type === 'spotify_dump' && (
+                <Badge variant="tertiary" size="sm" class="collection-badge">
+                  🎵 {(post as any).song_count || 0} tracks
+                </Badge>
+              )}
+              {post.post_type === 'nature_outing' && (
+                <Badge variant="tertiary" size="sm" class="collection-badge">
+                  🌿 {(post as any).observation_count || 0} obs
                 </Badge>
               )}
             </h2>
 
-            <p class="post-description">
-              {post.data.description}
-            </p>
+            {'description' in post && (post as any).description && (
+              <p class="post-description">
+                {(post as any).description}
+              </p>
+            )}
 
-            {/* Render actual content preview */}
-            <div class:list={['post-content-preview', { 'full-content': post.data.hasDetailPage === false }]}>
-              <Content />
-            </div>
+            {/* Render content preview (blog posts only) */}
+            {'body_markdown' in post && (
+              <div
+                class:list={['post-content-preview', { 'full-content': (post as any).has_detail_page === false }]}
+                set:html={marked.parse((post as any).body_markdown ?? '')}
+              />
+            )}
 
             {/* Link collection display for inline posts */}
-            {post.data.hasDetailPage === false && post.data.links && post.data.links.length > 0 && (
+            {'links' in post && (post as any).has_detail_page === false && (post as any).links && (post as any).links.length > 0 && (
               <div class="post-links-section">
                 <div class="post-links-header">
                   <h3 class="post-links-title">Links from this collection</h3>
-                  <span class="post-links-count">{post.data.links.length} link{post.data.links.length !== 1 ? 's' : ''}</span>
+                  <span class="post-links-count">{(post as any).links.length} link{(post as any).links.length !== 1 ? 's' : ''}</span>
                 </div>
 
                 <div class="post-links-grid">
-                  {post.data.links.map((link) => (
-                    <LinkCard link={link} variant="minimal" />
+                  {(post as any).links.map((link: any) => (
+                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
               </div>
             )}
 
-            {post.data.tags && post.data.tags.length > 0 && (
+            {post.tags && post.tags.length > 0 && (
               <div class="post-tags">
-                {post.data.tags.map((postTag) => (
+                {post.tags.map((postTag) => (
                   <Badge
                     href={`/blog/tags/${postTag}`}
                     variant={postTag === tag ? 'default' : 'secondary'}
@@ -163,14 +175,16 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             )}
 
             <div class="post-meta">
-              <span class="post-author">
-                By {post.data.author}
-                {post.data.readingTime && (
-                  <span> • {post.data.readingTime} min read</span>
-                )}
-              </span>
+              {'author' in post && (post as any).author && (
+                <span class="post-author">
+                  By {(post as any).author}
+                  {'reading_time' in post && (post as any).reading_time && (
+                    <span> • {(post as any).reading_time} min read</span>
+                  )}
+                </span>
+              )}
 
-              {post.data.hasDetailPage !== false && (
+              {(post as any).has_detail_page !== false && (
                 <Button href={`/blog/${post.slug}`} variant="primary" size="md">
                   Continue reading →
                 </Button>

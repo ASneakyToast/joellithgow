@@ -1,15 +1,13 @@
 import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
+import { fetchBlogPosts } from '../lib/astraeus';
 import type { APIContext } from 'astro';
 
 export async function GET(context: APIContext) {
-  const blog = await getCollection('blog', ({ data }) => {
-    return !data.draft;
-  });
+  const posts = await fetchBlogPosts();
 
-  // Sort by publish date (newest first)
-  const sortedPosts = blog.sort(
-    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+  // Sort by publish date (newest first) — fetchBlogPosts already sorts but be explicit
+  const sortedPosts = posts.sort(
+    (a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf()
   );
 
   return rss({
@@ -18,11 +16,13 @@ export async function GET(context: APIContext) {
       'Reflections on web development, AI tools, creative projects, and lessons learned along the way.',
     site: context.site || 'https://joellithgow.com',
     items: sortedPosts.map((post) => ({
-      title: post.data.title,
-      description: post.data.description,
-      pubDate: post.data.publishDate,
-      author: post.data.author,
-      categories: post.data.tags || [],
+      title: post.title,
+      // description may be absent on new post types — fall back gracefully
+      description: ('description' in post && (post as any).description) || post.title,
+      pubDate: new Date(post.publish_date),
+      // author only exists on BlogPost
+      author: ('author' in post && (post as any).author) || undefined,
+      categories: post.tags || [],
       link: `/blog/${post.slug}/`,
     })),
     customData: `<language>en-us</language>`,

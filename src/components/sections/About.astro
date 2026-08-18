@@ -1,7 +1,7 @@
 ---
 // About section component - Editorial style matching Projects section
 // Interactive stat cards reveal contextual content in the left panel
-import { getCollection } from 'astro:content';
+import { fetchExperience } from '@lib/astraeus';
 import Badge from '@components/primitives/Badge.astro';
 
 export interface Props {
@@ -31,8 +31,8 @@ const allSkills = [
   'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
 ];
 
-// Get employment history from content collection
-const allExperience = await getCollection('experience');
+// Get employment history from Astraeus CMS
+const allExperience = await fetchExperience();
 
 // Helper to format date range
 function formatDateRange(startDate: string, endDate?: string): string {
@@ -41,18 +41,18 @@ function formatDateRange(startDate: string, endDate?: string): string {
 
 // Filter featured jobs and format for display
 const employment = allExperience
-  .filter(exp => exp.data.featured || exp.data.type === 'full-time')
+  .filter(exp => exp.featured || exp.employment_type === 'full-time')
   .sort((a, b) => {
     // Sort by start year descending (most recent first)
-    const aYear = parseInt(a.data.startDate.split('-')[0]);
-    const bYear = parseInt(b.data.startDate.split('-')[0]);
+    const aYear = parseInt(a.start_date.split('-')[0]);
+    const bYear = parseInt(b.start_date.split('-')[0]);
     return bYear - aYear;
   })
   .slice(0, 3) // Show top 3 most recent
   .map(exp => ({
-    title: exp.data.title,
-    company: exp.data.company,
-    duration: formatDateRange(exp.data.startDate, exp.data.endDate)
+    title: exp.title,
+    company: exp.company,
+    duration: formatDateRange(exp.start_date, exp.end_date)
   }));
 
 // Published projects for the projects panel

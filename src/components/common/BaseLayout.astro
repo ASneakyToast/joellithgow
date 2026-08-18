@@ -121,6 +121,18 @@ const {
 
   <!-- RSS Feed -->
   <link rel="alternate" type="application/rss+xml" title="Joel Lithgow's Blog" href="/rss.xml" />
+
+  <!-- Astraeus inline editor — loaded only when PUBLIC_CMS_BASE is set.
+       No defer/async: the embed script reads document.currentScript synchronously. -->
+  {import.meta.env.PUBLIC_CMS_BASE && (
+    <script
+      src={`${import.meta.env.PUBLIC_CMS_BASE}/editor/embed.js`}
+      data-cms-base={import.meta.env.PUBLIC_CMS_BASE}
+      data-cms-media-base={import.meta.env.PUBLIC_MEDIA_BASE}
+      data-reload-url={import.meta.env.DEV ? `${Astro.url.origin}/__cms-reload` : undefined}
+      is:inline
+    />
+  )}
 </head>
 <body class={showGlobalHeader ? 'has-global-header' : ''}>
   <!-- Google Tag Manager (noscript) -->

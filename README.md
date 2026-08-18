@@ -1,217 +1,182 @@
-# Joel Lithgow Portfolio - Astro.js
+# joellithgow.com
 
-A modern, component-based portfolio website built with **Astro.js**, showcasing creative technology work through interactive components and optimized performance.
-
-## 🚀 Features
-
-- **Modern Astro.js Architecture**: Static site generation with component islands
-- **7 Dynamic Themes**: Electric, Retro, Minimal, System, High-contrast, Neon, and Default  
-- **Responsive Design**: Optimized for all screen sizes with mobile-first approach
-- **Accessibility**: WCAG 2.1 AA compliant with screen reader support
-- **Performance Optimized**: Fast loading with Astro's static generation
-- **Interactive Elements**: Draggable floating elements, smooth scrolling, animations
-- **Component-Based**: Reusable Astro components with separation of concerns
-- **TypeScript Support**: Enhanced development experience with type safety
-
-## 📁 Project Structure
-
-```
-portfolio/
-├── README.md                    # Project documentation
-├── package.json                 # Dependencies and scripts
-├── astro.config.mjs            # Astro configuration
-├── tsconfig.json               # TypeScript configuration
-├── netlify.toml                # Deployment configuration
-├── public/                     # Static assets
-│   └── assets/
-│       └── images/             # Optimized images and media
-├── src/                        # Source code
-│   ├── components/             # Astro components
-│   │   ├── About.astro         # About section component
-│   │   ├── Contact.astro       # Contact section with floating elements
-│   │   ├── Hero.astro          # Hero section with animations
-│   │   ├── Navigation.astro    # Site navigation
-│   │   ├── Projects.astro      # Projects showcase
-│   │   ├── Process.astro       # Process explanation
-│   │   └── *.astro            # Interactive and utility components
-│   ├── content/               # Content collections
-│   │   ├── config.ts          # Content configuration
-│   │   └── projects/          # Project case studies (JSON)
-│   ├── layouts/               # Page layouts
-│   │   └── BaseLayout.astro   # Base page template
-│   ├── pages/                 # Route pages
-│   │   ├── index.astro        # Homepage
-│   │   └── snake.astro        # Snake game easter egg
-│   ├── styles/                # Global styles
-│   │   └── themes.css         # Theme system and CSS variables
-│   └── utils/                 # Utility functions
-│       └── themes.ts          # Theme management utilities
-├── dist/                      # Build output (auto-generated)
-└── archive/                   # Historical project files
-```
-
-## 🎨 Astro.js Migration Benefits
-
-### Before (Legacy Vanilla JS)
-- **Monolithic structure** with large single files
-- **Manual component management** and duplication
-- **Complex build process** with service workers
-- **Limited performance optimization**
-
-### After (Astro.js)
-- **Component-based architecture** with `.astro` files
-- **Static site generation** for optimal performance
-- **Island architecture** for selective hydration
-- **Built-in optimizations** (image optimization, CSS bundling)
-- **Modern developer experience** with TypeScript support
-
-## 🔧 Technical Stack
-
-### Core Technologies
-- **Astro.js 5.12+**: Static site generation framework
-- **TypeScript**: Enhanced development with type safety
-- **CSS Custom Properties**: Theme system with 7 variations
-- **Modern JavaScript**: ES6+ with component islands
-
-### Component Architecture
-- **Hero.astro**: Landing section with floating interactive elements
-- **Projects.astro**: Horizontal scrolling project showcase
-- **Contact.astro**: Contact section with repositioned floating elements
-- **InteractiveElements.astro**: Modals, themes, and dynamic behaviors
-- **UIInteractions.astro**: Scroll animations and hover effects
-
-### Performance Features
-- **Static Generation**: Pre-built pages for fast loading
-- **Component Islands**: Selective JavaScript hydration
-- **Image Optimization**: Built-in asset optimization
-- **CSS Bundling**: Automatic style optimization
-- **Modern Build Pipeline**: Vite-powered development
-
-## 🎯 Key Interactive Features
-
-### Theme System
-- **7 unique themes** with distinct visual personalities
-- **Keyboard shortcut** (Ctrl+T) for quick theme cycling
-- **LocalStorage persistence** remembers user preference
-- **CSS custom properties** for consistent theming
-
-### Floating Elements
-- **Repositioned contact elements** for better visual hierarchy
-- **Draggable interactions** maintained from legacy version
-- **Coffee element** moved to top 20% positioning
-- **Direct child** of contact section for better control
-
-### Navigation & UX
-- **Smooth scrolling** with active state tracking
-- **Accessibility focused** with proper ARIA labels
-- **Mobile responsive** with touch-friendly interactions
-- **Snake game easter egg** accessible via navigation
-
-## 🛠 Development
-
-### Prerequisites
-- **Node.js 18+**
-- **npm** or **yarn**
-
-### Local Development
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run check` - Run TypeScript type checking
-- `netlify deploy --prod --dir=dist` - Deploy to production
-
-## 🚀 Deployment
-
-### Netlify (Recommended)
-The site is configured for automatic deployment on Netlify:
-- **Build command**: `npm run build`
-- **Publish directory**: `dist`
-- **Node version**: 18+
-
-### Manual Deployment
-```bash
-# Build and deploy to Netlify production
-npm run build
-netlify deploy --prod --dir=dist
-
-# Or upload contents of dist/ folder to your hosting provider
-```
-
-## 📊 Performance Metrics
-
-### Astro.js Optimizations
-- **Static HTML generation** for instant loading
-- **Selective hydration** with component islands
-- **Automatic asset optimization** (images, CSS, JS)
-- **Modern browser targets** with fallbacks
-
-### Build Output
-- **Optimized bundles** with code splitting
-- **CSS extraction** and minification
-- **Image processing** with WebP conversion
-- **JavaScript tree shaking** for minimal payload
-
-## 🧩 Component Highlights
-
-### Recent Improvements
-- **Contact floating elements** moved to direct child of contact section
-- **Coffee element positioning** optimized to top 20% for better hierarchy
-- **Component architecture** fully migrated to Astro.js patterns
-- **Build process** streamlined with modern tooling
-
-### Interactive Components
-- **Draggable floating elements** with touch support
-- **Theme selector modal** with live preview
-- **Project case study modals** with detailed information
-- **Snake game integration** as easter egg feature
-
-## 🔍 Architecture Decisions
-
-### Component Organization
-- **Single-file components** with HTML, CSS, and JavaScript
-- **Props-based data flow** for reusable components
-- **Scoped styling** to prevent CSS conflicts
-- **TypeScript integration** for development safety
-
-### Content Management
-- **JSON-based project data** in content collections
-- **Static asset optimization** through Astro pipeline
-- **Theme configuration** via CSS custom properties
-- **Responsive design** with mobile-first approach
-
-## 🌟 Future Enhancements
-
-### Planned Features
-- **Content Management System** integration
-- **Enhanced animations** with view transitions
-- **Progressive Web App** features
-- **Advanced TypeScript** implementation
-- **Performance monitoring** integration
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 🤝 Contributing
-
-Contributions are welcome! The codebase is now fully modernized with Astro.js.
+Personal portfolio site for Joel Lithgow — creative technologist. Built with Astro (SSG) and backed by a self-hosted headless CMS called [Astraeus](https://github.com/ASneakyToast/astraeus).
 
 ---
 
-**Joel Lithgow** - Creative Technologist  
-Portfolio: [joellithgow.com](https://joellithgow.com) | [LinkedIn](https://linkedin.com/in/joellithgow) | [GitHub](https://github.com/joellithgow)
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│  Netlify (static hosting)                        │
+│  Astro SSG — fetches content from CMS at build   │
+└────────────────────┬────────────────────────────┘
+                     │ ASTRAEUS_URL (build-time)
+         ┌───────────┼───────────────┐
+         ▼           ▼               ▼
+    localhost:8001  cms-staging     cms-prod
+    (local dev)     .joellithgow    .joellithgow
+                    .com            .com
+                    (EC2 :8001)     (EC2 :8000)
+```
+
+- **Frontend**: Astro 5 static site, deployed to Netlify. Fetches all content via Astro Content Layer loaders at build time — no client-side CMS calls.
+- **CMS**: Astraeus (starlette-cms) running in Docker on EC2. Exposes a REST API. Content is published manually via the editor UI or gateway syncs.
+- **Gateways**: Python workers that pull external data (Spotify liked tracks, iNaturalist observations) into the CMS as draft documents for review and publish.
+- **Backups**: Prod DB backed up nightly (2am UTC) to `~/backups/` on EC2 as a gzipped SQLite binary. Local dev and staging restore from this file.
+
+---
+
+## Project structure
+
+```
+joellithgow/
+├── cms/                        # Astraeus CMS backend
+│   ├── main.py                 # App entrypoint — wires CMS + editor + gateways
+│   ├── schema.py               # Document type definitions
+│   ├── seed.py                 # One-time seed script (MD/MDX → CMS API)
+│   ├── mcp_server.py           # MCP server for Claude Code sessions
+│   └── gateways/               # External data sync workers
+│       ├── spotify_liked_dump.py
+│       └── inaturalist_field_trips.py
+├── nginx/
+│   └── cms.conf                # Nginx reverse proxy for prod + staging subdomains
+├── scripts/
+│   ├── backup-prod-db.sh       # EC2: backup prod container → ~/backups/latest.db.gz
+│   ├── restore-db.sh           # EC2: restore .db.gz into a named container
+│   ├── backfill_slugs.py       # One-time migration helper
+│   └── sync-starlette-cms.sh   # Dev helper: sync local astraeus package
+├── src/
+│   ├── content/
+│   │   ├── config.ts           # Astro Content Layer collection definitions + Zod schemas
+│   │   └── applications/       # Local MDX (not in CMS — intentional)
+│   ├── lib/
+│   │   ├── astraeus-loader.ts  # Raw HTTP loader (paginated) for Content Layer
+│   │   ├── astraeus-types.ts   # TypeScript interfaces mirroring CMS schemas
+│   │   └── astraeus.ts         # Public API shim — delegates to getCollection()
+│   ├── components/             # Astro UI components
+│   ├── pages/                  # Route pages
+│   └── styles/                 # Global CSS + theme system
+├── Dockerfile                  # CMS image (uv + starlette-cms workspace)
+├── docker-compose.yml          # EC2: cms-prod (:8000) + cms-staging (:8001)
+├── docker-compose.local.yml    # Local dev: cms-local (:8001)
+├── Makefile                    # Dev/ops commands — start here
+├── piccolo_conf.py             # Piccolo ORM config for SQLite migrations
+├── pyproject.toml              # Python project manifest (uv workspace member)
+└── .env.example                # Required environment variables
+```
+
+---
+
+## Local development
+
+### Prerequisites
+
+- [Bun](https://bun.sh)
+- Docker and Docker Compose
+- The [astraeus](https://github.com/ASneakyToast/astraeus) monorepo checked out as a sibling directory (`../astraeus/`)
+
+### First-time setup
+
+```bash
+cp .env.example .env
+# .env is pre-configured for local dev — no changes needed to get started
+
+bun install
+```
+
+### Daily workflow
+
+```bash
+make db-sync   # pull latest prod backup from EC2 → restore local CMS
+               # skip this if you synced recently and don't need fresh content
+
+make dev       # start local CMS (http://localhost:8001) + Astro HMR (http://localhost:4321)
+```
+
+`make dev` starts both processes together. If you want them separately:
+
+```bash
+make cms-up    # CMS only
+bun run dev    # Astro only (requires cms-up to be running)
+```
+
+### Rebuild the CMS image
+
+Only needed after changes to `Dockerfile`, `cms/`, or the astraeus packages:
+
+```bash
+make cms-build
+```
+
+---
+
+## Content collections
+
+| Collection | Source | Notes |
+|---|---|---|
+| `blog` | Astraeus CMS (`blog_post`) | Articles, thoughts, link collections |
+| `projects` | Astraeus CMS (`project_page`) | Case studies with body blocks |
+| `experience` | Astraeus CMS (`experience_entry`) | Work history |
+| `applications` | Local MDX (`src/content/applications/`) | Not in CMS — intentional |
+
+Gateway-sourced content (Spotify dumps, iNat outings) lives in the CMS as additional document types and is merged into the blog index at build time.
+
+---
+
+## Operations
+
+All ops commands run through `make`. Run `make help` to see the full list.
+
+### Backups
+
+Prod DB is backed up nightly at 2am UTC to `~/backups/` on EC2 as `latest.db.gz` (gzipped SQLite binary). To trigger a backup immediately:
+
+```bash
+make backup
+```
+
+### Syncing environments
+
+```bash
+make db-sync          # EC2 latest backup → local dev container
+make staging-restore  # EC2 latest backup → staging container + restart
+make staging-restart  # restart staging container only (no DB change)
+```
+
+To get staging/local in sync with prod *right now*: run `make backup` first, then the restore command.
+
+### SSH access
+
+```bash
+make ssh   # → ssh joellithgow-cms
+```
+
+### Cron (already installed)
+
+Nightly backup cron is installed on EC2 (`crontab -l` to verify). To reinstall: `make cron-install`.
+
+---
+
+## Deployment
+
+The CMS runs on EC2 behind Nginx. See `nginx/cms.conf` for the reverse proxy config and `cms/README.md` for full deployment instructions.
+
+The Astro frontend deploys automatically to Netlify on push to `main`. The build requires `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` set in Netlify environment variables.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Astro 5, TypeScript, CSS custom properties |
+| CMS | Astraeus (starlette-cms), Python 3.12, SQLite |
+| Package manager (Python) | uv |
+| Infrastructure | Docker, Nginx, EC2 |
+| Hosting | Netlify (frontend), EC2 (CMS) |
+| Gateways | Spotipy (Spotify), iNaturalist v1 API |
+
+---
+
+**Joel Lithgow** — [joellithgow.com](https://joellithgow.com) · [LinkedIn](https://linkedin.com/in/joellithgow) · [GitHub](https://github.com/ASneakyToast)

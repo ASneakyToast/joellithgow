@@ -2,18 +2,18 @@
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Card from '@components/primitives/Card.astro';
 import Button from '@components/primitives/Button.astro';
-import { getCollection } from 'astro:content';
+import { fetchProjects } from '@lib/astraeus';
 
 const pageTitle = 'Skills - Joel Lithgow';
 const pageDescription = 'Browse projects by skill and technology';
 
-// Get all projects (exclude drafts)
-const allProjects = await getCollection('projects', ({ data }) => !data.draft);
+// Get all projects (exclude drafts — fetchProjects already filters drafts)
+const allProjects = await fetchProjects();
 
 // Extract and count all tags/skills
 const skillCounts = new Map<string, number>();
 allProjects.forEach((project) => {
-  project.data.tags?.forEach((tag) => {
+  project.tags?.forEach((tag) => {
     skillCounts.set(tag, (skillCounts.get(tag) || 0) + 1);
   });
 });

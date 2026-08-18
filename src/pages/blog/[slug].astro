@@ -1,5 +1,8 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { marked } from 'marked';
+import { fetchBlogPosts } from '@lib/astraeus';
+import type { AstraeusDocument, BlogPost, SpotifyDump, NatureOuting } from '@lib/astraeus-types';
+import type { AnyBlogPost } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -11,25 +14,36 @@ import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog', ({ data }) => {
-    return !data.draft;
-  });
-  
-  return blogEntries.map(entry => ({
-    params: { slug: entry.slug }, 
-    props: { entry },
+  const allPosts = await fetchBlogPosts();
+  // All post types get detail pages (new types always have detail pages)
+  const postsWithDetailPage = allPosts.filter(p => ('has_detail_page' in p ? (p as any).has_detail_page !== false : true));
+
+  return postsWithDetailPage.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
   }));
 }
 
 interface Props {
-  entry: CollectionEntry<'blog'>;
+  post: AnyBlogPost;
 }
 
-const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { post } = Astro.props;
+const post_type = post.post_type;
+const { title, publish_date } = post;
+const description = ('description' in post && (post as any).description) || '';
+const tags = post.tags || [];
+// Fields only on BlogPost
+const author = ('author' in post && (post as any).author) as string | undefined;
+const reading_time = ('reading_time' in post && (post as any).reading_time) as number | undefined;
+const image = ('image' in post && (post as any).image) as AstraeusDocument<BlogPost>['image'] | undefined;
+const links = ('links' in post && (post as any).links) as AstraeusDocument<BlogPost>['links'] | undefined;
+const hasContent = 'body_markdown' in post && (post as any).body_markdown && (post as any).body_markdown.trim().length > 0;
+const publishDate = new Date(publish_date);
 
-const { title, description, publishDate, author, tags, readingTime, image, links, category } = entry.data;
-const hasContent = entry.body && entry.body.trim().length > 0;
+// Typed views for new post types (cast once in frontmatter, not in template)
+const spotifyDump = post_type === 'spotify_dump' ? (post as AstraeusDocument<SpotifyDump> & { post_type: 'spotify_dump' }) : null;
+const natureOuting = post_type === 'nature_outing' ? (post as AstraeusDocument<NatureOuting> & { post_type: 'nature_outing' }) : null;
 
 // JSON-LD structured data for BlogPosting
 const jsonLd = {
@@ -45,10 +59,10 @@ const jsonLd = {
   datePublished: publishDate.toISOString(),
   dateModified: publishDate.toISOString(),
   keywords: tags?.join(', '),
-  url: `https://joellithgow.com/blog/${entry.slug}`,
+  url: `https://joellithgow.com/blog/${post.slug}`,
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://joellithgow.com/blog/${entry.slug}`,
+    '@id': `https://joellithgow.com/blog/${post.slug}`,
   },
   publisher: {
     '@type': 'Person',
@@ -58,7 +72,7 @@ const jsonLd = {
 };
 
 if (image) {
-  jsonLd['image'] = {
+  (jsonLd as Record<string, unknown>)['image'] = {
     '@type': 'ImageObject',
     url: new URL(image.src, Astro.url).href,
     description: image.alt || title,
@@ -102,24 +116,142 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
-  <main class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': entry.data.type === 'collection' }]}>
-    <div class:list={['article-wrapper', { 'blog-wrapper': entry.data.type === 'collection' }]}>
+  <main
+    class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': post_type === 'collection' }]}
+    data-cms-id={post._id}
+    data-cms-type="blog_post"
+  >
+    <div class:list={['article-wrapper', { 'blog-wrapper': post_type === 'collection' }]}>
       {/* Main content column (for collections) or article (for regular posts) */}
-      <div class={entry.data.type === 'collection' ? 'main-content' : ''}>
+      <div class={post_type === 'collection' ? 'main-content' : ''}>
         {/* Back to blog link */}
-        <nav class:list={['article-nav', { 'breadcrumb-nav': entry.data.type === 'collection' }]}>
-          <Button href="/blog" variant={entry.data.type === 'collection' ? 'ghost' : 'secondary'} size={entry.data.type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
-            ← Back to {entry.data.type === 'collection' ? 'Blog' : 'blog'}
+        <nav class:list={['article-nav', { 'breadcrumb-nav': post_type === 'collection' }]}>
+          <Button href="/blog" variant={post_type === 'collection' ? 'ghost' : 'secondary'} size={post_type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
+            ← Back to {post_type === 'collection' ? 'Blog' : 'blog'}
           </Button>
         </nav>
 
-        {/* COLLECTION LAYOUT */}
-        {entry.data.type === 'collection' ? (
+        {/* SPOTIFY DUMP LAYOUT — inside the same .blog-article card as regular posts */}
+        {spotifyDump && (
+          <article class="blog-article">
+            <header class="article-header">
+              <div class="article-meta-top">
+                <time datetime={new Date(spotifyDump.publish_date).toISOString()} class="article-date">
+                  {new Date(spotifyDump.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                </time>
+              </div>
+              <h1 class="article-title" data-cms-field="title">🎵 {spotifyDump.title}</h1>
+              {spotifyDump.description && <p class="article-description" data-cms-field="description">{spotifyDump.description}</p>}
+              <div class="article-meta">
+                <div class="author-info">
+                  <span>{spotifyDump.song_count ?? spotifyDump.songs?.length ?? 0} tracks</span>
+                </div>
+                {tags && tags.length > 0 && (
+                  <div class="article-tags" data-cms-field="tags">
+                    {tags.map((tag) => (
+                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </header>
+
+            {spotifyDump.songs && spotifyDump.songs.length > 0 && (
+              <div class="article-content">
+                <div class="spotify-song-list">
+                  {spotifyDump.songs.map((song) => (
+                    <div class="spotify-song-item">
+                      <div class="song-info">
+                        <a href={song.spotify_url} class="song-title" target="_blank" rel="noopener noreferrer">
+                          {song.track_name}
+                        </a>
+                        <span class="song-artist">{song.artist_name}</span>
+                        {song.album_name && <span class="song-album">{song.album_name}</span>}
+                      </div>
+                      <time class="song-liked-at" datetime={song.liked_at}>
+                        {new Date(song.liked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </time>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        )}
+
+        {/* INATURALIST OUTING LAYOUT — inside the same .blog-article card as regular posts */}
+        {natureOuting && (
+          <article class="blog-article">
+            <header class="article-header">
+              <div class="article-meta-top">
+                <time datetime={new Date(natureOuting.publish_date).toISOString()} class="article-date">
+                  {new Date(natureOuting.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </time>
+              </div>
+              <h1 class="article-title" data-cms-field="title">🌿 {natureOuting.title}</h1>
+              {natureOuting.description && <p class="article-description" data-cms-field="description">{natureOuting.description}</p>}
+              <div class="article-meta">
+                <div class="author-info">
+                  <span>{natureOuting.observation_count ?? natureOuting.observations?.length ?? 0} observations</span>
+                  {natureOuting.species_list && <span> · {natureOuting.species_list.length} species</span>}
+                  {natureOuting.place_guess && <span> · 📍 {natureOuting.place_guess}</span>}
+                </div>
+                {tags && tags.length > 0 && (
+                  <div class="article-tags" data-cms-field="tags">
+                    {tags.map((tag) => (
+                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </header>
+
+            <div class="article-content">
+              {natureOuting.photo_urls && natureOuting.photo_urls.length > 0 && (
+                <section class="nature-photos-section">
+                  <h2>Photos</h2>
+                  <div class="nature-photo-grid">
+                    {natureOuting.photo_urls.slice(0, 12).map((url) => (
+                      <a href={url} target="_blank" rel="noopener noreferrer" class="nature-photo-link">
+                        <img src={url.replace('original', 'medium')} alt="Observation photo" loading="lazy" class="nature-photo" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {natureOuting.species_list && natureOuting.species_list.length > 0 && (
+                <section>
+                  <h2>Species ({natureOuting.species_list.length})</h2>
+                  <ul class="species-list">
+                    {natureOuting.species_list.map((name) => (
+                      <li class="species-item">{name}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {natureOuting.bounding_box && (
+                <section>
+                  <h2>Location</h2>
+                  <p class="bounding-box-info">
+                    Lat {natureOuting.bounding_box.lat_min.toFixed(4)}–{natureOuting.bounding_box.lat_max.toFixed(4)},
+                    Lon {natureOuting.bounding_box.lon_min.toFixed(4)}–{natureOuting.bounding_box.lon_max.toFixed(4)}
+                  </p>
+                </section>
+              )}
+            </div>
+          </article>
+        )}
+
+        {/* COLLECTION / REGULAR ARTICLE LAYOUT */}
+        {/* spotifyDump and natureOuting render their own layouts above — skip entirely for those */}
+        {!spotifyDump && !natureOuting && (post_type === 'collection' ? (
           <>
             {/* Collection header - matches tag/links page style */}
             <header class="collection-header">
-              <h1 class="collection-title">{title}</h1>
-              <p class="collection-description">{description}</p>
+              <h1 class="collection-title" data-cms-field="title">{title}</h1>
+              <p class="collection-description" data-cms-field="description">{description}</p>
               <div class="collection-stats">
                 <div class="stat-item">
                   <span class="stat-number">{links?.length || 0}</span>
@@ -145,9 +277,7 @@ const breadcrumbSchema = {
             {hasContent && (
               <section class="collection-content-section">
                 <Card variant="flat" as="article" class="collection-content-card">
-                  <div class="collection-intro">
-                    <Content />
-                  </div>
+                  <div class="collection-intro" data-cms-field="body_markdown" data-cms-field-type="markdown" set:html={marked.parse(post.body_markdown ?? '')}></div>
                 </Card>
               </section>
             )}
@@ -161,7 +291,7 @@ const breadcrumbSchema = {
                 </h2>
                 <div class="links-grid">
                   {links.map((link) => (
-                    <LinkCard link={link} variant="minimal" />
+                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
               </section>
@@ -172,7 +302,7 @@ const breadcrumbSchema = {
           <article class="blog-article">
             {/* Hero-style header with featured image/video */}
             {image && (
-              <div class="article-hero">
+              <div class="article-hero" data-cms-field="image">
                 {image.type === 'video' ? (
                   <video autoplay loop muted playsinline class="hero-image">
                     <source src={image.src} type="video/webm" />
@@ -202,22 +332,22 @@ const breadcrumbSchema = {
                 </time>
               </div>
 
-              <h1 class="article-title">{title}</h1>
+              <h1 class="article-title" data-cms-field="title">{title}</h1>
 
-              <p class="article-description">
+              <p class="article-description" data-cms-field="description">
                 {description}
               </p>
 
               <div class="article-meta">
                 <div class="author-info">
                   <span>By {author}</span>
-                  {readingTime && (
-                    <span> • {readingTime} min read</span>
+                  {reading_time && (
+                    <span> • {reading_time} min read</span>
                   )}
                 </div>
 
                 {tags && tags.length > 0 && (
-                  <div class="article-tags">
+                  <div class="article-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}
@@ -227,9 +357,7 @@ const breadcrumbSchema = {
             </header>
 
             {/* Article content */}
-            <div class="article-content">
-              <Content />
-            </div>
+            <div class="article-content" data-cms-field="body_markdown" data-cms-field-type="markdown" set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}></div>
 
             {/* Link collection display (for non-collections with links) */}
             {links && links.length > 0 && (
@@ -243,17 +371,17 @@ const breadcrumbSchema = {
 
                 <div class="links-grid">
                   {links.map((link) => (
-                    <LinkCard link={link} variant="minimal" />
+                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
                   ))}
                 </div>
               </section>
             )}
           </article>
-        )}
+        ))}
       </div>
 
       {/* Sidebar for collections */}
-      {entry.data.type === 'collection' && (
+      {post_type === 'collection' && (
         <aside class="sidebar">
           <Card variant="outlined" padding="lg" class="sidebar-widget">
             <h3 class="widget-title">Collection Info</h3>
@@ -277,7 +405,7 @@ const breadcrumbSchema = {
               {tags && tags.length > 0 && (
                 <div class="meta-item">
                   <span class="meta-label">Tags</span>
-                  <div class="meta-tags">
+                  <div class="meta-tags" data-cms-field="tags">
                     {tags.map((tag) => (
                       <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
                     ))}
@@ -290,7 +418,7 @@ const breadcrumbSchema = {
       )}
 
         {/* Footer navigation (only for non-collections) */}
-        {entry.data.type !== 'collection' && (
+        {post_type !== 'collection' && (
           <footer class="article-footer">
             <nav class="footer-nav">
               <Button href="/blog" variant="tertiary" size="md" class="footer-nav-btn footer-nav-back">
@@ -1134,6 +1262,153 @@ const breadcrumbSchema = {
 
   }
 
+  /* ─── Spotify dump ────────────────────────────────────────────────────── */
+  .spotify-song-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .spotify-song-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding: var(--space-md) var(--space-xl);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
+    transition: background var(--duration-base) var(--ease-out);
+  }
+
+  .spotify-song-item:last-child {
+    border-bottom: none;
+  }
+
+  .spotify-song-item:hover {
+    background: var(--gradient-primary-light);
+  }
+
+  .song-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    min-width: 0;
+  }
+
+  .song-title {
+    font-weight: var(--font-semibold);
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: var(--text-base);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  .song-title:hover {
+    text-decoration: underline;
+  }
+
+  .song-artist {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
+
+  .song-album {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .song-liked-at {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ─── iNaturalist outing ───────────────────────────────────────────────── */
+  .nature-photos-section {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .nature-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+  }
+
+  .nature-photo-link {
+    display: block;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    transition: all var(--duration-base) var(--ease-out);
+  }
+
+  .nature-photo-link:hover {
+    border-color: var(--accent-primary);
+    box-shadow: var(--shadow-md) var(--accent-secondary);
+  }
+
+  .nature-photo {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  .nature-photo-link:hover .nature-photo {
+    transform: scale(1.05);
+  }
+
+  /* Override the broad article-content :global(img) rules for photos in the grid */
+  .article-content :global(.nature-photo-link img) {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .article-content :global(.nature-photo-link:hover img) {
+    transform: scale(1.05);
+    box-shadow: none;
+  }
+
+  .species-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+    margin: var(--space-xl) 0 0;
+  }
+
+  .species-item {
+    background: var(--gradient-primary-light);
+    color: var(--text-primary);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--accent-primary);
+    font-size: var(--text-sm);
+  }
+
+  .bounding-box-info {
+    font-family: monospace;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--border-radius);
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    margin-top: var(--space-xl);
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     * {
@@ -1163,4 +1438,3 @@ const breadcrumbSchema = {
     }
   }
 </style>
-

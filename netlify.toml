@@ -9,23 +9,32 @@
   publish = "dist"
 
 [build.environment]
-  # Set the version of Node to use in builds
   NODE_VERSION = "18"
+  # ASTRAEUS_API_KEY is set in the Netlify dashboard per context — not committed
 
-# Production context: all deploys from the Production branch
+# Production context: deploys from main
 [context.production]
   publish = "dist"
   command = "npm run build"
+  [context.production.environment]
+    ASTRAEUS_URL = "https://cms.joellithgow.com"
+    PUBLIC_CMS_BASE = "https://cms.joellithgow.com"
 
-# Deploy Preview context: all deploys generated from a pull/merge request
+# Deploy Preview context: deploys from pull requests
 [context.deploy-preview]
   publish = "dist"
   command = "npm run build"
+  [context.deploy-preview.environment]
+    ASTRAEUS_URL = "https://cms-staging.joellithgow.com"
+    PUBLIC_CMS_BASE = "https://cms-staging.joellithgow.com"
 
-# Branch Deploy context: all deploys that are not from a pull/merge request or from the Production branch
+# Branch Deploy context: deploys from branches (not PRs, not main)
 [context.branch-deploy]
   publish = "dist"
   command = "npm run build"
+  [context.branch-deploy.environment]
+    ASTRAEUS_URL = "https://cms-staging.joellithgow.com"
+    PUBLIC_CMS_BASE = "https://cms-staging.joellithgow.com"
 
 # Security headers for all pages
 [[headers]]
