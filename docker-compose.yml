@@ -13,6 +13,20 @@ services:
       - CMS_API_KEY=${CMS_API_KEY}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+      # Session auth for the inline editor (login gates editing; public site unaffected)
+      - CMS_SESSION_SECRET=${CMS_SESSION_SECRET}
+      - CMS_ADMIN_USERS=${CMS_ADMIN_USERS}
+      # CORS so embed.js on the Netlify site can make credentialed requests
+      - CMS_CORS_ORIGINS=${CMS_CORS_ORIGINS}
+      # AI chat (starlette-chat) — OpenRouter provider
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHAT_MODEL=${CHAT_MODEL}
+      # Gateways (Spotify + iNaturalist) — manual sync via /gateways/
+      - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
+      - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
+      - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
+      - SPOTIPY_REFRESH_TOKEN=${SPOTIPY_REFRESH_TOKEN}
     restart: unless-stopped
 
   cms-staging:
