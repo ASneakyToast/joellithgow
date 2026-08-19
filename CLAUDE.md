@@ -13,6 +13,7 @@ make backup           # trigger a prod DB backup on EC2 right now
 make staging-restore  # restore latest backup into EC2 staging + restart it
 make staging-restart  # restart staging container only (no DB change)
 make ssh              # ssh joellithgow-cms shortcut
+make webhooks         # list registered CMS webhooks across prod + staging
 
 bun run build         # production Astro build
 bun run preview       # preview the build locally
@@ -49,7 +50,11 @@ make staging-restore  →  ssh: restore-db.sh latest.db.gz → staging container
                       →  docker restart staging
 ```
 
-**Note:** prod DB is intentionally empty during development — all live content is in staging. Seed prod before launch.
+**Note:** prod is the content home (holds the live docs); staging is currently empty/scratch. Use `make db-sync` (prod backup → local) to get real content locally — `make db-sync-staging` pulls staging, which is empty unless you repopulate it.
+
+## Rebuilding the site
+
+The Astro frontend is rebuilt on Netlify. There is **no** auto-rebuild on publish (the old CMS webhook was removed). Trigger a build manually with the **"Rebuild site"** button in the editor toolbar — prod only; it POSTs `/api/rebuild`, which fires the Netlify build hook from `NETLIFY_BUILD_HOOK_URL`. Run `make webhooks` to list any registered webhooks.
 
 ## Environment
 

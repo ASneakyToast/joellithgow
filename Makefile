@@ -23,7 +23,7 @@ cms-down:
 	docker compose -f docker-compose.local.yml down
 
 ## Pull the latest prod backup from EC2 and restore into the local CMS container
-## Note: prod DB is intentionally empty before launch — use db-sync-staging for content
+## Prod is the content home now, so this pulls real content (staging is scratch/empty)
 .PHONY: db-sync
 db-sync: cms-up
 	@echo "⬇️  Pulling latest prod backup from $(EC2_HOST)..."
@@ -38,7 +38,8 @@ db-sync: cms-up
 	@make cms-webhook-local
 	@echo "✅ Local DB restored (prod) and cms-local restarted"
 
-## Pull the live staging DB from EC2 and restore locally — use this to get real content
+## Pull the live staging DB from EC2 and restore locally. NOTE: staging is currently
+## empty/scratch — use `make db-sync` (prod) for real content unless you've populated staging.
 .PHONY: db-sync-staging
 db-sync-staging: cms-up
 	@echo "⬇️  Pulling staging DB from $(EC2_HOST)..."
@@ -153,8 +154,8 @@ help:
 	@echo "  make dev              Start CMS + Astro HMR"
 	@echo "  make cms-up           Start local CMS only"
 	@echo "  make cms-down         Stop local CMS"
-	@echo "  make db-sync          Pull latest prod backup → restore local DB (usually empty)"
-	@echo "  make db-sync-staging  Pull live staging DB → restore local (has real content)"
+	@echo "  make db-sync          Pull latest prod backup → restore local DB (real content)"
+	@echo "  make db-sync-staging  Pull live staging DB → restore local (staging is scratch/empty)"
 	@echo "  make cms-migrate      Run pending migrations on local CMS container"
 	@echo "  make cms-build        Rebuild local CMS image"
 	@echo "  make chat-seed        Seed system_prompt + model_config for AI chat (run once)"
