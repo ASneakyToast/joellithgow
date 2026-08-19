@@ -3,6 +3,10 @@ services:
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile
+    # Prod command: no --reload (dev-only; caused a WatchFiles reload loop as uv
+    # re-synced the venv), and --no-sync so uv uses the image's prebuilt venv
+    # instead of churning editable packages on every start.
+    command: ["uv", "run", "--no-sync", "uvicorn", "cms.main:app", "--host", "0.0.0.0", "--port", "8000"]
     ports:
       - "8000:8000"
     volumes:
