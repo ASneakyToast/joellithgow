@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from starlette_cms import CMS
+from starlette_cms.auth import check_session_auth
 from starlette_editor import Editor
 from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
@@ -53,8 +54,11 @@ cms = CMS(
 register_documents(cms)
 register_editorial_blocks(cms)  # system_prompt + model_config only — chat_session/chat_message go to chat.db
 
-editor = Editor(cms=cms)
-gateway_admin = GatewayAdmin(cms=cms)
+# Gate the admin shells behind session auth. Without a guard the /shell pages
+# embed the CMS api_key in their HTML and are served to anyone — the guard
+# requires a valid cms_session cookie (login at /api/auth/login) instead.
+editor = Editor(cms=cms, auth=lambda request: check_session_auth(request, cms))
+gateway_admin = GatewayAdmin(cms=cms, auth=lambda request: check_session_auth(request, cms))
 
 # LM Studio (local) or OpenAI — set OPENAI_API_KEY + OPENAI_BASE_URL to override.
 # Defaults to LM Studio at http://localhost:1234/v1.
