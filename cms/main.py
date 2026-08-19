@@ -13,10 +13,14 @@ setup_telemetry(TelemetryConfig(service_name="joellithgow-cms"))
 import json
 import os
 from contextlib import asynccontextmanager
+
+import httpx
 from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 from starlette.routing import Mount
 from starlette_cms import CMS
-from starlette_cms.auth import check_session_auth
+from starlette_cms.auth import check_session_auth, require_auth
 from starlette_editor import Editor
 from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
@@ -40,6 +44,12 @@ ADMIN_USERS: dict[str, str] | None = json.loads(_admin_users_raw) if _admin_user
 _cors_raw = os.environ.get("CMS_CORS_ORIGINS", "")
 CORS_ORIGINS: list[str] = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 
+# Netlify build hook for the manual "Rebuild site" button. Set only where a
+# rebuild should actually fire (prod) — leaving it unset in staging/local hides
+# the button and makes /api/rebuild a no-op, so those environments can't trigger
+# a production deploy.
+NETLIFY_BUILD_HOOK_URL = os.environ.get("NETLIFY_BUILD_HOOK_URL")
+
 cms = CMS(
     database_url=DATABASE_URL,
     auth="apikey",
@@ -54,10 +64,58 @@ cms = CMS(
 register_documents(cms)
 register_editorial_blocks(cms)  # system_prompt + model_config only — chat_session/chat_message go to chat.db
 
+
+async def trigger_rebuild(request: Request) -> JSONResponse:
+    """Fire the Netlify build hook to rebuild the static site on demand.
+
+    Backs the editor's manual "Rebuild site" button. Guarded by the standard
+    write auth (session cookie or API key). Returns 503 when no hook URL is
+    configured, which is how staging/local decline to trigger a prod deploy.
+    """
+    if (err := await require_auth(request, cms)) is not None:
+        return err
+
+    if not NETLIFY_BUILD_HOOK_URL:
+        return JSONResponse({"error": "Rebuild not configured"}, status_code=503)
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.post(NETLIFY_BUILD_HOOK_URL)
+
+    return JSONResponse({"ok": resp.status_code < 400, "status": resp.status_code})
+
+
+# Register /api/rebuild before cms.app is built (extension routes are frozen once
+# the app is first accessed).
+cms.register_extension_route(
+    path="/api/rebuild",
+    endpoint=trigger_rebuild,
+    methods=["POST"],
+    name="rebuild",
+)
+
+# Expose the "Rebuild site" toolbar button only where a hook URL is set (prod),
+# so staging/local editors don't see a button that can't do anything.
+rebuild_actions = (
+    [
+        {
+            "label": "Rebuild site",
+            "icon": "🚀",
+            "endpoint": "/api/rebuild",
+            "confirm": "Trigger a production site rebuild?",
+        }
+    ]
+    if NETLIFY_BUILD_HOOK_URL
+    else []
+)
+
 # Gate the admin shells behind session auth. Without a guard the /shell pages
 # embed the CMS api_key in their HTML and are served to anyone — the guard
 # requires a valid cms_session cookie (login at /api/auth/login) instead.
-editor = Editor(cms=cms, auth=lambda request: check_session_auth(request, cms))
+editor = Editor(
+    cms=cms,
+    actions=rebuild_actions,
+    auth=lambda request: check_session_auth(request, cms),
+)
 gateway_admin = GatewayAdmin(cms=cms, auth=lambda request: check_session_auth(request, cms))
 
 # LM Studio (local) or OpenAI — set OPENAI_API_KEY + OPENAI_BASE_URL to override.

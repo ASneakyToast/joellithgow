@@ -26,6 +26,9 @@ services:
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - CHAT_MODEL=${CHAT_MODEL}
+      # Manual "Rebuild site" editor button → POSTs this Netlify build hook.
+      # Prod only — staging/local omit it so they can't trigger a prod deploy.
+      - NETLIFY_BUILD_HOOK_URL=${NETLIFY_BUILD_HOOK_URL}
       # Gateways (Spotify + iNaturalist) — manual sync via /gateways/
       - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
       - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
@@ -47,6 +50,7 @@ services:
       - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+      # NETLIFY_BUILD_HOOK_URL intentionally unset — staging must not fire prod builds.
       - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
       - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
       - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}

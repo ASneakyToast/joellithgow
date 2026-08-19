@@ -104,6 +104,11 @@ cms-build:
 ssh:
 	ssh $(EC2_HOST)
 
+## List CMS webhook rows across prod + staging (read-only)
+.PHONY: webhooks
+webhooks:
+	@ssh $(EC2_HOST) 'bash -s' < scripts/list-webhooks.sh
+
 ## Trigger a backup of the prod DB on EC2 right now
 .PHONY: backup
 backup:
@@ -157,6 +162,7 @@ help:
 	@echo ""
 	@echo "EC2 / Production"
 	@echo "  make ssh              SSH into EC2"
+	@echo "  make webhooks         List CMS webhook rows across prod + staging"
 	@echo "  make backup           Backup prod DB on EC2 right now"
 	@echo "  make staging-restore  Restore latest backup into staging + restart"
 	@echo "  make staging-restart  Restart staging container only"
