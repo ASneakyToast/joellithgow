@@ -30,6 +30,12 @@ from starlette_cms_gateways import BaseGateway, GatewayItem
 
 _SCOPE = "user-library-read"
 
+# Only sync months from this point forward (inclusive, "YYYY-MM" lexical compare).
+# Older liked-song history is intentionally excluded — without this floor, every
+# sync re-emits the full library back to 2017 and re-creates deleted pre-floor
+# months as orphaned drafts.
+_MONTH_FLOOR = "2025-01"
+
 
 class SpotifyLikedDumpGateway(BaseGateway):
     """Sync Spotify liked songs into the CMS, one document per calendar month."""
@@ -109,6 +115,9 @@ class SpotifyLikedDumpGateway(BaseGateway):
 
         # Yield one item per month, sorted oldest-first
         for month_key in sorted(tracks_by_month):
+            if month_key < _MONTH_FLOOR:
+                continue  # pre-floor history intentionally excluded (see _MONTH_FLOOR)
+
             songs = tracks_by_month[month_key]
             year_str, month_str = month_key.split("-")
             month_label = calendar.month_name[int(month_str)]
