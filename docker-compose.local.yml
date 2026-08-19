@@ -25,6 +25,9 @@ services:
       - CMS_API_KEY=${CMS_LOCAL_API_KEY:-local-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+      # NETLIFY_BUILD_HOOK_URL intentionally unset — local must not fire prod builds.
+      # To smoke-test the rebuild button locally, set it to a throwaway URL in .env.
+      - NETLIFY_BUILD_HOOK_URL=${NETLIFY_BUILD_HOOK_URL:-}
       - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
       - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
       - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
