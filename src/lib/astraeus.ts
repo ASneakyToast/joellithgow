@@ -20,6 +20,7 @@ import type {
   ExperienceEntry,
   SpotifyDump,
   NatureOuting,
+  Definition,
 } from './astraeus-types';
 
 // ---------------------------------------------------------------------------
@@ -170,6 +171,30 @@ export async function fetchExperience(): Promise<AstraeusDocument<ExperienceEntr
       const dateB = new Date(b.start_date || '').getTime();
       return dateB - dateA;
     });
+}
+
+// ---------------------------------------------------------------------------
+// Definitions / Glossary
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch all published definitions, sorted by term alphabetically.
+ */
+export async function fetchDefinitions(): Promise<AstraeusDocument<Definition>[]> {
+  const entries = await getCollection('definitions');
+  return entries
+    .map((e) => e.data as AstraeusDocument<Definition>)
+    .filter((d) => !d.draft)
+    .sort((a, b) => a.term.localeCompare(b.term));
+}
+
+/**
+ * Fetch a single definition by slug.
+ * Returns null when the slug is not found.
+ */
+export async function fetchDefinition(slug: string): Promise<AstraeusDocument<Definition> | null> {
+  const entry = await getEntry('definitions', slug);
+  return entry ? (entry.data as AstraeusDocument<Definition>) : null;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ---
-import { fetchBlogPosts } from '@lib/astraeus';
+import { fetchBlogPosts, fetchDefinitions } from '@lib/astraeus';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -14,8 +14,14 @@ import LinkCard from '@components/blog/LinkCard.astro';
 const allPosts = await fetchBlogPosts();
 const postsWithLinks = allPosts.filter(p => p.links && p.links.length > 0);
 
-// Aggregate all links from all posts
-const allLinks = postsWithLinks.flatMap(post =>
+// Get all definitions that have link sources
+const allDefinitions = await fetchDefinitions();
+const defsWithLinkSources = allDefinitions.filter(
+  d => d.sources && d.sources.some(s => s.type === 'link')
+);
+
+// Aggregate all links from blog posts
+const postLinks = postsWithLinks.flatMap(post =>
   (post.links ?? []).map(link => ({
     ...link,
     dateAdded: new Date(link.date_added),
@@ -27,6 +33,28 @@ const allLinks = postsWithLinks.flatMap(post =>
     }
   }))
 );
+
+// Aggregate all link sources from definitions
+const definitionLinks = defsWithLinkSources.flatMap(def => {
+  const linkSources = (def.sources ?? []).filter(s => s.type === 'link');
+  return linkSources.map(source => ({
+    url: source.url ?? '',
+    title: source.title ?? 'Untitled',
+    description: source.description ?? '',
+    tags: def.tags ?? [],
+    date_added: def.publish_date,
+    dateAdded: new Date(def.publish_date),
+    sourcePost: {
+      title: `${def.term} (definition)`,
+      slug: `definitions/${def.slug}`,
+      publishDate: new Date(def.publish_date),
+      author: undefined,
+    }
+  }));
+});
+
+// Combine all links
+const allLinks = [...postLinks, ...definitionLinks];
 
 // Sort links by date added (newest first)
 const sortedLinks = allLinks.sort(
@@ -47,7 +75,9 @@ const popularTags = Object.entries(tagCounts)
 
 // Get some stats
 const totalLinks = allLinks.length;
-const totalPosts = postsWithLinks.length;
+const totalPostSources = postsWithLinks.length;
+const totalDefinitionSources = defsWithLinkSources.length;
+const totalSources = totalPostSources + totalDefinitionSources;
 const uniqueDomains = [...new Set(allLinks.map(link => {
   try {
     return new URL(link.url).hostname;
@@ -57,7 +87,7 @@ const uniqueDomains = [...new Set(allLinks.map(link => {
 }))].length;
 
 const pageTitle = "Link Collection";
-const pageDescription = `Browse all ${totalLinks} links from ${totalPosts} blog posts. Discover curated resources, tools, and interesting finds.`;
+const pageDescription = `Browse all ${totalLinks} links from ${totalSources} posts and definitions. Discover curated resources, tools, and interesting finds.`;
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
@@ -81,8 +111,8 @@ const pageDescription = `Browse all ${totalLinks} links from ${totalPosts} blog 
               <span class="stat-label">total links</span>
             </Card>
             <Card variant="outlined" class="stat-card">
-              <span class="stat-number">{totalPosts}</span>
-              <span class="stat-label">source posts</span>
+              <span class="stat-number">{totalSources}</span>
+                            <span class="stat-label">source posts</span>
             </Card>
             <Card variant="outlined" class="stat-card">
               <span class="stat-number">{uniqueDomains}</span>

@@ -271,6 +271,39 @@ const applicationSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Definition / Glossary schema
+// ---------------------------------------------------------------------------
+
+const sourceSchema = z.object({
+  type: z.enum(['link', 'citation']),
+  url: z.string().optional(),
+  title: z.string().optional(),
+  attribution: z.string().optional(),
+  quote: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const definitionSchema = z.object({
+  slug: z.string(),
+  term: z.string(),
+  /** ISO 8601 */
+  publish_date: z.string(),
+  /** Markdown — the actual definition text */
+  definition: z.string(),
+  /** Markdown — Joel's personal thoughts/context */
+  personal_notes: z.string().optional(),
+  /** Mix of link sources and text citations */
+  sources: z.array(sourceSchema).optional(),
+  tags: z.array(z.string()).optional(),
+  draft: z.boolean().optional(),
+  // CMS metadata
+  _id: z.string(),
+  _published: z.boolean().optional(),
+  _created_at: z.string().optional(),
+  _updated_at: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Collection definitions
 // ---------------------------------------------------------------------------
 
@@ -355,7 +388,7 @@ export const collections = {
       const docs = await loadAstraeusDocuments('inaturalist_outing');
       return docs.map((d) => ({
         id: d.slug,
-        slug: d.slug,  // convenience alias for entry.id — used by page routes and components
+        slug: d.slug,
         ...(d.body as Record<string, unknown>),
         _id: d.id,
         _published: d.published,
@@ -364,6 +397,23 @@ export const collections = {
       }));
     },
     schema: natureOutingSchema,
+  }),
+
+  // ── Astraeus CMS — definitions / glossary ────────────────────────────────
+  definitions: defineCollection({
+    loader: async () => {
+      const docs = await loadAstraeusDocuments('definition');
+      return docs.map((d) => ({
+        id: d.slug,
+        slug: d.slug,
+        ...(d.body as Record<string, unknown>),
+        _id: d.id,
+        _published: d.published,
+        _created_at: d.created_at,
+        _updated_at: d.updated_at,
+      }));
+    },
+    schema: definitionSchema,
   }),
 };
 
@@ -379,3 +429,4 @@ export type ProjectPage = z.infer<typeof projectPageSchema>;
 export type ExperienceEntry = z.infer<typeof experienceEntrySchema>;
 export type SpotifyDump = z.infer<typeof spotifyDumpSchema>;
 export type NatureOuting = z.infer<typeof natureOutingSchema>;
+export type Definition = z.infer<typeof definitionSchema>;

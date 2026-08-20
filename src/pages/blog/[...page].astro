@@ -484,16 +484,25 @@ const jsonLd = {
 
       {/* Sidebar */}
       <aside class="sidebar">
-        <h2 class="sidebar-heading">
-          Related Links
-          {totalLinks > 0 && (
-            <a href="/blog/links" class="browse-all-link">
-              (Browse all {totalLinks} →)
-            </a>
-          )}
-        </h2>
+              <h2 class="sidebar-heading">
+                Related Links
+                {totalLinks > 0 && (
+                  <a href="/blog/links" class="browse-all-link">
+                    (Browse all {totalLinks} →)
+                  </a>
+                )}
+              </h2>
 
-        {/* Dynamic Collection Widgets */}
+              {/* Glossary link */}
+              <Card variant="flat" class="sidebar-card">
+                <h3 class="sidebar-card-heading">Glossary</h3>
+                <p class="sidebar-card-text">
+                  Terms, concepts, and ideas with definitions and sources.
+                </p>
+                <a href="/definitions" class="sidebar-card-link">Browse Glossary →</a>
+              </Card>
+
+              {/* Dynamic Collection Widgets */}
         {collectionPostsWithLinks.map((collection) => (
           collection.aggregatedLinks && collection.aggregatedLinks.length > 0 && (
             <CollectionWidget

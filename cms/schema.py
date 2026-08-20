@@ -98,3 +98,13 @@ def register_documents(cms: CMS) -> None:
         bounding_box: dict | None = JSONField()                         # {lat_min, lat_max, lon_min, lon_max}
         tags: list | None = JSONField()
         draft: bool = BoolField(default=True)
+
+    @cms.document("definition")
+    class DefinitionDocument:
+        term: str = TextField(required=True, max_length=500)
+        publish_date: str = TextField(required=True)                    # ISO 8601
+        definition: str = TextField(required=True)                      # markdown — the actual definition
+        personal_notes: str = TextField()                               # markdown — Joel's thoughts/context
+        sources: list | None = JSONField()                              # list[Source] — mix of links + text citations
+        tags: list | None = JSONField()
+        draft: bool = BoolField(default=False)
