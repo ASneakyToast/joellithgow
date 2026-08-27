@@ -30,7 +30,8 @@ import type {
 export type AnyBlogPost =
   | (AstraeusDocument<BlogPost> & { post_type: 'article' | 'thought' | 'collection' })
   | (AstraeusDocument<SpotifyDump> & { post_type: 'spotify_dump' })
-  | (AstraeusDocument<NatureOuting> & { post_type: 'nature_outing' });
+  | (AstraeusDocument<NatureOuting> & { post_type: 'nature_outing' })
+  | (AstraeusDocument<Definition> & { post_type: 'definition' });
 
 // ---------------------------------------------------------------------------
 // Blog posts
@@ -43,10 +44,11 @@ export type AnyBlogPost =
  * Returns the AnyBlogPost union type — callers should branch on post_type.
  */
 export async function fetchBlogPosts(): Promise<AnyBlogPost[]> {
-  const [blogEntries, dumpEntries, outingEntries] = await Promise.all([
+  const [blogEntries, dumpEntries, outingEntries, definitionEntries] = await Promise.all([
     getCollection('blog'),
     getCollection('spotify_dumps'),
     getCollection('nature_outings'),
+    getCollection('definitions'),
   ]);
 
   const posts: AnyBlogPost[] = [
@@ -58,6 +60,10 @@ export async function fetchBlogPosts(): Promise<AnyBlogPost[]> {
     ...outingEntries.map((e) => ({
       ...(e.data as AstraeusDocument<NatureOuting>),
       post_type: 'nature_outing' as const,
+    })),
+    ...definitionEntries.map((e) => ({
+      ...(e.data as AstraeusDocument<Definition>),
+      post_type: 'definition' as const,
     })),
   ];
 
