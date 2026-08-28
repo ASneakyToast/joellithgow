@@ -182,3 +182,31 @@ export interface NatureOuting {
   tags?: string[] | null;
   draft?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Definition / Glossary
+// ---------------------------------------------------------------------------
+
+export interface Source {
+  type: 'link' | 'citation';
+  url?: string;
+  title?: string;
+  attribution?: string;
+  quote?: string;
+  description?: string;
+}
+
+export interface Definition {
+  slug: string;
+  term: string;
+  /** ISO 8601 */
+  publish_date: string;
+  /** Markdown — the actual definition */
+  definition: string;
+  /** Markdown — Joel's personal thoughts/context */
+  personal_notes?: string;
+  /** Mix of link sources and text citations */
+  sources?: Source[] | null;
+  tags?: string[] | null;
+  draft?: boolean;
+}

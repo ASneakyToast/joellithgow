@@ -103,34 +103,34 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             </time>
 
             <h2 class="post-title">
-              {(post as any).has_detail_page !== false ? (
-                <a
-                  href={`/blog/${post.slug}`}
-                  class="post-title-link"
-                >
-                  {post.title}
-                </a>
-              ) : (
-                <span class="post-title-text">{post.title}</span>
-              )}
-              {post.post_type === 'collection' && (
-                <Badge variant="tertiary" size="sm" class="collection-badge">
-                  {('links' in post && (post as any).links?.length) || 0} links
-                </Badge>
-              )}
-              {post.post_type === 'spotify_dump' && (
-                <Badge variant="tertiary" size="sm" class="collection-badge">
-                  🎵 {(post as any).song_count || 0} tracks
-                </Badge>
-              )}
-              {post.post_type === 'nature_outing' && (
-                <Badge variant="tertiary" size="sm" class="collection-badge">
-                  🌿 {(post as any).observation_count || 0} obs
-                </Badge>
-              )}
-            </h2>
+                                      {(post as any).has_detail_page !== false ? (
+                                        <a
+                                          href={post.post_type === 'definition' ? `/definitions/${post.slug}` : `/blog/${post.slug}`}
+                                          class="post-title-link"
+                                        >
+                                          {post.post_type === 'definition' ? (post as any).term || post.title : post.title}
+                                        </a>
+                                      ) : (
+                                        <span class="post-title-text">{post.post_type === 'definition' ? (post as any).term || post.title : post.title}</span>
+                                      )}
 
-            {'description' in post && (post as any).description && (
+                                                                            {post.post_type === 'collection' && (
+                                                                              <Badge variant="tertiary" size="sm" class="collection-badge">{('links' in post && (post as any).links?.length) || 0} links</Badge>
+                                                                            )}
+                                                                            {post.post_type === 'spotify_dump' && (
+                                                                              <Badge variant="tertiary" size="sm" class="collection-badge">{(post as any).song_count || 0} tracks</Badge>
+                                                                            )}
+                                                                            {post.post_type === 'nature_outing' && (
+                                                                              <Badge variant="tertiary" size="sm" class="collection-badge">{(post as any).observation_count || 0} obs</Badge>
+                                                                            )}
+                                                                          </h2>
+
+                                                              {post.post_type === 'definition' && (post as any).definition && (
+                                                  <blockquote class="definition-preview">
+                                                    <p>&ldquo;{(post as any).definition.slice(0, 300)}{(post as any).definition.length > 300 ? '&hellip;' : ''}&rdquo;</p>
+                                                  </blockquote>
+                                                )}
+                                                {post.post_type !== 'definition' && 'description' in post && (post as any).description && (
               <p class="post-description">
                 {(post as any).description}
               </p>
@@ -185,10 +185,10 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
               )}
 
               {(post as any).has_detail_page !== false && (
-                <Button href={`/blog/${post.slug}`} variant="primary" size="md">
-                  Continue reading →
-                </Button>
-              )}
+                              <Button href={post.post_type === 'definition' ? `/definitions/${post.slug}` : `/blog/${post.slug}`} variant="primary" size="md">
+                                {post.post_type === 'definition' ? 'View definition →' : 'Continue reading →'}
+                              </Button>
+                            )}
             </div>
           </Card>
         ))}
@@ -247,7 +247,23 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
   @import '../../../styles/themes.css';
   @import '../../../styles/backgrounds.css';
 
-  /* Clean, traditional blog styling */
+    /* Definition preview in tag feed */
+    .definition-preview {
+      margin: var(--space-lg) 0;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--accent-primary);
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: var(--text-base);
+      line-height: var(--leading-relaxed);
+    }
+
+    .definition-preview p {
+      margin: 0;
+    }
+
+    /* Clean, traditional blog styling */
   .blog-container {
     min-height: 100vh;
     background: var(--bg-primary);

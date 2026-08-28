@@ -1,0 +1,402 @@
+---
+import { marked } from 'marked';
+import { fetchDefinition, fetchDefinitions } from '@lib/astraeus';
+import type { AstraeusDocument, Definition, Source } from '@lib/astraeus-types';
+import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import UIInteractions from '@components/interactive/UIInteractions.astro';
+import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
+import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
+import Card from '@components/primitives/Card.astro';
+import Badge from '@components/primitives/Badge.astro';
+import Button from '@components/primitives/Button.astro';
+import LinkCard from '@components/blog/LinkCard.astro';
+import PullQuote from '@components/ui/PullQuote.astro';
+
+export async function getStaticPaths() {
+  const definitions = await fetchDefinitions();
+  return definitions.map((def) => ({
+    params: { slug: def.slug },
+    props: { definition: def },
+  }));
+}
+
+const { definition } = Astro.props as {
+  definition: AstraeusDocument<Definition>;
+};
+
+const term = definition.term;
+const publishDate = new Date(definition.publish_date);
+const definitionHtml = marked.parse(definition.definition);
+const notesHtml = definition.personal_notes ? marked.parse(definition.personal_notes) : null;
+
+// Separate sources into links and citations
+const linkSources = (definition.sources ?? []).filter(
+  (s) => s.type === 'link'
+);
+const citationSources = (definition.sources ?? []).filter(
+  (s) => s.type === 'citation'
+);
+
+const pageTitle = `${term} — Definition`;
+const pageDescription = `Definition of "${term}" — ${definition.definition.slice(0, 150)}...`;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="definition-container animated-bg bg-accent-editorial">
+    <div class="definition-wrapper">
+      <div class="main-content">
+        {/* Back navigation */}
+        <nav class="breadcrumb-nav">
+          <Button href="/definitions" variant="ghost" size="sm">← Back to Glossary</Button>
+        </nav>
+
+        {/* Definition header */}
+        <header class="definition-header">
+          <time
+            datetime={definition.publish_date}
+            class="post-date"
+          >
+            {publishDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+
+          <h1 class="definition-term">{term}</h1>
+        </header>
+
+        {/* Definition — quoted, dictionary-style */}
+        <section class="definition-section">
+          <blockquote class="definition-quote">
+            <p>&ldquo;{definition.definition}&rdquo;</p>
+          </blockquote>
+        </section>
+
+        {/* Citation sources as pull quotes */}
+        {citationSources.length > 0 && (
+          <section class="citation-section">
+            {citationSources.map((source) => (
+              <PullQuote variant="highlight">
+                <em>"{source.quote}"</em>
+                {source.attribution && (
+                  <span class="citation-attribution">— {source.attribution}</span>
+                )}
+              </PullQuote>
+            ))}
+          </section>
+        )}
+
+        {/* Personal notes */}
+        {notesHtml && (
+          <section class="notes-section">
+            <Card variant="outlined" class="notes-card">
+              <h2 class="section-label">My Thoughts</h2>
+              <div class="notes-body" set:html={notesHtml}></div>
+            </Card>
+          </section>
+        )}
+
+        {/* Link sources */}
+        {linkSources.length > 0 && (
+          <section class="sources-section">
+            <h2 class="section-heading">
+              Sources
+              <span class="sources-count">{linkSources.length}</span>
+            </h2>
+            <div class="sources-grid">
+              {linkSources.map((source) => (
+                <LinkCard
+                  link={{
+                    url: source.url ?? '#',
+                    title: source.title ?? 'Untitled',
+                    description: source.description,
+                    dateAdded: new Date(definition.publish_date),
+                  }}
+                  variant="minimal"
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Tags */}
+        {definition.tags && definition.tags.length > 0 && (
+          <div class="post-tags">
+            {definition.tags.map((tag) => (
+              <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+            ))}
+          </div>
+        )}
+    </div>
+  </main>
+
+  <ThemeModal />
+  <UIInteractions />
+  <KeyboardShortcuts />
+  <PerformanceOptimizer />
+
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
+</BaseLayout>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+  @import '../../styles/backgrounds.css';
+
+  .definition-container {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: var(--space-3xl) var(--page-gutter);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .definition-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-3xl);
+    align-items: start;
+  }
+
+  .main-content {
+    min-width: 0;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--space-3xl);
+  }
+
+  .breadcrumb-nav {
+    margin-bottom: var(--space-xl);
+  }
+
+  .post-date {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    font-weight: var(--font-medium);
+  }
+
+  .definition-header {
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-xl);
+    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .definition-term {
+    font-size: var(--heading-xl);
+    font-weight: var(--font-bold);
+    margin: 0 0 var(--space-xl) 0;
+    color: var(--text-primary);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .definition-quote {
+    margin: 0 0 var(--space-2xl) 0;
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-primary);
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+  }
+
+  .definition-quote p {
+    margin: 0;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
+  }
+
+  .definition-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .definition-card {
+    padding: var(--space-xl);
+  }
+
+  .section-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .definition-body {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+  }
+
+  .definition-body :global(p) {
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .definition-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .citation-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .citation-attribution {
+    display: block;
+    margin-top: var(--space-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+  }
+
+  .notes-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .notes-card {
+    padding: var(--space-xl);
+  }
+
+  .notes-body {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+  }
+
+  .notes-body :global(p) {
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .notes-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .sources-section {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .section-heading {
+    font-size: var(--heading-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-lg) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .sources-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 var(--space-xs);
+    background: var(--accent-primary);
+    color: var(--text-light);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    border-radius: var(--radius-full);
+  }
+
+  .sources-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .sidebar-card {
+    padding: var(--space-lg);
+  }
+
+  .sidebar-heading {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .sidebar-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
+  }
+
+  @media (max-width: 1024px) {
+    .definition-wrapper {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .sidebar {
+      position: relative;
+      top: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .definition-container {
+      padding: var(--space-xl) var(--page-gutter);
+    }
+
+    .definition-term {
+      font-size: var(--heading-lg);
+    }
+
+    .definition-header {
+      margin-bottom: var(--space-xl);
+    }
+
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .definition-container {
+      padding: var(--space-lg) var(--space-md);
+    }
+  }
+</style>

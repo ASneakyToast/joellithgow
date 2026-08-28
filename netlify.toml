@@ -9,7 +9,7 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "26"
   # ASTRAEUS_API_KEY is set in the Netlify dashboard per context — not committed
 
 # Production context: deploys from main
