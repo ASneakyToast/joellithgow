@@ -53,31 +53,25 @@ const pageDescription = `Definition of "${term}" — ${definition.definition.sli
 
         {/* Definition header */}
         <header class="definition-header">
+          <time
+            datetime={definition.publish_date}
+            class="post-date"
+          >
+            {publishDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+
           <h1 class="definition-term">{term}</h1>
-          <div class="definition-meta">
-            <time datetime={definition.publish_date}>
-              {publishDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
-            {definition.tags && definition.tags.length > 0 && (
-              <div class="definition-tags">
-                {definition.tags.map((tag) => (
-                  <Badge variant="secondary" size="sm">#{tag}</Badge>
-                ))}
-              </div>
-            )}
-          </div>
         </header>
 
-        {/* Definition body */}
+        {/* Definition — quoted, dictionary-style */}
         <section class="definition-section">
-          <Card variant="flat" class="definition-card">
-            <h2 class="section-label">Definition</h2>
-            <div class="definition-body" set:html={definitionHtml}></div>
-          </Card>
+          <blockquote class="definition-quote">
+            <p>&ldquo;{definition.definition}&rdquo;</p>
+          </blockquote>
         </section>
 
         {/* Citation sources as pull quotes */}
@@ -126,21 +120,15 @@ const pageDescription = `Definition of "${term}" — ${definition.definition.sli
             </div>
           </section>
         )}
-      </div>
 
-      {/* Sidebar */}
-      <aside class="sidebar">
+        {/* Tags */}
         {definition.tags && definition.tags.length > 0 && (
-          <Card variant="flat" class="sidebar-card">
-            <h3 class="sidebar-heading">Tags</h3>
-            <div class="sidebar-tags">
-              {definition.tags.map((tag) => (
-                <Badge variant="secondary" size="sm">#{tag}</Badge>
-              ))}
-            </div>
-          </Card>
+          <div class="post-tags">
+            {definition.tags.map((tag) => (
+              <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+            ))}
+          </div>
         )}
-      </aside>
     </div>
   </main>
 
@@ -200,6 +188,14 @@ const pageDescription = `Definition of "${term}" — ${definition.definition.sli
     margin-bottom: var(--space-xl);
   }
 
+  .post-date {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    font-weight: var(--font-medium);
+  }
+
   .definition-header {
     margin-bottom: var(--space-2xl);
     padding-bottom: var(--space-xl);
@@ -209,24 +205,33 @@ const pageDescription = `Definition of "${term}" — ${definition.definition.sli
   .definition-term {
     font-size: var(--heading-xl);
     font-weight: var(--font-bold);
-    margin: 0 0 var(--space-md) 0;
+    margin: 0 0 var(--space-xl) 0;
     color: var(--text-primary);
     letter-spacing: var(--tracking-tight);
   }
 
-  .definition-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-lg);
-    flex-wrap: wrap;
-    font-size: var(--text-sm);
+  .definition-quote {
+    margin: 0 0 var(--space-2xl) 0;
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-primary);
+    font-style: italic;
     color: var(--text-secondary);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
   }
 
-  .definition-tags {
+  .definition-quote p {
+    margin: 0;
+  }
+
+  .post-tags {
     display: flex;
-    gap: var(--space-sm);
     flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: var(--border-width) solid var(--gradient-primary-subtle);
   }
 
   .definition-section {
