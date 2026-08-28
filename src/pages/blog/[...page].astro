@@ -308,8 +308,55 @@ const jsonLd = {
                       </div>
                     )}
                   </Card>
-                ) : (
-                  // Full post card (article / thought)
+                ) : post.post_type === 'definition' ? (
+                                  // Definition card — styled like a dictionary entry
+                                  <Card variant="flat" as="article" class="featured-post-card" data-post-type="definition">
+                                    <time
+                                      datetime={new Date(post.publish_date).toISOString()}
+                                      class="post-date"
+                                    >
+                                      {new Date(post.publish_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                      })}
+                                    </time>
+
+                                    <h2 class="post-title">
+                                      <a
+                                        href={`/definitions/${post.slug}`}
+                                        class="post-title-link"
+                                      >
+                                        {(post as any).term || post.title}
+                                      </a>
+                                    </h2>
+
+                                    {(post as any).definition && (
+                                      <blockquote class="definition-preview">
+                                        <p>&ldquo;{(post as any).definition.slice(0, 300)}{(post as any).definition.length > 300 ? '&hellip;' : ''}&rdquo;</p>
+                                      </blockquote>
+                                    )}
+
+                                    {(post as any).personal_notes && (
+                                      <p class="post-description">{(post as any).personal_notes.slice(0, 200)}{(post as any).personal_notes.length > 200 ? '...' : ''}</p>
+                                    )}
+
+                                    {post.tags && post.tags.length > 0 &&  (
+                                      <div class="post-tags">
+                                        {post.tags.map((tag) => (
+                                          <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    <div class="post-meta">
+                                      <Button href={`/definitions/${post.slug}`} variant="primary" size="md">
+                                        View definition →
+                                      </Button>
+                                    </div>
+                                  </Card>
+                                ) : (
+                                  // Full post card (article / thought)
                   <Card variant="flat" as="article" class="featured-post-card" data-post-type={post.post_type}>
                     <time
                       datetime={new Date(post.publish_date).toISOString()}
@@ -494,13 +541,13 @@ const jsonLd = {
               </h2>
 
               {/* Glossary link */}
-              <Card variant="flat" class="sidebar-card">
-                <h3 class="sidebar-card-heading">Glossary</h3>
-                <p class="sidebar-card-text">
-                  Terms, concepts, and ideas with definitions and sources.
-                </p>
-                <a href="/definitions" class="sidebar-card-link">Browse Glossary →</a>
-              </Card>
+                            <CollectionWidget
+                              title="Glossary"
+                              description="Terms, concepts, and ideas with definitions and sources."
+                              links={[{ url: "/definitions", title: "Browse Glossary", dateAdded: new Date() }]}
+                              linkLimit={1}
+                              viewAllHref="/definitions"
+                            />
 
               {/* Dynamic Collection Widgets */}
         {collectionPostsWithLinks.map((collection) => (
@@ -1559,23 +1606,39 @@ const jsonLd = {
     font-weight: var(--font-bold);
   }
 
-  /* Theme toggle button */
-  .theme-toggle-button {
-    position: fixed;
-    bottom: var(--space-xl);
-    right: var(--space-xl);
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-full);
-    z-index: var(--z-sticky);
-  }
-
-  @media (max-width: 768px) {
-    .theme-toggle-button {
-      bottom: var(--space-lg);
-      right: var(--space-lg);
-      width: 44px;
-      height: 44px;
+  /* Definition preview blockquote in blog feed */
+    .definition-preview {
+      margin: var(--space-lg) 0;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--accent-primary);
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: var(--text-base);
+      line-height: var(--leading-relaxed);
     }
-  }
+
+    .definition-preview p {
+      margin: 0;
+    }
+
+    /* Theme toggle button */
+    .theme-toggle-button {
+      position: fixed;
+      bottom: var(--space-xl);
+      right: var(--space-xl);
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      z-index: var(--z-sticky);
+    }
+
+    @media (max-width: 768px) {
+      .theme-toggle-button {
+        bottom: var(--space-lg);
+        right: var(--space-lg);
+        width: 44px;
+        height: 44px;
+      }
+    }
 </style>
