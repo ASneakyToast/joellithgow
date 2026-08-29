@@ -1,0 +1,86 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import { fetchBlogPosts } from '@lib/astraeus';
+import '../../styles/log.css';
+
+const outings = (await fetchBlogPosts())
+  .filter((p: any) => p.post_type === 'nature_outing')
+  .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
+
+// TODO(joel): replace these placeholders with real favourites (label + href).
+const featured = [
+  { label: 'My favorite frog', sub: 'placeholder', href: '#', tone: 'primary' },
+  { label: 'Best butterfly photo', sub: 'placeholder', href: '#', tone: 'secondary' },
+  { label: 'Weirdest fungus', sub: 'placeholder', href: '#', tone: 'tertiary' },
+];
+
+const pageTitle = 'Joel Lithgow > Nature';
+const pageDescription = 'Field notes from iNaturalist — observations, species, and outings.';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
+    <div class="blog-wrapper">
+      <div class="main-content">
+        <header class="section-head">
+          <h1 class="section-title">Nature</h1>
+          <p class="section-desc">{pageDescription}</p>
+        </header>
+
+        {outings.length > 0 ? (
+          <div class="nature-list">
+            {outings.map((outing: any) => (
+              <article class="nature-outing">
+                <h2 class="nature-outing-title">
+                  <a href={`/blog/${outing.slug}`}>{outing.title}</a>
+                </h2>
+                {outing.species_list && outing.species_list.length > 0 && (
+                  <p class="nature-species">{outing.species_list.slice(0, 12).join(' · ')}</p>
+                )}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p class="section-empty">No outings published yet — check back soon.</p>
+        )}
+      </div>
+
+      <aside class="sidebar">
+        <h2 class="sidebar-heading">Favorites</h2>
+        <nav class="type-nav" aria-label="Featured observations">
+          {featured.map((f) => (
+            <a href={f.href} class:list={['type-card', `type-card--${f.tone}`]}>
+              <span class="tc-label">{f.label}</span>
+              <span class="tc-arrow" aria-hidden="true">→</span>
+            </a>
+          ))}
+        </nav>
+      </aside>
+    </div>
+  </main>
+
+  <ThemeModal />
+</BaseLayout>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Section header + breadcrumb come from log.css */
+  .nature-list { display: flex; flex-direction: column; gap: var(--space-lg); }
+  .nature-outing { border-top: 1px solid var(--gradient-primary-subtle); padding-top: var(--space-lg); }
+  .nature-outing:first-child { border-top: none; padding-top: 0; }
+  .nature-outing-title {
+    font-family: var(--font-display);
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    letter-spacing: var(--tracking-tight);
+    margin: 0 0 var(--space-xs) 0;
+  }
+  .nature-outing-title a { color: var(--text-primary); text-decoration: none; }
+  .nature-outing-title a:hover { color: var(--accent-primary); }
+  .nature-species { font-family: var(--font-body); color: var(--text-secondary); margin: 0; }
+</style>
