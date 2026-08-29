@@ -1,5 +1,6 @@
 ---
 import { fetchBlogPosts, fetchDefinitions } from '@lib/astraeus';
+import LinksAccordion from '@components/blog/LinksAccordion.astro';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import UIInteractions from '@components/interactive/UIInteractions.astro';
@@ -8,11 +9,17 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
-import LinkCard from '@components/blog/LinkCard.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import '../../styles/log.css';
 
 // Get all blog posts that have links
 const allPosts = await fetchBlogPosts();
 const postsWithLinks = allPosts.filter(p => p.links && p.links.length > 0);
+
+// Link collections (collection-type posts) for the sidebar
+const collections = allPosts
+  .filter(p => p.post_type === 'collection')
+  .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
 
 // Get all definitions that have link sources
 const allDefinitions = await fetchDefinitions();
@@ -46,7 +53,7 @@ const definitionLinks = defsWithLinkSources.flatMap(def => {
     dateAdded: new Date(def.publish_date),
     sourcePost: {
       title: `${def.term} (definition)`,
-      slug: `definitions/${def.slug}`,
+      slug: `dictionary/${def.slug}`,
       publishDate: new Date(def.publish_date),
       author: undefined,
     }
@@ -60,18 +67,6 @@ const allLinks = [...postLinks, ...definitionLinks];
 const sortedLinks = allLinks.sort(
   (a, b) => new Date(b.date_added).valueOf() - new Date(a.date_added).valueOf()
 );
-
-// Get unique tags for filtering (sorted by frequency)
-const tagCounts = allLinks.reduce((acc, link) => {
-  link.tags?.forEach(tag => {
-    acc[tag] = (acc[tag] || 0) + 1;
-  });
-  return acc;
-}, {} as Record<string, number>);
-
-const popularTags = Object.entries(tagCounts)
-  .sort(([, a], [, b]) => b - a)
-  .map(([tag]) => tag);
 
 // Get some stats
 const totalLinks = allLinks.length;
@@ -91,87 +86,19 @@ const pageDescription = `Browse all ${totalLinks} links from ${totalSources} pos
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <main class="blog-container animated-bg bg-accent-editorial">
+  <main class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper">
       {/* Main Content Column */}
       <div class="main-content">
-        {/* Back navigation */}
-        <nav class="breadcrumb-nav">
-          <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
-        </nav>
-
-        <header class="links-header">
-          <h1 class="links-title">Link Collection</h1>
-          <p class="links-description">{pageDescription}</p>
-
-          {/* Stats */}
-          <div class="links-stats">
-            <Card variant="outlined" class="stat-card">
-              <span class="stat-number">{totalLinks}</span>
-              <span class="stat-label">total links</span>
-            </Card>
-            <Card variant="outlined" class="stat-card">
-              <span class="stat-number">{totalSources}</span>
-                            <span class="stat-label">source posts</span>
-            </Card>
-            <Card variant="outlined" class="stat-card">
-              <span class="stat-number">{uniqueDomains}</span>
-              <span class="stat-label">unique domains</span>
-            </Card>
-          </div>
+        <header class="section-head">
+          <h1 class="section-title">Links</h1>
+          <p class="section-desc">{pageDescription}</p>
         </header>
 
-        {/* Controls */}
-        <div class="controls-wrapper">
-          <Card variant="flat" class="links-controls">
-            <div class="search-container">
-              <input
-                type="text"
-                id="search-input"
-                placeholder="Search links by title, description, or tags..."
-                class="search-input"
-              />
-            </div>
-          </Card>
-        </div>
-
-        {/* Tag filters */}
-        {popularTags.length > 0 && (
-          <div class="filters-wrapper">
-          <Card variant="flat" class="tag-filters">
-            <div class="tag-filters-inner">
-              <Badge
-                variant="default"
-                size="md"
-                class="tag-filter-badge active"
-                data-tag=""
-              >
-                all ({totalLinks})
-              </Badge>
-              {popularTags.map(tag => (
-                <Badge
-                  variant="secondary"
-                  size="md"
-                  class="tag-filter-badge"
-                  data-tag={tag}
-                >
-                  #{tag} ({tagCounts[tag]})
-                </Badge>
-              ))}
-            </div>
-          </Card>
-          </div>
-        )}
-
-        {/* Links Grid */}
+        {/* Links list — slim accordion rows; expand for detail + preview */}
         {sortedLinks.length > 0 ? (
-          <div class="links-grid" id="links-grid">
-            {sortedLinks.map((link) => (
-              <div class="link-item-wrapper" data-tags={link.tags?.join(' ') || ''}>
-                <LinkCard link={link} variant="minimal" showSourceInfo={true} />
-              </div>
-            ))}
-          </div>
+          <LinksAccordion links={sortedLinks} />
         ) : (
           <Card class="empty-state">
             <div class="empty-message">
@@ -183,9 +110,22 @@ const pageDescription = `Browse all ${totalLinks} links from ${totalSources} pos
         )}
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar — link collections */}
       <aside class="sidebar">
-        {/* Could add link stats or popular tags here */}
+        <h2 class="sidebar-heading">Collections</h2>
+        {collections.length > 0 ? (
+          <nav class="type-nav" aria-label="Link collections">
+            {collections.map((c, i) => (
+              <a href={`/blog/${c.slug}`} class:list={['type-card', `type-card--${['primary', 'secondary', 'tertiary'][i % 3]}`]}>
+                <span class="tc-label">{c.title}</span>
+                <span class="tc-count">{c.links?.length ?? 0}</span>
+                <span class="tc-arrow" aria-hidden="true">→</span>
+              </a>
+            ))}
+          </nav>
+        ) : (
+          <p class="sidebar-empty">No collections yet.</p>
+        )}
       </aside>
     </div>
   </main>
@@ -214,223 +154,18 @@ const pageDescription = `Browse all ${totalLinks} links from ${totalSources} pos
   >
     🎨
   </Button>
+
 </BaseLayout>
-
-<script>
-// Search and filter functionality
-document.addEventListener('DOMContentLoaded', function() {
-  const searchInput = document.getElementById('search-input') as HTMLInputElement;
-  const linksGrid = document.getElementById('links-grid');
-  const linkItems = linksGrid?.querySelectorAll('.link-item-wrapper');
-  const tagFilterBadges = document.querySelectorAll('.tag-filter-badge');
-
-  let selectedTag = '';
-
-  function filterLinks() {
-    const searchTerm = searchInput?.value.toLowerCase() || '';
-
-    linkItems?.forEach(item => {
-      const linkElement = item as HTMLElement;
-      const title = linkElement.querySelector('.link-title')?.textContent?.toLowerCase() || '';
-      const description = linkElement.querySelector('.link-description')?.textContent?.toLowerCase() || '';
-      const tags = linkElement.dataset.tags?.toLowerCase() || '';
-
-      const matchesSearch = !searchTerm ||
-        title.includes(searchTerm) ||
-        description.includes(searchTerm) ||
-        tags.includes(searchTerm);
-
-      const matchesTag = !selectedTag || tags.includes(selectedTag.toLowerCase());
-
-      if (matchesSearch && matchesTag) {
-        linkElement.style.display = 'block';
-      } else {
-        linkElement.style.display = 'none';
-      }
-    });
-  }
-
-  searchInput?.addEventListener('input', filterLinks);
-
-  // Tag filter badge handlers
-  tagFilterBadges.forEach(badge => {
-    badge.addEventListener('click', function(e) {
-      e.preventDefault();
-      const badgeElement = this as HTMLElement;
-      selectedTag = badgeElement.dataset.tag || '';
-
-      // Update active state
-      tagFilterBadges.forEach(b => b.classList.remove('active'));
-      badgeElement.classList.add('active');
-
-      filterLinks();
-    });
-  });
-});
-</script>
 
 <style>
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
   @import '../../styles/backgrounds.css';
 
-  .blog-container {
-    min-height: 100vh;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    padding: var(--space-3xl) var(--page-gutter);
-    position: relative;
-    overflow: hidden;
-  }
+  /* Page chrome (.blog-container/.blog-wrapper/.main-content/.sidebar) is in log.css */
 
-  .blog-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: var(--space-3xl);
-    align-items: start;
-  }
+  /* Section header comes from log.css; scorecard removed */
 
-  .main-content {
-    min-width: 0;
-  }
-
-  .sidebar {
-    position: sticky;
-    top: var(--space-3xl);
-  }
-
-  .breadcrumb-nav {
-    margin-bottom: var(--space-xl);
-  }
-
-  .links-header {
-    text-align: left;
-    margin-bottom: var(--space-2xl);
-    padding-bottom: var(--space-xl);
-    border-bottom: var(--border-width) solid var(--gradient-primary-subtle);
-  }
-
-  .links-title {
-    font-size: var(--heading-xl);
-    font-weight: var(--font-bold);
-    margin: 0 0 var(--space-md) 0;
-    color: var(--text-primary);
-    letter-spacing: var(--tracking-tight);
-  }
-
-  .links-description {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-xl) 0;
-    line-height: var(--leading-relaxed);
-  }
-
-  .links-stats {
-    display: flex;
-    gap: var(--space-lg);
-    flex-wrap: wrap;
-  }
-
-  .stat-card {
-    flex: 1;
-    min-width: 120px;
-    text-align: center;
-    padding: var(--space-lg);
-  }
-
-  .stat-number {
-    display: block;
-    font-size: var(--text-3xl);
-    font-weight: var(--font-bold);
-    color: var(--accent-primary);
-    margin-bottom: var(--space-xs);
-  }
-
-  .stat-label {
-    display: block;
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    font-weight: var(--font-medium);
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .controls-wrapper {
-    margin-bottom: var(--space-xl);
-  }
-
-  .links-controls {
-    display: flex;
-    gap: var(--space-lg);
-    align-items: center;
-    flex-wrap: wrap;
-    padding: var(--space-xl);
-  }
-
-  .search-container {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .search-input {
-    width: 100%;
-    padding: var(--space-md);
-    border: var(--border-width) solid var(--accent-primary);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: var(--text-base);
-    font-weight: var(--font-medium);
-    border-radius: var(--border-radius);
-    transition: all var(--duration-base) var(--ease-out);
-    box-sizing: border-box;
-  }
-
-  .search-input:focus {
-    outline: none;
-    box-shadow: var(--shadow-md) var(--accent-secondary);
-  }
-
-  .search-input::placeholder {
-    color: var(--text-secondary);
-    font-style: italic;
-  }
-
-  .filters-wrapper {
-    margin-bottom: var(--space-xl);
-  }
-
-  .tag-filters-inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-  }
-
-  .tag-filter-badge {
-    cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .tag-filter-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md) var(--accent-secondary);
-  }
-
-  .tag-filter-badge.active {
-    background: var(--accent-primary);
-    color: var(--text-light);
-    border-color: var(--accent-primary);
-  }
-
-  .links-grid {
-    display: grid;
-    gap: var(--space-lg);
-    margin-top: var(--space-xl);
-    margin-bottom: var(--space-3xl);
-  }
 
   .empty-state {
     text-align: center;
@@ -459,57 +194,10 @@ document.addEventListener('DOMContentLoaded', function() {
     z-index: var(--z-sticky);
   }
 
-  /* Responsive design */
-  @media (max-width: 1024px) {
-    .blog-wrapper {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xl);
-    }
-
-    .sidebar {
-      position: relative;
-      top: 0;
-    }
-  }
-
+  /* Responsive design (wrapper/sidebar stacking handled by log.css) */
   @media (max-width: 768px) {
     .blog-container {
       padding: var(--space-xl) var(--page-gutter);
-    }
-
-    .links-header {
-      margin-bottom: var(--space-xl);
-    }
-
-    .links-title {
-      font-size: var(--heading-lg);
-    }
-
-    .links-stats {
-      gap: var(--space-md);
-    }
-
-    .stat-card {
-      min-width: 100px;
-      padding: var(--space-md);
-    }
-
-    .stat-number {
-      font-size: var(--text-2xl);
-    }
-
-    .links-controls {
-      flex-direction: column;
-      align-items: stretch;
-      padding: var(--space-lg);
-    }
-
-    .search-container {
-      min-width: unset;
-    }
-
-    .tag-filters {
-      padding: var(--space-lg);
     }
 
     .theme-toggle-button {
@@ -523,22 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
   @media (max-width: 480px) {
     .blog-container {
       padding: var(--space-lg) var(--space-md);
-    }
-
-    .links-stats {
-      flex-direction: column;
-    }
-
-    .stat-card {
-      min-width: unset;
-    }
-
-    .links-controls {
-      padding: var(--space-md);
-    }
-
-    .tag-filters {
-      padding: var(--space-md);
     }
   }
 </style>
