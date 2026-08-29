@@ -1,556 +1,278 @@
 ---
+// About — "specimen sheet" dossier, sharing the blog's design language
+// (Fraunces / IBM Plex / mono, flat, themeable) without copying its feed.
+// Left = the body of the file (statement, intro, CTAs, contact), set
+// editorially like a blog post. Right = the filed record: the
+// ProfileConstellation widget over a mono spec-table.
+// The container stays transparent so the animated grid shows through.
 import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import UIInteractions from '@components/interactive/UIInteractions.astro';
+import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
+import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Button from '@components/primitives/Button.astro';
-import Badge from '@components/primitives/Badge.astro';
-import Footer from '@components/common/Footer.astro';
-import ProgressiveBio from '@components/sections/ProgressiveBio.astro';
-import About from '@components/sections/About.astro';
+import ProfileConstellation from '@components/about/ProfileConstellation.astro';
 
-const pageTitle = 'About - Joel Lithgow';
-const pageDescription = 'Learn more about Joel Lithgow - a creative technologist who builds things and writes about them.';
+const pageTitle = 'Joel Lithgow > About';
+const pageDescription =
+  'Creative technologist Joel Lithgow — a designer who codes and an artist who ships. Filed for the record.';
 
-// Skills for sidebar
-const allSkills = [
-  'figma', 'sketch', 'adobe cc', 'prototyping', 'user research', 'design systems',
-  'javascript', 'typescript', 'react', 'node.js', 'python', 'docker',
-  'claude code', 'mcp servers', 'webgl', 'anime.js', 'p5.js'
-];
+// Social/contact nodes for the constellation widget.
+const social = [
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/joellithgow', icon: 'linkedin', external: true },
+  { label: 'GitHub', href: 'https://github.com/joellithgow', icon: 'github', external: true },
+  { label: 'Instagram', href: 'https://instagram.com/joellithgow', icon: 'instagram', external: true },
+  { label: 'Email', href: 'mailto:joelnotlithgow@gmail.com', icon: 'email', external: false },
+] as const;
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={true}>
-  <div class="about-page">
-    <div class="about-wrapper">
-      <!-- Sidebar (Left) -->
-      <aside class="sidebar">
-        <!-- Avatar & Name -->
-        <div class="sidebar-header">
-          <div class="avatar">JL</div>
-          <h1 class="sidebar-name">
-            <a href="/" class="name-link">Joel Lithgow</a>
-          </h1>
-          <p class="sidebar-tagline">Creative Technologist</p>
-        </div>
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="about-container animated-bg bg-accent-geometric">
+    <div class="about-sheet">
+      {/* ── Left column: the body of the file ────────────────────── */}
+      <div class="file-body">
+        <header class="file-header">
+          <h1 class="statement">I build for the web and make things with my hands.</h1>
+          <p class="file-intro">
+            Creative technologist with a BFA from California College of the Arts. By day I'm the
+            primary developer behind cca.edu; nights and weekends I'm printmaking, playing guitar,
+            and running <a href="https://thisisahousegallery.com" target="_blank" rel="noopener noreferrer">This
+            is a House Gallery</a> out of the living room I share with my friend Joseph — it flips
+            between chaotic studio and clean white walls, usually with a dog named Naru underfoot.
+            Lately most of it runs through AI, this site included.
+          </p>
+          <div class="cta-row">
+            <a href="/work" class="cta cta--primary">See my work →</a>
+            <a href="/blog" class="cta cta--secondary">Read the blog</a>
+          </div>
+        </header>
 
-        <!-- Social Links with Icons -->
-        <div class="social-links">
-          <a href="https://linkedin.com/in/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
-            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-          </a>
-          <a href="https://github.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub">
-            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-            </svg>
-          </a>
-          <a href="https://instagram.com/joellithgow" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
-            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-            </svg>
-          </a>
-          <a href="mailto:joelnotlithgow@gmail.com" class="social-link" aria-label="Email">
-            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
-            </svg>
-          </a>
-        </div>
-
-        <!-- Progressive Bio Section (My Life Story) -->
-        <div class="sidebar-bio">
-          <ProgressiveBio showHeader={false} />
-        </div>
-      </aside>
-
-      <!-- Main Content Column (Right) -->
-      <main class="main-content">
-        <!-- About Section (Quick Facts with Stats) -->
-        <About
-          sectionTitle="about me"
-          bio="I build digital products that balance user needs with business goals. My background spans UX research, interface design, and frontend development—giving me the ability to take projects from concept to production. I focus on solving real problems with clean, maintainable solutions."
-          showContact={false}
-          showSkills={false}
-        />
-
-        <!-- Skills Section -->
-        <section class="skills-section">
-          <h2 class="skills-title">Skills & Tools</h2>
-          <div class="skills-list">
-            {allSkills.map((skill) => (
-              <Badge variant="secondary" size="sm">#{skill}</Badge>
-            ))}
+        {/* CONTACT */}
+        <section class="doc-section">
+          <h2 class="doc-head">Get in touch</h2>
+          <p class="doc-text">Have something in mind, or just want to say hello? Email's the fastest way to reach me.</p>
+          <div class="cta-row">
+            <a href="mailto:joelnotlithgow@gmail.com" class="cta cta--primary">Email me →</a>
           </div>
         </section>
+      </div>
 
-        <!-- Contact Form Section -->
-        <section class="contact-section" aria-labelledby="contact-heading">
-          <h2 id="contact-heading" class="section-title">Get in Touch</h2>
-          <p class="contact-intro">
-            Have a project in mind or just want to say hello? Drop me a message!
-          </p>
-
-          <form
-            name="contact"
-            method="POST"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            class="contact-form"
-          >
-            <!-- Hidden fields for Netlify Forms -->
-            <input type="hidden" name="form-name" value="contact" />
-            <p class="hidden">
-              <label>
-                Don't fill this out if you're human: <input name="bot-field" />
-              </label>
-            </p>
-
-            <div class="form-group">
-              <label for="name" class="form-label">Name</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                class="form-input"
-                placeholder="Your name"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="email" class="form-label">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                class="form-input"
-                placeholder="your.email@example.com"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="subject" class="form-label">Subject</label>
-              <input
-                type="text"
-                id="subject"
-                name="subject"
-                required
-                class="form-input"
-                placeholder="What's this about?"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="message" class="form-label">Message</label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows="6"
-                class="form-input form-textarea"
-                placeholder="Your message..."
-              ></textarea>
-            </div>
-
-            <Button type="submit" variant="primary" size="lg" class="submit-button">
-              Send Message
-            </Button>
-          </form>
-        </section>
-      </main>
+      {/* ── Right spine: the filed record ────────────────────────── */}
+      <aside class="spine">
+        <ProfileConstellation links={social} monogram="JL" />
+      </aside>
     </div>
-  </div>
+  </main>
 
-  <!-- Footer -->
-  <Footer />
+  <!-- Theme Modal -->
+  <ThemeModal />
+
+  <!-- Enhanced UI Interactions -->
+  <UIInteractions />
+
+  <!-- Keyboard Shortcuts and Accessibility -->
+  <KeyboardShortcuts />
+
+  <!-- Performance Optimization and Monitoring -->
+  <PerformanceOptimizer />
+
+  <!-- Theme toggle button -->
+  <Button
+    variant="ghost"
+    size="md"
+    id="themeControl"
+    class="theme-toggle-button"
+    onclick="window.openThemeModal && window.openThemeModal()"
+    aria-label="Change theme"
+    title="Change theme (Ctrl+T)"
+  >
+    🎨
+  </Button>
 </BaseLayout>
 
 <style>
   @import '../styles/tokens.css';
   @import '../styles/themes.css';
+  @import '../styles/backgrounds.css';
 
-  .about-page {
-    background: var(--bg-primary);
+  /* ---- Shell: NO background here. The grid + accent (.animated-bg
+     ::before / ::after) sit at z-index:-1; since this element isn't its own
+     stacking context, an opaque background would paint over them and hide
+     them. Leaving it transparent lets them show over the body's base color.
+     Requires position:relative + overflow:hidden. ---- */
+  .about-container {
+    min-height: 100vh;
     color: var(--text-primary);
-    padding: 0;
-    min-height: 100vh;
+    font-family: var(--font-body);
+    padding: var(--space-3xl) 0;
+    position: relative;
+    overflow: hidden;
   }
 
-  /* Two-column grid layout */
-  .about-wrapper {
+  /* Mirror the global header's inner container (.gh-inner) so the content
+     column's left edge lines up under the "Joel Lithgow" wordmark. */
+  .about-sheet {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
+    position: relative;
+    z-index: 10; /* above the animated background */
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: var(--space-3xl);
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    column-gap: var(--space-3xl);
+    align-items: start;
   }
 
-  .main-content {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xl);
-    padding: var(--space-3xl) var(--page-gutter) var(--space-3xl) 0;
-  }
-
-  /* Sidebar - Attached panel popping from left edge */
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-3xl) var(--space-xl);
-    border: none;
-    border-right: var(--border-width-thick) solid var(--bg-dark);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  /* ============================================================
+     RIGHT SPINE — the filed record
+     ============================================================ */
+  .spine {
     position: sticky;
-    top: 0;
+    top: var(--space-xl);
     align-self: start;
-    min-height: 100vh;
-  }
-
-  /* Sidebar Header */
-  .sidebar-header {
-    text-align: center;
-  }
-
-  .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: var(--bg-light);
-    color: var(--accent-primary);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
-    border: 3px solid var(--bg-dark);
-    box-shadow: var(--shadow-lg) var(--bg-dark);
-    margin: 0 auto var(--space-md);
+    gap: var(--space-xl);
   }
 
-  .sidebar-name {
-    margin: 0;
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
-  }
+  /* ============================================================
+     RIGHT COLUMN — the body of the file
+     ============================================================ */
+  .file-body { min-width: 0; }
 
-  .name-link {
-    color: var(--text-light);
-    text-decoration: underline;
-    text-decoration-color: var(--bg-light);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 3px;
-    transition: opacity var(--duration-base) var(--ease-out);
+  .file-header {
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
   }
-
-  .name-link:hover {
-    opacity: 0.8;
-  }
-
-  .sidebar-tagline {
-    margin: var(--space-xs) 0 0;
-    color: var(--text-light);
-    opacity: 0.8;
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  /* Social Links - Icon Row */
-  .social-links {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  .social-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    color: #fff;
-    border-radius: 50%;
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .social-link:hover {
-    opacity: 0.8;
-    transform: translateY(-2px);
-  }
-
-  .social-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Sidebar Bio - override ProgressiveBio styles */
-  .sidebar-bio {
-    margin-top: var(--space-lg);
-  }
-
-  .sidebar-bio :global(.progressive-bio) {
-    padding: 0;
-    background: transparent;
-  }
-
-  .sidebar-bio :global(.section-content) {
-    padding: 0;
-  }
-
-  .sidebar-bio :global(.bio-content) {
-    font-size: var(--text-base);
-    color: var(--text-light);
-  }
-
-  .sidebar-bio :global(.bio-link) {
-    color: #fff;
-    text-decoration-color: #fff;
-  }
-
-  .sidebar-bio :global(.bio-link:hover) {
-    color: #fff;
-    opacity: 0.8;
-  }
-
-  .sidebar-bio :global(.bio-subheading) {
-    color: #fff;
-  }
-
-  .sidebar-bio :global(.story-subheading) {
-    display: none;
-  }
-
-  .sidebar-bio :global(.read-more-btn) {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    color: var(--text-light);
-    font-size: var(--text-base);
-    font-weight: var(--font-medium);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    transform: none;
-    margin-top: var(--space-md);
-  }
-
-  .sidebar-bio :global(.read-more-btn:hover) {
-    background: transparent;
-    box-shadow: none;
-    transform: none;
-    color: var(--text-light);
-    opacity: 0.8;
-  }
-
-  .sidebar-bio :global(.read-more-btn .btn-icon) {
-    display: none;
-  }
-
-  .sidebar-bio :global(.read-more-btn.completed) {
-    text-decoration: none;
-    cursor: default;
-    opacity: 0.9;
-  }
-
-  .sidebar-bio :global(.read-more-btn.completed:hover) {
-    opacity: 0.9;
-  }
-
-  /* Override About section styles */
-  .main-content :global(.about) {
-    border-top: none;
-    padding: 0;
-  }
-
-  /* Skills Section (Main Content) */
-  .skills-section {
-    padding: var(--space-xl) 0;
-    border-top: 1px solid var(--bg-dark);
-    border-bottom: 1px solid var(--bg-dark);
-  }
-
-  .skills-title {
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
+  .statement {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-xl);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
     margin: 0 0 var(--space-lg) 0;
-    text-decoration: underline;
-    text-decoration-color: var(--accent-primary);
-    text-decoration-thickness: 3px;
+    max-width: 20ch;
+  }
+  .file-intro {
+    font-family: var(--font-body);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 60ch;
+    margin: 0;
   }
 
-  /* Skills List */
-  .skills-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
+  /* Sections read as a running document: hairline rule + Fraunces head */
+  .doc-section {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--gradient-primary-subtle);
   }
-
-  /* Contact Form Section */
-  .contact-section {
-    padding: var(--space-2xl);
-    background: var(--bg-secondary);
-    border: var(--border-width-thick) solid var(--bg-dark);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
-  }
-
-  .section-title {
-    font-size: var(--heading-lg);
+  .doc-head {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
     margin: 0 0 var(--space-md) 0;
-    font-weight: var(--font-bold);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-primary);
-    text-decoration-thickness: 4px;
   }
-
-  .contact-intro {
-    font-size: var(--text-lg);
+  .doc-text {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
     color: var(--text-secondary);
-    margin: 0 0 var(--space-xl) 0;
+    max-width: 68ch;
+    margin: 0;
   }
-
-  .contact-form {
-    background: var(--bg-primary);
-    padding: var(--space-2xl);
-    border: var(--border-width) solid var(--bg-dark);
+  .doc-text a,
+  .file-intro a {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--gradient-primary-dim);
   }
+  .doc-text a:hover,
+  .file-intro a:hover { text-decoration-color: var(--accent-primary); }
 
-  .hidden {
-    display: none;
+  /* CTAs — accent blocks matching the blog asides (.type-card):
+     colored fill, --bg-dark border + offset shadow, hover-nudge. */
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
   }
-
-  .form-group {
-    margin-bottom: var(--space-lg);
-  }
-
-  .form-label {
-    display: block;
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
-    color: var(--text-primary);
-    margin-bottom: var(--space-sm);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .form-input {
-    width: 100%;
-    padding: var(--space-md);
-    font-size: var(--text-base);
-    font-family: inherit;
-    color: var(--text-primary);
-    background: var(--bg-secondary);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    padding: var(--space-sm) var(--space-lg);
     border: var(--border-width) solid var(--bg-dark);
-    border-radius: var(--border-radius);
-    transition: all var(--duration-base) var(--ease-out);
+    box-shadow: var(--shadow-md) var(--bg-dark);
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+  }
+  .cta:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg) var(--bg-dark);
+  }
+  .cta:focus-visible {
+    outline: var(--border-width) solid var(--bg-dark);
+    outline-offset: 3px;
+  }
+  .cta--primary { background: var(--accent-primary); color: var(--card-alt-text-1); }
+  .cta--secondary { background: var(--accent-secondary); color: var(--card-alt-text-2); }
+
+  /* ---- Theme toggle button (matches blog) ---- */
+  .theme-toggle-button {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    z-index: var(--z-sticky);
   }
 
-  .form-input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px var(--accent-primary-dim);
-  }
-
-  .form-textarea {
-    resize: vertical;
-    min-height: 150px;
-  }
-
-  .submit-button {
-    width: 100%;
-  }
-
-  /* Responsive - Tablet */
-  @media (max-width: 1024px) {
-    .about-wrapper {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xl);
+  /* ============================================================
+     Responsive
+     ============================================================ */
+  /* Spine drops below the body, centered */
+  @media (max-width: 900px) {
+    .about-sheet {
+      display: block;
+      max-width: 720px;
     }
-
-    .sidebar {
-      position: relative;
-      top: 0;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: var(--space-xl);
-      background: transparent;
-      padding: 0;
-      padding-bottom: var(--space-xl);
-      border: none;
-      border-bottom: 1px solid var(--bg-dark);
-      box-shadow: none;
-    }
-
-    .sidebar-header {
-      text-align: left;
-    }
-
-    .avatar {
-      margin: 0 0 var(--space-sm) 0;
-    }
-
-    .social-links {
-      justify-content: flex-start;
+    .spine {
+      position: static;
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--gradient-primary-subtle);
     }
   }
 
-  /* Responsive - Mobile */
-  @media (max-width: 768px) {
-    .about-page {
-      padding: var(--space-xl) var(--page-gutter);
-    }
-
-    .sidebar {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .sidebar-header {
-      text-align: center;
-    }
-
-    .avatar {
-      margin: 0 auto var(--space-sm);
-    }
-
-    .social-links {
-      justify-content: center;
-    }
-
-    .section-title {
-      font-size: var(--heading-md);
-    }
-
-    .contact-section {
-      padding: var(--space-xl);
-    }
-
-    .contact-form {
-      padding: var(--space-lg);
+  @media (max-width: 640px) {
+    .theme-toggle-button {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 44px;
+      height: 44px;
     }
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .social-link,
-    .contact-form,
-    .submit-button {
-      transition: none;
-    }
-
-    .social-link:hover {
-      transform: none;
-    }
-  }
-
-  /* Footer override - position above sidebar shadow */
-  :global(.site-footer) {
-    position: relative;
-    z-index: 10;
+    .cta { transition: none; }
+    .cta:hover { transform: none; }
   }
 </style>
