@@ -1,0 +1,419 @@
+---
+/**
+ * ProfileConstellation — a hand-authored SVG "orbit" widget.
+ * A center avatar circle (styled like a primary button: --bg-dark border +
+ * hard offset shadow) with social/contact links as accent-colored icon
+ * circles arranged radially, each tethered back to the hub, gently floating.
+ *
+ * Everything is plain SVG so the connecting tethers are trivial (a <line>
+ * between two computed points) and the whole thing stays self-contained.
+ */
+export interface ConstellationLink {
+  label: string;
+  href: string;
+  icon: 'linkedin' | 'github' | 'instagram' | 'email';
+  external?: boolean;
+}
+
+export interface Props {
+  links: ConstellationLink[];
+  monogram?: string;
+  /** Accessible name for the widget as a whole. */
+  label?: string;
+}
+
+const { links, monogram = 'JL', label = 'Profile and links' } = Astro.props;
+
+// Icon glyphs (24×24 viewBox paths).
+const ICONS: Record<ConstellationLink['icon'], string> = {
+  linkedin:
+    'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+  github:
+    'M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z',
+  instagram:
+    'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z',
+  email:
+    'M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z',
+};
+
+// Geometry, in SVG user units.
+const SIZE = 320;
+const C = SIZE / 2; // hub center
+const ORBIT = 104; // fallback radius if the offset table doesn't match
+const AVATAR_R = 46;
+const NODE_R = 26;
+const SHADOW = 4; // hard offset shadow, matches --shadow-md
+const ICON = 22; // rendered icon size
+const START = -90;
+
+const iconScale = ICON / 24;
+const iconT = -(ICON / 2); // translate a scaled 24-unit glyph to its center
+
+// Irregular, hand-strung offsets from the hub — weighted left + lower so the
+// web looks tucked into a corner rather than pinned to the compass points.
+const OFFSETS = [
+  { dx: -108, dy: -30 }, // far left, slightly up
+  { dx: -52, dy: 86 }, // lower-left
+  { dx: 40, dy: 100 }, // low, a touch right
+  { dx: 84, dy: -58 }, // one thread up-right
+];
+
+const nodes = links.map((link, i) => {
+  let dx: number, dy: number;
+  if (OFFSETS.length === links.length) {
+    ({ dx, dy } = OFFSETS[i]);
+  } else {
+    const a = ((START + (360 / links.length) * i) * Math.PI) / 180;
+    dx = ORBIT * Math.cos(a);
+    dy = ORBIT * Math.sin(a);
+  }
+  return {
+    ...link,
+    i,
+    x: +(C + dx).toFixed(2),
+    y: +(C + dy).toFixed(2),
+    tone: i % 2 === 0 ? 'secondary' : 'tertiary',
+    path: ICONS[link.icon],
+  };
+});
+---
+
+<svg
+  class="constellation"
+  viewBox={`0 0 ${SIZE} ${SIZE}`}
+  role="group"
+  aria-label={label}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {/* Tethers — drawn first so they sit behind the circles.
+     Polylines so they can snap into jagged stubs on break-out. */}
+  <g class="tethers" aria-hidden="true">
+    {nodes.map((n) => <polyline class="tether" points={`${C},${C} ${n.x},${n.y}`} />)}
+  </g>
+
+  {/* Center hub */}
+  <g class="avatar" aria-hidden="true">
+    <circle class="avatar-shadow" cx={C + SHADOW} cy={C + SHADOW} r={AVATAR_R} />
+    <circle class="avatar-circle" cx={C} cy={C} r={AVATAR_R} />
+    <text class="avatar-mono" x={C} y={C}>{monogram}</text>
+  </g>
+
+  {/* Orbiting link nodes */}
+  {nodes.map((n) => (
+    <a
+      class:list={['node', `node--${n.tone}`]}
+      href={n.href}
+      target={n.external ? '_blank' : undefined}
+      rel={n.external ? 'noopener noreferrer' : undefined}
+      aria-label={n.label}
+      data-hx={n.x}
+      data-hy={n.y}
+    >
+      <title>{n.label}</title>
+      {/* Position — driven by the drag/spring script when interacting */}
+      <g class="node-pos" transform={`translate(${n.x} ${n.y})`}>
+        {/* Float (CSS transform, staggered) */}
+        <g class="node-bob" style={`--i:${n.i}`}>
+          <circle class="node-shadow" cx={SHADOW} cy={SHADOW} r={NODE_R} />
+          {/* Face lifts on hover/focus while the shadow stays put */}
+          <g class="node-face">
+            <circle class="node-circle" r={NODE_R} />
+            <g class="node-icon" transform={`translate(${iconT} ${iconT}) scale(${iconScale})`}>
+              <path d={n.path} />
+            </g>
+          </g>
+        </g>
+      </g>
+    </a>
+  ))}
+</svg>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .constellation {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    margin: 0 auto;
+    overflow: visible; /* let shadows + float bleed past the viewBox edge */
+  }
+
+  /* Tethers — same ink as the circle borders, so it reads as one wireframe */
+  .tether {
+    fill: none;
+    stroke: var(--bg-dark);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.5;
+  }
+  /* A snapped cord reads like a cut live wire */
+  .tether.snapped {
+    stroke: var(--accent-primary);
+    stroke-width: 2;
+    opacity: 0.9;
+  }
+
+  /* Center hub — styled like a primary button; grabbable once the
+     drag script has enhanced the widget (.interactive). */
+  .avatar { touch-action: none; }
+  .constellation.interactive .avatar { cursor: grab; }
+  .constellation.dragging .avatar { cursor: grabbing; }
+  /* Physics owns the motion while dragging — pause the idle float */
+  .constellation.dragging .node-bob { animation: none; }
+
+  .avatar-shadow { fill: var(--bg-dark); }
+  .avatar-circle {
+    fill: var(--accent-primary);
+    stroke: var(--bg-dark);
+    stroke-width: 2;
+  }
+  .avatar-mono {
+    fill: var(--card-alt-text-1);
+    font-family: var(--font-mono);
+    font-weight: var(--font-bold);
+    font-size: 30px;
+    letter-spacing: 0.04em;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* Nodes */
+  .node { cursor: pointer; }
+  .node-shadow { fill: var(--bg-dark); }
+  .node-circle { stroke: var(--bg-dark); stroke-width: 2; }
+
+  .node--secondary .node-circle { fill: var(--accent-secondary); }
+  .node--secondary .node-icon path { fill: var(--card-alt-text-2); }
+  .node--tertiary .node-circle { fill: var(--accent-tertiary); }
+  .node--tertiary .node-icon path { fill: var(--card-alt-text-3); }
+
+  /* Hover / focus lift: move the face, leave the shadow — brutalist pop */
+  .node-face {
+    transform-box: fill-box;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .node:hover .node-face,
+  .node:focus-visible .node-face { transform: translate(-3px, -3px); }
+  .node:focus { outline: none; }
+  .node:focus-visible .node-circle { stroke-width: 3.5; }
+
+  /* Gentle staggered float */
+  .node-bob {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: nodeFloat 6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -1.4s);
+  }
+
+  @keyframes nodeFloat {
+    0%, 100% { transform: translate(0px, 0px); }
+    33% { transform: translate(2px, -5px); }
+    66% { transform: translate(-2px, -3px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .node-bob { animation: none; }
+    .node-face { transition: none; }
+  }
+</style>
+
+<script>
+  // Interaction: the hub is a free-floating draggable; each link node FOLLOWS it
+  // on its OWN damped spring (social "followers", ha). Yank the hub and any cord
+  // stretched too far snaps on its own — that node freezes where it lands. Bring
+  // the hub near a loose node and just that one cord reattaches and resumes
+  // following. Nothing springs "home": drop it and it stays. No dependencies.
+  function initConstellation(svg) {
+    if (svg.dataset.cInit) return;
+    // Respect reduced motion — leave the widget static (links still work).
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    svg.dataset.cInit = '1';
+    svg.classList.add('interactive');
+
+    const vb = svg.viewBox.baseVal;
+    const C = vb.width / 2;
+    const HUB_M = 48;  // keep the whole hub circle inside the viewport
+    const NODE_M = 30; // keep node circles inside the viewport
+
+    const avatar = svg.querySelector('.avatar');
+    const anchors = Array.from(svg.querySelectorAll('.node'));
+    const tethers = Array.from(svg.querySelectorAll('.tether'));
+
+    const nodes = anchors.map((a, i) => {
+      const hx = parseFloat(a.getAttribute('data-hx'));
+      const hy = parseFloat(a.getAttribute('data-hy'));
+      return {
+        attached: true, // each node connects / snaps independently
+        offX: hx - C, offY: hy - C, // where this node rides relative to the hub
+        restLen: Math.hypot(hx - C, hy - C), // natural cord length
+        x: hx, y: hy, vx: 0, vy: 0,
+        pos: a.querySelector('.node-pos'),
+        tether: tethers[i],
+      };
+    });
+
+    // Hub state — starts centered, then lives wherever you leave it.
+    let ax = C, ay = C, avx = 0, avy = 0, prevAx = C, prevAy = C;
+    let dragging = false;
+    const grab = { x: 0, y: 0 };
+    let raf = null;
+
+    const K = 0.14;          // follow spring stiffness
+    const DAMP = 0.82;       // velocity damping / friction
+    const EPS = 0.05;        // "settled" threshold
+    const BREAK_SLACK = 55;  // a cord snaps once stretched this far past its rest length
+    const RECONNECT = 46;    // hub within this of a loose node → that one cord reattaches
+
+    // A short jagged "snapped wire" stub, dangling from a node toward the
+    // point where its cord used to meet the hub.
+    function zig(nx, ny, tx, ty) {
+      let dx = tx - nx, dy = ty - ny;
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+      const px = -dy, py = dx; // perpendicular
+      const L = 26, amp = 5;
+      const along = [0, 0.3, 0.55, 0.8];
+      const lat = [0, amp, -amp, amp * 0.4];
+      let out = '';
+      for (let k = 0; k < along.length; k++) {
+        const ox = nx + dx * L * along[k] + px * lat[k];
+        const oy = ny + dy * L * along[k] + py * lat[k];
+        out += `${ox.toFixed(1)},${oy.toFixed(1)} `;
+      }
+      return out.trim();
+    }
+
+    const svgPt = svg.createSVGPoint ? svg.createSVGPoint() : null;
+    function toLocal(clientX, clientY) {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: ax, y: ay };
+      const inv = ctm.inverse();
+      if (svgPt) {
+        svgPt.x = clientX; svgPt.y = clientY;
+        const p = svgPt.matrixTransform(inv);
+        return { x: p.x, y: p.y };
+      }
+      const p = new DOMPoint(clientX, clientY).matrixTransform(inv);
+      return { x: p.x, y: p.y };
+    }
+
+    // The visible window, expressed in this SVG's user units — the "box"
+    // everything is kept inside so nothing can be flung off-screen for good.
+    function bounds() {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return null;
+      const inv = ctm.inverse();
+      const tl = new DOMPoint(0, 0).matrixTransform(inv);
+      const br = new DOMPoint(window.innerWidth, window.innerHeight).matrixTransform(inv);
+      return { minX: tl.x, minY: tl.y, maxX: br.x, maxY: br.y };
+    }
+
+    function render() {
+      avatar.setAttribute('transform', `translate(${(ax - C).toFixed(2)} ${(ay - C).toFixed(2)})`);
+      for (const n of nodes) {
+        n.pos.setAttribute('transform', `translate(${n.x.toFixed(2)} ${n.y.toFixed(2)})`);
+        if (n.attached) {
+          n.tether.setAttribute('points', `${ax.toFixed(2)},${ay.toFixed(2)} ${n.x.toFixed(2)},${n.y.toFixed(2)}`);
+          n.tether.classList.remove('snapped');
+        } else {
+          n.tether.setAttribute('points', zig(n.x, n.y, n.x - n.offX, n.y - n.offY));
+          n.tether.classList.add('snapped');
+        }
+      }
+    }
+
+    function frame() {
+      const b = bounds();
+
+      if (dragging) {
+        avx = ax - prevAx; avy = ay - prevAy; // velocity from the pointer
+      } else {
+        ax += avx; ay += avy;                 // no home — coast with friction
+        avx *= DAMP; avy *= DAMP;
+      }
+      // The whole window is the box — keep the hub on-screen.
+      if (b) {
+        const cx = Math.max(b.minX + HUB_M, Math.min(b.maxX - HUB_M, ax));
+        const cy = Math.max(b.minY + HUB_M, Math.min(b.maxY - HUB_M, ay));
+        if (cx !== ax) avx = 0;
+        if (cy !== ay) avy = 0;
+        ax = cx; ay = cy;
+      }
+      prevAx = ax; prevAy = ay;
+
+      let moving = dragging;
+      for (const n of nodes) {
+        if (n.attached) {
+          // This one cord snaps if the hub stretches it too far past rest.
+          const cord = Math.hypot(ax - n.x, ay - n.y);
+          if (cord > n.restLen + BREAK_SLACK) {
+            n.attached = false;
+            n.vx += (Math.random() - 0.5) * 5; // a little tear scatter
+            n.vy += (Math.random() - 0.5) * 5;
+          } else {
+            const tX = ax + n.offX, tY = ay + n.offY;
+            n.vx += (tX - n.x) * K; n.vx *= DAMP; n.x += n.vx;
+            n.vy += (tY - n.y) * K; n.vy *= DAMP; n.y += n.vy;
+            if (Math.abs(tX - n.x) > EPS || Math.abs(tY - n.y) > EPS) moving = true;
+          }
+        } else {
+          // Loose: coast to a stop, reattach when the hub comes close.
+          n.x += n.vx; n.y += n.vy; n.vx *= DAMP; n.vy *= DAMP;
+          if (Math.hypot(ax - n.x, ay - n.y) < RECONNECT) n.attached = true;
+        }
+        // Keep every node on-screen too — nothing gets flung away for good.
+        if (b) {
+          const cx = Math.max(b.minX + NODE_M, Math.min(b.maxX - NODE_M, n.x));
+          const cy = Math.max(b.minY + NODE_M, Math.min(b.maxY - NODE_M, n.y));
+          if (cx !== n.x) { n.x = cx; n.vx = 0; }
+          if (cy !== n.y) { n.y = cy; n.vy = 0; }
+        }
+        if (Math.abs(n.vx) > EPS || Math.abs(n.vy) > EPS) moving = true;
+      }
+      if (!dragging && (Math.abs(avx) > EPS || Math.abs(avy) > EPS)) moving = true;
+
+      render();
+      if (moving) raf = requestAnimationFrame(frame);
+      else { svg.classList.remove('dragging'); raf = null; } // stop; leave everything as-is
+    }
+
+    function ensureLoop() { if (raf == null) raf = requestAnimationFrame(frame); }
+
+    avatar.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      dragging = true;
+      svg.classList.add('dragging');
+      try { avatar.setPointerCapture(e.pointerId); } catch (_) {}
+      const p = toLocal(e.clientX, e.clientY);
+      grab.x = ax - p.x; grab.y = ay - p.y;
+      prevAx = ax; prevAy = ay;
+      ensureLoop();
+    });
+
+    avatar.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const p = toLocal(e.clientX, e.clientY);
+      ax = p.x + grab.x; ay = p.y + grab.y; // free — the loop clamps to the window
+      ensureLoop();
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      try { avatar.releasePointerCapture(e.pointerId); } catch (_) {}
+      ensureLoop(); // coast to a stop wherever it was let go
+    }
+    avatar.addEventListener('pointerup', endDrag);
+    avatar.addEventListener('pointercancel', endDrag);
+  }
+
+  function initAll() {
+    document.querySelectorAll('.constellation').forEach(initConstellation);
+  }
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
+</script>
