@@ -1,0 +1,130 @@
+---
+import BaseLayout from '@components/common/BaseLayout.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import { fetchBlogPosts } from '@lib/astraeus';
+import '../../styles/log.css';
+
+// Group a dump's songs by album; bigger cover = more liked songs (matches the index feed).
+type AlbumCell = { art: string; name: string; artist: string; count: number; href?: string };
+function albumMosaic(songs: any[]): AlbumCell[] {
+  const map = new Map<string, AlbumCell>();
+  for (const s of songs) {
+    if (!s.album_art_url) continue;
+    const key = s.album_name || s.album_art_url;
+    const existing = map.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      map.set(key, {
+        art: (s.album_art_url as string).replace('ab67616d00004851', 'ab67616d0000b273'),
+        name: s.album_name || s.track_name,
+        artist: s.artist_name,
+        count: 1,
+        href: s.spotify_url,
+      });
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => b.count - a.count);
+}
+
+const dumps = (await fetchBlogPosts())
+  .filter((p: any) => p.post_type === 'spotify_dump')
+  .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
+
+// Featured Spotify links (share ?si= params stripped).
+const spotifyLinks = [
+  { label: 'Rock Lover', href: 'https://open.spotify.com/playlist/37W20LgdrwREsmw4n3LdHT', tone: 'primary' },
+  { label: 'My GFs Band', href: 'https://open.spotify.com/album/58oxh42Rd414O6ineUu3Et', tone: 'secondary' },
+  { label: 'My friends band', href: 'https://open.spotify.com/artist/0RCkt4wVqkCX00T7ITXIzp', tone: 'tertiary' },
+  { label: 'Aussie Stuff', href: 'https://open.spotify.com/playlist/4gS9JLYd16rUV4pWhEXj6P', tone: 'primary' },
+];
+
+const pageTitle = 'Joel Lithgow > Music';
+const pageDescription = "What I've been listening to — monthly liked-song dumps.";
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <main class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
+    <div class="blog-wrapper">
+      <div class="main-content">
+        <header class="section-head">
+          <h1 class="section-title">Music</h1>
+          <p class="section-desc">{pageDescription}</p>
+        </header>
+
+        {dumps.length > 0 ? (
+          <div class="music-list">
+            {dumps.map((dump: any) => (
+              <article class="music-dump">
+                <h2 class="music-dump-title">
+                  <a href={`/blog/${dump.slug}`}>
+                    {new Date(dump.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', timeZone: 'UTC' })}
+                  </a>
+                </h2>
+                {dump.songs && dump.songs.length > 0 && (
+                  <div class="spotify-cover-grid">
+                    {albumMosaic(dump.songs).map((album) => {
+                      const span = album.count >= 4 ? 3 : album.count >= 2 ? 2 : 1;
+                      const label = `${album.name} — ${album.artist} · ${album.count} song${album.count > 1 ? 's' : ''}`;
+                      return album.href ? (
+                        <a href={album.href} target="_blank" rel="noopener noreferrer" class="cover-cell" data-span={span} title={label}>
+                          <img src={album.art} alt={label} loading="lazy" />
+                        </a>
+                      ) : (
+                        <span class="cover-cell" data-span={span} title={label}>
+                          <img src={album.art} alt={label} loading="lazy" />
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p class="section-empty">No music dumps yet.</p>
+        )}
+      </div>
+
+      <aside class="sidebar">
+        <h2 class="sidebar-heading">On Spotify</h2>
+        <nav class="type-nav" aria-label="Spotify links">
+          {spotifyLinks.map((l) => (
+            <a href={l.href} target="_blank" rel="noopener noreferrer" class:list={['type-card', `type-card--${l.tone}`]}>
+              <span class="tc-label">{l.label}</span>
+              <span class="tc-arrow" aria-hidden="true">↗</span>
+            </a>
+          ))}
+        </nav>
+      </aside>
+    </div>
+  </main>
+
+  <ThemeModal />
+</BaseLayout>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  /* Section header + breadcrumb come from log.css */
+  .music-list { display: flex; flex-direction: column; gap: var(--space-xl); }
+  .music-dump {
+    border-top: 1px solid var(--gradient-primary-subtle);
+    padding-top: var(--space-lg);
+  }
+  .music-dump:first-child { border-top: none; padding-top: 0; }
+  .music-dump-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-sm) 0;
+  }
+  .music-dump-title a { color: var(--text-primary); text-decoration: none; }
+  .music-dump-title a:hover { color: var(--accent-primary); }
+</style>
