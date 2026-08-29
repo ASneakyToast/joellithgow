@@ -105,7 +105,7 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
             <h2 class="post-title">
                                       {(post as any).has_detail_page !== false ? (
                                         <a
-                                          href={post.post_type === 'definition' ? `/definitions/${post.slug}` : `/blog/${post.slug}`}
+                                          href={post.post_type === 'definition' ? `/blog/dictionary/${post.slug}` : `/blog/${post.slug}`}
                                           class="post-title-link"
                                         >
                                           {post.post_type === 'definition' ? (post as any).term || post.title : post.title}
@@ -185,7 +185,7 @@ const pageDescription = `All blog posts tagged with ${tag}.`;
               )}
 
               {(post as any).has_detail_page !== false && (
-                              <Button href={post.post_type === 'definition' ? `/definitions/${post.slug}` : `/blog/${post.slug}`} variant="primary" size="md">
+                              <Button href={post.post_type === 'definition' ? `/blog/dictionary/${post.slug}` : `/blog/${post.slug}`} variant="primary" size="md">
                                 {post.post_type === 'definition' ? 'View definition →' : 'Continue reading →'}
                               </Button>
                             )}
