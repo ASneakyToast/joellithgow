@@ -20,10 +20,24 @@ export {
 
 // Geometric Grid Props (legacy, not part of pattern system)
 export interface GeometricGridProps {
-  /** Grid cell size in pixels (default: 80) */
-  gridSize?: number;
-  /** Line thickness in pixels (default: 1) */
-  lineWidth?: number;
   /** Animation type (default: 'drift') */
   animationType?: 'drift' | 'pulse' | 'wave';
+  /** Optional class on the container */
+  class?: string;
+  /** Explicit primary/secondary colors; falls back to theme CSS vars */
+  colors?: Record<string, string>;
+  /** Grid cell size in pixels (default: 80) */
+  gridSize?: number;
+  /** Optional container id */
+  id?: string;
+  /** Line thickness in pixels (default: 1) */
+  lineWidth?: number;
+  /** Animation intensity, 0–1 (default: 0.5) */
+  intensity?: number;
+  /** Cap on devicePixelRatio (default: 2) */
+  maxPixelRatio?: number;
+  /** Pause rendering when offscreen (default: true) */
+  pauseOffscreen?: boolean;
+  /** Animation speed multiplier (default: 1.0) */
+  speed?: number;
 }
