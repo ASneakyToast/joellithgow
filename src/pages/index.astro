@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
+import ThemeConstellation from '@components/theme/ThemeConstellation.astro';
 import Card from '@components/primitives/Card.astro';
-import Button from '@components/primitives/Button.astro';
-import Badge from '@components/primitives/Badge.astro';
 import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
@@ -28,6 +27,11 @@ const pageDescription = 'Creative technologist who builds things and writes abou
             <a href="/about" class="about-cta">
               Learn more about me →
             </a>
+          </div>
+
+          <!-- Theme picker constellation (replaces the floating toggle here) -->
+          <div class="theme-picker">
+            <ThemeConstellation />
           </div>
         </div>
 
@@ -65,19 +69,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
         </nav>
       </div>
     </div>
-
-    <!-- Theme toggle (minimal, bottom corner) -->
-    <Button
-      variant="ghost"
-      size="md"
-      id="landingThemeControl"
-      class="theme-toggle-minimal"
-      onclick="window.openThemeModal && window.openThemeModal()"
-      aria-label="Change theme"
-      title="Change theme (Ctrl+T)"
-    >
-      🎨
-    </Button>
   </main>
 
   <!-- Theme Modal -->
@@ -92,6 +83,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   .landing-page {
     min-height: 100vh;
     color: var(--text-primary);
+    font-family: var(--font-body);
     padding: var(--space-3xl) var(--page-gutter);
     position: relative;
     overflow: hidden; /* Required for animated backgrounds */
@@ -126,8 +118,14 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   }
 
   .name {
+    font-family: var(--font-display);
+    /* Pin the optical size: at ~100px, auto optical sizing selects Fraunces'
+       high-contrast display cut with hairline-thin serifs, which reads too
+       delicate here. `none` uses the sturdier default optical size. */
+    font-optical-sizing: none;
     font-size: clamp(40px, 8vw, 100px);
-    font-weight: var(--font-bold);
+    font-weight: var(--font-semibold);
+    letter-spacing: var(--tracking-tight);
     line-height: 1;
     margin: 0;
     color: var(--text-primary);
@@ -141,17 +139,22 @@ const pageDescription = 'Creative technologist who builds things and writes abou
   }
 
   /* Custom nav card styling */
-  .nav-card {
+  /* Scoped under .landing-nav so these win over Card's own utility
+     classes (card--radius-lg / card--padding-lg). Both are single-class
+     = equal specificity, so without this the winner depends on stylesheet
+     load order — which flashes (sharp → rounded) as Card's CSS arrives. */
+  .landing-nav .nav-card {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
     padding: var(--space-2xl) var(--space-xl);
     position: relative;
+    border-radius: 0; /* sharp brutalist corners, matching the blog cards */
     transition: transform var(--duration-slow) var(--ease-out),
                 box-shadow var(--duration-slow) var(--ease-out);
   }
 
-  .nav-card:hover {
+  .landing-nav .nav-card:hover {
     z-index: 5;
   }
 
@@ -164,9 +167,10 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .card-title {
     display: block;
-    font-family: var(--font-family);
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
     font-size: clamp(32px, 6vw, 60px);
-    font-weight: var(--font-bold);
+    font-weight: var(--font-semibold);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
     margin-bottom: var(--space-sm);
@@ -181,9 +185,9 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
   .card-description {
     display: block;
-    font-family: var(--font-family);
+    font-family: var(--font-body);
     font-size: clamp(1.125rem, 3vw, 1.875rem);
-    font-weight: var(--font-semibold);
+    font-weight: var(--font-medium);
     line-height: var(--leading-relaxed);
   }
 
@@ -245,21 +249,12 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     outline-offset: var(--space-xs);
   }
 
-  .theme-toggle-minimal {
-    position: fixed;
-    bottom: var(--space-xl);
-    right: var(--space-xl);
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-full);
-    z-index: var(--z-sticky);
-    border: var(--border-width) solid var(--accent-primary);
-    box-shadow: var(--shadow-md) var(--accent-secondary);
-    transition: all var(--duration-base) var(--ease-out);
-  }
-
-  .theme-toggle-minimal:hover {
-    box-shadow: var(--shadow-lg) var(--accent-primary);
+  /* Theme picker constellation — sits under the bio */
+  .theme-picker {
+    margin-top: var(--space-2xl);
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   /* Mobile adjustments */
@@ -280,7 +275,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       gap: var(--space-lg);
     }
 
-    .nav-card {
+    .landing-nav .nav-card {
       padding: var(--space-xl) var(--space-lg);
     }
 
@@ -293,13 +288,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     .nav-card:nth-child(even) {
       transform: rotate(1deg);
     }
-
-    .theme-toggle-minimal {
-      bottom: var(--space-lg);
-      right: var(--space-lg);
-      width: 44px;
-      height: 44px;
-    }
   }
 
   @media (max-width: 480px) {
@@ -311,7 +299,7 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       padding-top: var(--space-xl);
     }
 
-    .nav-card {
+    .landing-nav .nav-card {
       padding: var(--space-lg) var(--space-md);
     }
 
@@ -381,6 +369,11 @@ const pageDescription = 'Creative technologist who builds things and writes abou
       margin-top: var(--space-xl);
     }
 
+    /* Left-align the theme picker under the name/bio/CTA */
+    .theme-picker {
+      justify-content: flex-start;
+    }
+
     .bio-text {
       font-size: var(--text-lg);
     }
@@ -405,16 +398,3 @@ const pageDescription = 'Creative technologist who builds things and writes abou
     }
   }
 </style>
-
-<script>
-  // Keyboard shortcut for theme toggle
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-      e.preventDefault();
-      const themeControl = document.getElementById('landingThemeControl');
-      if (themeControl) {
-        themeControl.click();
-      }
-    }
-  });
-</script>
