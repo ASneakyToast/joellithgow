@@ -29,7 +29,8 @@
   "description": "Joel Lithgow's portfolio - Creative technologist transforming ideas into digital experiences",
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
-    "marked": "^13.0.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
     "@types/d3": "^7.4.3",
     "@types/d3-sankey": "^0.12.5",
     "@types/p5": "^1.7.7",
@@ -37,6 +38,7 @@
     "astro": "^5.12.8",
     "d3": "^7.9.0",
     "d3-sankey": "^0.12.3",
+    "marked": "^13.0.0",
     "p5": "^2.2.0",
     "three": "^0.182.0",
     "typescript": "^5.9.2"

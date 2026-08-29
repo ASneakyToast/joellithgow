@@ -25,7 +25,10 @@ export const themes: Theme[] = [
       '--gradient-secondary-dim': 'rgba(78, 205, 196, 0.2)',
       '--gradient-secondary-subtle': 'rgba(78, 205, 196, 0.15)',
       '--gradient-tertiary-light': 'rgba(255, 230, 109, 0.4)',
-      '--gradient-tertiary-medium': 'rgba(255, 230, 109, 0.5)'
+      '--gradient-tertiary-medium': 'rgba(255, 230, 109, 0.5)',
+      '--grid-size': '80px',
+      '--grid-opacity': '1',
+      '--grid-anim-speed': '1'
     },
     isDefault: true
   },
@@ -53,7 +56,40 @@ export const themes: Theme[] = [
       '--gradient-secondary-dim': 'rgba(51, 51, 51, 0.2)',
       '--gradient-secondary-subtle': 'rgba(51, 51, 51, 0.15)',
       '--gradient-tertiary-light': 'rgba(102, 102, 102, 0.4)',
-      '--gradient-tertiary-medium': 'rgba(102, 102, 102, 0.5)'
+      '--gradient-tertiary-medium': 'rgba(102, 102, 102, 0.5)',
+      '--grid-size': '100px',
+      '--grid-opacity': '0.4',
+      '--grid-anim-speed': '1.6'
+    }
+  },
+  {
+    name: 'broadsheet',
+    displayName: 'broadsheet',
+    description: 'serif & tight',
+    colors: ['#7c2d2d', '#3a5a78', '#a67c00'],
+    cssVariables: {
+      '--accent-primary': '#7c2d2d',
+      '--accent-secondary': '#3a5a78',
+      '--accent-tertiary': '#a67c00',
+      '--bg-primary': '#faf8f3',
+      '--bg-secondary': '#ffffff',
+      '--bg-dark': '#1a1a1a',
+      '--text-primary': '#1a1a1a',
+      '--text-secondary': '#55514a',
+      '--text-light': '#ffffff',
+      '--gradient-primary-light': 'rgba(124, 45, 45, 0.20)',
+      '--gradient-primary-medium': 'rgba(124, 45, 45, 0.35)',
+      '--gradient-primary-dim': 'rgba(124, 45, 45, 0.28)',
+      '--gradient-primary-subtle': 'rgba(124, 45, 45, 0.12)',
+      '--gradient-secondary-medium': 'rgba(58, 90, 120, 0.5)',
+      '--gradient-secondary-light': 'rgba(58, 90, 120, 0.4)',
+      '--gradient-secondary-dim': 'rgba(58, 90, 120, 0.2)',
+      '--gradient-secondary-subtle': 'rgba(58, 90, 120, 0.12)',
+      '--gradient-tertiary-light': 'rgba(166, 124, 0, 0.35)',
+      '--gradient-tertiary-medium': 'rgba(166, 124, 0, 0.45)',
+      '--grid-size': '60px',
+      '--grid-opacity': '0.85',
+      '--grid-anim-speed': '1.25'
     }
   }
 ];

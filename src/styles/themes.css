@@ -9,8 +9,8 @@
   --bg-primary: #f8f8f8;
   --bg-secondary: white;
   --bg-dark: #333;
-  --text-primary: #333;
-  --text-secondary: #666;
+  --text-primary: #111111;
+  --text-secondary: #222222;
   --text-light: white;
 
   /* Gradient variables */
@@ -24,6 +24,11 @@
   --gradient-secondary-subtle: rgba(78, 205, 196, 0.15);
   --gradient-tertiary-light: rgba(255, 230, 109, 0.4);
   --gradient-tertiary-medium: rgba(255, 230, 109, 0.5);
+
+  /* Animated grid background — cell size, visibility, animation speed (1 = base) */
+  --grid-size: 80px;
+  --grid-opacity: 1;
+  --grid-anim-speed: 1;
 
   /* Typography */
   --font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -49,6 +54,13 @@
   --card-alt-text-1: white;       /* Card 1: white text on red */
   --card-alt-text-2: white;       /* Card 2: white text on teal */
   --card-alt-text-3: #333;        /* Card 3: dark text on yellow */
+
+  /* Header menu toggle — casing/tracking themed per personality.
+   * --gh-toggle-icon is the closed-state mark; it rotates 45° into an
+   * "×" when open, so it should stay a plus-like glyph. */
+  --gh-toggle-transform: none;
+  --gh-toggle-tracking: 0.04em;
+  --gh-toggle-icon: "+";
 }
 
 /* Theme: Minimal */
@@ -60,8 +72,8 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f8f8f8;
   --bg-dark: #000000;
-  --text-primary: #000000;
-  --text-secondary: #555555;
+  --text-primary: #111111;
+  --text-secondary: #222222;
   --text-light: #ffffff;
 
   /* Gradient variables using grayscale */
@@ -75,6 +87,11 @@
   --gradient-secondary-subtle: rgba(51, 51, 51, 0.15);
   --gradient-tertiary-light: rgba(102, 102, 102, 0.4);
   --gradient-tertiary-medium: rgba(102, 102, 102, 0.5);
+
+  /* Animated grid background — sparse, faint, calm for the clean aesthetic */
+  --grid-size: 100px;
+  --grid-opacity: 0.4;
+  --grid-anim-speed: 1.6;
 
   /* Typography - Clean system font */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -100,6 +117,71 @@
   --card-alt-text-1: #ffffff;  /* Card 1: white text on black */
   --card-alt-text-2: #ffffff;  /* Card 2: white text on dark gray */
   --card-alt-text-3: #ffffff;  /* Card 3: white text on medium gray */
+
+  /* Header menu toggle — uppercase & tracked for the clean look */
+  --gh-toggle-transform: uppercase;
+  --gh-toggle-tracking: 0.12em;
+}
+
+/* Theme: Broadsheet — serif, warm paper & ink, calm and aligned.
+ * Spacing + type-scale overrides for this theme live in tokens.css. */
+[data-theme="broadsheet"] {
+  /* Colors - warm paper & ink */
+  --accent-primary: #7c2d2d;    /* oxblood */
+  --accent-secondary: #3a5a78;  /* slate blue */
+  --accent-tertiary: #a67c00;   /* muted gold */
+  --bg-primary: #faf8f3;        /* warm paper */
+  --bg-secondary: #ffffff;
+  --bg-dark: #1a1a1a;
+  --text-primary: #111111;
+  --text-secondary: #222222;
+  --text-light: #ffffff;
+
+  /* Gradient variables */
+  --gradient-primary-light: rgba(124, 45, 45, 0.20);
+  --gradient-primary-medium: rgba(124, 45, 45, 0.35);
+  --gradient-primary-dim: rgba(124, 45, 45, 0.28);
+  --gradient-primary-subtle: rgba(124, 45, 45, 0.12);
+  --gradient-secondary-medium: rgba(58, 90, 120, 0.5);
+  --gradient-secondary-light: rgba(58, 90, 120, 0.4);
+  --gradient-secondary-dim: rgba(58, 90, 120, 0.2);
+  --gradient-secondary-subtle: rgba(58, 90, 120, 0.12);
+  --gradient-tertiary-light: rgba(166, 124, 0, 0.35);
+  --gradient-tertiary-medium: rgba(166, 124, 0, 0.45);
+
+  /* Animated grid background — tight editorial grid, stately pace */
+  --grid-size: 60px;
+  --grid-opacity: 0.85;
+  --grid-anim-speed: 1.25;
+
+  /* Typography - serif for editorial reading */
+  --font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --font-family-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Borders - thin, softly rounded */
+  --border-width: 1px;
+  --border-radius: 4px;
+
+  /* Rotations - none, calm and aligned */
+  --rotation-sm: rotate(0deg);
+  --rotation-md: rotate(0deg);
+  --rotation-lg: rotate(0deg);
+
+  /* Shadows - soft editorial elevation */
+  --shadow-sm: 0 1px 2px rgba(26, 26, 26, 0.08);
+  --shadow-md: 0 2px 5px rgba(26, 26, 26, 0.10);
+  --shadow-lg: 0 4px 10px rgba(26, 26, 26, 0.10);
+  --shadow-xl: 0 8px 20px rgba(26, 26, 26, 0.12);
+  --text-shadow: none;
+
+  /* Card alternating variant text colors */
+  --card-alt-text-1: #ffffff;  /* Card 1: white text on oxblood */
+  --card-alt-text-2: #ffffff;  /* Card 2: white text on slate */
+  --card-alt-text-3: #1a1a1a;  /* Card 3: dark text on gold */
+
+  /* Header menu toggle — title-case, editorial */
+  --gh-toggle-transform: capitalize;
+  --gh-toggle-tracking: 0.02em;
 }
 
 /* Custom scrollbar */

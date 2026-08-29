@@ -62,6 +62,16 @@
   --tracking-wide: 0.02em;
 
   /* ========================================
+     FONT ROLES
+     Three deliberate roles for "The Log" blog:
+     display (expressive), body (reading), mono (catalog rail).
+     Themes may override --font-family; these roles are page-level.
+     ======================================== */
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'IBM Plex Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  /* ========================================
      BORDER RADIUS
      Modern, flexible radius scale
      ======================================== */
@@ -182,6 +192,59 @@
   --heading-spacing: var(--space-lg);       /* 24px - After headings */
   --paragraph-spacing: var(--space-xl);     /* 32px - Between paragraphs */
   --element-spacing: var(--space-md);       /* 16px - Between related elements */
+}
+
+/* ========================================
+   THEME OVERRIDE: Broadsheet (serif, tight)
+   Spacing + the type scale are normally global (the :root
+   block above). This block extends the themeable surface so
+   the "broadsheet" theme can drive density + reading rhythm.
+   Same specificity as :root but declared later in this file,
+   so it wins whenever data-theme="broadsheet" is active.
+   Color / font / border / shadow live in themes.css.
+   ======================================== */
+[data-theme="broadsheet"] {
+  /* Spacing — whole ladder pulled down hard for a dense layout.
+   * Semantic tokens (--section-spacing, --heading-spacing, etc.)
+   * reference these steps, so they tighten automatically. */
+  --space-xs: 0.1875rem;  /* 4px  → 3px  */
+  --space-sm: 0.375rem;   /* 8px  → 6px  */
+  --space-md: 0.625rem;   /* 16px → 10px */
+  --space-lg: 0.875rem;   /* 24px → 14px */
+  --space-xl: 1.25rem;    /* 32px → 20px */
+  --space-2xl: 1.75rem;   /* 48px → 28px */
+  --space-3xl: 2.25rem;   /* 64px → 36px */
+  --space-4xl: 3rem;      /* 96px → 48px */
+  --space-5xl: 4rem;      /* 128px → 64px */
+
+  /* Semantic spacing — tighter section + paragraph rhythm */
+  --section-spacing: var(--space-4xl);
+  --section-spacing-compact: var(--space-3xl);
+  --paragraph-spacing: var(--space-md);
+
+  /* Type scale — smaller across the board, body = 15px */
+  --text-xs: 0.6875rem;   /* 12px → 11px */
+  --text-sm: 0.8125rem;   /* 14px → 13px */
+  --text-base: 0.9375rem; /* 16px → 15px */
+  --text-lg: 1.0625rem;   /* 18px → 17px */
+  --text-xl: 1.1875rem;   /* 20px → 19px */
+  --text-2xl: 1.25rem;    /* 24px → 20px */
+  --text-3xl: 1.5rem;     /* 30px → 24px */
+  --text-4xl: 1.75rem;    /* 36px → 28px */
+  --text-5xl: 2rem;       /* 48px → 32px */
+
+  /* Fluid headings — smaller ceilings + gentler scaling */
+  --heading-sm: clamp(0.95rem, 1.8vw, 1.05rem);
+  --heading-md: clamp(1.1rem, 2.4vw, 1.3rem);
+  --heading-lg: clamp(1.3rem, 3vw, 1.6rem);
+  --heading-xl: clamp(1.5rem, 3.5vw, 1.9rem);
+  --heading-2xl: clamp(1.8rem, 4.5vw, 2.4rem);
+
+  /* Serif reading rhythm — tighter leading + tracking */
+  --leading-tight: 1.2;
+  --leading-normal: 1.45;
+  --leading-relaxed: 1.55;
+  --tracking-tight: -0.01em;
 }
 
 /* ========================================

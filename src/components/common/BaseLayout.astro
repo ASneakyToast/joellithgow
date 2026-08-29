@@ -1,6 +1,16 @@
 ---
 import GlobalHeader from './GlobalHeader.astro';
 
+// Self-hosted fonts — replaces the Google Fonts <link>, which loaded after
+// first paint and caused a visible font swap/reflow. Import the @font-face
+// CSS as a side effect; import the primary latin woff2 as a URL so we can
+// preload it (fetched before first paint → text renders in the real font
+// immediately, no swap).
+import '@fontsource-variable/fraunces/standard.css';  // display: opsz + wght axes
+import '@fontsource-variable/ibm-plex-sans/wght.css'; // body: wght axis
+import frauncesWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-standard-normal.woff2?url';
+import plexWoff2 from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
+
 export interface Props {
   title?: string;
   description?: string;
@@ -99,7 +109,7 @@ const {
   <script is:inline>
     // Load saved theme immediately to prevent flash of wrong theme
     (function() {
-      const themes = ['default', 'minimal'];
+      const themes = ['default', 'minimal', 'broadsheet'];
       let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
 
       // Validate theme
@@ -112,6 +122,12 @@ const {
     })();
   </script>
   
+  <!-- Fonts: Fraunces (display) + IBM Plex Sans (body), self-hosted via
+       @fontsource (see frontmatter imports). Monaco (system) is the utility
+       face. Preload the latin woff2s so they're ready before first paint. -->
+  <link rel="preload" href={frauncesWoff2} as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href={plexWoff2} as="font" type="font/woff2" crossorigin />
+
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
