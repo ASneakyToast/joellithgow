@@ -334,11 +334,10 @@
     }
 
     setupCriticalResourceHints() {
-      // Add resource hints for better performance
-      const resourceHints = [
-        { rel: 'dns-prefetch', href: '//fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true }
-      ];
+      // Add resource hints for better performance.
+      // Fonts are now self-hosted and preloaded in BaseLayout, so the old
+      // Google Fonts dns-prefetch/preconnect hints have been removed.
+      const resourceHints = [];
 
       resourceHints.forEach(hint => {
         const link = document.createElement('link');
