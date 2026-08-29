@@ -1,0 +1,205 @@
+---
+/**
+ * ThemeConstellation — a hand-authored SVG widget for switching themes, a
+ * sibling of the about page's ProfileConstellation. Each theme is an
+ * accent-bordered node whose face is a live swatch of that theme's three
+ * colors; a single line threads through them so the trio still reads as a
+ * little constellation. Click a node (or Enter/Space when focused) to apply
+ * that theme. No hub, no drag — just pick.
+ *
+ * Everything is plain SVG so the connecting thread is trivial (a <polyline>
+ * through the node centers) and the whole thing stays self-contained.
+ */
+import { themes } from '@features/themes';
+
+export interface Props {
+  /** Accessible name for the widget as a whole. */
+  label?: string;
+}
+
+const { label = 'Choose a theme' } = Astro.props;
+
+// Geometry, in SVG user units. A left-inlined row with a gentle upward kink in
+// the middle, so it lines up under the name/bio rather than centering.
+const W = 220;
+const H = 78;
+const NODE_R = 20;
+const SHADOW = 4; // hard offset shadow, matches --shadow-md
+
+// Hand-strung node positions — flush left, shallow arc.
+const POINTS = [
+  { x: 30, y: 46 },
+  { x: 106, y: 32 },
+  { x: 182, y: 46 },
+];
+
+const nodes = themes.map((theme, i) => {
+  const pos = POINTS[i] ?? { x: 30 + i * 76, y: 46 };
+  // Three vertical color bands, clipped to the node circle, previewing the
+  // theme's palette. Widths split the diameter into thirds.
+  const bandW = (NODE_R * 2) / 3;
+  const bands = theme.colors.slice(0, 3).map((color, b) => ({
+    x: -NODE_R + b * bandW,
+    w: bandW,
+    color,
+  }));
+  return {
+    name: theme.name,
+    displayName: theme.displayName,
+    x: pos.x,
+    y: pos.y,
+    bands,
+  };
+});
+
+// Thread the nodes together for the connecting line.
+const threadPoints = POINTS.map((p) => `${p.x},${p.y}`).join(' ');
+---
+
+<svg
+  class="theme-constellation"
+  viewBox={`0 0 ${W} ${H}`}
+  role="group"
+  aria-label={label}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {/* Connecting thread — drawn first so it sits behind the circles. */}
+  <polyline class="thread" points={threadPoints} aria-hidden="true" />
+
+  {/* Theme nodes */}
+  {nodes.map((n) => (
+    <g
+      class="node"
+      role="button"
+      tabindex="0"
+      data-theme={n.name}
+      aria-label={`${n.displayName} theme`}
+      aria-pressed="false"
+    >
+      <title>{n.displayName} theme</title>
+      <g class="node-pos" transform={`translate(${n.x} ${n.y})`}>
+        <circle class="node-shadow" cx={SHADOW} cy={SHADOW} r={NODE_R} />
+        {/* Face lifts on hover/focus while the shadow stays put */}
+        <g class="node-face">
+          <clipPath id={`clip-${n.name}`}>
+            <circle r={NODE_R} />
+          </clipPath>
+          <g clip-path={`url(#clip-${n.name})`}>
+            {n.bands.map((band) => (
+              <rect x={band.x} y={-NODE_R} width={band.w} height={NODE_R * 2} fill={band.color} />
+            ))}
+          </g>
+          <circle class="node-ring" r={NODE_R} />
+        </g>
+      </g>
+    </g>
+  ))}
+</svg>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .theme-constellation {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    overflow: visible; /* let shadows + lift bleed past the viewBox edge */
+  }
+
+  /* Connecting thread — same ink as the circle borders, one wireframe */
+  .thread {
+    fill: none;
+    stroke: var(--bg-dark);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.5;
+  }
+
+  /* Nodes */
+  .node { cursor: pointer; }
+  .node:focus { outline: none; }
+  .node-shadow { fill: var(--bg-dark); }
+  .node-ring {
+    fill: none;
+    stroke: var(--bg-dark);
+    stroke-width: 2;
+  }
+
+  /* Hover / focus lift: move the face, leave the shadow — brutalist pop */
+  .node-face {
+    transform-box: fill-box;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .node:hover .node-face,
+  .node:focus-visible .node-face { transform: translate(-3px, -3px); }
+  .node:focus-visible .node-ring { stroke-width: 3.5; }
+
+  /* Active theme: heavier ring so the current pick reads at a glance */
+  .node[aria-pressed='true'] .node-ring {
+    stroke: var(--accent-primary);
+    stroke-width: 4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .node-face { transition: none; }
+  }
+</style>
+
+<script>
+  // Click (or Enter/Space) a node to apply that theme. Reuses the global
+  // themeManager set up by ThemeModal for the transition + toast + persistence;
+  // falls back to a bare data-theme swap if it hasn't initialized yet. A
+  // MutationObserver keeps the active node in sync no matter how the theme
+  // changes (node click, Ctrl+T cycle, etc).
+  function initThemeConstellation(svg: SVGSVGElement) {
+    if (svg.dataset.tcInit) return;
+    svg.dataset.tcInit = '1';
+
+    const nodes = Array.from(svg.querySelectorAll<SVGGElement>('.node'));
+
+    function applyTheme(theme: string) {
+      const mgr = (window as any).themeManager;
+      if (mgr?.setTheme) {
+        mgr.setTheme(theme);
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('portfolio-theme', theme);
+      }
+    }
+
+    function syncActive() {
+      const current = document.documentElement.getAttribute('data-theme') || 'default';
+      for (const node of nodes) {
+        node.setAttribute('aria-pressed', String(node.dataset.theme === current));
+      }
+    }
+
+    for (const node of nodes) {
+      const theme = node.dataset.theme;
+      if (!theme) continue;
+      node.addEventListener('click', () => applyTheme(theme));
+      node.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          applyTheme(theme);
+        }
+      });
+    }
+
+    // Reflect the active theme now and whenever it changes.
+    new MutationObserver(syncActive).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    syncActive();
+  }
+
+  function initAll() {
+    document.querySelectorAll<SVGSVGElement>('.theme-constellation').forEach(initThemeConstellation);
+  }
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
+</script>
