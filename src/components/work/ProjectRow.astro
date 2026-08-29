@@ -1,0 +1,175 @@
+---
+/**
+ * ProjectRow - hybrid catalog row for the portfolio (Log design language).
+ *
+ * A compact row: small hero thumbnail + mono meta + Fraunces title + excerpt.
+ * Shared by the portfolio index (via Projects.astro) and the per-skill list
+ * (work/skills/[skill].astro). Chrome/tone come from log.css + tokens.
+ */
+import type { AstraeusDocument, ProjectPage } from '@lib/astraeus-types';
+import Video from '@components/ui/Video.astro';
+
+export interface Props {
+  project: AstraeusDocument<ProjectPage> | ProjectPage;
+  /** Display number — index+1 on the portfolio index, project.number on skill pages. */
+  number?: number;
+  /** Eager-load the thumbnail (use for the first row above the fold). */
+  eager?: boolean;
+  /** When present, render mono tag chips (skill page). */
+  tags?: string[];
+  /** Highlights the chip matching the current skill. */
+  activeTag?: string;
+}
+
+const { project, number, eager = false, tags, activeTag } = Astro.props;
+
+const hero = project.hero_media || null;
+const displayNumber = String(number ?? project.number ?? 0).padStart(2, '0');
+const href = `/work/${project.slug}`;
+---
+
+<article class="project-row">
+  {hero && (
+    <a href={href} class="project-row-thumb" tabindex="-1" aria-hidden="true">
+      {hero.type === 'video' ? (
+        <Video src={hero.src} fallbackSrc={hero.fallbackSrc} poster={hero.poster} controls={false} />
+      ) : (
+        <img src={hero.src} alt={hero.alt} loading={eager ? 'eager' : 'lazy'} />
+      )}
+    </a>
+  )}
+
+  <div class="project-row-body">
+    <div class="project-row-meta">
+      <span class="pr-number">{displayNumber}</span>
+      <span class="pr-type">{project.project_type}</span>
+    </div>
+    <h3 class="project-row-title"><a href={href}>{project.title}</a></h3>
+    <p class="project-row-excerpt">{project.description}</p>
+    {tags && tags.length > 0 && (
+      <div class="pr-tags">
+        {tags.slice(0, 5).map((t) => (
+          <a href={`/work/skills/${t}`} class:list={['pr-tag', t === activeTag && 'pr-tag--active']}>#{t}</a>
+        ))}
+      </div>
+    )}
+    <span class="project-row-cta" aria-hidden="true">view case study →</span>
+  </div>
+</article>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .project-row {
+    display: flex;
+    gap: var(--space-lg);
+    align-items: flex-start;
+  }
+
+  /* Fixed small thumbnail */
+  .project-row-thumb {
+    flex: 0 0 clamp(96px, 16vw, 160px);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    display: block;
+    border: 1px solid var(--gradient-primary-subtle);
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+  }
+  .project-row:hover .project-row-thumb {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-md) var(--gradient-primary-subtle);
+  }
+  .project-row-thumb :global(img),
+  .project-row-thumb :global(video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .project-row-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  /* Mono meta rail */
+  .project-row-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+  }
+  .pr-number { font-weight: var(--font-bold); color: var(--accent-primary); }
+
+  .project-row-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  .project-row-title a { color: var(--text-primary); text-decoration: none; }
+  .project-row-title a:hover { color: var(--accent-primary); }
+
+  .project-row-excerpt {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pr-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+  }
+  .pr-tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 2px var(--space-xs);
+    border: 1px solid var(--gradient-primary-subtle);
+  }
+  .pr-tag:hover { color: var(--accent-primary); border-color: var(--accent-primary); }
+  .pr-tag--active { background: var(--accent-primary); color: var(--card-alt-text-1); border-color: var(--accent-primary); }
+
+  .project-row-cta {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--accent-primary);
+    margin-top: var(--space-xs);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .project-row:hover .project-row-cta { transform: translateX(4px); }
+
+  /* Stack on small screens */
+  @media (max-width: 600px) {
+    .project-row { flex-direction: column; }
+    .project-row-thumb { flex-basis: auto; width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-row-thumb,
+    .project-row-cta { transition: none; }
+    .project-row:hover .project-row-thumb { transform: none; }
+    .project-row:hover .project-row-cta { transform: none; }
+  }
+</style>

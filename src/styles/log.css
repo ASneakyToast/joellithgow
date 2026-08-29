@@ -29,6 +29,23 @@
 
 .main-content { min-width: 0; }
 
+/* Full-width variant: single centered column, no sidebar (portfolio pages). */
+.blog-wrapper--full {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: var(--content-container);
+}
+
+/* Row list with hairline dividers — shared by the portfolio project lists. */
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+.project-list > * + * {
+  border-top: 1px solid var(--gradient-primary-subtle);
+  padding-top: var(--space-lg);
+}
+
 /* ---- Section header (page title + one-line description) ---- */
 .section-head {
   margin-bottom: var(--space-xl);
