@@ -1,0 +1,179 @@
+---
+/**
+ * LinksAccordion — slim title-only rows that expand to reveal the description,
+ * full URL, and an Open Graph preview thumbnail. Includes an expand/collapse-all
+ * toggle. Used by the links index and by link-collection pages.
+ *
+ * OG preview images are fetched at build time (cached, best-effort).
+ */
+import { fetchOgImage } from '@lib/og-image';
+
+export interface AccordionLink {
+  url: string;
+  title: string;
+  description?: string;
+}
+
+export interface Props {
+  links: AccordionLink[];
+}
+
+const { links } = Astro.props;
+const previews = await Promise.all(links.map((link) => fetchOgImage(link.url)));
+---
+
+<div class="links-accordion" data-links-accordion>
+  <div class="links-toolbar">
+    <button type="button" class="expand-toggle" data-expand-toggle>Expand all</button>
+  </div>
+  <div class="links-list">
+    {links.map((link, i) => (
+      <details class="link-row">
+        <summary class="link-summary">
+          <span class="link-row-title">{link.title}</span>
+          <span class="link-row-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="link-panel">
+          <div class="link-panel-body">
+            {link.description && <p class="link-panel-desc">{link.description}</p>}
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="link-panel-visit">{link.url} ↗</a>
+          </div>
+          {previews[i] && (
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="link-panel-thumb" aria-label={`Visit ${link.title}`}>
+              <img src={previews[i]} alt={`Preview of ${link.title}`} loading="lazy" />
+            </a>
+          )}
+        </div>
+      </details>
+    ))}
+  </div>
+</div>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .links-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-xs);
+  }
+  .expand-toggle {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--accent-primary);
+    background: none;
+    border: none;
+    padding: var(--space-xs) 0;
+    cursor: pointer;
+  }
+  .expand-toggle:hover { text-decoration: underline; }
+
+  .links-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Slim accordion row */
+  .link-row { border-top: 1px solid var(--gradient-primary-subtle); }
+  .link-row:first-child { border-top: none; }
+
+  .link-summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .link-summary::-webkit-details-marker { display: none; }
+  .link-row-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+  .link-summary:hover .link-row-title { color: var(--accent-primary); }
+  .link-row-icon {
+    flex: none;
+    font-family: var(--font-mono);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+    align-self: center;
+  }
+  .link-row-icon::before { content: '+'; }
+  .link-row[open] .link-row-icon::before { content: '\2013'; }
+
+  /* Expanded panel: detail left, preview image right */
+  .link-panel {
+    display: flex;
+    gap: var(--space-xl);
+    align-items: flex-start;
+    padding: 0 0 var(--space-lg) 0;
+  }
+  .link-panel-body { flex: 1 1 auto; min-width: 0; }
+  .link-panel-desc {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 60ch;
+    margin: 0 0 var(--space-sm) 0;
+  }
+  .link-panel-visit {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--accent-primary);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .link-panel-visit:hover { text-decoration: underline; }
+
+  .link-panel-thumb {
+    flex: none;
+    width: 240px;
+    display: block;
+    border: var(--border-width) solid var(--bg-dark);
+    box-shadow: var(--shadow-sm) var(--bg-dark);
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+  }
+  .link-panel-thumb img {
+    width: 100%;
+    aspect-ratio: 1.91 / 1;
+    object-fit: cover;
+    display: block;
+  }
+  .link-panel-thumb:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md) var(--bg-dark);
+  }
+
+  @media (max-width: 640px) {
+    .link-panel { flex-direction: column; }
+    .link-panel-thumb { width: 100%; max-width: 320px; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-links-accordion]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-expand-toggle]');
+    const rows = Array.from(root.querySelectorAll<HTMLDetailsElement>('.link-row'));
+    if (!toggle || !rows.length) return;
+    const sync = () => {
+      toggle.textContent = rows.every((r) => r.open) ? 'Collapse all' : 'Expand all';
+    };
+    toggle.addEventListener('click', () => {
+      const openAll = !rows.every((r) => r.open);
+      rows.forEach((r) => { r.open = openAll; });
+      sync();
+    });
+    rows.forEach((r) => r.addEventListener('toggle', sync));
+    sync();
+  });
+</script>

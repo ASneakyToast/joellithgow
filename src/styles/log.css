@@ -1,0 +1,166 @@
+/**
+ * Shared "Log" page chrome — used by the blog index and its section pages
+ * (links, music, nature, dictionary). Layout + sidebar tone-cards live here so
+ * the pages stay visually in sync; page-specific styles stay in each page.
+ *
+ * Imported globally (from each page's frontmatter), so these are unscoped.
+ * Relies on tokens.css / themes.css being loaded for the CSS variables.
+ */
+
+.blog-container {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  padding: var(--space-2xl) var(--page-gutter);
+  position: relative;
+  overflow: hidden; /* contains the animated grid background */
+}
+
+.blog-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  column-gap: var(--space-2xl);
+  max-width: 1360px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10; /* above the background */
+  align-items: start;
+}
+
+.main-content { min-width: 0; }
+
+/* ---- Section header (page title + one-line description) ---- */
+.section-head {
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--text-primary);
+}
+.section-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: var(--font-semibold);
+  font-size: var(--heading-xl);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
+  margin: 0;
+}
+.section-desc {
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+  margin: var(--space-xs) 0 0 0;
+}
+.section-empty { font-family: var(--font-body); color: var(--text-secondary); }
+
+/* ---- Index sidebar (right column) ---- */
+.sidebar {
+  position: sticky;
+  top: var(--space-xl);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+.sidebar-heading {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--text-primary);
+}
+
+/* ---- Brutalist tone cards for asides ---- */
+.type-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.type-card {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-mono);
+  text-decoration: none;
+  border: var(--border-width) solid var(--bg-dark);
+  box-shadow: var(--shadow-md) var(--bg-dark);
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+.type-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-lg) var(--bg-dark);
+}
+.type-card:focus-visible {
+  outline: var(--border-width) solid var(--bg-dark);
+  outline-offset: 3px;
+}
+.tc-label {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+}
+.tc-sub {
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+.tc-count {
+  font-size: var(--text-sm);
+  opacity: 0.75;
+}
+.tc-arrow {
+  margin-left: auto;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.type-card:hover .tc-arrow { transform: translateX(4px); }
+
+.type-card--primary { background: var(--accent-primary); color: var(--card-alt-text-1); }
+.type-card--secondary { background: var(--accent-secondary); color: var(--card-alt-text-2); }
+.type-card--tertiary { background: var(--accent-tertiary); color: var(--card-alt-text-3); }
+
+/* ---- Album mosaic (music dumps): dedup by album, bigger = more liked songs ---- */
+.spotify-cover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 76px);
+  grid-auto-rows: 76px;
+  grid-auto-flow: dense;
+  gap: var(--space-xs);
+  justify-content: start;
+}
+.spotify-cover-grid .cover-cell {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--gradient-primary-subtle);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.spotify-cover-grid .cover-cell[data-span="2"] { grid-column: span 2; grid-row: span 2; }
+.spotify-cover-grid .cover-cell[data-span="3"] { grid-column: span 3; grid-row: span 3; }
+.spotify-cover-grid .cover-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.spotify-cover-grid .cover-cell:hover {
+  transform: scale(1.05);
+  z-index: 1;
+  position: relative;
+}
+
+/* ---- Tablet/phone: single column, sidebar below ---- */
+@media (max-width: 900px) {
+  .blog-wrapper {
+    display: block;
+    max-width: 920px;
+  }
+  .sidebar {
+    position: static;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 2px solid var(--text-primary);
+  }
+}
