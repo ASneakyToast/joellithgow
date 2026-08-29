@@ -1,189 +1,331 @@
 ---
 /**
- * GlobalHeader - Context-aware breadcrumb header with scroll trigger
- * Shows breadcrumb navigation based on current section
+ * GlobalHeader — the site's identity strip.
+ * Left column stacks the name over a row of topic tags (surfaced from
+ * the blog, site-wide). Right column is the menu toggle, which opens a
+ * full-screen overlay of the sections in catalog style. Transparent at
+ * the top of the page, gains a hairline + blur once scrolled.
  */
-
 export interface Props {
   class?: string;
 }
 
 const { class: className } = Astro.props;
 
-// Detect current page to show appropriate breadcrumb
 const currentPath = Astro.url.pathname;
-const isWorkPage = currentPath.startsWith('/work');
-const isBlogPage = currentPath.startsWith('/blog');
-const isArtworksPage = currentPath.startsWith('/artworks');
-const isAboutPage = currentPath.startsWith('/about');
 
-// Build breadcrumb links based on section
-const breadcrumbs = [];
-if (isWorkPage) {
-  breadcrumbs.push(
-    { href: '/', label: 'joel lithgow' },
-    { href: '/work', label: 'portfolio' }
-  );
-} else if (isBlogPage) {
-  breadcrumbs.push(
-    { href: '/', label: 'joel lithgow' },
-    { href: '/blog', label: 'blog' }
-  );
-} else if (isArtworksPage) {
-  breadcrumbs.push(
-    { href: '/', label: 'joel lithgow' },
-    { href: '/artworks', label: 'artwork' }
-  );
-} else if (isAboutPage) {
-  breadcrumbs.push(
-    { href: '/', label: 'joel lithgow' },
-    { href: '/about', label: 'about' }
-  );
-} else {
-  // Default: just home link
-  breadcrumbs.push({ href: '/', label: 'joel lithgow' });
+// Site sections shown in the menu overlay.
+const navItems = [
+  { href: '/work', label: 'Work', desc: 'portfolio' },
+  { href: '/blog', label: 'Blog', desc: 'the log' },
+  { href: '/artworks', label: 'Art', desc: 'artwork' },
+  { href: '/about', label: 'About', desc: 'bio' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
 }
+
+// Breadcrumb section label shown after the wordmark (e.g. "Joel Lithgow / Blog").
+// Home has no section; only the deepest matching section is used.
+const sectionTitles: Record<string, string> = {
+  '/work': 'Work',
+  '/blog': 'Blog',
+  '/artworks': 'Artwork',
+  '/about': 'About',
+};
+const section = Object.entries(sectionTitles).find(([href]) => isActive(href));
 ---
 
-<header class={`global-header ${className || ''}`}>
-  <nav class="breadcrumb-nav">
-    {breadcrumbs.map((item, index) => (
-      <span class="breadcrumb-item">
-        <a href={item.href} class="logo-link" aria-label={`Go to ${item.label}`}>
-          {item.label}
-        </a>
-        {index < breadcrumbs.length - 1 && <span class="breadcrumb-separator">›</span>}
-      </span>
-    ))}
-  </nav>
+<header class={`gh ${className || ''}`} data-gh>
+  <div class="gh-inner">
+    <div class="gh-left">
+      <div class="gh-title">
+        <a href="/" class="gh-wordmark">Joel Lithgow</a>
+        {section && (
+          <>
+            <span class="gh-sep" aria-hidden="true">/</span>
+            <a href={section[0]} class="gh-section">{section[1]}</a>
+          </>
+        )}
+      </div>
+    </div>
+    <button
+      type="button"
+      class="gh-toggle"
+      aria-expanded="false"
+      aria-controls="gh-menu"
+      data-gh-toggle
+    >
+      menu
+    </button>
+  </div>
 </header>
+
+<nav id="gh-menu" class="gh-menu" aria-hidden="true" aria-label="Site navigation" data-gh-menu>
+  <ul class="gh-menu-list">
+    {navItems.map((item, i) => (
+      <li class="gh-menu-item" data-active={isActive(item.href) ? 'true' : undefined}>
+        <a href={item.href} class="gh-menu-link">
+          <span class="gh-idx">{String(i + 1).padStart(2, '0')}</span>
+          <span class="gh-label">{item.label}</span>
+          <span class="gh-desc">{item.desc}</span>
+        </a>
+      </li>
+    ))}
+    <li class="gh-menu-item gh-menu-item--theme">
+      <button type="button" class="gh-menu-link" onclick="window.openThemeModal && window.openThemeModal()">
+        <span class="gh-idx">◐</span>
+        <span class="gh-label">Theme</span>
+        <span class="gh-desc">appearance</span>
+      </button>
+    </li>
+  </ul>
+</nav>
 
 <style>
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
 
-  .global-header {
+  :global(:root) { --gh-height: 4rem; }
+
+  /* Offset page content for the fixed header */
+  :global(body.has-global-header) { padding-top: var(--gh-height); }
+  /* Lock scroll while the menu overlay is open */
+  :global(body.gh-menu-open) { overflow: hidden; }
+
+  /* ---- Bar ---- */
+  .gh {
     position: fixed;
-    top: var(--space-lg);
-    left: 50%;
-    transform: translateX(-50%) translateY(-80px) var(--rotation-sm);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--gh-height);
     z-index: var(--z-sticky);
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: background var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out);
+  }
 
-    /* Pill styling matching Navigation component */
-    background: var(--bg-secondary);
-    border: var(--border-width) solid var(--accent-primary);
-    border-radius: var(--border-radius);
-    padding: var(--space-sm) var(--space-lg);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
+  .gh.scrolled {
+    background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
     backdrop-filter: blur(10px);
-
-    /* Start hidden */
-    opacity: 0;
-    transition: opacity var(--duration-slow) var(--ease-out),
-                transform var(--duration-slow) var(--ease-out);
-    pointer-events: none;
+    border-bottom-color: var(--gradient-primary-subtle);
   }
 
-  /* Visible state triggered by scroll */
-  .global-header.visible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) var(--rotation-sm);
-    pointer-events: auto;
-  }
-
-  .breadcrumb-nav {
+  .gh-inner {
+    max-width: 1360px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
+    justify-content: space-between;
+    gap: var(--space-lg);
   }
 
-  .breadcrumb-item {
+  /* Left column: name over tags */
+  .gh-left {
     display: flex;
-    align-items: center;
-    gap: var(--space-xs);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--space-sm);
+    min-width: 0;
   }
 
-  .breadcrumb-separator {
-    color: var(--accent-primary);
-    font-size: var(--text-base);
-    font-weight: var(--font-bold);
-    user-select: none;
+  /* Title row: wordmark / section breadcrumb */
+  .gh-title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    min-width: 0;
   }
 
-  .logo-link {
-    display: inline-block;
-    font-size: var(--text-sm);
-    font-weight: var(--font-bold);
+  .gh-wordmark {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--text-xl);
+    letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
     text-decoration: none;
-    text-transform: lowercase;
-    transition: all var(--duration-base) var(--ease-out);
-    padding: var(--space-2xs) var(--space-xs);
+    line-height: 1;
   }
+  .gh-wordmark:hover { color: var(--accent-primary); }
 
-  .logo-link:hover {
+  .gh-sep {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: 1;
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+  .gh-section {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--text-xl);
+    letter-spacing: var(--tracking-tight);
     color: var(--accent-primary);
-    transform: scale(1.05);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .gh-section:hover { color: var(--text-primary); }
+
+  /* Right column: menu toggle */
+  .gh-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    letter-spacing: var(--gh-toggle-tracking, 0.04em);
+    text-transform: var(--gh-toggle-transform, none);
+    align-self: center;
+  }
+  .gh-toggle:hover { color: var(--accent-primary); }
+
+  /* Morphing affordance: a thin "+" that rotates into an "×" once open. */
+  .gh-toggle::before {
+    content: var(--gh-toggle-icon, "+");
+    display: inline-block;
+    font-size: 1.15em;
+    line-height: 1;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .gh-toggle[aria-expanded="true"]::before { transform: rotate(45deg); }
+
+  /* The overlay sits above the sticky header; lift the header (and its
+   * toggle) back on top while open so it stays clickable to close. */
+  :global(body.gh-menu-open) .gh { z-index: calc(var(--z-overlay) + 1); }
+
+  /* ---- Menu overlay ---- */
+  .gh-menu {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--gh-height) var(--page-gutter) var(--space-2xl);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--duration-base) var(--ease-out),
+                visibility var(--duration-base) var(--ease-out);
+  }
+  .gh-menu.open { opacity: 1; visibility: visible; }
+
+  .gh-menu-list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    width: 100%;
+    max-width: 1360px;
+    display: flex;
+    flex-direction: column;
   }
 
-  .logo-link:focus-visible {
-    outline: var(--border-width) solid var(--accent-primary);
-    outline-offset: var(--space-xs);
+  .gh-menu-item { border-top: 1px solid var(--gradient-primary-subtle); }
+  .gh-menu-item:last-child { border-bottom: 1px solid var(--gradient-primary-subtle); }
+
+  .gh-menu-link {
+    display: grid;
+    grid-template-columns: 4rem 1fr auto;
+    align-items: baseline;
+    gap: var(--space-lg);
+    width: 100%;
+    padding: var(--space-lg) 0;
+    background: none;
+    border: none;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .gh-menu-link:hover { color: var(--accent-primary); }
+
+  .gh-idx {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--accent-primary);
+    letter-spacing: 0.08em;
+  }
+  .gh-label {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-lg);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+  }
+  .gh-desc {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
   }
 
-  /* Responsive */
-  @media (max-width: 768px) {
-    .global-header {
-      top: var(--space-md);
-      padding: var(--space-xs) var(--space-md);
-    }
+  .gh-menu-item[data-active] .gh-label { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .gh-menu-item[data-active] .gh-idx { color: var(--text-primary); }
 
-    .logo-link {
-      font-size: var(--text-xs);
-    }
+  .gh-menu-item--theme { border-top: 1px solid var(--gradient-primary-subtle); }
+
+  /* Focus visibility */
+  .gh-wordmark:focus-visible,
+  .gh-section:focus-visible,
+  .gh-toggle:focus-visible,
+  .gh-menu-link:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 
-  /* Reduced motion */
+  /* Compact header on phones — tags fold away, single row */
+  @media (max-width: 640px) {
+    :global(:root) { --gh-height: 3.25rem; }
+    .gh-menu-link { grid-template-columns: 3rem 1fr; }
+    .gh-desc { display: none; }
+    .gh-label { font-size: var(--heading-md); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .global-header {
-      transition: opacity var(--duration-fast) ease;
-    }
-
-    .global-header.visible {
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .logo-link {
-      transition: none;
-    }
-
-    .logo-link:hover {
-      transform: none;
-    }
+    .gh, .gh-menu, .gh-menu-link, .gh-toggle::before { transition: none; }
   }
 </style>
 
 <script>
-  // Show header after scrolling down
-  document.addEventListener('DOMContentLoaded', () => {
-    const header = document.querySelector('.global-header');
-    if (!header) return;
+  const header = document.querySelector('[data-gh]');
+  const toggle = document.querySelector('[data-gh-toggle]');
+  const menu = document.querySelector('[data-gh-menu]');
 
-    const showHeader = () => {
-      // Show after scrolling past 100vh or 800px (whichever is smaller)
-      const triggerPoint = Math.min(window.innerHeight, 800);
+  if (header && toggle && menu) {
+    // Hybrid: transparent at top, solid once scrolled
+    const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
-      if (window.scrollY > triggerPoint) {
-        header.classList.add('visible');
-      } else {
-        header.classList.remove('visible');
-      }
+    // Menu open/close
+    const setMenu = (open: boolean) => {
+      menu.classList.toggle('open', open);
+      menu.setAttribute('aria-hidden', String(!open));
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? 'close' : 'menu';
+      document.body.classList.toggle('gh-menu-open', open);
     };
 
-    // Check on scroll
-    window.addEventListener('scroll', showHeader);
-
-    // Check on load in case user refreshed mid-page
-    showHeader();
-  });
+    toggle.addEventListener('click', () => setMenu(!menu.classList.contains('open')));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setMenu(false);
+    });
+  }
 </script>
