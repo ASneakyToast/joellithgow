@@ -1,16 +1,17 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Card from '@components/primitives/Card.astro';
-import Button from '@components/primitives/Button.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import { fetchProjects } from '@lib/astraeus';
+import '../../../styles/log.css';
 
 const pageTitle = 'Skills - Joel Lithgow';
-const pageDescription = 'Browse projects by skill and technology';
+const pageDescription = 'Browse projects by skill and technology.';
 
-// Get all projects (exclude drafts — fetchProjects already filters drafts)
+// fetchProjects already filters drafts and sorts by number.
 const allProjects = await fetchProjects();
 
-// Extract and count all tags/skills
+// Count all tags/skills across projects.
 const skillCounts = new Map<string, number>();
 allProjects.forEach((project) => {
   project.tags?.forEach((tag) => {
@@ -18,136 +19,50 @@ allProjects.forEach((project) => {
   });
 });
 
-// Sort skills by count (descending) then alphabetically
+// Sort by count (descending) then alphabetically.
 const sortedSkills = Array.from(skillCounts.entries()).sort((a, b) => {
-  if (b[1] !== a[1]) return b[1] - a[1]; // Sort by count first
-  return a[0].localeCompare(b[0]); // Then alphabetically
+  if (b[1] !== a[1]) return b[1] - a[1];
+  return a[0].localeCompare(b[0]);
 });
+
+const tones = ['primary', 'secondary', 'tertiary'];
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <main class="skills-page">
-    <div class="skills-header">
-      <Button
-        variant="ghost"
-        size="sm"
-        href="/work"
-        class="back-button"
-      >
-        ← back to work
-      </Button>
+  <main id="main-content" class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
+    <div class="blog-wrapper blog-wrapper--full">
+      <div class="main-content">
+        <header class="section-head">
+          <h1 class="section-title">Skills</h1>
+          <p class="section-desc">
+            {sortedSkills.length} {sortedSkills.length === 1 ? 'skill' : 'skills'} · {allProjects.length} {allProjects.length === 1 ? 'project' : 'projects'}
+          </p>
+        </header>
 
-      <h1 class="page-title">skills</h1>
-      <p class="page-description">Browse projects by skill and technology</p>
-
-      <div class="skills-count">
-        {sortedSkills.length} {sortedSkills.length === 1 ? 'skill' : 'skills'} · {allProjects.length} {allProjects.length === 1 ? 'project' : 'projects'}
+        <nav class="type-nav type-nav--grid" aria-label="Browse by skill">
+          {sortedSkills.map(([skill, count], i) => (
+            <a href={`/work/skills/${skill}`} class:list={['type-card', `type-card--${tones[i % 3]}`]}>
+              <span class="tc-label">#{skill}</span>
+              <span class="tc-count">{count} {count === 1 ? 'project' : 'projects'}</span>
+              <span class="tc-arrow" aria-hidden="true">→</span>
+            </a>
+          ))}
+        </nav>
       </div>
     </div>
-
-    <div class="skills-grid">
-      {sortedSkills.map(([skill, count]) => (
-        <Card variant="interactive" href={`/work/skills/${skill}`} class="skill-card">
-          <span class="skill-name">#{skill}</span>
-          <span class="skill-count">{count} {count === 1 ? 'project' : 'projects'}</span>
-        </Card>
-      ))}
-    </div>
   </main>
+
+  <ThemeModal />
 </BaseLayout>
 
 <style>
   @import '../../../styles/tokens.css';
   @import '../../../styles/themes.css';
 
-  .skills-page {
-    min-height: 100vh;
-    background: var(--bg-secondary);
-    padding: var(--space-4xl) var(--page-gutter);
-  }
-
-  .skills-header {
-    max-width: var(--content-normal);
-    margin: 0 auto var(--space-4xl);
-    text-align: center;
-  }
-
-  .back-button {
-    margin-bottom: var(--space-xl);
-  }
-
-  .page-title {
-    font-size: var(--heading-2xl);
-    color: var(--text-primary);
-    margin-bottom: var(--space-md);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-primary);
-    text-decoration-thickness: 4px;
-    transform: skew(-2deg);
-  }
-
-  .page-description {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin-bottom: var(--space-lg);
-  }
-
-  .skills-count {
-    font-size: var(--text-sm);
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-  }
-
-  .skills-grid {
-    max-width: var(--content-wide);
-    margin: 0 auto;
+  /* Dense grid of tone cards for the skills index (base .type-nav is a column). */
+  .type-nav--grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--space-lg);
-  }
-
-  .skill-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    text-align: center;
-    padding: var(--space-xl);
-  }
-
-  .skill-name {
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
-    color: var(--text-primary);
-  }
-
-  .skill-count {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-
-  @media (max-width: 768px) {
-    .skills-page {
-      padding: var(--space-3xl) var(--page-gutter);
-    }
-
-    .page-title {
-      font-size: var(--heading-xl);
-    }
-
-    .skills-grid {
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: var(--space-md);
-    }
-
-    .skill-card {
-      padding: var(--space-lg);
-    }
-
-    .skill-name {
-      font-size: var(--text-lg);
-    }
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 </style>

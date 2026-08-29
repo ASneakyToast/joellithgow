@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
-import Card from '@components/primitives/Card.astro';
-import Badge from '@components/primitives/Badge.astro';
-import Button from '@components/primitives/Button.astro';
+import ThemeModal from '@components/modals/ThemeModal.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import ProjectRow from '@components/work/ProjectRow.astro';
 import { fetchProjects } from '@lib/astraeus';
 import type { GetStaticPaths } from 'astro';
+import '../../../styles/log.css';
 
 export const getStaticPaths = (async () => {
   // Skills listed in the About section that should have pages even without projects
@@ -42,216 +43,53 @@ const pageDescription = `Projects featuring ${skill}`;
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <main class="skill-page">
-    <div class="skill-header">
-      <Button
-        variant="ghost"
-        size="sm"
-        href="/work/skills"
-        class="back-button"
-      >
-        ← all skills
-      </Button>
+  <main id="main-content" class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
+    <div class="blog-wrapper blog-wrapper--full">
+      <div class="main-content">
+        <header class="section-head">
+          <a href="/work/skills" class="back-link">← all skills</a>
+          <h1 class="section-title">#{skill}</h1>
+          <p class="section-desc">
+            {projects.length} {projects.length === 1 ? 'project' : 'projects'} featuring this skill
+          </p>
+        </header>
 
-      <h1 class="page-title">#{skill}</h1>
-      <p class="page-description">
-        {projects.length} {projects.length === 1 ? 'project' : 'projects'} featuring this skill
-      </p>
+        {projects.length > 0 ? (
+          <div class="project-list">
+            {projects.map((project) => (
+              <ProjectRow
+                project={project}
+                number={project.number}
+                tags={project.tags ?? []}
+                activeTag={skill}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="section-empty">
+            No documented case studies for this skill yet. <a href="/work">View all projects →</a>
+          </p>
+        )}
+      </div>
     </div>
-
-    {projects.length > 0 ? (
-      <div class="projects-grid">
-        {projects.map((project) => (
-          <Card variant="interactive" href={`/work/${project.slug}`}>
-            <div class="project-header">
-              <span class="project-number">{String(project.number).padStart(2, '0')}</span>
-              <span class="project-type">{project.project_type}</span>
-            </div>
-
-            <h2 class="project-title">{project.title}</h2>
-            <p class="project-description">{project.description}</p>
-
-            {/* Impact */}
-            {project.impact && (
-              <div class="project-impact">
-                <span class="impact-label">impact:</span>
-                <span class="impact-value">{project.impact}</span>
-              </div>
-            )}
-
-            {/* Tags - highlight current skill */}
-            {project.tags && project.tags.length > 0 && (
-              <div class="project-tags">
-                {project.tags.slice(0, 5).map((tag) => (
-                  <Badge
-                    variant={tag === skill ? "primary" : "secondary"}
-                    size="sm"
-                    href={`/work/skills/${tag}`}
-                  >
-                    #{tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
-    ) : (
-      <div class="empty-state">
-        <p class="empty-message">No documented case studies for this skill yet.</p>
-        <Button href="/work" variant="primary" size="md">
-          View all projects
-        </Button>
-      </div>
-    )}
   </main>
+
+  <ThemeModal />
 </BaseLayout>
 
 <style>
   @import '../../../styles/tokens.css';
   @import '../../../styles/themes.css';
 
-  .skill-page {
-    min-height: 100vh;
-    background: var(--bg-secondary);
-    padding: var(--space-4xl) var(--page-gutter);
-  }
-
-  .skill-header {
-    max-width: var(--content-normal);
-    margin: 0 auto var(--space-4xl);
-    text-align: center;
-  }
-
-  .back-button {
-    margin-bottom: var(--space-xl);
-  }
-
-  .page-title {
-    font-size: var(--heading-2xl);
-    color: var(--text-primary);
-    margin-bottom: var(--space-md);
-    text-decoration: underline;
-    text-decoration-color: var(--accent-primary);
-    text-decoration-thickness: 4px;
-    transform: skew(-2deg);
-  }
-
-  .page-description {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-  }
-
-  .projects-grid {
-    max-width: var(--content-wide);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-2xl);
-  }
-
-  @media (min-width: 768px) {
-    .projects-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  /* Project Card Content */
-  .project-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .project-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-  }
-
-  .project-number {
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
-    color: var(--accent-primary);
-  }
-
-  .project-type {
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    font-size: var(--text-xs);
-    color: var(--text-tertiary);
-  }
-
-  .project-title {
-    font-size: var(--text-xl);
-    line-height: 1.3;
-    color: var(--text-primary);
-    font-weight: var(--font-bold);
-    margin: 0;
-  }
-
-  .project-description {
+  .back-link {
+    display: inline-block;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
-    line-height: var(--leading-relaxed);
     color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
   }
-
-  .project-impact {
-    display: flex;
-    gap: var(--space-xs);
-    padding: var(--space-sm) 0;
-    border-top: 1px solid var(--border-secondary);
-    border-bottom: 1px solid var(--border-secondary);
-  }
-
-  .impact-label {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--text-tertiary);
-    font-weight: var(--font-bold);
-  }
-
-  .impact-value {
-    font-size: var(--text-xs);
-    color: var(--text-secondary);
-  }
-
-  .project-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-  }
-
-  /* Empty State */
-  .empty-state {
-    max-width: var(--content-normal);
-    margin: 0 auto;
-    text-align: center;
-    padding: var(--space-5xl) var(--space-xl);
-    background: var(--bg-primary);
-    border: var(--border-width-thick) solid var(--bg-dark);
-    box-shadow: var(--shadow-xl) var(--accent-secondary);
-  }
-
-  .empty-message {
-    font-family: var(--font-family);
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-xl);
-  }
-
-  @media (max-width: 768px) {
-    .skill-page {
-      padding: var(--space-3xl) var(--page-gutter);
-    }
-
-    .page-title {
-      font-size: var(--heading-xl);
-    }
-
-    .projects-grid {
-      gap: var(--space-xl);
-    }
-  }
+  .back-link:hover { color: var(--accent-primary); }
+  .section-empty a { color: var(--accent-primary); }
 </style>

@@ -2,250 +2,27 @@
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Projects from '@components/sections/Projects.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import UIInteractions from '@components/interactive/UIInteractions.astro';
-import KeyboardShortcuts from '@components/interactive/KeyboardShortcuts.astro';
-import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
-import Button from '@components/primitives/Button.astro';
-import PageTitle from '@components/ui/PageTitle.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import '../../styles/log.css';
 
 const pageTitle = 'Work - Joel Lithgow';
-const pageDescription = 'Professional portfolio showcasing UX design, product development, and creative technology projects. Case studies in user research, conversion optimization, and technical implementation.';
+const pageDescription = 'Selected work — case studies in UX design, product development, and creative technology.';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-  <!-- Skip to main content link for screen readers -->
-  <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
+  <main id="main-content" class="blog-container">
+    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
+    <div class="blog-wrapper blog-wrapper--full">
+      <div class="main-content">
+        <header class="section-head">
+          <h1 class="section-title">Portfolio</h1>
+          <p class="section-desc">{pageDescription}</p>
+        </header>
 
-  <!-- Main Content -->
-  <main id="main-content" class="work-container animated-bg bg-accent-editorial">
-    <!-- Work Header Section -->
-    <section class="work-header-section">
-      <header class="work-header">
-        <PageTitle title="Portfolio" subtitle="Designing and developing for the web" />
-      </header>
-    </section>
-
-    <!-- Projects Component -->
-    <Projects showHeader={false} />
+        <Projects featuredOnly={false} />
+      </div>
+    </div>
   </main>
 
-  <!-- Modals -->
   <ThemeModal />
-
-  <!-- Enhanced UI Interactions (Scroll animations, hover effects, parallax) -->
-  <UIInteractions />
-
-  <!-- Keyboard Shortcuts and Accessibility -->
-  <KeyboardShortcuts />
-
-  <!-- Performance Optimization and Monitoring -->
-  <PerformanceOptimizer />
-
-  <!-- Theme toggle button -->
-  <Button
-    variant="ghost"
-    size="md"
-    id="themeControl"
-    class="theme-toggle-button"
-    onclick="window.openThemeModal && window.openThemeModal()"
-    aria-label="Change theme"
-    title="Change theme (Ctrl+T)"
-  >
-    <span aria-hidden="true">🎨</span>
-    <span class="sr-only">Change theme</span>
-  </Button>
-
-  <!-- Screen reader only content -->
-  <div class="sr-only">
-    <div>This website uses themes. Press Ctrl+T to cycle through available themes.</div>
-    <div>Some elements on this page are interactive and can be dragged around.</div>
-  </div>
 </BaseLayout>
-
-<style>
-  /* Import design system */
-  @import '../../styles/tokens.css';
-  @import '../../styles/themes.css';
-  @import '../../styles/backgrounds.css';
-
-  /* Work Page Container */
-  .work-container {
-    min-height: 100vh;
-    color: var(--text-primary);
-    padding: var(--space-3xl) var(--page-gutter);
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Work Header Section */
-  .work-header-section {
-    position: relative;
-    margin: var(--space-2xl) 0;
-    max-width: var(--content-full);
-    margin-left: auto;
-    margin-right: auto;
-    z-index: 10;
-  }
-
-  .work-header {
-    text-align: left;
-    padding-bottom: var(--space-xl);
-  }
-
-  /* Global accessibility styles - sr-only class is defined globally in BaseLayout */
-
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: var(--bg-dark);
-    color: var(--text-light);
-    padding: 8px;
-    text-decoration: none;
-    z-index: 100;
-  }
-
-  .skip-link:focus {
-    top: 6px;
-  }
-
-  /* Focus styles */
-  :focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-  }
-
-  /* Smooth scroll behavior */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Ensure content stacks above animated background pseudo-elements */
-  .work-container > * {
-    position: relative;
-    z-index: 10;
-  }
-
-  /* Make animated background pseudo-elements non-blocking for clicks */
-  .work-container::before,
-  .work-container::after {
-    pointer-events: none;
-  }
-
-  /* Remove Projects section top border since we're flowing from header */
-  .work-container :global(.projects-section) {
-    border-top: none;
-    padding-top: var(--space-xl);
-  }
-
-  /* Theme toggle button */
-  .theme-toggle-button {
-    position: fixed;
-    bottom: var(--space-xl);
-    right: var(--space-xl);
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-full);
-    z-index: var(--z-sticky);
-  }
-
-  @media (max-width: 768px) {
-    .work-container {
-      padding: var(--space-xl) var(--page-gutter);
-    }
-
-    .work-header {
-      padding-bottom: var(--space-lg);
-    }
-
-    .theme-toggle-button {
-      bottom: var(--space-lg);
-      right: var(--space-lg);
-      width: 44px;
-      height: 44px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .work-container {
-      padding: var(--space-lg) var(--space-md);
-    }
-
-  }
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-</style>
-
-<script>
-  // Global theme system integration and interactive functionality
-  document.addEventListener('DOMContentLoaded', () => {
-    // Load saved theme on page load - force reset to default if it's forest
-    let savedTheme = localStorage.getItem('portfolio-theme') || 'default';
-
-    // If the saved theme is invalid, reset to default
-    const validThemes = ['default', 'electric', 'retro', 'system', 'high-contrast', 'minimal', 'neon'];
-    if (!validThemes.includes(savedTheme)) {
-      savedTheme = 'default';
-      localStorage.setItem('portfolio-theme', 'default');
-    }
-
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
-    // Global keyboard shortcuts for theme switching
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 't') {
-        e.preventDefault();
-        const themeControl = document.getElementById('themeControl');
-        if (themeControl) {
-          themeControl.click();
-        }
-      }
-    });
-
-    // Smooth scroll enhancement for all anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', (e) => {
-        e.preventDefault();
-        const href = (anchor as HTMLAnchorElement).getAttribute('href');
-        if (href) {
-          const targetId = href.substring(1);
-          const targetElement = document.getElementById(targetId);
-
-          if (targetElement) {
-            targetElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        }
-      });
-    });
-
-    // Initialize scroll-based animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-        }
-      });
-    }, observerOptions);
-
-    // Observe elements that should animate on scroll
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
-      observer.observe(el);
-    });
-  });
-</script>
