@@ -3,7 +3,6 @@ import { fetchProjects } from '@lib/astraeus';
 import type { AstraeusDocument, ProjectPage } from '@lib/astraeus-types';
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import Button from '@components/primitives/Button.astro';
 import CaseStudyHero from '@components/blocks/CaseStudyHero.astro';
 import CaseStudyMeta from '@components/blocks/CaseStudyMeta.astro';
 import ChallengeSection from '@components/blocks/ChallengeSection.astro';
@@ -192,9 +191,9 @@ const breadcrumbSchema = {
 
       {/* Footer Navigation */}
       <footer class="article-footer">
-        <Button href="/work" variant="primary" size="lg">
+        <a href="/work" class="back-to-work">
           <span aria-hidden="true">&larr;</span> Back to all projects
-        </Button>
+        </a>
       </footer>
     </article>
   </main>
@@ -210,13 +209,14 @@ const breadcrumbSchema = {
   .case-study {
     background: var(--bg-secondary);
     min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
   }
 
-  /* Breadcrumb Header */
+  /* Breadcrumb Header — mono rail + hairline */
   .breadcrumb-header {
-    background: var(--bg-primary);
     padding: var(--space-md) var(--page-gutter);
-    border-bottom: 2px solid var(--bg-dark);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
   }
 
   .breadcrumb-nav {
@@ -235,8 +235,10 @@ const breadcrumbSchema = {
   }
 
   .breadcrumb-item {
-    font-family: var(--font-family);
-    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
   }
 
   .breadcrumb-link {
@@ -252,7 +254,7 @@ const breadcrumbSchema = {
   .breadcrumb-separator {
     color: var(--text-secondary);
     opacity: 0.5;
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
   }
 
   .breadcrumb-current {
@@ -279,6 +281,10 @@ const breadcrumbSchema = {
   }
 
   .case-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    letter-spacing: var(--tracking-tight);
     font-size: var(--heading-2xl);
     margin-bottom: var(--space-md);
     color: var(--text-primary);
@@ -286,7 +292,8 @@ const breadcrumbSchema = {
   }
 
   .case-subtitle {
-    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     color: var(--accent-secondary);
@@ -294,6 +301,7 @@ const breadcrumbSchema = {
   }
 
   .case-overview {
+    font-family: var(--font-body);
     font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
@@ -309,16 +317,12 @@ const breadcrumbSchema = {
   }
 
   .meta-item {
-    background: var(--bg-primary);
-    border: 2px solid var(--bg-dark);
     padding: var(--space-lg);
-  }
-
-  .meta-item:nth-child(even) {
-    background: var(--accent-tertiary);
+    border: 1px solid var(--gradient-primary-subtle);
   }
 
   .meta-label {
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
@@ -328,30 +332,35 @@ const breadcrumbSchema = {
   }
 
   .meta-value {
+    font-family: var(--font-body);
     font-size: var(--text-sm);
-    font-weight: var(--font-bold);
+    font-weight: var(--font-semibold);
     color: var(--text-primary);
   }
 
   .case-section {
     padding: var(--space-3xl) 0;
-    border-bottom: 2px solid var(--bg-primary);
+    border-bottom: 1px solid var(--gradient-primary-subtle);
   }
 
   .case-section:last-of-type {
     border-bottom: none;
   }
 
+  /* Kept as a descendant selector so it never collides with a global
+     .section-title — block headings stay at --heading-md, not --heading-xl. */
   .case-section .section-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    letter-spacing: var(--tracking-tight);
     font-size: var(--heading-md);
     margin-bottom: var(--space-lg);
     color: var(--text-primary);
-    text-transform: lowercase;
-    border-left: 4px solid var(--accent-primary);
-    padding-left: var(--space-md);
   }
 
   .section-content {
+    font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     color: var(--text-primary);
@@ -362,12 +371,14 @@ const breadcrumbSchema = {
     margin-bottom: var(--space-lg);
   }
 
+  /* Callout — subtle panel with an accent rule instead of a filled block */
   .insight-box {
-    background: var(--accent-secondary);
-    color: var(--text-light);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding: var(--space-lg);
     margin: var(--space-xl) 0;
-    border: 2px solid var(--bg-dark);
+    border: 1px solid var(--gradient-primary-subtle);
+    border-left: 3px solid var(--accent-secondary);
     position: relative;
     max-width: var(--content-normal);
   }
@@ -380,51 +391,56 @@ const breadcrumbSchema = {
   }
 
   .metric-card {
-    background: var(--bg-dark);
-    color: var(--text-light);
     padding: var(--space-lg);
     text-align: center;
-    border: 2px solid var(--bg-dark);
-  }
-
-  .metric-card:nth-child(even) {
-    background: var(--accent-primary);
+    border: 1px solid var(--gradient-primary-subtle);
   }
 
   .metric-number {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
     font-size: var(--heading-md);
-    font-weight: var(--font-bold);
+    font-weight: var(--font-semibold);
+    color: var(--accent-primary);
     margin-bottom: var(--space-xs);
   }
 
   .metric-label {
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
   }
 
   .process-step-detailed {
-    background: var(--bg-primary);
-    border: 2px solid var(--bg-dark);
     padding: var(--space-xl);
     margin-bottom: var(--space-lg);
+    border: 1px solid var(--gradient-primary-subtle);
   }
 
   .step-number-detailed {
-    font-size: var(--heading-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
     font-weight: var(--font-bold);
     color: var(--accent-primary);
     margin-bottom: var(--space-sm);
   }
 
   .step-title-detailed {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
     font-size: var(--text-xl);
-    font-weight: var(--font-bold);
+    font-weight: var(--font-semibold);
+    letter-spacing: var(--tracking-tight);
     margin-bottom: var(--space-sm);
     color: var(--text-primary);
   }
 
   .step-description-detailed {
+    font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
@@ -437,16 +453,14 @@ const breadcrumbSchema = {
 
   .hero-image {
     margin: var(--space-2xl) 0;
-    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--gradient-primary-subtle);
   }
 
   .case-image {
     width: 100%;
     height: auto;
-    border: 2px solid var(--bg-dark);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--gradient-primary-subtle);
   }
 
   .primary-image {
@@ -475,11 +489,13 @@ const breadcrumbSchema = {
 
   .quote-block {
     background: var(--bg-primary);
-    border-left: 4px solid var(--accent-primary);
+    border-left: 3px solid var(--accent-primary);
     padding: var(--space-lg);
     margin: var(--space-lg) 0;
+    font-family: var(--font-body);
     font-style: italic;
     font-size: var(--text-lg);
+    color: var(--text-primary);
     max-width: var(--content-normal);
   }
 
@@ -492,26 +508,33 @@ const breadcrumbSchema = {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    background: var(--accent-primary);
-    color: var(--text-light);
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--accent-primary);
+    padding: var(--space-sm) var(--space-lg);
+    border: 1px solid var(--accent-primary);
     text-decoration: none;
-    font-weight: var(--font-bold);
-    transition: all var(--duration-base) var(--ease-out);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    transition: transform var(--duration-base) var(--ease-out),
+                background var(--duration-base) var(--ease-out),
+                color var(--duration-base) var(--ease-out);
   }
 
   .live-link-button:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
+    background: var(--accent-primary);
+    color: var(--card-alt-text-1);
+    transform: translate(-2px, -2px);
   }
 
   .link-arrow {
-    font-size: var(--text-xl);
+    font-size: var(--text-base);
   }
 
   .live-link-description,
   .live-links-description {
+    font-family: var(--font-body);
     font-size: var(--text-base);
     color: var(--text-secondary);
     margin: var(--space-md) 0;
@@ -527,9 +550,24 @@ const breadcrumbSchema = {
   .article-footer {
     padding: var(--space-4xl) 0;
     margin-top: var(--space-2xl);
-    border-top: 3px solid var(--bg-dark);
+    border-top: 1px solid var(--gradient-primary-subtle);
     text-align: center;
   }
+
+  .back-to-work {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  .back-to-work:hover { transform: translateX(-4px); }
 
   /* Responsive */
   @media (max-width: 768px) {
@@ -546,5 +584,17 @@ const breadcrumbSchema = {
   .breadcrumb-link:focus {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .live-link-button,
+    .back-to-work {
+      transition: none;
+    }
+    .live-link-button:hover,
+    .back-to-work:hover {
+      transform: none;
+    }
   }
 </style>

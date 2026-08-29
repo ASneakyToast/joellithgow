@@ -68,9 +68,7 @@ const { videos, title = 'video gallery', layout = 'grid' } = Astro.props;
   }
 
   .video-item {
-    background: var(--bg-secondary);
-    border: 2px solid var(--bg-dark);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--gradient-primary-subtle);
     overflow: hidden;
   }
 
@@ -81,6 +79,7 @@ const { videos, title = 'video gallery', layout = 'grid' } = Astro.props;
   }
 
   .video-title {
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
     padding: var(--space-sm) var(--space-md) 0;
