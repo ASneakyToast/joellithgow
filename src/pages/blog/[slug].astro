@@ -12,6 +12,9 @@ import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
+import LinksAccordion from '@components/blog/LinksAccordion.astro';
+import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
+import '../../styles/log.css';
 
 export async function getStaticPaths() {
   const allPosts = await fetchBlogPosts();
@@ -44,6 +47,13 @@ const publishDate = new Date(publish_date);
 // Typed views for new post types (cast once in frontmatter, not in template)
 const spotifyDump = post_type === 'spotify_dump' ? (post as AstraeusDocument<SpotifyDump> & { post_type: 'spotify_dump' }) : null;
 const natureOuting = post_type === 'nature_outing' ? (post as AstraeusDocument<NatureOuting> & { post_type: 'nature_outing' }) : null;
+
+// Sibling collections for the collection-page sidebar
+const collections = post_type === 'collection'
+  ? (await fetchBlogPosts())
+      .filter((p) => p.post_type === 'collection')
+      .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf())
+  : [];
 
 // JSON-LD structured data for BlogPosting
 const jsonLd = {
@@ -117,19 +127,20 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <main
-    class:list={['article-container animated-bg bg-accent-editorial', { 'blog-container': post_type === 'collection' }]}
+    class:list={post_type === 'collection' ? 'blog-container' : 'article-container animated-bg bg-accent-editorial'}
     data-cms-id={post._id}
     data-cms-type="blog_post"
   >
-    <div class:list={['article-wrapper', { 'blog-wrapper': post_type === 'collection' }]}>
+    {post_type === 'collection' && <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />}
+    <div class:list={post_type === 'collection' ? 'blog-wrapper' : 'article-wrapper'}>
       {/* Main content column (for collections) or article (for regular posts) */}
       <div class={post_type === 'collection' ? 'main-content' : ''}>
-        {/* Back to blog link */}
-        <nav class:list={['article-nav', { 'breadcrumb-nav': post_type === 'collection' }]}>
-          <Button href="/blog" variant={post_type === 'collection' ? 'ghost' : 'secondary'} size={post_type === 'collection' ? 'sm' : 'md'} class="nav-back-btn">
-            ← Back to {post_type === 'collection' ? 'Blog' : 'blog'}
-          </Button>
-        </nav>
+        {/* Back to blog link (regular posts only — collections use the header breadcrumb) */}
+        {post_type !== 'collection' && (
+          <nav class="article-nav">
+            <Button href="/blog" variant="secondary" size="md" class="nav-back-btn">← Back to blog</Button>
+          </nav>
+        )}
 
         {/* SPOTIFY DUMP LAYOUT — inside the same .blog-article card as regular posts */}
         {spotifyDump && (
@@ -248,29 +259,10 @@ const breadcrumbSchema = {
         {/* spotifyDump and natureOuting render their own layouts above — skip entirely for those */}
         {!spotifyDump && !natureOuting && (post_type === 'collection' ? (
           <>
-            {/* Collection header - matches tag/links page style */}
-            <header class="collection-header">
-              <h1 class="collection-title" data-cms-field="title">{title}</h1>
-              <p class="collection-description" data-cms-field="description">{description}</p>
-              <div class="collection-stats">
-                <div class="stat-item">
-                  <span class="stat-number">{links?.length || 0}</span>
-                  <span class="stat-label">links</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">{tags?.length || 0}</span>
-                  <span class="stat-label">tags</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-date">
-                    {publishDate.toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-              </div>
+            {/* Collection header */}
+            <header class="section-head">
+              <h1 class="section-title" data-cms-field="title">{title}</h1>
+              <p class="section-desc" data-cms-field="description">{description}</p>
             </header>
 
             {/* Collection content section - simple card (only if has content) */}
@@ -282,19 +274,9 @@ const breadcrumbSchema = {
               </section>
             )}
 
-            {/* Collection links display */}
+            {/* Collection links — same accordion as the links page */}
             {links && links.length > 0 && (
-              <section class="collection-links-section">
-                <h2 class="section-heading">
-                  Links in this Collection
-                  <span class="links-count-badge">{links.length}</span>
-                </h2>
-                <div class="links-grid">
-                  {links.map((link) => (
-                    <LinkCard link={{ ...link, dateAdded: new Date(link.date_added) }} variant="minimal" />
-                  ))}
-                </div>
-              </section>
+              <LinksAccordion links={links.map((l) => ({ url: l.url, title: l.title, description: l.description }))} />
             )}
           </>
         ) : (
@@ -380,40 +362,23 @@ const breadcrumbSchema = {
         ))}
       </div>
 
-      {/* Sidebar for collections */}
+      {/* Sidebar for collections — browse other collections */}
       {post_type === 'collection' && (
         <aside class="sidebar">
-          <Card variant="outlined" padding="lg" class="sidebar-widget">
-            <h3 class="widget-title">Collection Info</h3>
-            <div class="widget-meta">
-              <div class="meta-item">
-                <span class="meta-label">Created</span>
-                <time datetime={publishDate.toISOString()} class="meta-value">
-                  {publishDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </time>
-              </div>
-              {author && (
-                <div class="meta-item">
-                  <span class="meta-label">Curator</span>
-                  <span class="meta-value">{author}</span>
-                </div>
-              )}
-              {tags && tags.length > 0 && (
-                <div class="meta-item">
-                  <span class="meta-label">Tags</span>
-                  <div class="meta-tags" data-cms-field="tags">
-                    {tags.map((tag) => (
-                      <Badge href={`/blog/tags/${tag}`} size="sm">#{tag}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
+          <h2 class="sidebar-heading">Collections</h2>
+          <nav class="type-nav" aria-label="Collections">
+            {collections.map((c, i) => (
+              <a
+                href={`/blog/${c.slug}`}
+                aria-current={c.slug === post.slug ? 'page' : undefined}
+                class:list={['type-card', `type-card--${['primary', 'secondary', 'tertiary'][i % 3]}`]}
+              >
+                <span class="tc-label">{c.title}</span>
+                <span class="tc-count">{('links' in c && (c as any).links?.length) || 0}</span>
+                <span class="tc-arrow" aria-hidden="true">→</span>
+              </a>
+            ))}
+          </nav>
         </aside>
       )}
 
@@ -476,32 +441,12 @@ const breadcrumbSchema = {
     overflow: hidden;
   }
 
-  /* Blog container for collections - matches tag/links pages */
-  .blog-container {
-    min-height: 100vh;
-    padding: var(--space-3xl) var(--page-gutter);
-    position: relative;
-    overflow: hidden;
-  }
+  /* Collection page chrome (.blog-container/.blog-wrapper/.main-content/.sidebar/.section-head) comes from log.css */
 
   .article-wrapper {
     max-width: var(--content-normal);
     margin: 0 auto;
     position: relative;
-  }
-
-  /* Blog wrapper for collections - 2-column grid layout */
-  .blog-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: var(--space-3xl);
-    max-width: 1400px;
-    margin: 0 auto;
-    align-items: start;
-  }
-
-  .main-content {
-    min-width: 0; /* Prevent grid blowout */
   }
 
   .article-nav {
