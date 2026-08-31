@@ -1,0 +1,30 @@
+---
+/**
+ * ThemeBackground — the single, site-wide animated background.
+ *
+ * A pure-CSS grid (from backgrounds.css). Its cell size, opacity, animation
+ * speed, and line color all come from the active theme's tokens
+ * (--grid-size / --grid-opacity / --grid-anim-speed / --gradient-primary-*,
+ * defined per theme in themes.css), so it re-tunes instantly when the theme
+ * changes — no JavaScript, no WebGL. Reduced-motion visitors get the same
+ * grid held static (backgrounds.css disables the animation for them).
+ *
+ * Mounted once in BaseLayout. Pages that manage their own background
+ * (og-image, the /backgrounds studio) opt out via `themeBackground={false}`.
+ */
+import '../../styles/backgrounds.css';
+---
+
+<div class="theme-background animated-bg" aria-hidden="true"></div>
+
+<style>
+  /* Fixed, full-viewport, behind all content. The grid itself is painted by
+     .animated-bg::before (position:absolute, 100%), which fills this box. */
+  .theme-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+</style>

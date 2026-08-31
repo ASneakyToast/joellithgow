@@ -248,6 +248,54 @@
 }
 
 /* ========================================
+   THEME OVERRIDE: Minimal (clean, airy)
+   The counterweight to broadsheet. Where broadsheet pulls the whole
+   ladder down for density, minimal pushes it UP for generous whitespace,
+   so the three themes span a real range: minimal (airy) → default (base)
+   → broadsheet (tight). Same specificity as :root, declared later, so it
+   wins whenever data-theme="minimal" is active.
+   ======================================== */
+[data-theme="minimal"] {
+  /* Spacing — whole ladder opened up for breathing room. Semantic tokens
+   * reference these steps, so section/paragraph rhythm loosens automatically. */
+  --space-xs: 0.3125rem;  /* 4px  → 5px  */
+  --space-sm: 0.625rem;   /* 8px  → 10px */
+  --space-md: 1.25rem;    /* 16px → 20px */
+  --space-lg: 2rem;       /* 24px → 32px */
+  --space-xl: 2.75rem;    /* 32px → 44px */
+  --space-2xl: 4rem;      /* 48px → 64px */
+  --space-3xl: 5.5rem;    /* 64px → 88px */
+  --space-4xl: 8rem;      /* 96px → 128px */
+  --space-5xl: 11rem;     /* 128px → 176px */
+
+  /* Semantic spacing — expansive section + paragraph rhythm */
+  --section-spacing: var(--space-5xl);
+  --section-spacing-compact: var(--space-4xl);
+  --heading-spacing: var(--space-xl);
+  --paragraph-spacing: var(--space-2xl);
+
+  /* Type scale — a touch larger, for a calm, generous read */
+  --text-base: 1.0625rem; /* 16px → 17px */
+  --text-lg: 1.25rem;     /* 18px → 20px */
+  --text-xl: 1.375rem;    /* 20px → 22px */
+  --text-2xl: 1.625rem;   /* 24px → 26px */
+  --text-3xl: 2rem;       /* 30px → 32px */
+  --text-4xl: 2.5rem;     /* 36px → 40px */
+  --text-5xl: 3.5rem;     /* 48px → 56px */
+
+  /* Fluid headings — larger ceilings, roomy scaling */
+  --heading-lg: clamp(2.25rem, 5.5vw, 2.75rem);
+  --heading-xl: clamp(2.75rem, 6.5vw, 3.75rem);
+  --heading-2xl: clamp(3.25rem, 9vw, 5rem);
+
+  /* Airy reading rhythm — looser leading, a whisper of tracking on headings */
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+  --tracking-tight: 0;
+  --tracking-wide: 0.04em;
+}
+
+/* ========================================
    RESPONSIVE BREAKPOINTS
    Mobile-first approach
    ======================================== */

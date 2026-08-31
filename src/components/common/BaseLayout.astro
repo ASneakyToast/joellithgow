@@ -1,5 +1,6 @@
 ---
 import GlobalHeader from './GlobalHeader.astro';
+import ThemeBackground from '@components/backgrounds/ThemeBackground.astro';
 
 // Self-hosted fonts — replaces the Google Fonts <link>, which loaded after
 // first paint and caused a visible font swap/reflow. Import the @font-face
@@ -10,6 +11,12 @@ import '@fontsource-variable/fraunces/standard.css';  // display: opsz + wght ax
 import '@fontsource-variable/ibm-plex-sans/wght.css'; // body: wght axis
 import frauncesWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-standard-normal.woff2?url';
 import plexWoff2 from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
+
+// Non-default theme faces — @font-face declarations only (no preload). The
+// browser fetches the woff2 lazily, the first time a theme that actually uses
+// the family becomes active, so the default theme's first paint is unaffected.
+import '@fontsource-variable/inter/wght.css';          // minimal theme
+import '@fontsource-variable/newsreader/standard.css'; // broadsheet body
 
 export interface Props {
   title?: string;
@@ -23,6 +30,7 @@ export interface Props {
   articleAuthor?: string;
   articleTags?: string[];
   showGlobalHeader?: boolean;
+  themeBackground?: boolean;
 }
 
 const {
@@ -36,7 +44,8 @@ const {
   articlePublishedTime,
   articleAuthor,
   articleTags,
-  showGlobalHeader = true
+  showGlobalHeader = true,
+  themeBackground = true
 } = Astro.props;
 ---
 
@@ -155,6 +164,9 @@ const {
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K858Q6JF"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+
+  <!-- Site-wide animated background, swapped live per active theme -->
+  {themeBackground && <ThemeBackground />}
 
   <!-- Skip to main content link for screen readers -->
   <a href="#main-content" class="skip-link" aria-label="Skip to main content">Skip to main content</a>
