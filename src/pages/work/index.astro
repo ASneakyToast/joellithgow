@@ -2,7 +2,6 @@
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Projects from '@components/sections/Projects.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import '../../styles/log.css';
 
 const pageTitle = 'Work - Joel Lithgow';
@@ -11,7 +10,6 @@ const pageDescription = 'Selected work — case studies in UX design, product de
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main id="main-content" class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper blog-wrapper--full">
       <div class="main-content">
         <header class="section-head">

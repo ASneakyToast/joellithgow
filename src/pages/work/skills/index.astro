@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import { fetchProjects } from '@lib/astraeus';
 import '../../../styles/log.css';
 
@@ -30,7 +29,6 @@ const tones = ['primary', 'secondary', 'tertiary'];
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main id="main-content" class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper blog-wrapper--full">
       <div class="main-content">
         <header class="section-head">

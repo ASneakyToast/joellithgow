@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import { fetchBlogPosts } from '@lib/astraeus';
 import '../../styles/log.css';
 
@@ -22,7 +21,6 @@ const pageDescription = 'Field notes from iNaturalist — observations, species,
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper">
       <div class="main-content">
         <header class="section-head">

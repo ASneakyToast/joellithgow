@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import ProjectRow from '@components/work/ProjectRow.astro';
 import { fetchProjects } from '@lib/astraeus';
 import type { GetStaticPaths } from 'astro';
@@ -44,7 +43,6 @@ const pageDescription = `Projects featuring ${skill}`;
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main id="main-content" class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper blog-wrapper--full">
       <div class="main-content">
         <header class="section-head">
