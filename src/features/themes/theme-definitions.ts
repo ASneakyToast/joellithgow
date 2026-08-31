@@ -30,6 +30,8 @@ export const themes: Theme[] = [
       '--grid-opacity': '1',
       '--grid-anim-speed': '1'
     },
+    // Warm & playful → drifting geometric shapes.
+    background: { pattern: 'floatingShapes' },
     isDefault: true
   },
   {
@@ -60,36 +62,40 @@ export const themes: Theme[] = [
       '--grid-size': '100px',
       '--grid-opacity': '0.4',
       '--grid-anim-speed': '1.6'
-    }
+    },
+    // Monochrome & quiet → sparse diagonal hatching.
+    background: { pattern: 'minimalLines' }
   },
   {
     name: 'broadsheet',
     displayName: 'broadsheet',
     description: 'serif & tight',
-    colors: ['#7c2d2d', '#3a5a78', '#a67c00'],
+    colors: ['#274060', '#5f8d7e', '#c08552'],
     cssVariables: {
-      '--accent-primary': '#7c2d2d',
-      '--accent-secondary': '#3a5a78',
-      '--accent-tertiary': '#a67c00',
+      '--accent-primary': '#274060',    /* indigo ink */
+      '--accent-secondary': '#5f8d7e',  /* sage */
+      '--accent-tertiary': '#c08552',   /* clay */
       '--bg-primary': '#faf8f3',
       '--bg-secondary': '#ffffff',
       '--bg-dark': '#1a1a1a',
       '--text-primary': '#1a1a1a',
       '--text-secondary': '#55514a',
       '--text-light': '#ffffff',
-      '--gradient-primary-light': 'rgba(124, 45, 45, 0.20)',
-      '--gradient-primary-medium': 'rgba(124, 45, 45, 0.35)',
-      '--gradient-primary-dim': 'rgba(124, 45, 45, 0.28)',
-      '--gradient-primary-subtle': 'rgba(124, 45, 45, 0.12)',
-      '--gradient-secondary-medium': 'rgba(58, 90, 120, 0.5)',
-      '--gradient-secondary-light': 'rgba(58, 90, 120, 0.4)',
-      '--gradient-secondary-dim': 'rgba(58, 90, 120, 0.2)',
-      '--gradient-secondary-subtle': 'rgba(58, 90, 120, 0.12)',
-      '--gradient-tertiary-light': 'rgba(166, 124, 0, 0.35)',
-      '--gradient-tertiary-medium': 'rgba(166, 124, 0, 0.45)',
+      '--gradient-primary-light': 'rgba(39, 64, 96, 0.20)',
+      '--gradient-primary-medium': 'rgba(39, 64, 96, 0.35)',
+      '--gradient-primary-dim': 'rgba(39, 64, 96, 0.28)',
+      '--gradient-primary-subtle': 'rgba(39, 64, 96, 0.12)',
+      '--gradient-secondary-medium': 'rgba(95, 141, 126, 0.5)',
+      '--gradient-secondary-light': 'rgba(95, 141, 126, 0.4)',
+      '--gradient-secondary-dim': 'rgba(95, 141, 126, 0.2)',
+      '--gradient-secondary-subtle': 'rgba(95, 141, 126, 0.12)',
+      '--gradient-tertiary-light': 'rgba(192, 133, 82, 0.35)',
+      '--gradient-tertiary-medium': 'rgba(192, 133, 82, 0.45)',
       '--grid-size': '60px',
       '--grid-opacity': '0.85',
       '--grid-anim-speed': '1.25'
-    }
+    },
+    // Editorial & structured → technical blueprint dimension lines.
+    background: { pattern: 'blueprint' }
   }
 ];
