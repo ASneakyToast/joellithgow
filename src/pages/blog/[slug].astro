@@ -13,7 +13,6 @@ import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import LinksAccordion from '@components/blog/LinksAccordion.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import '../../styles/log.css';
 
 export async function getStaticPaths() {
@@ -127,11 +126,10 @@ const breadcrumbSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <main
-    class:list={post_type === 'collection' ? 'blog-container' : 'article-container animated-bg bg-accent-editorial'}
+    class:list={post_type === 'collection' ? 'blog-container' : 'article-container'}
     data-cms-id={post._id}
     data-cms-type="blog_post"
   >
-    {post_type === 'collection' && <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />}
     <div class:list={post_type === 'collection' ? 'blog-wrapper' : 'article-wrapper'}>
       {/* Main content column (for collections) or article (for regular posts) */}
       <div class={post_type === 'collection' ? 'main-content' : ''}>

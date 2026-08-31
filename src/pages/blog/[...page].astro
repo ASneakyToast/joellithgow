@@ -14,7 +14,6 @@ import PageTitle from '@components/ui/PageTitle.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import Video from '@components/ui/Video.astro';
 import ImageGallery from '@components/modals/ImageGallery.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 
 export const getStaticPaths = (async () => {
   const posts = await fetchBlogPosts();
@@ -167,7 +166,6 @@ const jsonLd = {
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
   <main class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper">
       {/* Main Content Column */}
       <div class="main-content">

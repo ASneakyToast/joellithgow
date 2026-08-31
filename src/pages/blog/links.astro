@@ -9,7 +9,6 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 import '../../styles/log.css';
 
 // Get all blog posts that have links
@@ -87,7 +86,6 @@ const pageDescription = `Browse all ${totalLinks} links from ${totalSources} pos
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main class="blog-container">
-    <GeometricGridBackground animationType="drift" intensity={0.35} gridSize={90} speed={0.5} />
     <div class="blog-wrapper">
       {/* Main Content Column */}
       <div class="main-content">

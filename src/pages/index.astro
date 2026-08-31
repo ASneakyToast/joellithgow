@@ -3,7 +3,6 @@ import BaseLayout from '@components/common/BaseLayout.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
 import ThemeConstellation from '@components/theme/ThemeConstellation.astro';
 import Card from '@components/primitives/Card.astro';
-import GeometricGridBackground from '@components/backgrounds/GeometricGridBackground.astro';
 
 const pageTitle = 'Joel Lithgow - Creative Technologist';
 const pageDescription = 'Creative technologist who builds things and writes about them. View my professional work or read my writing.';
@@ -11,7 +10,6 @@ const pageDescription = 'Creative technologist who builds things and writes abou
 
 <BaseLayout title={pageTitle} description={pageDescription} showGlobalHeader={false}>
   <main class="landing-page">
-    <GeometricGridBackground animationType="wave" intensity={0.6} gridSize={60} speed={0.8} />
     <div class="landing-content">
       <div class="landing-grid">
         <!-- Left Column: Name + Bio -->
