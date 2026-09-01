@@ -1,0 +1,87 @@
+---
+/**
+ * ResumeHeader — identity block for the /work resume landing: name, role,
+ * tagline, summary, and contact links. Content from @/data/resume.
+ */
+import { identity } from '@/data/resume';
+---
+
+<header class="resume-header">
+  <p class="rh-role">{identity.title}</p>
+  <h1 class="rh-name">{identity.name}</h1>
+  <p class="rh-tagline">{identity.tagline}</p>
+  <p class="rh-summary">{identity.summary}</p>
+
+  <ul class="rh-contact">
+    <li><a href={identity.emailHref}>{identity.email}</a></li>
+    <li><a href={identity.phoneHref}>{identity.phone}</a></li>
+    <li><a href={identity.websiteHref} rel="me">{identity.website}</a></li>
+    <li><a href={identity.galleryUrl} target="_blank" rel="noopener">{identity.galleryHandle}</a></li>
+  </ul>
+</header>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .resume-header { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+  .rh-role {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-primary);
+    margin: 0;
+  }
+  .rh-name {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-xl);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+    margin: 0;
+    color: var(--text-primary);
+  }
+  .rh-tagline {
+    font-family: var(--font-body);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--text-primary);
+    margin: var(--space-xs) 0 0 0;
+  }
+  .rh-summary {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .rh-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-lg);
+    list-style: none;
+    margin: var(--space-sm) 0 0 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+  .rh-contact a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gradient-primary-subtle);
+    padding-bottom: 1px;
+    transition: color var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out);
+  }
+  .rh-contact a:hover { color: var(--accent-primary); border-color: var(--accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rh-contact a { transition: none; }
+  }
+</style>

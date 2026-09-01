@@ -1,0 +1,68 @@
+---
+/**
+ * SkillsRail — curated skill groups for the sidebar. These are display labels,
+ * NOT project tags, so they are intentionally not links (unlike ProjectRow tag
+ * chips, which route to /work/skills/[skill]). Content from @/data/resume.
+ */
+import { skillGroups } from '@/data/resume';
+---
+
+<section class="skills-rail" aria-labelledby="skills-heading">
+  <h2 id="skills-heading" class="skills-heading">Skills</h2>
+  <div class="skills-groups">
+    {skillGroups.map((group) => (
+      <div class="skill-group">
+        <span class="skill-group-label">{group.label}</span>
+        <ul class="skill-chips">
+          {group.skills.map((skill) => <li class="skill-chip">{skill}</li>)}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .skills-rail { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+  .skills-heading {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--text-primary);
+    color: var(--text-primary);
+  }
+
+  .skills-groups { display: flex; flex-direction: column; gap: var(--space-md); }
+
+  .skill-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .skill-group-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-secondary);
+  }
+
+  .skill-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .skill-chip {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    padding: 2px var(--space-xs);
+    border: 1px solid var(--gradient-primary-subtle);
+  }
+</style>

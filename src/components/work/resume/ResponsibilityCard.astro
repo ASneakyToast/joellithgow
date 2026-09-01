@@ -1,0 +1,46 @@
+---
+/**
+ * ResponsibilityCard — a single responsibility rendered as a (non-interactive)
+ * card. Borrows the Log token vocabulary (border, offset shadow, body type) but
+ * deliberately does NOT reuse the interactive `.type-card` class.
+ *
+ * The `.responsibility-card` / `.responsibility-grid` class names are the hooks
+ * the optional Phase 2 minimal-theme "strip to plain text" layer targets.
+ */
+export interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<div class="responsibility-card">{text}</div>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .responsibility-card {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    padding: var(--space-md) var(--space-lg);
+    border: var(--border-width) solid var(--gradient-primary-subtle);
+    background: var(--bg-primary);
+    /* Offset shadow uses currentColor in the default (brutalist) theme; the
+       minimal/broadsheet themes redefine --shadow-md as a soft elevation. */
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+  }
+  .responsibility-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .responsibility-card { transition: none; }
+    .responsibility-card:hover { transform: none; box-shadow: var(--shadow-md); }
+  }
+</style>

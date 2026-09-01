@@ -1,0 +1,149 @@
+---
+/**
+ * RoleCard — one experience_entry rendered as a block: title/company/date meta,
+ * optional description, responsibilities as a card grid, and an achievements
+ * highlight list. Chrome/tone come from tokens + themes (Log design language).
+ */
+import type { ExperienceEntry } from '@lib/astraeus-types';
+import ResponsibilityCard from './ResponsibilityCard.astro';
+
+export interface Props {
+  entry: ExperienceEntry;
+}
+
+const { entry } = Astro.props;
+
+// Years only (mirrors the resume; CMS start_date may be "2026-04").
+const startYear = entry.start_date.split('-')[0];
+const endYear = entry.end_date ? entry.end_date.split('-')[0] : 'Present';
+const dateRange = `${startYear} – ${endYear}`;
+const employmentType = entry.employment_type.replace(/-/g, ' ');
+
+const responsibilities = entry.responsibilities ?? [];
+const achievements = entry.achievements ?? [];
+---
+
+<article class="role-card">
+  <header class="role-card-head">
+    <div class="role-card-titles">
+      <h3 class="role-title">{entry.title}</h3>
+      <span class="role-company">{entry.company}</span>
+    </div>
+    <div class="role-card-meta">
+      <span class="role-dates">{dateRange}</span>
+      <span class="role-type">{employmentType}</span>
+    </div>
+  </header>
+
+  {entry.description && <p class="role-desc">{entry.description}</p>}
+
+  {responsibilities.length > 0 && (
+    <div class="responsibility-grid">
+      {responsibilities.map((text) => <ResponsibilityCard text={text} />)}
+    </div>
+  )}
+
+  {achievements.length > 0 && (
+    <div class="role-achievements">
+      <span class="achievements-label">Highlights</span>
+      <ul class="achievement-list">
+        {achievements.map((text) => <li class="achievement">{text}</li>)}
+      </ul>
+    </div>
+  )}
+</article>
+
+<style>
+  @import '../../../styles/tokens.css';
+  @import '../../../styles/themes.css';
+
+  .role-card { display: flex; flex-direction: column; gap: var(--space-md); }
+
+  .role-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+  .role-card-titles { min-width: 0; }
+
+  .role-title {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--heading-md);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    margin: 0;
+    color: var(--text-primary);
+  }
+  .role-company {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+  }
+
+  .role-card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    white-space: nowrap;
+  }
+  .role-dates {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--accent-primary);
+  }
+  .role-type { font-size: var(--text-xs); color: var(--text-secondary); }
+
+  .role-desc {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Responsibilities as a card grid. */
+  .responsibility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+  }
+
+  /* Achievements — accent-barred highlight list. */
+  .role-achievements {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-left: var(--space-lg);
+    border-left: 3px solid var(--accent-primary);
+  }
+  .achievements-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent-primary);
+  }
+  .achievement-list {
+    margin: 0;
+    padding-left: var(--space-md);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+  }
+  .achievement-list li + li { margin-top: var(--space-xs); }
+
+  @media (max-width: 600px) {
+    .role-card-head { flex-direction: column; }
+    .role-card-meta { align-items: flex-start; }
+  }
+</style>
