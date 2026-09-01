@@ -30,8 +30,6 @@ export const themes: Theme[] = [
       '--grid-opacity': '1',
       '--grid-anim-speed': '1'
     },
-    // Warm & playful → drifting geometric shapes.
-    background: { pattern: 'floatingShapes' },
     isDefault: true
   },
   {
@@ -62,9 +60,7 @@ export const themes: Theme[] = [
       '--grid-size': '100px',
       '--grid-opacity': '0.4',
       '--grid-anim-speed': '1.6'
-    },
-    // Monochrome & quiet → sparse diagonal hatching.
-    background: { pattern: 'minimalLines' }
+    }
   },
   {
     name: 'broadsheet',
@@ -94,8 +90,6 @@ export const themes: Theme[] = [
       '--grid-size': '60px',
       '--grid-opacity': '0.85',
       '--grid-anim-speed': '1.25'
-    },
-    // Editorial & structured → technical blueprint dimension lines.
-    background: { pattern: 'blueprint' }
+    }
   }
 ];
