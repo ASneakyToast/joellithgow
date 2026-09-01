@@ -10,7 +10,7 @@ export interface Props {
 
 const { featuredOnly = true, limit } = Astro.props;
 
-// fetchProjects already filters drafts and sorts by number.
+// fetchProjects returns published projects sorted by number.
 const allProjects = await fetchProjects();
 let projects = featuredOnly ? allProjects.filter((project) => project.featured) : allProjects;
 

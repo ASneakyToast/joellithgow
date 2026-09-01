@@ -89,7 +89,6 @@ class INaturalistFieldTripsGateway(BaseGateway):
                     "photo_urls": photo_urls,
                     "bounding_box": bounding_box,
                     "tags": tags,
-                    "draft": True,
                 },
             )
 

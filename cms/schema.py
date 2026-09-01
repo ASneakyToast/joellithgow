@@ -28,7 +28,6 @@ def register_documents(cms: CMS) -> None:
         image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
         links: list | None = JSONField()                      # for collection type: list[LinkItem]
         tags: list | None = JSONField()                       # list[str]
-        draft: bool = BoolField(default=False)
         featured: bool = BoolField(default=False)
         has_detail_page: bool = BoolField(default=True)
         reading_time: float | None = NumberField(min_value=0.0, precision=0)
@@ -51,7 +50,6 @@ def register_documents(cms: CMS) -> None:
         live_link: dict | None = JSONField()
         live_links: dict | None = JSONField()
         publish_date: str = TextField()
-        draft: bool = BoolField(default=False)
         featured: bool = BoolField(default=False)
         tags: list | None = JSONField()
         body_blocks: list | None = JSONField()
@@ -82,7 +80,6 @@ def register_documents(cms: CMS) -> None:
         song_count: float = NumberField(precision=0)
         songs: list | None = JSONField()                                # [{track_name, artist_name, album_name, spotify_url, liked_at}]
         tags: list | None = JSONField()
-        draft: bool = BoolField(default=True)                           # draft until manually reviewed
 
     @cms.document("inaturalist_outing")
     class INaturalistOutingDocument:
@@ -97,7 +94,6 @@ def register_documents(cms: CMS) -> None:
         photo_urls: list | None = JSONField()
         bounding_box: dict | None = JSONField()                         # {lat_min, lat_max, lon_min, lon_max}
         tags: list | None = JSONField()
-        draft: bool = BoolField(default=True)
 
     @cms.document("definition")
     class DefinitionDocument:
@@ -107,4 +103,3 @@ def register_documents(cms: CMS) -> None:
         personal_notes: str = TextField()                               # markdown — Joel's thoughts/context
         sources: list | None = JSONField()                              # list[Source] — mix of links + text citations
         tags: list | None = JSONField()
-        draft: bool = BoolField(default=False)

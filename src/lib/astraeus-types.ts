@@ -50,7 +50,6 @@ export interface BlogPost {
   image?: BlogImage | null;
   links?: LinkItem[] | null;
   tags?: string[] | null;
-  draft?: boolean;
   featured?: boolean;
   has_detail_page?: boolean;
   reading_time?: number | null;
@@ -102,7 +101,6 @@ export interface ProjectPage {
   live_links?: LiveLinks | null;
   /** ISO 8601 — wrap with new Date() */
   publish_date?: string;
-  draft?: boolean;
   featured?: boolean;
   tags?: string[] | null;
   body_blocks?: BodyBlock[] | null;
@@ -148,7 +146,6 @@ export interface SpotifyDump {
   song_count?: number;
   songs?: SpotifySong[];
   tags?: string[] | null;
-  draft?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +178,6 @@ export interface NatureOuting {
   photo_urls?: string[];
   bounding_box?: BoundingBox;
   tags?: string[] | null;
-  draft?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -209,5 +205,4 @@ export interface Definition {
   /** Mix of link sources and text citations */
   sources?: Source[] | null;
   tags?: string[] | null;
-  draft?: boolean;
 }

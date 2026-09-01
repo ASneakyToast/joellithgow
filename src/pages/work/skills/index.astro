@@ -7,7 +7,7 @@ import '../../../styles/log.css';
 const pageTitle = 'Skills - Joel Lithgow';
 const pageDescription = 'Browse projects by skill and technology.';
 
-// fetchProjects already filters drafts and sorts by number.
+// fetchProjects returns published projects sorted by number.
 const allProjects = await fetchProjects();
 
 // Count all tags/skills across projects.

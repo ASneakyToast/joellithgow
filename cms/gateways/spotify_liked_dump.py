@@ -133,6 +133,5 @@ class SpotifyLikedDumpGateway(BaseGateway):
                     "song_count": float(len(songs)),
                     "songs": songs,
                     "tags": ["music"],
-                    "draft": True,
                 },
             )
