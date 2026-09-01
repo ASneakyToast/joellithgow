@@ -72,13 +72,6 @@ const totalLinks = allLinks.length;
 const totalPostSources = postsWithLinks.length;
 const totalDefinitionSources = defsWithLinkSources.length;
 const totalSources = totalPostSources + totalDefinitionSources;
-const uniqueDomains = [...new Set(allLinks.map(link => {
-  try {
-    return new URL(link.url).hostname;
-  } catch {
-    return 'unknown';
-  }
-}))].length;
 
 const pageTitle = "Link Collection";
 const pageDescription = `Browse all ${totalLinks} links from ${totalSources} posts and definitions. Discover curated resources, tools, and interesting finds.`;

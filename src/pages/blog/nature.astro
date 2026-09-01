@@ -8,20 +8,13 @@ const outings = (await fetchBlogPosts())
   .filter((p: any) => p.post_type === 'nature_outing')
   .sort((a, b) => new Date(b.publish_date).valueOf() - new Date(a.publish_date).valueOf());
 
-// TODO(joel): replace these placeholders with real favourites (label + href).
-const featured = [
-  { label: 'My favorite frog', sub: 'placeholder', href: '#', tone: 'primary' },
-  { label: 'Best butterfly photo', sub: 'placeholder', href: '#', tone: 'secondary' },
-  { label: 'Weirdest fungus', sub: 'placeholder', href: '#', tone: 'tertiary' },
-];
-
 const pageTitle = 'Joel Lithgow > Nature';
 const pageDescription = 'Field notes from iNaturalist — observations, species, and outings.';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main class="blog-container">
-    <div class="blog-wrapper">
+    <div class="blog-wrapper blog-wrapper--full">
       <div class="main-content">
         <header class="section-head">
           <h1 class="section-title">Nature</h1>
@@ -45,18 +38,6 @@ const pageDescription = 'Field notes from iNaturalist — observations, species,
           <p class="section-empty">No outings published yet — check back soon.</p>
         )}
       </div>
-
-      <aside class="sidebar">
-        <h2 class="sidebar-heading">Favorites</h2>
-        <nav class="type-nav" aria-label="Featured observations">
-          {featured.map((f) => (
-            <a href={f.href} class:list={['type-card', `type-card--${f.tone}`]}>
-              <span class="tc-label">{f.label}</span>
-              <span class="tc-arrow" aria-hidden="true">→</span>
-            </a>
-          ))}
-        </nav>
-      </aside>
     </div>
   </main>
 
