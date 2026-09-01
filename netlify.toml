@@ -19,6 +19,11 @@
   [context.production.environment]
     ASTRAEUS_URL = "https://cms.joellithgow.com"
     PUBLIC_CMS_BASE = "https://cms.joellithgow.com"
+    # Fail the build (don't publish an empty site) if the CMS is unreachable or
+    # returns no documents. Prod only for now: deploy-preview/branch-deploy point
+    # at cms-staging, which is currently empty — enabling it there would fail
+    # every preview build until staging is populated. See astraeus-loader.ts.
+    REQUIRE_CMS_CONTENT = "1"
 
 # Deploy Preview context: deploys from pull requests
 [context.deploy-preview]
