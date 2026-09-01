@@ -10,16 +10,10 @@
 export interface ResumeIdentity {
   email: string;
   emailHref: string;
-  galleryHandle: string;
-  galleryUrl: string;
   name: string;
-  phone: string;
-  phoneHref: string;
   summary: string;
   tagline: string;
   title: string;
-  website: string;
-  websiteHref: string;
 }
 
 export interface SkillGroup {
@@ -42,12 +36,6 @@ export const identity: ResumeIdentity = {
     'As a forward deployed engineer at an AI startup I build document-extraction pipelines and client demos end to end. Previously I was the primary designer and developer behind cca.edu, where I led an accessibility overhaul across its digital and print properties. Off the clock I run @thisisahousegallery, a gallery out of my living room.',
   email: 'joellithgow@icloud.com',
   emailHref: 'mailto:joellithgow@icloud.com',
-  phone: '(914) 602-6360',
-  phoneHref: 'tel:+19146026360',
-  website: 'joellithgow.com',
-  websiteHref: 'https://www.joellithgow.com',
-  galleryHandle: '@thisisahousegallery',
-  galleryUrl: 'https://instagram.com/thisisahousegallery',
 };
 
 /**
