@@ -120,6 +120,7 @@ export interface ExperienceEntry {
   employment_type: 'full-time' | 'part-time' | 'contract' | 'student' | 'internship';
   description?: string | null;
   responsibilities?: string[];
+  achievements?: string[];
   featured?: boolean;
   show_on_resume?: boolean;
   order?: number;

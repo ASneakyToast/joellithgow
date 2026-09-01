@@ -2,25 +2,125 @@
 import BaseLayout from '@components/common/BaseLayout.astro';
 import Projects from '@components/sections/Projects.astro';
 import ThemeModal from '@components/modals/ThemeModal.astro';
+import ResumeHeader from '@components/work/resume/ResumeHeader.astro';
+import RoleCard from '@components/work/resume/RoleCard.astro';
+import SkillsRail from '@components/work/resume/SkillsRail.astro';
+import { fetchExperience } from '@lib/astraeus';
+import { education } from '@/data/resume';
 import '../../styles/log.css';
 
 const pageTitle = 'Work - Joel Lithgow';
-const pageDescription = 'Selected work — case studies in UX design, product development, and creative technology.';
+const pageDescription =
+  'Joel Lithgow — creative technologist. Experience, skills, and selected work.';
+
+// fetchExperience already sorts by start_date desc. The landing curates to the
+// featured roles; per-application resumes use show_on_resume separately.
+const roles = (await fetchExperience()).filter((entry) => entry.featured);
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main id="main-content" class="blog-container">
-    <div class="blog-wrapper blog-wrapper--full">
-      <div class="main-content">
-        <header class="section-head">
-          <h1 class="section-title">Portfolio</h1>
-          <p class="section-desc">{pageDescription}</p>
-        </header>
+    <div class="blog-wrapper">
+      <div class="main-content resume-main">
+        <ResumeHeader />
 
-        <Projects featuredOnly={false} />
+        <section class="resume-block" aria-labelledby="experience-heading">
+          <h2 id="experience-heading" class="block-title">Experience</h2>
+          {roles.length > 0 ? (
+            <div class="role-list">
+              {roles.map((entry) => <RoleCard entry={entry} />)}
+            </div>
+          ) : (
+            <p class="section-empty">No experience entries found.</p>
+          )}
+        </section>
+
+        <section class="resume-block" aria-labelledby="work-heading">
+          <h2 id="work-heading" class="block-title">Selected Work</h2>
+          <Projects featuredOnly={true} />
+        </section>
       </div>
+
+      <aside class="sidebar">
+        <section class="edu-block" aria-labelledby="education-heading">
+          <h2 id="education-heading" class="aside-heading">Education</h2>
+          <div class="edu-item">
+            <span class="edu-degree">{education.degree}</span>
+            <span class="edu-meta">{education.school} · {education.year}</span>
+          </div>
+        </section>
+        <SkillsRail />
+      </aside>
     </div>
   </main>
 
   <ThemeModal />
 </BaseLayout>
+
+<style>
+  @import '../../styles/tokens.css';
+  @import '../../styles/themes.css';
+
+  .resume-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+
+  .resume-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  /* Mono, uppercase section label with a rule — resume-style delineation. */
+  .block-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-primary);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--text-primary);
+  }
+
+  /* The experience role blocks, separated by hairlines. */
+  .role-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+  .role-list > * + * {
+    border-top: 1px solid var(--gradient-primary-subtle);
+    padding-top: var(--space-2xl);
+  }
+
+  .edu-block { display: flex; flex-direction: column; gap: var(--space-md); }
+  .aside-heading {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--text-primary);
+    color: var(--text-primary);
+  }
+  .edu-item { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .edu-degree {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: var(--font-semibold);
+    font-size: var(--text-lg);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+  .edu-meta {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+</style>

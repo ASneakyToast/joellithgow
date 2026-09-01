@@ -191,6 +191,7 @@ const experienceEntrySchema = z.object({
   employment_type: z.enum(['full-time', 'part-time', 'contract', 'student', 'internship']),
   description: z.string().optional(),
   responsibilities: z.array(z.string()).optional(),
+  achievements: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   show_on_resume: z.boolean().optional(),
   order: z.number().optional(),
