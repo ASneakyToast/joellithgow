@@ -8,6 +8,7 @@ import PerformanceOptimizer from '@components/ui/PerformanceOptimizer.astro';
 import Card from '@components/primitives/Card.astro';
 import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
+import '../../../styles/log.css';
 
 // Get all blog posts
 const allPosts = await fetchBlogPosts();
@@ -32,16 +33,16 @@ const pageDescription = 'Explore blog posts by topic and tag.';
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <main class="blog-container">
-    <div class="blog-wrapper">
-      {/* Main Content Column */}
+    <div class="blog-wrapper blog-wrapper--full">
       <div class="main-content">
         {/* Back navigation */}
         <nav class="breadcrumb-nav">
           <Button href="/blog" variant="ghost" size="sm">← Back to Blog</Button>
         </nav>
 
-        <header class="tags-header">
-          <h1 class="tags-title">All Tags</h1>
+        <header class="section-head">
+          <h1 class="section-title">All Tags</h1>
+          <p class="section-desc">{pageDescription}</p>
         </header>
 
         <section class="tags-section">
@@ -56,11 +57,6 @@ const pageDescription = 'Explore blog posts by topic and tag.';
           </div>
         </section>
       </div>
-
-      {/* Sidebar */}
-      <aside class="sidebar">
-        {/* Could add tag-specific info here in the future */}
-      </aside>
     </div>
   </main>
 
@@ -95,53 +91,11 @@ const pageDescription = 'Explore blog posts by topic and tag.';
   @import '../../../styles/themes.css';
   @import '../../../styles/backgrounds.css';
 
-  /* Clean, traditional blog styling */
-  .blog-container {
-    min-height: 100vh;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    padding: var(--space-3xl) var(--page-gutter);
-    position: relative;
-    overflow: hidden; /* Required for animated backgrounds */
-  }
+  /* Page chrome (.blog-container/.blog-wrapper/.main-content/.section-head)
+     comes from log.css; the container is transparent so the grid shows through. */
 
-  .blog-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 10; /* Above animated backgrounds */
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: var(--space-3xl);
-    align-items: start;
-  }
-
-  .main-content {
-    min-width: 0; /* Prevents grid blowout */
-  }
-
-  .sidebar {
-    position: sticky;
-    top: var(--space-3xl);
-  }
-
-  /* Breadcrumb navigation */
   .breadcrumb-nav {
     margin-bottom: var(--space-xl);
-  }
-
-  .tags-header {
-    text-align: left;
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--gradient-primary-subtle);
-  }
-
-  .tags-title {
-    font-size: var(--heading-xl);
-    font-weight: var(--font-bold);
-    margin: var(--space-sm) 0;
-    color: var(--accent-primary);
-    letter-spacing: var(--tracking-tight);
   }
 
   .tags-section {
@@ -189,31 +143,7 @@ const pageDescription = 'Explore blog posts by topic and tag.';
   }
 
   /* Responsive design */
-  @media (max-width: 1024px) {
-    .blog-wrapper {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xl);
-    }
-
-    .sidebar {
-      position: relative;
-      top: 0;
-    }
-  }
-
   @media (max-width: 768px) {
-    .blog-container {
-      padding: var(--space-xl) var(--page-gutter);
-    }
-
-    .tags-header {
-      padding-bottom: var(--space-lg);
-    }
-
-    .tags-title {
-      font-size: var(--heading-lg);
-    }
-
     .tags-grid {
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: var(--space-md);
@@ -225,10 +155,6 @@ const pageDescription = 'Explore blog posts by topic and tag.';
   }
 
   @media (max-width: 480px) {
-    .blog-container {
-      padding: var(--space-lg) var(--space-md);
-    }
-
     .tags-grid {
       grid-template-columns: 1fr;
     }

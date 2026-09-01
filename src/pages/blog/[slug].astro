@@ -430,9 +430,10 @@ const breadcrumbSchema = {
   @import '../../styles/backgrounds.css';
 
   /* Blog post styling aligned with design system */
+  /* Transparent so the site-wide grid shows through; the article itself sits
+     in a solid .blog-article card, matching the collection layout. */
   .article-container {
     min-height: 100vh;
-    background: var(--bg-primary);
     color: var(--text-primary);
     padding: var(--space-2xl) var(--space-lg);
     position: relative;

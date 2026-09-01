@@ -205,9 +205,9 @@ const breadcrumbSchema = {
   @import '../../styles/tokens.css';
   @import '../../styles/themes.css';
 
-  /* Page Layout */
+  /* Page Layout — transparent so the site-wide grid background shows through
+     (matches work/index and the other Log pages). */
   .case-study {
-    background: var(--bg-secondary);
     min-height: 100vh;
     font-family: var(--font-body);
     color: var(--text-primary);
@@ -277,7 +277,6 @@ const breadcrumbSchema = {
 
   .case-hero {
     padding: var(--space-3xl) 0;
-    background: var(--bg-secondary);
   }
 
   .case-title {
