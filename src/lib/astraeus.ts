@@ -140,14 +140,13 @@ export async function fetchNatureOuting(slug: string): Promise<AstraeusDocument<
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch all published non-draft project pages, sorted by number ascending.
+ * Fetch all published project pages, sorted by number ascending.
  * Equivalent to the previous HTTP-based fetchProjects().
  */
 export async function fetchProjects(): Promise<AstraeusDocument<ProjectPage>[]> {
   const entries = await getCollection('projects');
   return entries
     .map((e) => e.data as AstraeusDocument<ProjectPage>)
-    .filter((p) => !p.draft)
     .sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 }
 
@@ -190,7 +189,6 @@ export async function fetchDefinitions(): Promise<AstraeusDocument<Definition>[]
   const entries = await getCollection('definitions');
   return entries
     .map((e) => e.data as AstraeusDocument<Definition>)
-    .filter((d) => !d.draft)
     .sort((a, b) => a.term.localeCompare(b.term));
 }
 

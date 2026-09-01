@@ -71,7 +71,6 @@ const spotifyDumpSchema = z.object({
   song_count: z.number().optional(),
   songs: z.array(spotifySongSchema).optional(),
   tags: z.array(z.string()).optional(),
-  draft: z.boolean().optional(),
   // CMS metadata
   _id: z.string(),
   _published: z.boolean().optional(),
@@ -105,7 +104,6 @@ const natureOutingSchema = z.object({
   photo_urls: z.array(z.string()).optional(),
   bounding_box: boundingBoxSchema.optional(),
   tags: z.array(z.string()).optional(),
-  draft: z.boolean().optional(),
   // CMS metadata
   _id: z.string(),
   _published: z.boolean().optional(),
@@ -130,7 +128,6 @@ const blogPostSchema = z.object({
   image: blogImageSchema.optional(),
   links: z.array(linkItemSchema).optional(),
   tags: z.array(z.string()).optional(),
-  draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   has_detail_page: z.boolean().optional(),
   /** null = reading time explicitly unset; absent = not calculated */
@@ -164,7 +161,6 @@ const projectPageSchema = z.object({
   live_link: liveLinkSchema.optional(),
   live_links: liveLinksSchema.optional(),
   publish_date: z.string().optional(),
-  draft: z.boolean().optional(),
   featured: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
   body_blocks: z.array(bodyBlockSchema).optional(),
@@ -296,7 +292,6 @@ const definitionSchema = z.object({
   /** Mix of link sources and text citations */
   sources: z.array(sourceSchema).optional(),
   tags: z.array(z.string()).optional(),
-  draft: z.boolean().optional(),
   // CMS metadata
   _id: z.string(),
   _published: z.boolean().optional(),
