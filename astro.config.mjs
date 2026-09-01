@@ -3,12 +3,43 @@ import { fileURLToPath, URL } from 'node:url';
 import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
 
+/**
+ * Fail a production/staging build that fetched zero documents from Astraeus —
+ * a healthy-looking build that would otherwise silently publish an empty site.
+ * Gated by the same REQUIRE_CMS_CONTENT / CONTEXT signal the content loader uses
+ * (see src/lib/astraeus-loader.ts). The loader tallies fetched docs on
+ * globalThis.__cmsDocsLoaded; this hook runs after all loaders have executed.
+ */
+function cmsContentGuard() {
+  return {
+    name: 'cms-content-guard',
+    hooks: {
+      'astro:build:done': ({ logger }) => {
+        const flag = process.env.REQUIRE_CMS_CONTENT;
+        const required =
+          flag !== undefined
+            ? flag === '1'
+            : process.env.CONTEXT !== undefined && process.env.CONTEXT !== 'dev';
+        if (!required) return;
+
+        const loaded = globalThis.__cmsDocsLoaded ?? 0;
+        if (loaded === 0) {
+          throw new Error(
+            'CMS content guard: build fetched 0 documents from Astraeus while REQUIRE_CMS_CONTENT is on — refusing to publish an empty site.',
+          );
+        }
+        logger.info(`CMS content guard: ${loaded} documents loaded.`);
+      },
+    },
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
   site: 'https://joellithgow.com',
   server: { port: 4322 },
-  integrations: [sitemap(), mdx()],
+  integrations: [sitemap(), mdx(), cmsContentGuard()],
   build: {
     assets: 'assets',
     inlineStylesheets: 'auto',
