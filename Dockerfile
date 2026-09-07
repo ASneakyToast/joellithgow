@@ -13,6 +13,7 @@ COPY astraeus/packages/starlette-editor ./astraeus/packages/starlette-editor
 COPY astraeus/packages/starlette-cms-gateways ./astraeus/packages/starlette-cms-gateways
 COPY astraeus/packages/starlette-chat ./astraeus/packages/starlette-chat
 COPY astraeus/packages/astraeus-otel ./astraeus/packages/astraeus-otel
+COPY astraeus/packages/astraeus-portal ./astraeus/packages/astraeus-portal
 
 # Copy project manifest and sync deps (including the project itself so entry points register)
 COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
