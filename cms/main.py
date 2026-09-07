@@ -21,6 +21,7 @@ from starlette_editor import Editor
 from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
+from astraeus_portal import Portal, PortalApp
 from cms.schema import register_documents
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms/data/content.db")
@@ -62,6 +63,33 @@ gateway_admin = GatewayAdmin(cms=cms, auth=lambda request: check_session_auth(re
 
 # LM Studio (local) or OpenAI — set OPENAI_API_KEY + OPENAI_BASE_URL to override.
 # Defaults to LM Studio at http://localhost:1234/v1.
+portal = Portal(
+    apps=[
+        PortalApp(
+            name="Editor",
+            path="/editor/shell",
+            description="Create and edit content documents with the ProseMirror visual editor",
+            icon="✏️",
+        ),
+        PortalApp(
+            name="Gateways",
+            path="/gateways/shell",
+            description="Sync data from external services into the CMS",
+            icon="🔄",
+        ),
+        PortalApp(
+            name="Chat",
+            path="/chat/shell",
+            description="AI-powered editing assistant with live collab",
+            icon="💬",
+        ),
+    ],
+    title="Joel Lithgow",
+    header_links={
+        "Site": "https://joellithgow.com",
+    },
+)
+
 _chat_base_url = os.environ.get("OPENAI_BASE_URL", "http://localhost:1234/v1")
 _chat_api_key = os.environ.get("OPENAI_API_KEY", "lm-studio")
 _chat_model = os.environ.get("CHAT_MODEL", "local-model")
@@ -99,6 +127,7 @@ async def lifespan(app):
 
 app = Starlette(
     routes=[
+        Mount("/admin", app=portal.app),
         Mount("/editor", app=editor.app),
         Mount("/gateways", app=gateway_admin.app),
         Mount("/chat", app=chat.app),
