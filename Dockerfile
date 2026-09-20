@@ -1,30 +1,54 @@
-FROM python:3.12-slim
+# Self-contained multi-stage build.
+#
+# The builder clones the astraeus workspace (public repo) so the project's
+# ../astraeus/... path dependencies resolve without needing a sibling checkout
+# on the build host — the old requirement this replaces. The runtime stage
+# keeps only the synced venv + workspace, dropping git and apt artifacts.
 
-# Install uv
+FROM python:3.12-slim AS builder
+
+# uv + git (git only needed to clone the astraeus workspace)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy astraeus workspace so pyproject.toml's ../astraeus/... paths resolve
-# The workspace pyproject.toml is needed so uv treats the packages as workspace members
-COPY astraeus/pyproject.toml ./astraeus/pyproject.toml
-COPY astraeus/packages/starlette-cms ./astraeus/packages/starlette-cms
-COPY astraeus/packages/starlette-editor ./astraeus/packages/starlette-editor
-COPY astraeus/packages/starlette-cms-gateways ./astraeus/packages/starlette-cms-gateways
-COPY astraeus/packages/starlette-chat ./astraeus/packages/starlette-chat
-COPY astraeus/packages/astraeus-otel ./astraeus/packages/astraeus-otel
-COPY astraeus/packages/astraeus-portal ./astraeus/packages/astraeus-portal
+# Pin the astraeus workspace to a commit for reproducible builds. Bump
+# ASTRAEUS_REF (or pass --build-arg ASTRAEUS_REF=<sha|tag>) to pull newer
+# astraeus package changes.
+ARG ASTRAEUS_REF=5171f0c693b1bda48e5f3b74320259061f1d9bb8
+RUN git clone https://github.com/ASneakyToast/astraeus.git \
+    && git -C astraeus checkout "${ASTRAEUS_REF}"
 
-# Copy project manifest and sync deps (including the project itself so entry points register)
+# Sync deps against the pinned workspace (../astraeus/... sources resolve here).
+# `uv pip install -e .` registers the project's own entry points (gateways).
 COPY joellithgow/pyproject.toml joellithgow/uv.lock* ./joellithgow/
 WORKDIR /app/joellithgow
 RUN uv sync --no-dev && uv pip install -e .
 
-# Copy CMS source and piccolo migration config
-COPY joellithgow/cms/ ./cms/
-COPY joellithgow/piccolo_conf.py ./piccolo_conf.py
-RUN mkdir -p cms/data
+# ── Runtime stage ───────────────────────────────────────────────────────────
+FROM python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Bring over the synced venv + the astraeus workspace it references.
+COPY --from=builder /app/astraeus ./astraeus
+COPY --from=builder /app/joellithgow/.venv ./joellithgow/.venv
+COPY --from=builder /app/joellithgow/pyproject.toml /app/joellithgow/uv.lock* ./joellithgow/
+
+# CMS source + piccolo config (bind-mounted over in compose; baked for standalone runs).
+COPY joellithgow/cms/ ./joellithgow/cms/
+COPY joellithgow/piccolo_conf.py ./joellithgow/piccolo_conf.py
+RUN mkdir -p /app/joellithgow/cms/data
+
+WORKDIR /app/joellithgow
+ENV PATH="/app/joellithgow/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "cms.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# --no-sync: use the copied venv, never re-resolve at runtime (no uv cache in
+# this stage). No --reload: the WatchFiles reloader looped as uv re-synced.
+CMD ["uv", "run", "--no-sync", "uvicorn", "cms.main:app", "--host", "0.0.0.0", "--port", "8000"]
