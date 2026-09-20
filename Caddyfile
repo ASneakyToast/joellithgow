@@ -1,0 +1,49 @@
+# Front reverse proxy for the CMS on EC2. Caddy owns :80/:443 and auto-issues +
+# auto-renews the Let's Encrypt cert (stored under /var/lib/caddy) — there is no
+# nginx or certbot in the request path.
+#
+# Deploy: make caddy-deploy (ships this file to /etc/caddy/Caddyfile + reloads).
+#
+# One-time box setup for the MCP bearer token (kept OFF this repo):
+#   1. echo "MCP_TOKEN=$(openssl rand -hex 32)" | sudo tee /etc/caddy/mcp.env
+#      sudo chmod 600 /etc/caddy/mcp.env && sudo chown caddy:caddy /etc/caddy/mcp.env
+#   2. drop-in so caddy loads it:
+#      /etc/systemd/system/caddy.service.d/mcp-token.conf:
+#        [Service]
+#        EnvironmentFile=-/etc/caddy/mcp.env
+#      sudo systemctl daemon-reload && sudo systemctl restart caddy
+#   Give that token to the hermes bot + any MCP client as: Authorization: Bearer <token>
+
+cms.joellithgow.com {
+	route {
+		# MCP endpoints are bearer-token gated. Token comes from Caddy's
+		# MCP_TOKEN env. If the env is unset the match rejects everything, so
+		# it fails closed.
+		@mcp_noauth {
+			path /mcp* /gateways*
+			not header Authorization "Bearer {env.MCP_TOKEN}"
+		}
+		respond @mcp_noauth 401
+
+		# Content MCP sidecar (loopback :8002). Serves at /mcp, so /mcp aligns.
+		handle /mcp* {
+			reverse_proxy localhost:8002 {
+				header_up Host localhost:8002
+			}
+		}
+		# Gateway MCP sidecar (loopback :8003). The MCP server serves at /mcp,
+		# so rewrite the public /gateways path to /mcp before proxying.
+		handle /gateways* {
+			rewrite * /mcp
+			reverse_proxy localhost:8003 {
+				header_up Host localhost:8003
+			}
+		}
+		# Everything else → the CMS app.
+		reverse_proxy localhost:8000
+	}
+}
+
+cms-staging.joellithgow.com {
+	reverse_proxy localhost:8001
+}
