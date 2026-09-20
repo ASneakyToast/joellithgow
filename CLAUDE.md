@@ -14,6 +14,8 @@ make staging-restore  # restore latest backup into EC2 staging + restart it
 make staging-restart  # restart staging container only (no DB change)
 make ssh              # ssh joellithgow-cms shortcut
 make webhooks         # list registered CMS webhooks across prod + staging
+make mcp-deploy       # build + start the MCP sidecars on EC2 (content :8002, gateway :8003)
+make nginx-deploy     # ship nginx/cms.conf to EC2 + reload
 
 bun run build         # production Astro build
 bun run preview       # preview the build locally
@@ -29,9 +31,11 @@ Netlify (Astro SSG)
         └── prod:       https://cms.joellithgow.com  (:8000 on EC2)
 
 EC2 (joellithgow-cms SSH alias)
-  ├── joellithgow-cms-prod-1     → port 8000 → cms.joellithgow.com
-  ├── joellithgow-cms-staging-1  → port 8001 → cms-staging.joellithgow.com
-  └── ~/backups/latest.db.gz     ← nightly cron at 2am UTC
+  ├── joellithgow-cms-prod-1        → port 8000 → cms.joellithgow.com
+  ├── joellithgow-cms-staging-1     → port 8001 → cms-staging.joellithgow.com
+  ├── joellithgow-cms-mcp-1         → 127.0.0.1:8002 → cms.joellithgow.com/mcp          (content MCP)
+  ├── joellithgow-cms-gateway-mcp-1 → 127.0.0.1:8003 → cms.joellithgow.com/mcp/gateway  (gateway MCP)
+  └── ~/backups/latest.db.gz        ← nightly cron at 2am UTC
 ```
 
 ## DB / backup flow
@@ -56,6 +60,33 @@ make staging-restore  →  ssh: restore-db.sh latest.db.gz → staging container
 
 The Astro frontend is rebuilt on Netlify. There is **no** auto-rebuild on publish (the old CMS webhook was removed). Trigger a build manually with the **"Rebuild site"** button in the editor toolbar — prod only; it POSTs `/api/rebuild`, which fires the Netlify build hook from `NETLIFY_BUILD_HOOK_URL`. Run `make webhooks` to list any registered webhooks.
 
+## MCP servers
+
+`starlette-cms` exposes MCP via a standalone `build_mcp_server()` FastMCP builder — it is **not**
+mounted in-process on the CMS app. So MCP runs as its own process:
+
+- **Local / Claude Code** — stdio launcher, no deploy needed:
+  `uv run python -m cms.mcp_server` (defaults to `CMS_URL=https://cms.joellithgow.com`).
+- **Remote (the hermes content bot, remote Claude)** — two HTTP sidecar containers, loopback-bound,
+  fronted by nginx:
+  - `cms-mcp` → `127.0.0.1:8002` → `cms.joellithgow.com/mcp` — content CRUD/publish tools.
+  - `cms-gateway-mcp` → `127.0.0.1:8003` → `cms.joellithgow.com/mcp/gateway` — Spotify/iNat sync tools.
+
+Deploy: `make mcp-deploy` (build + start the sidecars on EC2) and `make nginx-deploy` (ship
+`nginx/cms.conf` + reload). The sidecar code is bind-mounted (`./cms`), so tool changes go live with
+`git pull` + `docker restart` like the rest of the CMS; only Dockerfile/dep changes need a rebuild.
+
+**Auth model** (important — the `/mcp` routes are public):
+- The CMS API uses `auth="apikey"` with `read_auth=False` — **writes need `CMS_API_KEY`; reads are
+  intentionally public** (the static site needs them).
+- The editor/gateway **shell pages are session-login gated** (`check_session_auth`, users from
+  `CMS_ADMIN_USERS`) — they'd otherwise leak the api-key in their HTML. See `cms/main.py`.
+- The content MCP is **write-capable**, so its public `/mcp` route is **bearer-token gated at nginx**
+  via `$mcp_authorized`, defined in a server-side `/etc/nginx/conf.d/mcp-token.conf` (from
+  `nginx/mcp-token.conf.example`, **never committed**). Sidecars bind to loopback so nginx is the only
+  path in — the token can't be bypassed. Give the same token to hermes and any MCP client as
+  `Authorization: Bearer <token>`.
+
 ## Environment
 
 `.env` controls which CMS Astro talks to. Defaults to local:
@@ -72,8 +103,11 @@ Prod/staging keys are commented out in `.env` — uncomment to point Astro at th
 ```
 Makefile                        # all dev/ops commands — start here
 docker-compose.local.yml        # local CMS only (cms-local on :8001)
-docker-compose.yml              # EC2: cms-prod (:8000) + cms-staging (:8001)
-Dockerfile                      # CMS image (uv + starlette-cms workspace)
+docker-compose.yml              # EC2: cms-prod (:8000) + cms-staging (:8001) + MCP sidecars (:8002/:8003)
+Dockerfile                      # CMS image — multi-stage, clones astraeus at build (ASTRAEUS_REF)
+nginx/
+  cms.conf                      # EC2 nginx: / → CMS, /mcp + /mcp/gateway → sidecars (token-gated)
+  mcp-token.conf.example        # template for the server-side bearer-token map (never commit the real one)
 scripts/
   backup-prod-db.sh             # runs on EC2 — backs up prod container → ~/backups/
   restore-db.sh                 # runs on EC2 — restores .db.gz into a container
@@ -81,6 +115,8 @@ cms/
   main.py                       # CMS app entrypoint
   schema.py                     # document type definitions
   seed.py                       # one-time seed (MD/MDX → CMS API)
+  mcp_server.py                 # content MCP (stdio local / streamable-http sidecar :8002)
+  gateway_mcp_server.py         # gateway MCP sidecar (:8003) — sync tools
   gateways/                     # Spotify + iNaturalist sync workers
 src/lib/
   astraeus-loader.ts            # paginated HTTP loader for Astro Content Layer
@@ -102,7 +138,7 @@ src/content/config.ts           # collection definitions + Zod schemas
 
 ## Gotchas
 
-- The astraeus monorepo must be checked out as a sibling directory (`../astraeus/`) — the Dockerfile copies from it at build time.
+- The Docker **image** no longer needs a sibling astraeus checkout — the multi-stage Dockerfile clones astraeus (pinned by `ASTRAEUS_REF`) at build time. **Local dev** (`docker-compose.local.yml`) still bind-mounts `../astraeus/`, so the sibling checkout is still required for `make dev`.
 - `bun run dev` hangs if the CMS is unreachable — always run `make cms-up` or `make dev` instead of bare `bun run dev`.
 - The content loader returns `[]` silently if `ASTRAEUS_API_KEY` is unset — useful for skipping CMS during pure frontend work.
 - Docker Desktop on Mac: volume paths (`/var/lib/docker/volumes/...`) are inside a VM — always use `docker cp` to move files in/out of containers, never direct volume path access.

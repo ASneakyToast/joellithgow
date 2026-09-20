@@ -57,6 +57,43 @@ services:
       - SPOTIPY_REFRESH_TOKEN=${SPOTIPY_REFRESH_TOKEN}
     restart: unless-stopped
 
+  # Content MCP sidecar — starlette-cms CRUD/publish tools over streamable-http.
+  # Bound to loopback so nginx (/mcp, token-gated) is the only way in; the port
+  # is unreachable from outside the box even if the security group is loose.
+  cms-mcp:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    command: ["uv", "run", "--no-sync", "python", "-m", "cms.mcp_server", "--transport", "streamable-http", "--port", "8002"]
+    ports:
+      - "127.0.0.1:8002:8002"
+    volumes:
+      - ./cms:/app/joellithgow/cms
+    environment:
+      - CMS_URL=http://cms-prod:8000
+      - CMS_API_KEY=${CMS_API_KEY}
+    depends_on:
+      - cms-prod
+    restart: unless-stopped
+
+  # Gateway MCP sidecar — Spotify/iNaturalist sync tools over streamable-http.
+  # Loopback-bound; fronted by nginx /mcp/gateway (same token gate).
+  cms-gateway-mcp:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    command: ["uv", "run", "--no-sync", "python", "-m", "cms.gateway_mcp_server", "--transport", "streamable-http", "--port", "8003"]
+    ports:
+      - "127.0.0.1:8003:8003"
+    volumes:
+      - ./cms:/app/joellithgow/cms
+    environment:
+      - CMS_URL=http://cms-prod:8000
+      - CMS_API_KEY=${CMS_API_KEY}
+    depends_on:
+      - cms-prod
+    restart: unless-stopped
+
 volumes:
   cms_data_prod:
     driver: local
