@@ -26,7 +26,7 @@ def register_documents(cms: CMS) -> None:
         excerpt: str = TextField(max_length=2000)
         author: str = TextField(max_length=200)
         image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
-        links: list | None = JSONField()                      # for collection type: list[LinkItem]
+        links: list | None = JSONField()                       # for collection type: list[LinkItem]
         tags: list | None = JSONField()                       # list[str]
         draft: bool = BoolField(default=False)
         featured: bool = BoolField(default=False)
@@ -73,3 +73,10 @@ def register_documents(cms: CMS) -> None:
         featured: bool = BoolField(default=False)
         show_on_resume: bool = BoolField(default=True)
         order: float | None = NumberField(precision=0)
+
+    @cms.document("definition")
+    class DefinitionDocument:
+        term: str = TextField(required=True, max_length=500)
+        definition: str = TextField(required=True)
+        personal_notes: str | None = TextField()
+        sources: str | None = TextField()
