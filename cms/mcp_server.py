@@ -325,9 +325,8 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="0.0.0.0", help="Bind address")
     args = parser.parse_args()
 
-    kwargs = {}
     if args.transport in ("sse", "streamable-http"):
-        kwargs["host"] = args.host
-        kwargs["port"] = args.port
+        mcp.settings.host = args.host
+        mcp.settings.port = args.port
 
-    mcp.run(transport=args.transport, **kwargs)
+    mcp.run(transport=args.transport)
