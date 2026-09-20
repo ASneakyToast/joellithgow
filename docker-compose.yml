@@ -1,4 +1,7 @@
 services:
+  # ---------------------------------------------------------------------------
+  # Production CMS
+  # ---------------------------------------------------------------------------
   cms-prod:
     build:
       context: ..
@@ -15,6 +18,9 @@ services:
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
     restart: unless-stopped
 
+  # ---------------------------------------------------------------------------
+  # Staging CMS
+  # ---------------------------------------------------------------------------
   cms-staging:
     build:
       context: ..
@@ -29,6 +35,79 @@ services:
       - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # MCP sidecar — exposes content + SRE tools via streamable-http
+  # ---------------------------------------------------------------------------
+  # Hermes (or any MCP client) connects to port 8002 for the PROD CMS
+  # and port 8003 for the STAGING CMS.
+  #
+  # Register in Hermes config.yaml:
+  #   mcp_servers:
+  #     cms-prod:
+  #       url: "https://cms.joellithgow.com/mcp"
+  #       headers:
+  #         Authorization: "Bearer ${CMS_API_KEY}"
+  #     cms-staging:
+  #       url: "https://cms-staging.joellithgow.com/mcp"
+  #       headers:
+  #         Authorization: "Bearer ${CMS_STAGING_API_KEY}"
+  # ---------------------------------------------------------------------------
+  cms-mcp:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - cms.mcp_server
+      - --transport
+      - streamable-http
+      - --port
+      - "8002"
+    ports:
+      - "8002:8002"
+    volumes:
+      - cms_data_prod:/app/joellithgow/cms/data:ro
+    environment:
+      - CMS_URL=http://cms-prod:8000
+      - CMS_API_KEY=${CMS_API_KEY}
+      - CMS_S3_BUCKET=${CMS_S3_BUCKET:-}
+      - CMS_S3_PREFIX=cms-backups-prod
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-2}
+    depends_on:
+      - cms-prod
+    restart: unless-stopped
+
+  cms-mcp-staging:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - cms.mcp_server
+      - --transport
+      - streamable-http
+      - --port
+      - "8002"
+    ports:
+      - "8003:8002"
+    volumes:
+      - cms_data_staging:/app/joellithgow/cms/data:ro
+    environment:
+      - CMS_URL=http://cms-staging:8001
+      - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
+      - CMS_S3_BUCKET=${CMS_S3_BUCKET:-}
+      - CMS_S3_PREFIX=cms-backups-staging
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-2}
+    depends_on:
+      - cms-staging
     restart: unless-stopped
 
 volumes:
