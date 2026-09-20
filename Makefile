@@ -141,14 +141,14 @@ mcp-deploy:
 	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose up -d --build cms-mcp cms-gateway-mcp"
 	@echo "✅ MCP sidecars built + running on $(EC2_HOST) (loopback :8002 content, :8003 gateway)"
 
-## Deploy nginx/cms.conf to EC2 and reload. Does NOT manage the token file —
-## /etc/nginx/conf.d/mcp-token.conf must exist (see nginx/mcp-token.conf.example)
-## or `nginx -t` will fail (safe: no ungated /mcp).
-.PHONY: nginx-deploy
-nginx-deploy:
-	scp nginx/cms.conf $(EC2_HOST):/tmp/cms.conf
-	ssh $(EC2_HOST) "sudo cp /tmp/cms.conf /etc/nginx/sites-available/cms.conf && sudo nginx -t && sudo systemctl reload nginx"
-	@echo "✅ nginx config deployed + reloaded on $(EC2_HOST)"
+## Deploy the Caddyfile to EC2 and reload. The MCP bearer token lives server-side
+## in /etc/caddy/mcp.env (see the Caddyfile header for one-time setup) — not managed
+## here. Reload uses the running Caddy's env, so the token stays applied.
+.PHONY: caddy-deploy
+caddy-deploy:
+	scp Caddyfile $(EC2_HOST):/tmp/Caddyfile
+	ssh $(EC2_HOST) "sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile && sudo caddy validate --adapter caddyfile --config /etc/caddy/Caddyfile && sudo systemctl reload caddy"
+	@echo "✅ Caddyfile deployed + reloaded on $(EC2_HOST)"
 
 ## Install the nightly backup cron on EC2 (runs at 2am UTC)
 .PHONY: cron-install
@@ -185,7 +185,7 @@ help:
 	@echo "  make staging-restart  Restart staging container only"
 	@echo "  make prod-restart     Restart prod container"
 	@echo "  make mcp-deploy       Build + start MCP sidecars on EC2 (content :8002, gateway :8003)"
-	@echo "  make nginx-deploy     Deploy nginx/cms.conf to EC2 + reload"
+	@echo "  make caddy-deploy     Deploy Caddyfile to EC2 + reload"
 	@echo "  make cron-install     Install nightly 2am backup cron on EC2"
 	@echo "  make cron-list        Show EC2 crontab"
 	@echo ""

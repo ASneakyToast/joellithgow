@@ -15,7 +15,7 @@ make staging-restart  # restart staging container only (no DB change)
 make ssh              # ssh joellithgow-cms shortcut
 make webhooks         # list registered CMS webhooks across prod + staging
 make mcp-deploy       # build + start the MCP sidecars on EC2 (content :8002, gateway :8003)
-make nginx-deploy     # ship nginx/cms.conf to EC2 + reload
+make caddy-deploy     # ship Caddyfile to EC2 + reload
 
 bun run build         # production Astro build
 bun run preview       # preview the build locally
@@ -30,11 +30,11 @@ Netlify (Astro SSG)
         ├── staging:    https://cms-staging.joellithgow.com  (:8001 on EC2)
         └── prod:       https://cms.joellithgow.com  (:8000 on EC2)
 
-EC2 (joellithgow-cms SSH alias)
+EC2 (joellithgow-cms SSH alias) — Caddy fronts :80/:443 (auto-TLS), proxies:
   ├── joellithgow-cms-prod-1        → port 8000 → cms.joellithgow.com
   ├── joellithgow-cms-staging-1     → port 8001 → cms-staging.joellithgow.com
-  ├── joellithgow-cms-mcp-1         → 127.0.0.1:8002 → cms.joellithgow.com/mcp          (content MCP)
-  ├── joellithgow-cms-gateway-mcp-1 → 127.0.0.1:8003 → cms.joellithgow.com/mcp/gateway  (gateway MCP)
+  ├── joellithgow-cms-mcp-1         → 127.0.0.1:8002 → cms.joellithgow.com/mcp        (content MCP)
+  ├── joellithgow-cms-gateway-mcp-1 → 127.0.0.1:8003 → cms.joellithgow.com/gateways   (gateway MCP)
   └── ~/backups/latest.db.gz        ← nightly cron at 2am UTC
 ```
 
@@ -68,23 +68,24 @@ mounted in-process on the CMS app. So MCP runs as its own process:
 - **Local / Claude Code** — stdio launcher, no deploy needed:
   `uv run python -m cms.mcp_server` (defaults to `CMS_URL=https://cms.joellithgow.com`).
 - **Remote (the hermes content bot, remote Claude)** — two HTTP sidecar containers, loopback-bound,
-  fronted by nginx:
+  fronted by Caddy:
   - `cms-mcp` → `127.0.0.1:8002` → `cms.joellithgow.com/mcp` — content CRUD/publish tools.
-  - `cms-gateway-mcp` → `127.0.0.1:8003` → `cms.joellithgow.com/mcp/gateway` — Spotify/iNat sync tools.
+  - `cms-gateway-mcp` → `127.0.0.1:8003` → `cms.joellithgow.com/gateways` — Spotify/iNat sync tools.
+    (Caddy rewrites `/gateways` → `/mcp` since the MCP server serves at `/mcp`.)
 
-Deploy: `make mcp-deploy` (build + start the sidecars on EC2) and `make nginx-deploy` (ship
-`nginx/cms.conf` + reload). The sidecar code is bind-mounted (`./cms`), so tool changes go live with
+Deploy: `make mcp-deploy` (build + start the sidecars on EC2) and `make caddy-deploy` (ship
+`Caddyfile` + reload). The sidecar code is bind-mounted (`./cms`), so tool changes go live with
 `git pull` + `docker restart` like the rest of the CMS; only Dockerfile/dep changes need a rebuild.
 
-**Auth model** (important — the `/mcp` routes are public):
+**Auth model** (important — the `/mcp` + `/gateways` routes are public):
 - The CMS API uses `auth="apikey"` with `read_auth=False` — **writes need `CMS_API_KEY`; reads are
   intentionally public** (the static site needs them).
 - The editor/gateway **shell pages are session-login gated** (`check_session_auth`, users from
   `CMS_ADMIN_USERS`) — they'd otherwise leak the api-key in their HTML. See `cms/main.py`.
-- The content MCP is **write-capable**, so its public `/mcp` route is **bearer-token gated at nginx**
-  via `$mcp_authorized`, defined in a server-side `/etc/nginx/conf.d/mcp-token.conf` (from
-  `nginx/mcp-token.conf.example`, **never committed**). Sidecars bind to loopback so nginx is the only
-  path in — the token can't be bypassed. Give the same token to hermes and any MCP client as
+- The MCP routes are **write-capable**, so Caddy **bearer-token gates** `/mcp` + `/gateways` against
+  `{env.MCP_TOKEN}`, set server-side in `/etc/caddy/mcp.env` (see the `Caddyfile` header for the
+  one-time setup) — **never committed**. Sidecars bind to loopback, so Caddy is the only path in and
+  the gate can't be bypassed. Give the same token to hermes and any MCP client as
   `Authorization: Bearer <token>`.
 
 ## Environment
@@ -105,9 +106,7 @@ Makefile                        # all dev/ops commands — start here
 docker-compose.local.yml        # local CMS only (cms-local on :8001)
 docker-compose.yml              # EC2: cms-prod (:8000) + cms-staging (:8001) + MCP sidecars (:8002/:8003)
 Dockerfile                      # CMS image — multi-stage, clones astraeus at build (ASTRAEUS_REF)
-nginx/
-  cms.conf                      # EC2 nginx: / → CMS, /mcp + /mcp/gateway → sidecars (token-gated)
-  mcp-token.conf.example        # template for the server-side bearer-token map (never commit the real one)
+Caddyfile                       # EC2 reverse proxy (Caddy): / → CMS, /mcp + /gateways → sidecars (token-gated)
 scripts/
   backup-prod-db.sh             # runs on EC2 — backs up prod container → ~/backups/
   restore-db.sh                 # runs on EC2 — restores .db.gz into a container
