@@ -110,6 +110,35 @@ services:
       - cms-staging
     restart: unless-stopped
 
+  # ---------------------------------------------------------------------------
+  # Gateway MCP sidecar — list, sync, and inspect external service gateways
+  # ---------------------------------------------------------------------------
+  cms-gateway-mcp:
+    build:
+      context: ..
+      dockerfile: joellithgow/Dockerfile
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - cms.gateway_mcp_server
+      - --transport
+      - streamable-http
+      - --port
+      - "8003"
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./cms:/app/joellithgow/cms
+    environment:
+      - CMS_URL=http://cms-prod:8000
+      - CMS_API_KEY=${CMS_API_KEY}
+      - CMS_S3_BUCKET=${CMS_S3_BUCKET:-}
+    depends_on:
+      - cms-prod
+    restart: unless-stopped
+
 volumes:
   cms_data_prod:
     driver: local
