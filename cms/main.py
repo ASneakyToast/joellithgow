@@ -17,8 +17,8 @@ from contextlib import asynccontextmanager
 import httpx
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse
-from starlette.routing import Mount
+from starlette.responses import JSONResponse, RedirectResponse
+from starlette.routing import Mount, Route
 from starlette_cms import CMS
 from starlette_cms.auth import check_session_auth, require_auth
 from starlette_editor import Editor
@@ -183,8 +183,16 @@ async def lifespan(app):
     async with cms.lifespan_context(app):
         yield
 
+# Starlette's Mount only matches "/admin/" and below, and the bare "/admin"
+# falls through to the catch-all CMS mount, which 404s. A redirect makes the
+# path people actually type work.
+async def _admin_redirect(request: Request) -> RedirectResponse:
+    return RedirectResponse("/admin/", status_code=308)
+
+
 app = Starlette(
     routes=[
+        Route("/admin", endpoint=_admin_redirect, methods=["GET"]),
         Mount("/admin", app=portal.app),
         Mount("/editor", app=editor.app),
         Mount("/gateways", app=gateway_admin.app),

@@ -144,7 +144,12 @@ make staging-restore  # restore latest backup into staging
 make backup           # trigger a prod backup right now
 ```
 
-Nginx config: `nginx/cms.conf`. SSL provisioned via Let's Encrypt (`/ssl-setup`).
+Caddy fronts the box and owns SSL (`Caddyfile`, deployed with `make caddy-deploy`).
+
+The instance has ~908MB of RAM and a 1GB swapfile at `/swapfile`, persisted in
+`/etc/fstab`. The swap was added when image builds still ran on the box and
+BuildKit was being OOM-killed; builds moved to CI, so it is now insurance
+rather than a requirement.
 
 ### Deploying astraeus changes
 
