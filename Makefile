@@ -160,6 +160,16 @@ image-build:
 .PHONY: pull-restart-%
 pull-restart-%:
 	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose pull cms-$* && docker compose up -d cms-$*"
+	@$(MAKE) --no-print-directory disk-reclaim
+
+## Drop images and build cache the running containers no longer reference.
+## The box has an 8.6G disk and every deploy leaves the previous image behind;
+## without this a pull eventually fails mid-extract with "no space left".
+.PHONY: disk-reclaim
+disk-reclaim:
+	@ssh $(EC2_HOST) 'docker image prune -af >/dev/null 2>&1; \
+	  docker builder prune -af >/dev/null 2>&1; \
+	  df -h / | awk "NR==2 {printf \"disk: %s used of %s (%s)\\n\", \$$3, \$$2, \$$5}"'
 
 ## Build in CI, then deploy to staging (:8001)
 .PHONY: staging-deploy
@@ -253,6 +263,7 @@ help:
 	@echo "  make prod-deploy      Build in CI + deploy to prod (:8000)"
 	@echo "  make prod-deploy-nobuild  Deploy the current image to prod without rebuilding"
 	@echo "  make staging-stop     Stop staging when done smoke-testing"
+	@echo "  make disk-reclaim     Drop unreferenced images + build cache on EC2"
 	@echo "  make mcp-deploy       Build + start MCP sidecars on EC2 (content :8002, gateway :8003)"
 	@echo "  make caddy-deploy     Deploy Caddyfile to EC2 + reload"
 	@echo "  make cron-install     Install nightly 2am backup cron on EC2"
