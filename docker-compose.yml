@@ -50,6 +50,14 @@ services:
       - CMS_API_KEY=${CMS_STAGING_API_KEY:-staging-secret}
       - PICCOLO_CONF=piccolo_conf
       - SQLITE_PATH=/app/joellithgow/cms/data/content.db
+      # Session auth. Without CMS_SESSION_SECRET the CMS never registers the
+      # /api/auth/* routes at all, so /editor/shell redirected to a login page
+      # that returned 404 — staging could not be signed into.
+      #
+      # Same admin credentials as prod (same person), but a distinct signing
+      # secret so a session minted on staging cannot be replayed against prod.
+      - CMS_SESSION_SECRET=${CMS_STAGING_SESSION_SECRET}
+      - CMS_ADMIN_USERS=${CMS_ADMIN_USERS}
       # NETLIFY_BUILD_HOOK_URL intentionally unset — staging must not fire prod builds.
       - INATURALIST_USERNAME=${INATURALIST_USERNAME:-joel583}
       - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
