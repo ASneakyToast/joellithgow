@@ -1,0 +1,92 @@
+# Build the CMS image in CI instead of on the EC2 box.
+#
+# The box has 908MB of RAM. Building there meant `git clone` plus a full
+# `uv sync` dependency resolution in the same process space as the running
+# services, which OOM-killed BuildKit repeatedly. Here it is free and fast, and
+# the box only has to `docker compose pull`.
+#
+# One image serves all four services (prod, staging, and the two MCP sidecars) —
+# they differ only by command.
+
+name: Build CMS image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cms/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - '.github/workflows/build-cms.yml'
+  workflow_dispatch:
+    inputs:
+      astraeus_ref:
+        description: 'astraeus commit to build against (default: latest main)'
+        required: false
+        type: string
+
+concurrency:
+  group: build-cms
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/asneakytoast/joellithgow-cms
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The Dockerfile expects the repo one level down, matching the
+          # `context: ..` in docker-compose.yml.
+          path: joellithgow
+
+      - name: Resolve astraeus ref
+        id: ref
+        run: |
+          REF="${{ inputs.astraeus_ref }}"
+          if [ -z "$REF" ]; then
+            REF=$(git ls-remote https://github.com/ASneakyToast/astraeus main | cut -f1)
+          fi
+          test -n "$REF" || { echo "::error::could not resolve astraeus main"; exit 1; }
+          echo "sha=$REF" >> "$GITHUB_OUTPUT"
+          echo "short=${REF:0:7}" >> "$GITHUB_OUTPUT"
+          echo "Building against astraeus $REF"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: joellithgow/Dockerfile
+          push: true
+          build-args: |
+            ASTRAEUS_REF=${{ steps.ref.outputs.sha }}
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:astraeus-${{ steps.ref.outputs.short }}
+          # Layer cache lives in the registry, so a rebuild that only changes
+          # the astraeus ref reuses the base layers.
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+
+      - name: Summary
+        run: |
+          echo "### CMS image built" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- astraeus: \`${{ steps.ref.outputs.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- tags: \`latest\`, \`astraeus-${{ steps.ref.outputs.short }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy with \`make prod-deploy\` (pulls and restarts; no build on the box)." >> "$GITHUB_STEP_SUMMARY"

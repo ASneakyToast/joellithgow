@@ -154,17 +154,31 @@ reuses the image that was already built. Only a rebuild against a new ref does.
 
 ```bash
 make deployed-ref     # which astraeus commit each container is running, vs latest main
-make staging-deploy   # rebuild staging against latest astraeus main  (:8001)
-make prod-deploy      # rebuild prod against latest astraeus main     (:8000)
+make staging-deploy   # build in CI + deploy to staging  (:8001)
+make prod-deploy      # build in CI + deploy to prod     (:8000)
+make prod-deploy-nobuild   # deploy the current image without rebuilding
 make staging-stop     # stop staging once you are done smoke-testing
 ```
 
-The deploy targets resolve `main` to a SHA with `git ls-remote` and pass it as
-`--build-arg`. The ref has to be a SHA rather than the branch name: Docker keys
-its layer cache on the literal command text, so `git checkout "main"` never
-changes, the clone layer is reused indefinitely, and the build succeeds while
-silently shipping whatever `main` pointed at the first time it ran. Resolving to
-a SHA keeps the cache honest and records the deployed commit in the build log.
+**The image is built in CI, not on the box.** The instance has 908MB of RAM, and
+building there ran `git clone` plus a full `uv sync` resolution alongside the
+running services — BuildKit was OOM-killed repeatedly, surfacing as
+`grpc: the client connection is closing`. A 1GB swapfile made it survivable, but
+CI makes it free.
+
+`make staging-deploy` resolves astraeus `main` to a SHA, triggers
+`.github/workflows/build-cms.yml` with it, waits for the run, then pulls and
+restarts on the box. One image serves all four services — they differ only by
+command.
+
+The ref has to be a SHA rather than the branch name. Docker keys its layer cache
+on the literal command text, so `git checkout "main"` never changes: the clone
+layer is reused indefinitely and the build succeeds while silently shipping
+whatever `main` pointed at the first time it ran.
+
+The astraeus commit is baked into the image as `ASTRAEUS_REF`, which is what
+`deployed-ref` reads — the runtime image has no git, and a pulled image has no
+`.git` directory.
 
 Staging is not meant to run continuously. Bring it up to smoke-test a risky
 deploy — migrations, new env vars, anything touching startup — then

@@ -136,38 +136,45 @@ prod-restart:
 
 # ── Deploying astraeus changes ───────────────────────────────────────────────
 #
-# The image builds against a pinned astraeus commit (Dockerfile ARG
-# ASTRAEUS_REF). Restarting a container does NOT pick up astraeus changes —
-# it reuses the built image. Only a rebuild with a different ref does.
+# The image is built in CI and pulled here. The box has 908MB of RAM; building
+# on it ran `git clone` plus a full `uv sync` alongside the running services and
+# OOM-killed BuildKit repeatedly.
 #
-# Build and up are separate steps because `docker compose up --build` accepts
-# no --build-arg — only `docker compose build` does.
-#
-# The ref must be a SHA, not a branch name. Docker caches a RUN layer by the
-# literal command text, so `checkout "main"` never changes and the clone layer
-# is reused forever: the build succeeds and silently ships whatever main was
-# the first time it ran. Resolving main to a SHA here keeps the cache honest
-# and records in the build log exactly what shipped.
+# A deploy is therefore: trigger the build, wait for it, pull, restart. The
+# astraeus commit is baked into the image as $ASTRAEUS_REF, so `deployed-ref`
+# can report what is actually running.
 
 ASTRAEUS_REPO := https://github.com/ASneakyToast/astraeus
 
-## Rebuild + start staging on EC2 against the latest astraeus main
-.PHONY: staging-deploy
-staging-deploy:
+## Build the CMS image in CI against the latest astraeus main, and wait for it
+.PHONY: image-build
+image-build:
 	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
 	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
 	echo "🔖 astraeus ref: $$REF"; \
-	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose build --build-arg ASTRAEUS_REF=$$REF cms-staging && docker compose up -d cms-staging"
-	@echo "✅ Staging rebuilt + running on $(EC2_HOST):8001"
+	gh workflow run build-cms.yml -f astraeus_ref=$$REF; \
+	echo "⏳ waiting for the run to start..."; sleep 8; \
+	gh run watch $$(gh run list --workflow=build-cms.yml --limit 1 --json databaseId --jq '.[0].databaseId') --exit-status
 
-## Rebuild + start prod on EC2 against the latest astraeus main
+## Pull the freshly built image on EC2 and restart a service
+.PHONY: pull-restart-%
+pull-restart-%:
+	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose pull cms-$* && docker compose up -d cms-$*"
+
+## Build in CI, then deploy to staging (:8001)
+.PHONY: staging-deploy
+staging-deploy: image-build pull-restart-staging
+	@echo "✅ Staging updated on $(EC2_HOST):8001"
+
+## Build in CI, then deploy to prod (:8000)
 .PHONY: prod-deploy
-prod-deploy:
-	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
-	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
-	echo "🔖 astraeus ref: $$REF"; \
-	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose build --build-arg ASTRAEUS_REF=$$REF cms-prod && docker compose up -d cms-prod"
-	@echo "✅ Prod rebuilt + running on $(EC2_HOST):8000"
+prod-deploy: image-build pull-restart-prod
+	@echo "✅ Prod updated on $(EC2_HOST):8000"
+
+## Deploy an already-built image without rebuilding (e.g. prod after staging)
+.PHONY: prod-deploy-nobuild
+prod-deploy-nobuild: pull-restart-prod
+	@echo "✅ Prod updated from the current latest image"
 
 ## Stop staging. It exists to smoke-test a deploy, not to run continuously —
 ## leave it stopped between uses so it costs nothing on a small box.
@@ -177,14 +184,14 @@ staging-stop:
 	@echo "✅ Staging stopped"
 
 ## Report the astraeus commit each running container was built against.
-## Reads .git/HEAD rather than shelling out to git — the runtime image drops
-## the git binary, and the clone is a detached checkout so HEAD is the SHA.
+## Reads the ASTRAEUS_REF baked in at build time — the runtime image has no git,
+## and a registry-pulled image carries no .git at all.
 .PHONY: deployed-ref
 deployed-ref:
 	@ssh $(EC2_HOST) 'for c in joellithgow-cms-prod-1 joellithgow-cms-staging-1; do \
 	  printf "%-34s" "$$c"; \
-	  ref=$$(docker exec "$$c" cat /app/astraeus/.git/HEAD 2>/dev/null | cut -c1-7); \
-	  echo "$${ref:-unknown (stopped, or image predates the pinned clone)}"; \
+	  ref=$$(docker exec "$$c" printenv ASTRAEUS_REF 2>/dev/null | cut -c1-7); \
+	  echo "$${ref:-unknown (stopped, or image predates the baked ref)}"; \
 	done'
 	@printf "%-34s%s\n" "astraeus main (latest)" "$$(git ls-remote $(ASTRAEUS_REPO) main | cut -c1-7)"
 
@@ -241,8 +248,10 @@ help:
 	@echo ""
 	@echo "Deploying astraeus changes"
 	@echo "  make deployed-ref     Show which astraeus commit each container is running"
-	@echo "  make staging-deploy   Rebuild staging against latest astraeus main (:8001)"
-	@echo "  make prod-deploy      Rebuild prod against latest astraeus main (:8000)"
+	@echo "  make image-build      Build the CMS image in CI against latest astraeus main"
+	@echo "  make staging-deploy   Build in CI + deploy to staging (:8001)"
+	@echo "  make prod-deploy      Build in CI + deploy to prod (:8000)"
+	@echo "  make prod-deploy-nobuild  Deploy the current image to prod without rebuilding"
 	@echo "  make staging-stop     Stop staging when done smoke-testing"
 	@echo "  make mcp-deploy       Build + start MCP sidecars on EC2 (content :8002, gateway :8003)"
 	@echo "  make caddy-deploy     Deploy Caddyfile to EC2 + reload"

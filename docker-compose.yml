@@ -1,5 +1,10 @@
+# The image is built in CI (.github/workflows/build-cms.yml) and pulled here —
+# the box has 908MB of RAM and building on it OOM-killed BuildKit. `build:` is
+# retained so `docker compose build` still works locally.
+
 services:
   cms-prod:
+    image: ghcr.io/asneakytoast/joellithgow-cms:latest
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile
@@ -37,6 +42,7 @@ services:
     restart: unless-stopped
 
   cms-staging:
+    image: ghcr.io/asneakytoast/joellithgow-cms:latest
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile
@@ -69,6 +75,7 @@ services:
   # Bound to loopback so nginx (/mcp, token-gated) is the only way in; the port
   # is unreachable from outside the box even if the security group is loose.
   cms-mcp:
+    image: ghcr.io/asneakytoast/joellithgow-cms:latest
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile
@@ -87,6 +94,7 @@ services:
   # Gateway MCP sidecar — Spotify/iNaturalist sync tools over streamable-http.
   # Loopback-bound; fronted by nginx /mcp/gateway (same token gate).
   cms-gateway-mcp:
+    image: ghcr.io/asneakytoast/joellithgow-cms:latest
     build:
       context: ..
       dockerfile: joellithgow/Dockerfile

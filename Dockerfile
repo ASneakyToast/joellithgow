@@ -47,6 +47,15 @@ RUN mkdir -p /app/joellithgow/cms/data
 WORKDIR /app/joellithgow
 ENV PATH="/app/joellithgow/.venv/bin:$PATH"
 
+# Record which astraeus commit this image was built from. ARG has to be
+# re-declared here — the builder-stage one is not in scope in this stage.
+# Baked in rather than read from .git because the runtime image has no git,
+# and a registry-pulled image may carry no .git at all.
+ARG ASTRAEUS_REF
+ENV ASTRAEUS_REF=${ASTRAEUS_REF}
+LABEL org.opencontainers.image.revision=${ASTRAEUS_REF}
+LABEL org.opencontainers.image.source=https://github.com/ASneakyToast/joellithgow
+
 EXPOSE 8000
 
 # --no-sync: use the copied venv, never re-resolve at runtime (no uv cache in
