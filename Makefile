@@ -134,6 +134,54 @@ prod-restart:
 	ssh $(EC2_HOST) "docker restart joellithgow-cms-prod-1"
 	@echo "✅ Prod restarted"
 
+# ── Deploying astraeus changes ───────────────────────────────────────────────
+#
+# The image builds against a pinned astraeus commit (Dockerfile ARG
+# ASTRAEUS_REF). Restarting a container does NOT pick up astraeus changes —
+# it reuses the built image. Only a rebuild with a different ref does.
+#
+# The ref must be a SHA, not a branch name. Docker caches a RUN layer by the
+# literal command text, so `checkout "main"` never changes and the clone layer
+# is reused forever: the build succeeds and silently ships whatever main was
+# the first time it ran. Resolving main to a SHA here keeps the cache honest
+# and records in the build log exactly what shipped.
+
+ASTRAEUS_REPO := https://github.com/ASneakyToast/astraeus
+
+## Rebuild + start staging on EC2 against the latest astraeus main
+.PHONY: staging-deploy
+staging-deploy:
+	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
+	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
+	echo "🔖 astraeus ref: $$REF"; \
+	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose up -d --build --build-arg ASTRAEUS_REF=$$REF cms-staging"
+	@echo "✅ Staging rebuilt + running on $(EC2_HOST):8001"
+
+## Rebuild + start prod on EC2 against the latest astraeus main
+.PHONY: prod-deploy
+prod-deploy:
+	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
+	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
+	echo "🔖 astraeus ref: $$REF"; \
+	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose up -d --build --build-arg ASTRAEUS_REF=$$REF cms-prod"
+	@echo "✅ Prod rebuilt + running on $(EC2_HOST):8000"
+
+## Stop staging. It exists to smoke-test a deploy, not to run continuously —
+## leave it stopped between uses so it costs nothing on a small box.
+.PHONY: staging-stop
+staging-stop:
+	ssh $(EC2_HOST) "cd ~/joellithgow && docker compose stop cms-staging"
+	@echo "✅ Staging stopped"
+
+## Report the astraeus commit each running container was built against
+.PHONY: deployed-ref
+deployed-ref:
+	@ssh $(EC2_HOST) 'for c in joellithgow-cms-prod-1 joellithgow-cms-staging-1; do \
+	  printf "%-34s" "$$c"; \
+	  docker exec "$$c" git -C /app/astraeus rev-parse --short HEAD 2>/dev/null || echo "(not running)"; \
+	done'
+	@printf "%-34s%s\n" "astraeus main (latest)" "$$(git ls-remote $(ASTRAEUS_REPO) main | cut -c1-7)"
+
 ## Build + (re)start the MCP sidecars on EC2. First run builds the self-contained
 ## image (Dockerfile change); later runs pick up ./cms edits after the git pull.
 .PHONY: mcp-deploy
@@ -183,7 +231,13 @@ help:
 	@echo "  make backup           Backup prod DB on EC2 right now"
 	@echo "  make staging-restore  Restore latest backup into staging + restart"
 	@echo "  make staging-restart  Restart staging container only"
-	@echo "  make prod-restart     Restart prod container"
+	@echo "  make prod-restart     Restart prod container (does NOT pick up astraeus changes)"
+	@echo ""
+	@echo "Deploying astraeus changes"
+	@echo "  make deployed-ref     Show which astraeus commit each container is running"
+	@echo "  make staging-deploy   Rebuild staging against latest astraeus main (:8001)"
+	@echo "  make prod-deploy      Rebuild prod against latest astraeus main (:8000)"
+	@echo "  make staging-stop     Stop staging when done smoke-testing"
 	@echo "  make mcp-deploy       Build + start MCP sidecars on EC2 (content :8002, gateway :8003)"
 	@echo "  make caddy-deploy     Deploy Caddyfile to EC2 + reload"
 	@echo "  make cron-install     Install nightly 2am backup cron on EC2"

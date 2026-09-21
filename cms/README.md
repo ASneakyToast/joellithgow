@@ -146,6 +146,31 @@ make backup           # trigger a prod backup right now
 
 Nginx config: `nginx/cms.conf`. SSL provisioned via Let's Encrypt (`/ssl-setup`).
 
+### Deploying astraeus changes
+
+The image builds against a pinned astraeus commit (`ASTRAEUS_REF` in the
+Dockerfile). **Restarting a container does not pick up astraeus changes** — it
+reuses the image that was already built. Only a rebuild against a new ref does.
+
+```bash
+make deployed-ref     # which astraeus commit each container is running, vs latest main
+make staging-deploy   # rebuild staging against latest astraeus main  (:8001)
+make prod-deploy      # rebuild prod against latest astraeus main     (:8000)
+make staging-stop     # stop staging once you are done smoke-testing
+```
+
+The deploy targets resolve `main` to a SHA with `git ls-remote` and pass it as
+`--build-arg`. The ref has to be a SHA rather than the branch name: Docker keys
+its layer cache on the literal command text, so `git checkout "main"` never
+changes, the clone layer is reused indefinitely, and the build succeeds while
+silently shipping whatever `main` pointed at the first time it ran. Resolving to
+a SHA keeps the cache honest and records the deployed commit in the build log.
+
+Staging is not meant to run continuously. Bring it up to smoke-test a risky
+deploy — migrations, new env vars, anything touching startup — then
+`make staging-stop`. Drafts and changesets already cover content risk, and the
+local instance covers code; staging only covers *deployment*.
+
 Nightly prod backups run at 2am UTC via cron (`make cron-install` to set up).
 
 ---
