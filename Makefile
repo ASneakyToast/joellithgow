@@ -173,12 +173,15 @@ staging-stop:
 	ssh $(EC2_HOST) "cd ~/joellithgow && docker compose stop cms-staging"
 	@echo "✅ Staging stopped"
 
-## Report the astraeus commit each running container was built against
+## Report the astraeus commit each running container was built against.
+## Reads .git/HEAD rather than shelling out to git — the runtime image drops
+## the git binary, and the clone is a detached checkout so HEAD is the SHA.
 .PHONY: deployed-ref
 deployed-ref:
 	@ssh $(EC2_HOST) 'for c in joellithgow-cms-prod-1 joellithgow-cms-staging-1; do \
 	  printf "%-34s" "$$c"; \
-	  docker exec "$$c" git -C /app/astraeus rev-parse --short HEAD 2>/dev/null || echo "(not running)"; \
+	  ref=$$(docker exec "$$c" cat /app/astraeus/.git/HEAD 2>/dev/null | cut -c1-7); \
+	  echo "$${ref:-unknown (stopped, or image predates the pinned clone)}"; \
 	done'
 	@printf "%-34s%s\n" "astraeus main (latest)" "$$(git ls-remote $(ASTRAEUS_REPO) main | cut -c1-7)"
 
