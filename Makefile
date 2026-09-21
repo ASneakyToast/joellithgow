@@ -140,6 +140,9 @@ prod-restart:
 # ASTRAEUS_REF). Restarting a container does NOT pick up astraeus changes —
 # it reuses the built image. Only a rebuild with a different ref does.
 #
+# Build and up are separate steps because `docker compose up --build` accepts
+# no --build-arg — only `docker compose build` does.
+#
 # The ref must be a SHA, not a branch name. Docker caches a RUN layer by the
 # literal command text, so `checkout "main"` never changes and the clone layer
 # is reused forever: the build succeeds and silently ships whatever main was
@@ -154,7 +157,7 @@ staging-deploy:
 	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
 	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
 	echo "🔖 astraeus ref: $$REF"; \
-	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose up -d --build --build-arg ASTRAEUS_REF=$$REF cms-staging"
+	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose build --build-arg ASTRAEUS_REF=$$REF cms-staging && docker compose up -d cms-staging"
 	@echo "✅ Staging rebuilt + running on $(EC2_HOST):8001"
 
 ## Rebuild + start prod on EC2 against the latest astraeus main
@@ -163,7 +166,7 @@ prod-deploy:
 	@REF=$$(git ls-remote $(ASTRAEUS_REPO) main | cut -f1); \
 	test -n "$$REF" || { echo "❌ could not resolve astraeus main — network?"; exit 1; }; \
 	echo "🔖 astraeus ref: $$REF"; \
-	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose up -d --build --build-arg ASTRAEUS_REF=$$REF cms-prod"
+	ssh $(EC2_HOST) "cd ~/joellithgow && git pull && docker compose build --build-arg ASTRAEUS_REF=$$REF cms-prod && docker compose up -d cms-prod"
 	@echo "✅ Prod rebuilt + running on $(EC2_HOST):8000"
 
 ## Stop staging. It exists to smoke-test a deploy, not to run continuously —
