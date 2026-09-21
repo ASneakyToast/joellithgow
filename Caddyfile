@@ -20,26 +20,35 @@ cms.joellithgow.com {
 		# MCP_TOKEN env. If the env is unset the match rejects everything, so
 		# it fails closed.
 		@mcp_noauth {
-			path /mcp* /gateways*
+			path /mcp*
 			not header Authorization "Bearer {env.MCP_TOKEN}"
 		}
 		respond @mcp_noauth 401
 
+		# Gateway MCP sidecar (loopback :8003). The MCP server serves at /mcp,
+		# so rewrite to /mcp before proxying.
+		#
+		# MUST stay above the /mcp* handler — `handle` blocks match in written
+		# order, so the broader /mcp* would otherwise swallow this.
+		#
+		# This lives under /mcp/gateway rather than /gateways because the CMS
+		# app mounts the gateway *admin UI* at /gateways (cms/main.py). Claiming
+		# that path here made the admin UI unreachable in prod: it 401'd without
+		# the token and returned the MCP server with it.
+		handle /mcp/gateway* {
+			rewrite * /mcp
+			reverse_proxy localhost:8003 {
+				header_up Host localhost:8003
+			}
+		}
 		# Content MCP sidecar (loopback :8002). Serves at /mcp, so /mcp aligns.
 		handle /mcp* {
 			reverse_proxy localhost:8002 {
 				header_up Host localhost:8002
 			}
 		}
-		# Gateway MCP sidecar (loopback :8003). The MCP server serves at /mcp,
-		# so rewrite the public /gateways path to /mcp before proxying.
-		handle /gateways* {
-			rewrite * /mcp
-			reverse_proxy localhost:8003 {
-				header_up Host localhost:8003
-			}
-		}
-		# Everything else → the CMS app.
+		# Everything else → the CMS app, including the /gateways admin UI,
+		# /editor, /admin and /chat.
 		reverse_proxy localhost:8000
 	}
 }
