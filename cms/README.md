@@ -123,9 +123,20 @@ curl -X POST http://localhost:8001/api/webhooks \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://api.netlify.com/build_hooks/YOUR_HOOK_ID",
-    "events": ["document.publish", "document.unpublish", "document.delete"]
+    "events": ["document.published", "document.unpublished", "document.deleted", "changeset.published"]
   }'
 ```
+
+Event names are **past tense** and matched exactly, so `document.publish`
+subscribes to nothing and the webhook lists as active while never firing. The
+full set: `document.created`, `document.updated`, `document.published`,
+`document.unpublished`, `document.deleted`, `changeset.published`.
+
+**`changeset.published` matters.** Publishing a changeset fires it *once*
+instead of one `document.published` per member document (ADR 018 §4). A webhook
+subscribed only to document events therefore never rebuilds the site after a
+changeset publish — which is what the editor's Review & Publish flow and the AI
+chat both use.
 
 3. Publish a document to confirm the hook fires and a Netlify build is triggered.
 
