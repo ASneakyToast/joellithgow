@@ -426,12 +426,20 @@ const jsonLd = {
                       </p>
                     )}
 
-                    {/* Render excerpt or full content preview (blog posts only) */}
+                    {/* Render excerpt or full content preview (blog posts only).
+                        Editorial cards mark the preview as the body field, gated
+                        behind an Expand toggle so the whole body is editable
+                        inline without bloating the card for readers. */}
                     {'excerpt' in post && (post as any).excerpt && (post as any).has_detail_page !== false ? (
-                      <div class="post-excerpt-preview" set:html={(post as any).excerpt} />
+                      <div class="post-excerpt-preview" set:html={(post as any).excerpt}
+                        data-cms-field={isEditorial ? 'body_markdown' : undefined}
+                        data-cms-collapsible={isEditorial ? '' : undefined}
+                      />
                     ) : (
                       <div class:list={['post-content-preview', { 'full-content': (post as any).has_detail_page === false }]}
                         set:html={marked.parse(('body_markdown' in post ? (post as any).body_markdown : null) ?? '')}
+                        data-cms-field={isEditorial ? 'body_markdown' : undefined}
+                        data-cms-collapsible={isEditorial ? '' : undefined}
                       />
                     )}
 
