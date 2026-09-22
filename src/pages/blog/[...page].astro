@@ -174,8 +174,17 @@ const jsonLd = {
           <section id="blog" class="featured-posts-section">
             <div class="log-feed">
               {posts.map((post) => {
+                // Editorial types (not gateway-synced dumps/outings) can be
+                // edited inline from the index. data-cms-id scopes which
+                // document a field edit belongs to.
+                const isEditorial = ['article', 'thought', 'collection'].includes(post.post_type);
                 return (
-                <article class="log-record" data-type={post.post_type}>
+                <article
+                  class="log-record"
+                  data-type={post.post_type}
+                  data-cms-id={isEditorial ? (post as any)._id : undefined}
+                  data-cms-type={isEditorial ? 'blog_post' : undefined}
+                >
                   <div class="record-body">
                     <time class="record-date" datetime={new Date(post.publish_date).toISOString()}>
                       {new Date(post.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}
@@ -185,12 +194,12 @@ const jsonLd = {
                   <Card variant="flat" as="article" class="collection-card-minimal">
                     <a href={`/blog/${post.slug}`} class="collection-card-link">
                       <h2 class="collection-title">
-                        {post.title}
+                        <span data-cms-field="title">{post.title}</span>
                         <Badge variant="tertiary" size="sm" class="collection-badge">
                           {('links' in post && (post as any).links?.length) || 0} links
                         </Badge>
                       </h2>
-                      <p class="collection-description">{post.description}</p>
+                      <p class="collection-description" data-cms-field="description">{post.description}</p>
                     </a>
                   </Card>
                 ) : post.post_type === 'spotify_dump' ? (
@@ -367,10 +376,10 @@ const jsonLd = {
                           href={`/blog/${post.slug}`}
                           class="post-title-link"
                         >
-                          {post.title}
+                          <span data-cms-field="title">{post.title}</span>
                         </a>
                       ) : (
-                        <span class="post-title-text">{post.title}</span>
+                        <span class="post-title-text" data-cms-field="title">{post.title}</span>
                       )}
                     </h2>
 
@@ -412,7 +421,7 @@ const jsonLd = {
                     )}
 
                     {'description' in post && (post as any).description && (
-                      <p class="post-description">
+                      <p class="post-description" data-cms-field="description">
                         {(post as any).description}
                       </p>
                     )}
