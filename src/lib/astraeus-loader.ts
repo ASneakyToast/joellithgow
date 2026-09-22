@@ -7,6 +7,8 @@
  * once per build, so a per-build in-memory cache is unnecessary.
  */
 
+import { isProseMirrorDoc, proseMirrorDocToMarkdown } from './prosemirror-markdown';
+
 export interface RawAstraeusDoc {
   id: string;
   slug: string;           // top-level CMS system field — use this as the Astro entry ID
@@ -61,11 +63,29 @@ function mapDoc(d: RawDoc): RawAstraeusDoc {
     id: d.id,
     slug: d.slug,
     doc_type: d.doc_type,
-    body: d.body,
+    body: normalizeRichText(d.body),
     published: d.published,
     created_at: d.created_at,
     updated_at: d.updated_at,
   };
+}
+
+/**
+ * Rich-text fields are stored as ProseMirror JSON; the rest of the site (Zod
+ * schemas, `marked`) expects Markdown strings. Convert any doc-shaped value to
+ * Markdown here, at the one point every collection passes through, so a
+ * migrated body renders identically to the legacy string it replaced. Plain
+ * strings (unmigrated content, or non-rich fields) pass straight through.
+ */
+function normalizeRichText(body: Record<string, unknown>): Record<string, unknown> {
+  let out: Record<string, unknown> | null = null;
+  for (const [key, value] of Object.entries(body)) {
+    if (isProseMirrorDoc(value)) {
+      out ??= { ...body };
+      out[key] = proseMirrorDocToMarkdown(value);
+    }
+  }
+  return out ?? body;
 }
 
 /**

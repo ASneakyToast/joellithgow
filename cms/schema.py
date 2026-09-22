@@ -8,6 +8,7 @@ from starlette_cms import (
     BoolField,
     JSONField,
     NumberField,
+    RichTextField,
     SelectField,
     TextField,
 )
@@ -22,7 +23,11 @@ def register_documents(cms: CMS) -> None:
         description: str = TextField(required=True, max_length=1000)
         publish_date: str = TextField(required=True)          # ISO 8601 — wrap with new Date()
         post_type: str = SelectField(choices=["article", "thought", "collection"], required=True)
-        body_markdown: str = TextField()
+        # ProseMirror JSON, not Markdown, despite the field name — stored rich
+        # so the live editor gets WYSIWYG + collaborative editing. The Astro
+        # loader renders it back to Markdown at build (see prosemirror-markdown).
+        # Existing content was migrated in place (scripts/richtext-migrate).
+        body_markdown: dict = RichTextField()
         excerpt: str = TextField(max_length=2000)
         author: str = TextField(max_length=200)
         image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
