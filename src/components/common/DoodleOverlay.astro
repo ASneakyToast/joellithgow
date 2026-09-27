@@ -47,17 +47,13 @@ const overrideCss = list
   .join('\n');
 ---
 
-{/* Always rendered, even with zero doodles — this element is the click
-   target that opens the widget to draw the first one. Its default
-   pointer-events: none (below) never blocks clicks on real content, but
-   editor.js's activation path re-enables it specifically on this element
-   when it wires up the click-to-edit handler. */}
-<div
-  class="doodle-overlay"
-  data-cms-field={fieldName}
-  data-cms-field-type="doodles"
-  aria-hidden="true"
->
+{/* Purely decorative — never carries data-cms-field, so edit-mode.js never
+   touches it. It spans the whole card (inset: 0) specifically so a doodle
+   can be positioned anywhere within it; carrying the click target here too
+   would mean activating the field re-enables pointer-events on this entire
+   full-card element, sitting on top of and blocking every other field
+   underneath it (title, image, body). */}
+<div class="doodle-overlay" aria-hidden="true">
   {list.map((d) => (
     <svg
       class="doodle-overlay__item"
@@ -75,6 +71,19 @@ const overrideCss = list
   ))}
 </div>
 
+{/* The actual click target — small and fixed-size on purpose. Always
+   rendered, even with zero doodles, since this is what you click to draw
+   the first one. Invisible to anonymous visitors (no icon, no border);
+   edit-mode.js's dashed-outline affordance is what reveals it, same as
+   every other field in this codebase (a title or body field looks like
+   plain content until edit mode outlines it too). */}
+<div
+  class="doodle-edit-handle"
+  data-cms-field={fieldName}
+  data-cms-field-type="doodles"
+  aria-hidden="true"
+></div>
+
 {overrideCss && <style set:html={overrideCss} />}
 
 <style>
@@ -88,5 +97,14 @@ const overrideCss = list
   .doodle-overlay__item {
     position: absolute;
     overflow: visible;
+  }
+  .doodle-edit-handle {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    width: 44px;
+    height: 44px;
+    pointer-events: none;
+    z-index: 2;
   }
 </style>
