@@ -100,7 +100,10 @@ const overrideCss = list
   }
   .doodle-edit-handle {
     position: absolute;
-    bottom: 8px;
+    /* Near the top, not the bottom — .blog-article's height is its full
+       content length, so "bottom" here can be scrolled well off-screen on
+       a long post. */
+    top: 8px;
     left: 8px;
     width: 44px;
     height: 44px;
