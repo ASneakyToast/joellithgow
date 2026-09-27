@@ -3,10 +3,20 @@ import type { Doodle, PlacementSpec } from '@lib/astraeus-types';
 
 export interface Props {
   doodles?: Doodle[] | null;
+  /** The document field this overlay renders/edits — 'doodles' for a post,
+   * or a site_doodles singleton slot name ('homepage', 'about', 'blog_index')
+   * for a page-level mount. Self-applied as the data-cms-field marker so
+   * there's always exactly one element carrying it — never a separate
+   * wrapper div duplicating it, which would activate the field twice. */
+  fieldName?: string;
 }
 
-const { doodles = [] } = Astro.props as Props;
-const list = doodles ?? [];
+const { doodles = [], fieldName = 'doodles' } = Astro.props as Props;
+// Defensive, not just `doodles ?? []`: callers extract this field via the
+// `'doodles' in post && (post as any).doodles` idiom used throughout this
+// codebase, which evaluates to `false` (not undefined) when the key is
+// absent — `??` doesn't catch that, but Array.isArray does.
+const list = Array.isArray(doodles) ? doodles : [];
 
 // Named tiers match tokens.css's own @custom-media (--tablet, --desktop) and
 // the dominant max-width usage across the site — not an invented scale.
@@ -37,25 +47,33 @@ const overrideCss = list
   .join('\n');
 ---
 
-{list.length > 0 && (
-  <div class="doodle-overlay" aria-hidden="true">
-    {list.map((d) => (
-      <svg
-        class="doodle-overlay__item"
-        data-doodle-id={d.id}
-        viewBox={d.viewbox}
-        style={`${declBlock(d.placement.base)} z-index: ${d.z_index ?? 1};`}
-      >
-        <path
-          d={d.path_data}
-          stroke={d.stroke ?? 'currentColor'}
-          stroke-width={d.stroke_width ?? 2}
-          fill={d.fill ?? 'none'}
-        />
-      </svg>
-    ))}
-  </div>
-)}
+{/* Always rendered, even with zero doodles — this element is the click
+   target that opens the widget to draw the first one. Its default
+   pointer-events: none (below) never blocks clicks on real content, but
+   editor.js's activation path re-enables it specifically on this element
+   when it wires up the click-to-edit handler. */}
+<div
+  class="doodle-overlay"
+  data-cms-field={fieldName}
+  data-cms-field-type="doodles"
+  aria-hidden="true"
+>
+  {list.map((d) => (
+    <svg
+      class="doodle-overlay__item"
+      data-doodle-id={d.id}
+      viewBox={d.viewbox}
+      style={`${declBlock(d.placement.base)} z-index: ${d.z_index ?? 1};`}
+    >
+      <path
+        d={d.path_data}
+        stroke={d.stroke ?? 'currentColor'}
+        stroke-width={d.stroke_width ?? 2}
+        fill={d.fill ?? 'none'}
+      />
+    </svg>
+  ))}
+</div>
 
 {overrideCss && <style set:html={overrideCss} />}
 
