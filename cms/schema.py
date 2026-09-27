@@ -6,6 +6,7 @@ from __future__ import annotations
 from starlette_cms import (
     CMS,
     BoolField,
+    DoodleField,
     JSONField,
     NumberField,
     RichTextField,
@@ -33,6 +34,7 @@ def register_documents(cms: CMS) -> None:
         image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
         links: list | None = JSONField()                      # for collection type: list[LinkItem]
         tags: list | None = JSONField()                       # list[str]
+        doodles: list = DoodleField(label="Doodles")           # decorative SVG overlays, see DoodleOverlay.astro
         featured: bool = BoolField(default=False)
         has_detail_page: bool = BoolField(default=True)
         reading_time: float | None = NumberField(min_value=0.0, precision=0)
@@ -108,3 +110,18 @@ def register_documents(cms: CMS) -> None:
         personal_notes: str = TextField()                               # markdown — Joel's thoughts/context
         sources: list | None = JSONField()                              # list[Source] — mix of links + text citations
         tags: list | None = JSONField()
+
+
+def register_blocks(cms: CMS) -> None:
+    """Register singleton/config blocks with the CMS instance."""
+
+    @cms.block("site_doodles", singleton=True)
+    class SiteDoodles:
+        # Decorative doodles not tied to any post — one named slot per static
+        # page, so a typo'd slot can't silently drop a doodle. Bootstrap with
+        # POST /api/documents/singleton/site_doodles; read with GET on the
+        # same path (never the generic /api/documents list — it doesn't
+        # filter on singleton_status, see starlette-cms docs).
+        homepage: list = DoodleField(label="Homepage doodles")
+        about: list = DoodleField(label="About page doodles")
+        blog_index: list = DoodleField(label="Blog index doodles")

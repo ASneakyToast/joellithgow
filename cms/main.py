@@ -26,7 +26,7 @@ from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
 from astraeus_portal import Portal, PortalApp
-from cms.schema import register_documents
+from cms.schema import register_blocks, register_documents
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms/data/content.db")
 API_KEY = os.environ.get("CMS_API_KEY", "dev-secret")
@@ -63,6 +63,7 @@ cms = CMS(
 )
 
 register_documents(cms)
+register_blocks(cms)
 register_editorial_blocks(cms)  # system_prompt + model_config only — chat_session/chat_message go to chat.db
 
 
