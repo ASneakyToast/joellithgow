@@ -13,6 +13,7 @@ import Badge from '@components/primitives/Badge.astro';
 import Button from '@components/primitives/Button.astro';
 import LinkCard from '@components/blog/LinkCard.astro';
 import LinksAccordion from '@components/blog/LinksAccordion.astro';
+import DoodleOverlay from '@components/common/DoodleOverlay.astro';
 import '../../styles/log.css';
 
 export async function getStaticPaths() {
@@ -40,6 +41,7 @@ const author = ('author' in post && (post as any).author) as string | undefined;
 const reading_time = ('reading_time' in post && (post as any).reading_time) as number | undefined;
 const image = ('image' in post && (post as any).image) as AstraeusDocument<BlogPost>['image'] | undefined;
 const links = ('links' in post && (post as any).links) as AstraeusDocument<BlogPost>['links'] | undefined;
+const doodles = ('doodles' in post && (post as any).doodles) as AstraeusDocument<BlogPost>['doodles'] | undefined;
 const hasContent = 'body_markdown' in post && (post as any).body_markdown && (post as any).body_markdown.trim().length > 0;
 const publishDate = new Date(publish_date);
 
@@ -280,6 +282,7 @@ const breadcrumbSchema = {
         ) : (
           /* REGULAR ARTICLE LAYOUT */
           <article class="blog-article">
+            <DoodleOverlay doodles={doodles} />
             {/* Hero-style header with featured image/video */}
             {image && (
               <div class="article-hero" data-cms-field="image">

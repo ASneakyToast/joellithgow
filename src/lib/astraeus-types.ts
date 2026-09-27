@@ -37,6 +37,41 @@ export interface LinkItem {
   collections?: string[];
 }
 
+/** A responsive position value — e.g. `{ value: 20, unit: '%' }`. */
+export interface PlacementAxis {
+  value: number;
+  unit: string;
+}
+
+/**
+ * One breakpoint's placement — a partial object; only the axis keys present
+ * apply, and top/left vs right/bottom can differ per breakpoint, mirroring
+ * CSS itself rather than a translation layer.
+ */
+export interface PlacementSpec {
+  mode: 'static' | 'absolute';
+  top?: PlacementAxis;
+  left?: PlacementAxis;
+  right?: PlacementAxis;
+  bottom?: PlacementAxis;
+  width?: PlacementAxis;
+}
+
+/** Mirrors DoodleField's stored shape (astraeus starlette_cms.fields.DoodleField). */
+export interface Doodle {
+  id: string;
+  path_data: string;
+  viewbox: string;
+  stroke?: string;
+  stroke_width?: number;
+  fill?: string;
+  z_index?: number;
+  placement: {
+    base: PlacementSpec;
+    overrides?: Record<string, PlacementSpec>;
+  };
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -50,6 +85,7 @@ export interface BlogPost {
   image?: BlogImage | null;
   links?: LinkItem[] | null;
   tags?: string[] | null;
+  doodles?: Doodle[] | null;
   featured?: boolean;
   has_detail_page?: boolean;
   reading_time?: number | null;

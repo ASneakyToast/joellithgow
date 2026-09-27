@@ -39,6 +39,37 @@ const liveLinkSchema = z.object({
   description: z.string().optional(),
 });
 
+// Mirrors DoodleField's stored shape (astraeus starlette_cms.fields.DoodleField)
+// — a per-breakpoint placement spec, each key independent so top/left and
+// right/bottom can differ per breakpoint (mirrors CSS itself).
+const placementAxisSchema = z.object({
+  value: z.number(),
+  unit: z.string(),
+});
+
+const placementSpecSchema = z.object({
+  mode: z.enum(['static', 'absolute']),
+  top: placementAxisSchema.optional(),
+  left: placementAxisSchema.optional(),
+  right: placementAxisSchema.optional(),
+  bottom: placementAxisSchema.optional(),
+  width: placementAxisSchema.optional(),
+});
+
+const doodleSchema = z.object({
+  id: z.string(),
+  path_data: z.string(),
+  viewbox: z.string(),
+  stroke: z.string().optional(),
+  stroke_width: z.number().optional(),
+  fill: z.string().optional(),
+  z_index: z.number().optional(),
+  placement: z.object({
+    base: placementSpecSchema,
+    overrides: z.record(z.string(), placementSpecSchema).optional(),
+  }),
+});
+
 const liveLinksSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
@@ -128,6 +159,7 @@ const blogPostSchema = z.object({
   image: blogImageSchema.optional(),
   links: z.array(linkItemSchema).optional(),
   tags: z.array(z.string()).optional(),
+  doodles: z.array(doodleSchema).optional(),
   featured: z.boolean().optional(),
   has_detail_page: z.boolean().optional(),
   /** null = reading time explicitly unset; absent = not calculated */
@@ -423,6 +455,7 @@ export type StatusEvent = z.infer<typeof statusEventSchema>;
 export type BlogPost = z.infer<typeof blogPostSchema>;
 export type ProjectPage = z.infer<typeof projectPageSchema>;
 export type ExperienceEntry = z.infer<typeof experienceEntrySchema>;
+export type Doodle = z.infer<typeof doodleSchema>;
 export type SpotifyDump = z.infer<typeof spotifyDumpSchema>;
 export type NatureOuting = z.infer<typeof natureOutingSchema>;
 export type Definition = z.infer<typeof definitionSchema>;
