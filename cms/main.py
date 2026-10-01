@@ -26,6 +26,7 @@ from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
 from astraeus_portal import Portal, PortalApp
+from cms.oauth import OAuthSettings, build_oauth_routes
 from cms.schema import register_documents
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./cms/data/content.db")
@@ -38,6 +39,15 @@ API_KEY = os.environ.get("CMS_API_KEY", "dev-secret")
 SESSION_SECRET = os.environ.get("CMS_SESSION_SECRET")
 _admin_users_raw = os.environ.get("CMS_ADMIN_USERS")
 ADMIN_USERS: dict[str, str] | None = json.loads(_admin_users_raw) if _admin_users_raw else None
+
+# OAuth for the Claude app's MCP connectors (cms/oauth.py). All three secrets are
+# needed; with any missing the OAuth routes are not mounted and /mcp stays
+# bearer-token only. OAUTH_CLIENT_ID / OAUTH_CLIENT_SECRET are what you paste into
+# the connector's Client ID / Client secret fields.
+OAUTH_CLIENT_ID = os.environ.get("OAUTH_CLIENT_ID")
+OAUTH_CLIENT_SECRET = os.environ.get("OAUTH_CLIENT_SECRET")
+OAUTH_ISSUER = os.environ.get("OAUTH_ISSUER", "https://cms.joellithgow.com")
+OAUTH_SIGNING_SECRET = os.environ.get("OAUTH_SIGNING_SECRET")
 
 # CORS origins for the inline editor embed script.
 # Allows the Astro site to make credentialed cross-origin requests to the CMS.
@@ -190,8 +200,23 @@ async def _admin_redirect(request: Request) -> RedirectResponse:
     return RedirectResponse("/admin/", status_code=308)
 
 
+oauth_routes = (
+    build_oauth_routes(
+        OAuthSettings(
+            client_id=OAUTH_CLIENT_ID,
+            client_secret=OAUTH_CLIENT_SECRET,
+            issuer=OAUTH_ISSUER,
+            session_secret=SESSION_SECRET,
+            signing_secret=OAUTH_SIGNING_SECRET,
+        )
+    )
+    if OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET and OAUTH_SIGNING_SECRET and SESSION_SECRET
+    else []
+)
+
 app = Starlette(
     routes=[
+        *oauth_routes,
         Route("/admin", endpoint=_admin_redirect, methods=["GET"]),
         Mount("/admin", app=portal.app),
         Mount("/editor", app=editor.app),
