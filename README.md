@@ -162,7 +162,7 @@ Nightly backup cron is installed on EC2 (`crontab -l` to verify). To reinstall: 
 
 ## Deployment
 
-Prod CMS runs on the k3s cluster, declared in `jlithgow-ops` (`cluster/apps/astraeus-cms/`). To deploy a CMS change, merge to `main` here (CI builds the image), then bump the image pin in jlithgow-ops and merge. Secret changes need `kubectl -n astraeus rollout restart deploy/astraeus-cms`. EC2 is a fallback until retired and still hosts staging; see `CLAUDE.md` for details.
+Prod CMS runs on the k3s cluster, declared in `jlithgow-ops` (`cluster/apps/astraeus-cms/`). To deploy a CMS change, merge to `main` here (CI builds the image and tags it `jl-<sha>-astraeus-<sha>`), then bump the image pin in jlithgow-ops to that tag and merge. Secret changes need `kubectl -n astraeus rollout restart deploy/astraeus-cms`. EC2 is a fallback until retired and still hosts staging; see `CLAUDE.md` for details.
 
 The Astro frontend deploys automatically to Netlify on push to `main`. The build requires `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` set in Netlify environment variables.
 

@@ -8,7 +8,7 @@ Personal portfolio site for Joel Lithgow. Astro SSG frontend + self-hosted Astra
 
 Since 2026-10-01 prod (`cms.joellithgow.com`) runs in the k3s cluster, managed in `~/Code/personal/jlithgow-ops` (`cluster/apps/astraeus-cms/`), **not on EC2**. EC2 still runs the old prod stack as a fallback and serves `cms-staging`, but gets no prod traffic and its data is stale.
 
-- **Deploy CMS code:** merge to `main` (`build-cms.yml` pushes `ghcr.io/asneakytoast/joellithgow-cms:astraeus-<sha>`), then bump the image pin in jlithgow-ops (`deployment.yaml`, `mcp.yaml`) and merge. Argo syncs it. Never `make prod-deploy` for this — it targets EC2.
+- **Deploy CMS code:** merge to `main` (`build-cms.yml` pushes `ghcr.io/asneakytoast/joellithgow-cms:jl-<joellithgow sha>-astraeus-<astraeus sha>`), then bump the image pin in jlithgow-ops (`deployment.yaml`, `mcp.yaml`) to that tag and merge. Pin the `jl-…` tag, not `astraeus-<sha>`: that one only changes with astraeus, so a pin on it keeps the node's cached image. Argo syncs it. Never `make prod-deploy` for this — it targets EC2.
 - **Config / secrets:** `secrets.enc.yaml` (sops) in jlithgow-ops. Pods read it as plain env vars, so after a change run `kubectl -n astraeus rollout restart deploy/astraeus-cms`.
 - **Backups:** Litestream streams `content.db` to R2 (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restores it into an empty volume on pod start.
 - **EC2-only `make` targets** (`db-sync`, `backup`, `prod-deploy`, `prod-restart`, `mcp-deploy`, `caddy-deploy`, `cron-install`, `staging-*`) act on the fallback box. `make db-sync` pulls EC2's *stale* backup, not live prod, until it is repointed at R2.
