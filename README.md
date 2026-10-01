@@ -17,13 +17,13 @@ Personal portfolio site for Joel Lithgow — creative technologist. Built with A
     localhost:8001  cms-staging     cms-prod
     (local dev)     .joellithgow    .joellithgow
                     .com            .com
-                    (EC2 :8001)     (EC2 :8000)
+                    (EC2 :8001)     (k3s cluster)
 ```
 
 - **Frontend**: Astro 5 static site, deployed to Netlify. Fetches all content via Astro Content Layer loaders at build time — no client-side CMS calls.
-- **CMS**: Astraeus (starlette-cms) running in Docker on EC2. Exposes a REST API. Content is published manually via the editor UI or gateway syncs.
+- **CMS**: Astraeus (starlette-cms) running on a k3s cluster (managed in `jlithgow-ops`; staging is still on EC2). Exposes a REST API. Content is published manually via the editor UI or gateway syncs.
 - **Gateways**: Python workers that pull external data (Spotify liked tracks, iNaturalist observations) into the CMS as draft documents for review and publish.
-- **Backups**: Prod DB backed up nightly (2am UTC) to `~/backups/` on EC2 as a gzipped SQLite binary. Local dev and staging restore from this file.
+- **Backups**: Prod DB is streamed continuously to Cloudflare R2 by Litestream (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restored on pod start. The nightly EC2 backup below covers the fallback box only and is stale.
 
 ---
 
@@ -130,7 +130,9 @@ All ops commands run through `make`. Run `make help` to see the full list.
 
 ### Backups
 
-Prod DB is backed up nightly at 2am UTC to `~/backups/` on EC2 as `latest.db.gz` (gzipped SQLite binary). To trigger a backup immediately:
+Live prod is backed up by Litestream to R2; nothing to run. The commands below act on the **EC2 fallback box**, whose data has been stale since the 2026-10-01 cutover to the cluster. To restore live prod locally, `litestream restore` from the R2 replica until `make db-sync` is repointed.
+
+The EC2 box is backed up nightly at 2am UTC to `~/backups/` as `latest.db.gz` (gzipped SQLite binary). To trigger a backup immediately:
 
 ```bash
 make backup
@@ -139,12 +141,12 @@ make backup
 ### Syncing environments
 
 ```bash
-make db-sync          # EC2 latest backup → local dev container
-make staging-restore  # EC2 latest backup → staging container + restart
+make db-sync          # EC2 latest backup → local dev container (stale: not live prod)
+make staging-restore  # EC2 latest backup → staging container + restart (stale)
 make staging-restart  # restart staging container only (no DB change)
 ```
 
-To get staging/local in sync with prod *right now*: run `make backup` first, then the restore command.
+These do not sync with live prod; see *Backups*.
 
 ### SSH access
 
@@ -160,7 +162,7 @@ Nightly backup cron is installed on EC2 (`crontab -l` to verify). To reinstall: 
 
 ## Deployment
 
-The CMS runs on EC2 behind Nginx. See `nginx/cms.conf` for the reverse proxy config and `cms/README.md` for full deployment instructions.
+Prod CMS runs on the k3s cluster, declared in `jlithgow-ops` (`cluster/apps/astraeus-cms/`). To deploy a CMS change, merge to `main` here (CI builds the image), then bump the image pin in jlithgow-ops and merge. Secret changes need `kubectl -n astraeus rollout restart deploy/astraeus-cms`. EC2 is a fallback until retired and still hosts staging; see `CLAUDE.md` for details.
 
 The Astro frontend deploys automatically to Netlify on push to `main`. The build requires `ASTRAEUS_URL` and `ASTRAEUS_API_KEY` set in Netlify environment variables.
 
