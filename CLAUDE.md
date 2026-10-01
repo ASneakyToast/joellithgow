@@ -105,6 +105,13 @@ jlithgow-ops (see *Where prod runs*). The `mcp-deploy` / `caddy-deploy` targets 
   the gate can't be bypassed. Give the same token to hermes and any MCP client as
   `Authorization: Bearer <token>`. Keep the gate's `respond 401` inside the `route` block in the
   proxy's Caddyfile: outside it, Caddy runs `handle` first and the gate silently never runs.
+- **OAuth, for the Claude app connector.** The mobile connector form has no bearer-token field, only
+  OAuth client details, so `cms/oauth.py` is a small single-user OAuth server: one pre-registered
+  client, the CMS login as the sign-in step (`/oauth/authorize` → `/api/auth/login`), and stateless
+  HMAC-signed tokens (rotate `OAUTH_SIGNING_SECRET` to revoke everything). `mcp-proxy` calls
+  `/oauth/verify` before proxying; the static bearer tokens still work for hermes. It needs
+  `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, `OAUTH_SIGNING_SECRET` and `CMS_SESSION_SECRET`; with any
+  unset the routes aren't mounted. Tests: `uv run --with pytest pytest tests/`.
 
 ## Environment
 
@@ -132,6 +139,7 @@ cms/
   main.py                       # CMS app entrypoint
   schema.py                     # document type definitions
   seed.py                       # one-time seed (MD/MDX → CMS API)
+  oauth.py                      # OAuth server for the MCP connectors (Claude app)
   mcp_server.py                 # content MCP (stdio local / streamable-http sidecar :8002)
   gateway_mcp_server.py         # gateway MCP sidecar (:8003) — sync tools
   gateways/                     # Spotify + iNaturalist sync workers
