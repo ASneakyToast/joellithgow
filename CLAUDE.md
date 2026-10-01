@@ -159,7 +159,16 @@ src/content/config.ts           # collection definitions + Zod schemas
 | `experience` | `experience_entry` | Work history |
 | `spotifyDumps` | `spotify_liked_dump` | Gateway-sourced |
 | `inaturalistOutings` | `inaturalist_outing` | Gateway-sourced |
+| `definitions` | `definition` | Glossary terms; routes under `/blog/dictionary/`. CMS-only, not seeded from local files |
 | `applications` | Local MDX | Not in CMS — intentional |
+
+### Writing content
+
+**`cms/schema.py` is the source of truth for field names and types.** `src/lib/astraeus-types.ts` and `src/content/config.ts` mirror it by hand, so check `schema.py` first if they disagree. For voice, `post_type` meanings and tag habits, see `docs/blog-conventions.md`.
+
+- CMS fields are `snake_case` (`publish_date`, `post_type`, `has_detail_page`). The legacy markdown files in `src/content/blog/` are seed sources with `camelCase` frontmatter (`publishDate`, `type`, `hasDetailPage`). The site reads from the CMS, not from those files.
+- A definition is **not** a blog post: it has `term`, `definition`, `personal_notes`, `sources`, `tags` and no `post_type` of its own. The site gives it a synthetic `post_type: 'definition'` when it merges definitions into blog feeds (`src/lib/astraeus.ts`).
+- Publishing does not rebuild the site. See *Rebuilding the site*.
 
 ## Gotchas
 
