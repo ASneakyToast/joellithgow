@@ -56,6 +56,7 @@ jobs:
           test -n "$REF" || { echo "::error::could not resolve astraeus main"; exit 1; }
           echo "sha=$REF" >> "$GITHUB_OUTPUT"
           echo "short=${REF:0:7}" >> "$GITHUB_OUTPUT"
+          echo "jl_short=${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
           echo "Building against astraeus $REF"
 
       - uses: docker/setup-qemu-action@v3
@@ -81,6 +82,10 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:astraeus-${{ steps.ref.outputs.short }}
+            ${{ env.IMAGE }}:jl-${{ steps.ref.outputs.jl_short }}-astraeus-${{ steps.ref.outputs.short }}
+          # `astraeus-<sha>` only changes when astraeus does, so a joellithgow-only
+          # change re-pushes the same tag and a pinned deploy keeps the cached
+          # image. Pin the `jl-…` tag: it is unique per joellithgow commit.
           # Layer cache lives in the registry, so a rebuild that only changes
           # the astraeus ref reuses the base layers.
           cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
@@ -91,6 +96,6 @@ jobs:
           echo "### CMS image built" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- astraeus: \`${{ steps.ref.outputs.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- tags: \`latest\`, \`astraeus-${{ steps.ref.outputs.short }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- tags: \`latest\`, \`astraeus-${{ steps.ref.outputs.short }}\`, \`jl-${{ steps.ref.outputs.jl_short }}-astraeus-${{ steps.ref.outputs.short }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Deploy with \`make prod-deploy\` (pulls and restarts; no build on the box)." >> "$GITHUB_STEP_SUMMARY"
