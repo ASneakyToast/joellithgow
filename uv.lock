@@ -1962,7 +1962,7 @@ requires-dist = [
     { name = "bcrypt", specifier = ">=4.0" },
     { name = "click", specifier = ">=8.0" },
     { name = "httpx", specifier = ">=0.27" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0,<2" },
     { name = "nanoid", specifier = ">=2.0" },
     { name = "opentelemetry-api", specifier = ">=1.25" },
     { name = "piccolo", specifier = ">=1.0" },
@@ -1992,7 +1992,7 @@ dependencies = [
 requires-dist = [
     { name = "click", specifier = ">=8.0" },
     { name = "httpx", specifier = ">=0.27" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0,<2" },
     { name = "opentelemetry-api", specifier = ">=1.25" },
     { name = "respx", marker = "extra == 'dev'", specifier = ">=0.20" },
     { name = "starlette-cms", editable = "../astraeus/packages/starlette-cms" },

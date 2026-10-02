@@ -17,7 +17,10 @@ outings, and publishes.
                   recorded instead of made; it assumes the gateway-only drafts of
                   step 1 are gone, as they will be);
                4. the stale open changesets earlier gateway runs left behind, and what
-                  ``apply`` will do to each (see below).
+                  ``apply`` will do to each (see below);
+               5. the webhooks the migration will fire. Prod has one that rebuilds the
+                  site on every publish and delete, and the CMS does not coalesce them:
+                  each deleted month and each published post is a separate build.
              ``--snapshot-out FILE`` records each doc's slug and publish_date for verify.
     apply    Step 2 and 3 of the plan: discards the gateway-only drafts (a person's
              are listed and left alone). ``--delete-pre-floor`` also deletes the
@@ -320,6 +323,42 @@ async def clean_changesets(client: CMSClient, plans: list[ChangesetPlan]) -> tup
 
 
 # ---------------------------------------------------------------------------
+# Webhooks
+# ---------------------------------------------------------------------------
+
+# What a migration writes, as the CMS events a webhook can subscribe to.
+PUBLISH_EVENT, DELETE_EVENT = "document.published", "document.deleted"
+
+
+async def active_webhooks(client: CMSClient) -> list[tuple[str, list[str]]]:
+    """``(host, events)`` of each active webhook. Only the host: the URL is a secret."""
+    resp = await client._get_http().get(
+        f"{client.base_url}/api/webhooks", headers=client._auth_headers()
+    )
+    resp.raise_for_status()
+    out = []
+    for hook in resp.json().get("webhooks", []):
+        if not hook.get("active", True):
+            continue
+        events = hook.get("events") or []
+        if isinstance(events, str):
+            events = json.loads(events)
+        out.append((urlsplit(hook.get("url", "")).hostname or "?", events))
+    return out
+
+
+def expected_events(
+    loaded: Loaded, previews: list[Preview] | None, *, delete_pre_floor: bool = True
+) -> dict[str, int]:
+    """How many publish and delete events the migration will fire (the sync's, if previewed)."""
+    published = sum(len(p.created) + len(p.updated) for p in previews or [])
+    return {
+        PUBLISH_EVENT: published,
+        DELETE_EVENT: len(pre_floor(loaded.docs[DUMP])) if delete_pre_floor else 0,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
 
@@ -344,6 +383,7 @@ def render_report(
     loaded: Loaded,
     previews: list[Preview] | None,
     changesets: list[ChangesetPlan],
+    hooks: list[tuple[str, list[str]]] | None = None,
 ) -> str:
     L: list[str] = []
     n_docs = {t: len(d) for t, d in loaded.docs.items()}
@@ -401,6 +441,27 @@ def render_report(
             "keep": f"KEEP    {c.note}",
         }[c.action]
         L.append(f"  {c.title!r} ({c.id}): {what}")
+
+    L += ["", "== 5. webhooks this will fire =="]
+    events = expected_events(loaded, previews)
+    listening = [
+        (host, [e for e in evs if e in events and events[e]]) for host, evs in hooks or []
+    ]
+    listening = [(h, evs) for h, evs in listening if evs]
+    if not listening:
+        L.append("no active webhook listens for the events this writes")
+    for host, evs in listening:
+        L.append(
+            f"  {host}: " + ", ".join(f"{events[e]} x {e}" for e in evs)
+            + ". The CMS sends one request per event and does not coalesce, so each can start a build."
+        )
+    if listening and previews is None:
+        L.append("  (the publish count is 0 because the sync preview was skipped)")
+    if listening:
+        L.append(
+            "  Decide before apply: the CMS has no way to pause a webhook (only create/delete), "
+            "so either accept the builds or delete the hook, run the migration, and re-create it."
+        )
     return "\n".join(L)
 
 
@@ -555,7 +616,14 @@ async def run(args: argparse.Namespace, *, client: CMSClient | None = None, gate
             discarded = {f.doc_id for f in loaded.drafts if f.verdict == "gateway-only"}
             previews = await maybe_preview(discarded)
             print(f"REPORT against {args.cms_url} (nothing is written)\n")
-            print(render_report(loaded, previews, await plan_changesets(client, loaded)))
+            print(
+                render_report(
+                    loaded,
+                    previews,
+                    await plan_changesets(client, loaded),
+                    await active_webhooks(client),
+                )
+            )
             if args.snapshot_out:
                 with open(args.snapshot_out, "w") as f:
                     json.dump(snapshot(loaded), f, indent=1, sort_keys=True)
