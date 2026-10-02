@@ -685,3 +685,21 @@ async def test_spotify_month_a_person_has_a_draft_on_is_left_alone_then_caught_u
     assert caught_up.updated == 1
     aug = await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08")
     assert aug["body"]["song_count"] == 2 and aug["body"]["title"] == "Half-written"
+
+
+@pytest.mark.asyncio
+async def test_a_sync_of_many_posts_is_one_publish_and_leaves_nothing_open(env, api):
+    """One changeset.published webhook per run, not one document.published per post."""
+    client, store, transport = env
+    api.db = [raw_obs(i, f"2026-05-{i:02d}", *PARK) for i in range(1, 6)]
+    gw = inat_gateway(client, store)
+    transport.calls.clear()
+
+    result = await gw.sync()
+
+    assert result.created == 5
+    publishes = [p for m, p in transport.writes() if p.endswith("/publish")]
+    assert publishes == [f"/api/changesets/{result.changeset_id}/publish"]
+    assert all(d["published"] for d in (await outing_docs(client)).values())
+    resp = await client._get_http().get("http://testserver/api/changesets", params={"status": "open"})
+    assert resp.json()["changesets"] == []

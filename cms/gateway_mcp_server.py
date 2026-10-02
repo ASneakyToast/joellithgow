@@ -127,8 +127,8 @@ async def sync_gateway(
     Sync a named gateway into the CMS.
 
     Discovers external service data (Spotify liked songs, iNaturalist field
-    trips, etc.) and upserts it as CMS documents, publishing each one as it is
-    written. A re-sync that finds nothing new changes nothing, and fields you
+    trips, etc.) and upserts it as CMS documents, publishing the whole run as one changeset
+    (so one site rebuild, and all or nothing). A re-sync that finds nothing new changes nothing, and fields you
     edited in the editor are never overwritten (an iNaturalist outing's tags are
     the exception: they follow the observations). A post someone has an unpublished
     draft on is left alone and named in the reply; run ``all_time`` once they publish

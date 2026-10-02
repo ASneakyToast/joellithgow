@@ -171,7 +171,8 @@ async def test_report_writes_nothing_and_shows_all_four_sections(env, api, legac
     # 5. the webhooks: how many events, to which host, and never the secret URL
     assert "== 5. webhooks this will fire ==" in out
     assert "api.netlify.com: " in out and "2 x document.deleted" in out
-    assert "x document.published" in out and "does not coalesce" in out
+    assert "2 x changeset.published" in out, "one per gateway run, not one per post"
+    assert "does not coalesce" in out
     assert "SECRETTOKEN" not in out
     # the snapshot verify compares against
     snapped = json.loads(snap.read_text())
@@ -240,16 +241,13 @@ async def test_the_whole_migration_ends_clean_and_a_second_all_time_sync_writes_
     assert code == 1 and "pending draft" in out and "2026-05-17" in out
     assert "2026-05-03 split into 2 outings" in out and "Greenwood Cemetery" in out
 
-    # The person publishes their draft; the next all_time sync catches the doc up. Their
-    # draft's changeset was kept (a person's work was in it); publishing the doc does not
-    # close it, so verify flags it and a second apply cleans it up.
+    # The person publishes their draft; the next all_time sync catches the doc up. Publishing
+    # the run's changeset also takes the doc out of the person's old changeset, so nothing of
+    # the gateway's is left in any open changeset.
     c = outings["inaturalist:outing:2026-05-17"]
     await client.publish_document(c["id"])
     again = await all_time(client, store)
     assert again["inaturalist-field-trips"].updated == 1
-    capsys.readouterr()
-    assert await mig.run(ns("verify", snapshot=str(snap), skip_sync_check=True), client=client) == 1
-    assert "is left over" in capsys.readouterr().out
     assert await mig.run(ns("apply"), client=client) == 0, "nothing of a person's is waiting now"
 
     # Step 5: verify is clean, slugs and publish_dates are unchanged, and a re-run writes nothing.
