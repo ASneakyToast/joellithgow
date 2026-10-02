@@ -111,7 +111,34 @@ jlithgow-ops (see *Where prod runs*). The `mcp-deploy` / `caddy-deploy` targets 
   HMAC-signed tokens (rotate `OAUTH_SIGNING_SECRET` to revoke everything). `mcp-proxy` calls
   `/oauth/verify` before proxying; the static bearer tokens still work for hermes. It needs
   `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, `OAUTH_SIGNING_SECRET` and `CMS_SESSION_SECRET`; with any
-  unset the routes aren't mounted. Tests: `uv run --with pytest pytest tests/`.
+  unset the routes aren't mounted. Tests: `uv run --with pytest --with pytest-asyncio --with respx python -m pytest tests/` (`python -m`, so `cms` is importable).
+
+## Gateways (Spotify + iNaturalist sync)
+
+Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run through the `sync_gateway` MCP tool
+(hermes, the Claude app), the admin page (`/gateways`) or `gateways sync`. They are configured per gateway, not hard-coded:
+
+- **One post per outing / month.** iNat: same observed date and observations within `cluster_radius_m` (1 km,
+  chained; override with `INATURALIST_OUTING_RADIUS_M`) is one outing, so two places in a day are two posts. The
+  first outing of a day keeps `inaturalist:outing:YYYY-MM-DD` / `nature-outing-YYYY-MM-DD`; later ones get `:2`,
+  `-2`, and an outing keeps its document when observations are added (matched by observation id, not by order).
+  Spotify: `spotify:dump:YYYY-MM`. `publish_date` is the observed date / the 1st of the month; the site sorts by it.
+- **Owned vs. seeded fields.** `owned_fields` (iNat: count, species, observations, photo URLs, bounding box;
+  Spotify: songs, song_count) are machine-sourced and refreshed. Title, place, tags, publish date are written once
+  at creation, then belong to the editor. Only owned fields are hashed and written on update, so a re-sync that
+  finds nothing new writes nothing, and a hand edit is never overwritten. Stored iNat observations are slim records
+  (`curate_observation`), not iNaturalist's raw payload.
+- **Auto-publish, including updates.** Both gateways publish what they write, in one run changeset. A document with a
+  pending human draft (or one you unpublished) is *deferred*: left alone, named in the sync reply, retried next run.
+- **Ranges.** `since_last_sync` (default), `all_time` (first run / repair), `custom` (`from_date`..`to_date`, the
+  observed date or liked month). The cursor is in `JobStore` (`GATEWAY_JOBS_DB`, default `gateway_jobs.db`), advances
+  only after a clean run, and is only a speed-up: with none, a run just covers everything.
+- **Deletions.** An incremental run cannot see an unliked song or a deleted observation; only `all_time` can, and
+  no sync ever deletes a document. A song you un-like drops out the next time its month is refreshed.
+- **Check the clustering radius on real data:** `uv run python -m cms.inat_outing_report --only-differing`.
+- **One-off migration of existing docs:** `uv run python -m cms.migrate_gateway_docs --cms-url http://localhost:8001`
+  (dry run; add `--apply`). It refuses to `--apply` to prod without `--allow-prod`. Develop against a local restore
+  (`litestream restore` from the R2 replica), never prod first.
 
 ## Environment
 

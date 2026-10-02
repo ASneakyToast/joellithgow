@@ -1,10 +1,25 @@
 """
 Spotify Liked Songs gateway — one CMS document per calendar month.
 
-Each run fetches all liked tracks from the Spotify API, groups them by
-YYYY-MM, and yields one GatewayItem per month.  Re-syncing mid-month
-updates the existing draft with any newly liked songs (content hash
-change triggers an update via BaseGateway.sync).
+Liked tracks come back newest first, so a run only pages back as far as the
+earliest month it needs to refresh, groups tracks by YYYY-MM and yields one
+GatewayItem per month. Re-syncing mid-month updates that month's document with
+any newly liked songs and publishes it.
+
+Ownership. ``songs`` and ``song_count`` are machine-sourced and refreshed on
+every sync that touches the month. The title, publish date and tags are seeded
+when the month is first created and then belong to whoever edits them.
+
+Ranges (``self.range``, see ``BaseGateway.sync``):
+    since_last_sync  refresh every month from the one containing the cursor
+                     (minus the gateway's overlap) up to now.
+    all_time         every month from ``_MONTH_FLOOR``.
+    custom           the months containing ``start``..``end``; the floor does
+                     not apply, so an explicit backfill can reach earlier.
+
+A track you un-like disappears from its month only when that month is
+refreshed again. An older month is only ever refreshed by ``all_time`` or
+``custom``. A document is never deleted by a sync.
 
 Environment variables:
     SPOTIPY_CLIENT_ID       Spotify application client ID
@@ -18,23 +33,57 @@ Environment variables:
 
 from __future__ import annotations
 
+import asyncio
 import calendar
 import collections
 import os
 from collections.abc import AsyncIterator
+from typing import Any
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-from starlette_cms_gateways import BaseGateway, GatewayItem
+from starlette_cms_gateways import BaseGateway, GatewayItem, SyncWindow
 
 _SCOPE = "user-library-read"
 
 # Only sync months from this point forward (inclusive, "YYYY-MM" lexical compare).
-# Older liked-song history is intentionally excluded — without this floor, every
-# sync re-emits the full library back to 2017 and re-creates deleted pre-floor
-# months as orphaned drafts.
+# Older liked-song history is intentionally excluded — without this floor, an
+# all-time sync re-emits the full library back to 2017 and re-creates deleted
+# pre-floor months. A custom range ignores it on purpose.
 _MONTH_FLOOR = "2025-01"
+_PAGE_SIZE = 50
+
+
+def month_bounds(window: SyncWindow) -> tuple[str | None, str | None]:
+    """
+    ``(first_month, last_month)`` as ``"YYYY-MM"`` to refresh for *window*;
+    ``None`` is open-ended on that side.
+    """
+    if window.mode == "custom":
+        first = window.start.strftime("%Y-%m") if window.start else None
+        last = window.end.strftime("%Y-%m") if window.end else None
+        return first, last
+    if window.mode == "since_last_sync" and window.changed_since is not None:
+        return max(_MONTH_FLOOR, window.changed_since.strftime("%Y-%m")), None
+    return _MONTH_FLOOR, None
+
+
+def curate_track(item: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """``(YYYY-MM, song)`` for one saved-track item — only what the site shows."""
+    track = item.get("track") or {}
+    liked_at: str = item.get("added_at", "")
+    album = track.get("album") or {}
+    album_images = album.get("images") or []
+    return liked_at[:7], {
+        "track_name": track.get("name", ""),
+        "artist_name": ", ".join(a.get("name", "") for a in track.get("artists", [])),
+        "album_name": album.get("name", ""),
+        # Smallest image for the thumbnail (last in the list)
+        "album_art_url": album_images[-1]["url"] if album_images else "",
+        "spotify_url": (track.get("external_urls") or {}).get("spotify", ""),
+        "liked_at": liked_at,
+    }
 
 
 class SpotifyLikedDumpGateway(BaseGateway):
@@ -42,10 +91,15 @@ class SpotifyLikedDumpGateway(BaseGateway):
 
     service_name = "spotify_liked_dump"
     block_type = "spotify_liked_dump"
-    auto_publish = False  # create as drafts — publish manually after review
+    auto_publish = True
+    default_range = "since_last_sync"
+    owned_fields = ("songs", "song_count")
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, *, spotify_client: spotipy.Spotify | None = None, **kwargs) -> None:
         super().__init__(**kwargs)
+        if spotify_client is not None:  # injected (tests)
+            self._sp = spotify_client
+            return
         client_id = os.environ["SPOTIPY_CLIENT_ID"]
         client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
         refresh_token = os.environ.get("SPOTIPY_REFRESH_TOKEN")
@@ -72,52 +126,40 @@ class SpotifyLikedDumpGateway(BaseGateway):
             )
 
     async def fetch(self) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
-        """Yield one GatewayItem per YYYY-MM bucket of liked tracks."""
-        # Fetch all liked tracks (paginated, 50 per request)
-        tracks_by_month: dict[str, list[dict]] = collections.defaultdict(list)
+        """Yield one GatewayItem per YYYY-MM bucket of liked tracks in range."""
+        window = await self.resolve_window()
+        first_month, last_month = month_bounds(window)
 
+        tracks_by_month: dict[str, list[dict]] = collections.defaultdict(list)
         offset = 0
-        limit = 50
         while True:
-            result = self._sp.current_user_saved_tracks(limit=limit, offset=offset)
+            # spotipy is synchronous; keep the event loop free while it waits.
+            result = await asyncio.to_thread(
+                self._sp.current_user_saved_tracks, limit=_PAGE_SIZE, offset=offset
+            )
             items = result.get("items", [])
             if not items:
                 break
 
+            reached_before_range = False
             for item in items:
-                track = item.get("track") or {}
-                liked_at: str = item.get("added_at", "")
-                month_key = liked_at[:7]  # "YYYY-MM"
+                month_key, song = curate_track(item)
+                if not month_key:
+                    continue
+                if first_month is not None and month_key < first_month:
+                    # Newest first: everything from here on is older than we need,
+                    # and every track of first_month has already been seen.
+                    reached_before_range = True
+                    break
+                if last_month is None or month_key <= last_month:
+                    tracks_by_month[month_key].append(song)
 
-                album = track.get("album") or {}
-                album_images = album.get("images") or []
-                # Pick smallest image for thumbnail (last in list = smallest)
-                album_art_url = album_images[-1]["url"] if album_images else ""
-
-                tracks_by_month[month_key].append(
-                    {
-                        "track_name": track.get("name", ""),
-                        "artist_name": ", ".join(
-                            a.get("name", "") for a in track.get("artists", [])
-                        ),
-                        "album_name": album.get("name", ""),
-                        "album_art_url": album_art_url,
-                        "spotify_url": (track.get("external_urls") or {}).get(
-                            "spotify", ""
-                        ),
-                        "liked_at": liked_at,
-                    }
-                )
-
-            if result.get("next") is None:
+            if reached_before_range or result.get("next") is None:
                 break
-            offset += limit
+            offset += _PAGE_SIZE
 
         # Yield one item per month, sorted oldest-first
         for month_key in sorted(tracks_by_month):
-            if month_key < _MONTH_FLOOR:
-                continue  # pre-floor history intentionally excluded (see _MONTH_FLOOR)
-
             songs = tracks_by_month[month_key]
             year_str, month_str = month_key.split("-")
             month_label = calendar.month_name[int(month_str)]
@@ -128,10 +170,12 @@ class SpotifyLikedDumpGateway(BaseGateway):
                 slug=f"spotify-dump-{month_key}",
                 title=title,
                 body={
+                    # Seeded once, then the editor's:
                     "title": title,
                     "publish_date": f"{month_key}-01",
+                    "tags": ["music"],
+                    # Owned by the gateway (see SpotifyLikedDumpGateway.owned_fields):
                     "song_count": float(len(songs)),
                     "songs": songs,
-                    "tags": ["music"],
                 },
             )

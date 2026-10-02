@@ -1,20 +1,43 @@
 """
-iNaturalist Field Trips gateway — one CMS document per observation date.
+iNaturalist Field Trips gateway — one CMS document per outing.
 
-Fetches all observations for the configured username via the iNaturalist v1
-API, groups them by observed_on (calendar date), and yields one GatewayItem
-per date group.  No authentication required — only public observations are
-fetched.
+An outing is one observed date at one place: observations from the same day that
+sit within ``cluster_radius_m`` of each other (chained, so a trail with a sighting
+every few hundred metres is one outing). Two places in one day are two outings.
+
+What it stores is what the site shows — a count, species names, photo URLs, a
+bounding box and a slim record per observation — not iNaturalist's raw payload,
+which is ~35 KB per observation and changes whenever anyone comments or faves.
+
+Ownership. ``owned_fields`` are machine-sourced and refreshed on every sync.
+Everything else (title, place, tags, publish date) is seeded when the outing is
+first created and then belongs to whoever edits it in the CMS.
+
+Ranges (``self.range``, see ``BaseGateway.sync``):
+    since_last_sync  ask iNat for observations changed since the cursor
+                     (``updated_since``), then re-fetch the whole day for each
+                     date touched so the document always holds the full outing.
+    all_time         every observation.
+    custom           observations *observed* between the given dates.
+
+An observation deleted at iNaturalist, or one whose date was edited, is only
+noticed by ``all_time`` (an edited date is also caught incrementally). A
+document is never deleted by a sync.
 
 Environment variables:
-    INATURALIST_USERNAME    iNaturalist username to fetch observations for
+    INATURALIST_USERNAME        iNaturalist username to fetch observations for
+    INATURALIST_OUTING_RADIUS_M Override the outing radius in metres (default 1000)
 """
 
 from __future__ import annotations
 
 import collections
+import math
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterable
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 import httpx
 
@@ -22,6 +45,7 @@ from starlette_cms_gateways import BaseGateway, GatewayItem
 
 _INAT_API = "https://api.inaturalist.org/v1"
 _PAGE_SIZE = 200
+DEFAULT_RADIUS_M = 1000.0
 
 # Maps iNaturalist iconic_taxon_name → friendly tag
 _TAXON_TAGS: dict[str, str] = {
@@ -39,159 +63,424 @@ _TAXON_TAGS: dict[str, str] = {
     "Chromista": "algae",
 }
 
+LEGACY_REF_PREFIX = "inaturalist:outing:"
+LEGACY_SLUG_PREFIX = "nature-outing-"
+
+
+# ---------------------------------------------------------------------------
+# Pure helpers — no network, no CMS. Unit-tested directly.
+# ---------------------------------------------------------------------------
+
+
+def observation_coords(obs: dict[str, Any]) -> tuple[float, float] | None:
+    """
+    ``(lat, lon)`` of an observation, or ``None`` when it has no usable position.
+
+    iNaturalist's v1 API gives ``location: "lat,lon"``. The older top-level
+    ``latitude``/``longitude`` and our own curated ``lat``/``lon`` are accepted too. An *obscured*
+    observation (a sensitive taxon) carries a position fuzzed over ~20 km, which
+    says nothing about where the outing was, so it counts as unlocated.
+    """
+    if obs.get("obscured"):
+        return None
+    lat = lon = None
+    loc = obs.get("location")
+    if isinstance(loc, str) and "," in loc:
+        a, _, b = loc.partition(",")
+        lat, lon = a, b
+    elif obs.get("latitude") is not None and obs.get("longitude") is not None:
+        lat, lon = obs["latitude"], obs["longitude"]
+    elif obs.get("lat") is not None and obs.get("lon") is not None:  # our own curated shape
+        lat, lon = obs["lat"], obs["lon"]
+    try:
+        la, lo = float(lat), float(lon)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if not (-90 <= la <= 90 and -180 <= lo <= 180):
+        return None
+    return la, lo
+
+
+def haversine_m(a: tuple[float, float], b: tuple[float, float]) -> float:
+    """Great-circle distance in metres between two ``(lat, lon)`` points."""
+    la1, lo1, la2, lo2 = map(math.radians, (*a, *b))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 2 * 6_371_000 * math.asin(math.sqrt(h))
+
+
+def _observed_at(obs: dict[str, Any]) -> datetime | None:
+    raw = obs.get("time_observed_at")
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+
+
+def _sort_key(obs: dict[str, Any]) -> tuple[str, int]:
+    return (obs.get("time_observed_at") or "", int(obs.get("id") or 0))
+
+
+def is_curated(obs: dict[str, Any]) -> bool:
+    """True for a record produced by :func:`curate_observation`, False for iNaturalist's raw shape."""
+    return "taxon_name" in obs
+
+
+def curate_observation(obs: dict[str, Any]) -> dict[str, Any]:
+    """The slim record stored per observation. The site only counts these; the
+    rest is for the CMS reader and for matching a document back to its
+    observations."""
+    taxon = obs.get("taxon") or {}
+    coords = observation_coords(obs)
+    out: dict[str, Any] = {
+        "id": obs.get("id"),
+        "uri": obs.get("uri") or "",
+        "observed_on": obs.get("observed_on") or "",
+        "time_observed_at": obs.get("time_observed_at") or "",
+        "taxon_name": taxon.get("name") or "",
+        "common_name": taxon.get("preferred_common_name") or "",
+        "iconic_taxon": taxon.get("iconic_taxon_name") or "",
+        "place_guess": obs.get("place_guess") or "",
+        "quality_grade": obs.get("quality_grade") or "",
+    }
+    if coords:
+        out["lat"], out["lon"] = coords
+    return out
+
+
+def cluster_observations(
+    observations: Iterable[dict[str, Any]], radius_m: float = DEFAULT_RADIUS_M
+) -> list[list[dict[str, Any]]]:
+    """
+    Split one day's observations into outings.
+
+    Located observations are linked when within *radius_m* of each other
+    (single linkage, so a long trail is one outing). Unlocated ones — no
+    coordinates, or obscured — join the cluster that shares their place name,
+    else the nearest in time, else the first. With nothing located at all the
+    day is one outing. Clusters come back earliest-first, members in time order.
+    """
+    obs_list = sorted(observations, key=_sort_key)
+    located = [(o, c) for o in obs_list if (c := observation_coords(o))]
+    unlocated = [o for o in obs_list if not observation_coords(o)]
+
+    # Union-find over located observations.
+    parent = list(range(len(located)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for i in range(len(located)):
+        for j in range(i + 1, len(located)):
+            if haversine_m(located[i][1], located[j][1]) <= radius_m:
+                parent[find(i)] = find(j)
+
+    groups: dict[int, list[dict[str, Any]]] = collections.defaultdict(list)
+    for i, (o, _) in enumerate(located):
+        groups[find(i)].append(o)
+    clusters = list(groups.values())
+
+    if not clusters:
+        # Nothing to measure. place_guess strings vary within one hike, so splitting
+        # on them would break outings up; with no positions the day stays one outing.
+        clusters = [list(unlocated)] if unlocated else []
+    else:
+        for o in unlocated:
+            place = o.get("place_guess") or ""
+            target = next(
+                (c for c in clusters if place and any(m.get("place_guess") == place for m in c)),
+                None,
+            )
+            if target is None:
+                t = _observed_at(o)
+                if t is not None:
+                    timed = [
+                        (abs((_observed_at(m) - t).total_seconds()), idx)  # type: ignore[operator]
+                        for idx, c in enumerate(clusters)
+                        for m in c
+                        if _observed_at(m) is not None
+                    ]
+                    if timed:
+                        target = clusters[min(timed)[1]]
+            (target if target is not None else clusters[0]).append(o)
+
+    for c in clusters:
+        c.sort(key=_sort_key)
+    clusters.sort(key=lambda c: _sort_key(c[0]))
+    return clusters
+
+
+@dataclass(frozen=True)
+class ExistingOuting:
+    """What an already-synced outing document tells us about itself."""
+
+    import_ref: str
+    observation_ids: frozenset[int]
+
+
+def outing_key(day: str, n: int) -> tuple[str, str]:
+    """``(import_ref, slug)`` of the *n*-th outing of *day*. The first keeps the
+    pre-clustering ref and slug, so existing links and documents carry over."""
+    if n == 1:
+        return f"{LEGACY_REF_PREFIX}{day}", f"{LEGACY_SLUG_PREFIX}{day}"
+    return f"{LEGACY_REF_PREFIX}{day}:{n}", f"{LEGACY_SLUG_PREFIX}{day}-{n}"
+
+
+def assign_outing_keys(
+    day: str,
+    clusters: list[list[dict[str, Any]]],
+    existing: list[ExistingOuting],
+) -> list[tuple[str, str]]:
+    """
+    Give each cluster the ``(import_ref, slug)`` of the existing document that
+    already holds most of its observations, so adding a sighting to an outing
+    updates that outing and never moves it to another document.
+
+    Clusters with no match get the first ref nobody holds: the day's base ref if
+    free, else ``:2``, ``:3``… A ref held by a document that matches no cluster
+    (its observations were deleted or moved) stays reserved, never reused.
+    """
+    cluster_ids = [{o["id"] for o in c if o.get("id") is not None} for c in clusters]
+    pairs = sorted(
+        (
+            (-len(ids & ex.observation_ids), ci, ei)
+            for ci, ids in enumerate(cluster_ids)
+            for ei, ex in enumerate(existing)
+            if ids & ex.observation_ids
+        )
+    )
+    keys: dict[int, str] = {}
+    taken: set[int] = set()
+    for _, ci, ei in pairs:
+        if ci not in keys and ei not in taken:
+            keys[ci] = existing[ei].import_ref
+            taken.add(ei)
+
+    reserved = {ex.import_ref for ex in existing} | set(keys.values())
+    n = 1
+    for ci in range(len(clusters)):
+        if ci in keys:
+            continue
+        while outing_key(day, n)[0] in reserved:
+            n += 1
+        keys[ci] = outing_key(day, n)[0]
+        reserved.add(keys[ci])
+
+    return [(keys[ci], _slug_for(day, keys[ci])) for ci in range(len(clusters))]
+
+
+def _slug_for(day: str, import_ref: str) -> str:
+    suffix = import_ref.removeprefix(f"{LEGACY_REF_PREFIX}{day}")
+    return f"{LEGACY_SLUG_PREFIX}{day}" + (f"-{suffix[1:]}" if suffix.startswith(":") else "")
+
+
+def dominant_place(obs_group: list[dict[str, Any]]) -> str:
+    """The most common ``place_guess`` in the group (earliest wins a tie)."""
+    counts = collections.Counter(o.get("place_guess") for o in obs_group if o.get("place_guess"))
+    if not counts:
+        return ""
+    best = max(counts.values())
+    return next(o["place_guess"] for o in obs_group if counts.get(o.get("place_guess")) == best)
+
+
+def unique_species(obs_group: list[dict[str, Any]]) -> list[str]:
+    seen: set[str] = set()
+    names: list[str] = []
+    for obs in obs_group:
+        taxon = obs.get("taxon") or {}
+        name = taxon.get("preferred_common_name") or taxon.get("name") or ""
+        if name and name not in seen:
+            seen.add(name)
+            names.append(name)
+    return names
+
+
+def photo_urls(obs_group: list[dict[str, Any]]) -> list[str]:
+    urls: list[str] = []
+    for obs in obs_group:
+        for photo in obs.get("photos") or []:
+            url = photo.get("url") or ""
+            if url:
+                urls.append(url.replace("square", "original"))
+    return urls
+
+
+def taxon_tags(obs_group: list[dict[str, Any]]) -> list[str]:
+    seen = {
+        _TAXON_TAGS[iconic]
+        for obs in obs_group
+        if (iconic := (obs.get("taxon") or {}).get("iconic_taxon_name") or "") in _TAXON_TAGS
+    }
+    return sorted(seen)
+
+
+def bounding_box(obs_group: list[dict[str, Any]]) -> dict[str, float] | None:
+    coords = [c for o in obs_group if (c := observation_coords(o))]
+    if not coords:
+        return None
+    lats, lons = [c[0] for c in coords], [c[1] for c in coords]
+    return {
+        "lat_min": min(lats),
+        "lat_max": max(lats),
+        "lon_min": min(lons),
+        "lon_max": max(lons),
+    }
+
+
+def build_outing_item(
+    day: str, import_ref: str, slug: str, obs_group: list[dict[str, Any]]
+) -> GatewayItem:
+    place = dominant_place(obs_group)
+    title = place if place else day
+    return GatewayItem(
+        import_ref=import_ref,
+        slug=slug,
+        title=title,
+        body={
+            # Seeded once, then the editor's:
+            "title": title,
+            "publish_date": day,
+            "outing_date": day,
+            "place_guess": place,
+            "tags": taxon_tags(obs_group),
+            # Owned by the gateway (see INaturalistFieldTripsGateway.owned_fields):
+            "observation_count": float(len(obs_group)),
+            "species_list": unique_species(obs_group),
+            "observations": [curate_observation(o) for o in obs_group],
+            "photo_urls": photo_urls(obs_group),
+            "bounding_box": bounding_box(obs_group),
+        },
+    )
+
+
+def existing_outing(doc: dict[str, Any]) -> tuple[str, ExistingOuting] | None:
+    """``(outing_date, ExistingOuting)`` for a stored outing document."""
+    body = doc.get("body") or {}
+    day = body.get("outing_date") or body.get("publish_date")
+    ref = doc.get("import_ref")
+    if not day or not ref:
+        return None
+    ids = frozenset(
+        int(o["id"]) for o in body.get("observations") or [] if isinstance(o, dict) and o.get("id")
+    )
+    return day, ExistingOuting(ref, ids)
+
+
+# ---------------------------------------------------------------------------
+# Gateway
+# ---------------------------------------------------------------------------
+
 
 class INaturalistFieldTripsGateway(BaseGateway):
-    """Sync iNaturalist observations into the CMS, one document per outing date."""
+    """Sync iNaturalist observations into the CMS, one document per outing."""
 
     service_name = "inaturalist_field_trips"
     block_type = "inaturalist_outing"
-    auto_publish = False  # create as drafts — publish manually after review
+    auto_publish = True
+    default_range = "since_last_sync"
+    owned_fields = (
+        "observation_count",
+        "species_list",
+        "observations",
+        "photo_urls",
+        "bounding_box",
+    )
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._username = os.environ["INATURALIST_USERNAME"]
+        self.cluster_radius_m = float(
+            os.environ.get("INATURALIST_OUTING_RADIUS_M", DEFAULT_RADIUS_M)
+        )
 
     async def fetch(self) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
-        """Yield one GatewayItem per calendar date with observations."""
-        observations = await self._fetch_all_observations()
+        """Yield one GatewayItem per outing in the requested range."""
+        window = await self.resolve_window()
+        existing_by_day = await self._existing_by_day()
 
-        # Group by observed_on date
-        by_date: dict[str, list[dict]] = collections.defaultdict(list)
-        for obs in observations:
-            date = obs.get("observed_on") or ""
-            if date:
-                by_date[date].append(obs)
+        async with httpx.AsyncClient(timeout=30) as http:
+            if window.mode == "since_last_sync" and window.changed_since is not None:
+                changed = await self._fetch_observations(
+                    http, {"updated_since": window.changed_since.isoformat()}
+                )
+                days = {o["observed_on"] for o in changed if o.get("observed_on")}
+                # An observation whose date was edited leaves its old day stale.
+                changed_ids = {o.get("id") for o in changed}
+                for day, outings in existing_by_day.items():
+                    if any(ex.observation_ids & changed_ids for ex in outings):
+                        days.add(day)
+                by_day = {
+                    day: await self._fetch_observations(http, {"observed_on": day})
+                    for day in sorted(days)
+                }
+            else:
+                params: dict[str, Any] = {}
+                if window.mode == "custom":
+                    if window.start:
+                        params["d1"] = window.start.isoformat()
+                    if window.end:
+                        params["d2"] = window.end.isoformat()
+                everything = await self._fetch_observations(http, params)
+                by_day = collections.defaultdict(list)
+                for obs in everything:
+                    if obs.get("observed_on"):
+                        by_day[obs["observed_on"]].append(obs)
 
-        # Yield one item per date, sorted chronologically
-        for date in sorted(by_date):
-            obs_group = by_date[date]
-            place_guess = self._dominant_place(obs_group)
-            species_list = self._unique_species(obs_group)
-            photo_urls = self._collect_photo_urls(obs_group)
-            bounding_box = self._bounding_box(obs_group)
-            count = len(obs_group)
-
-            title = place_guess if place_guess else date
-            tags = self._taxon_tags(obs_group)
-
-            yield GatewayItem(
-                import_ref=f"inaturalist:outing:{date}",
-                slug=f"nature-outing-{date}",
-                title=title,
-                body={
-                    "title": title,
-                    "publish_date": date,
-                    "outing_date": date,
-                    "place_guess": place_guess,
-                    "observation_count": float(count),
-                    "species_list": species_list,
-                    "observations": obs_group,
-                    "photo_urls": photo_urls,
-                    "bounding_box": bounding_box,
-                    "tags": tags,
-                },
-            )
+        for day in sorted(by_day):
+            clusters = cluster_observations(by_day[day], self.cluster_radius_m)
+            keys = assign_outing_keys(day, clusters, existing_by_day.get(day, []))
+            for cluster, (ref, slug) in zip(clusters, keys, strict=True):
+                yield build_outing_item(day, ref, slug, cluster)
 
     # -----------------------------------------------------------------------
     # Private helpers
     # -----------------------------------------------------------------------
 
-    async def _fetch_all_observations(self) -> list[dict]:
-        """Page through all observations for the configured username."""
-        all_obs: list[dict] = []
+    async def _existing_by_day(self) -> dict[str, list[ExistingOuting]]:
+        """Existing outing documents, grouped by the date they are for."""
+        out: dict[str, list[ExistingOuting]] = collections.defaultdict(list)
+        offset = 0
+        while True:
+            page = await self._client.list_documents(
+                doc_type=self.block_type, limit=100, offset=offset
+            )
+            docs = page.get("documents", [])
+            for doc in docs:
+                if (parsed := existing_outing(doc)) is not None:
+                    out[parsed[0]].append(parsed[1])
+            offset += len(docs)
+            if not docs or offset >= page.get("total", 0):
+                return out
+
+    async def _fetch_observations(
+        self, http: httpx.AsyncClient, extra: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        """Page through the user's observations matching *extra*."""
+        all_obs: list[dict[str, Any]] = []
         page = 1
-
-        async with httpx.AsyncClient(timeout=30) as client:
-            while True:
-                resp = await client.get(
-                    f"{_INAT_API}/observations",
-                    params={
-                        "user_login": self._username,
-                        "per_page": _PAGE_SIZE,
-                        "page": page,
-                        "order_by": "observed_on",
-                        "order": "asc",
-                    },
-                )
-                resp.raise_for_status()
-                data = resp.json()
-                results = data.get("results", [])
-                if not results:
-                    break
-                all_obs.extend(results)
-                if len(all_obs) >= data.get("total_results", 0):
-                    break
-                page += 1
-
+        while True:
+            resp = await http.get(
+                f"{_INAT_API}/observations",
+                params={
+                    "user_login": self._username,
+                    "per_page": _PAGE_SIZE,
+                    "page": page,
+                    "order_by": "observed_on",
+                    "order": "asc",
+                    **extra,
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            results = data.get("results", [])
+            if not results:
+                break
+            all_obs.extend(results)
+            if len(all_obs) >= data.get("total_results", 0):
+                break
+            page += 1
         return all_obs
-
-    @staticmethod
-    def _dominant_place(obs_group: list[dict]) -> str:
-        """Return the most common place_guess string across the group."""
-        counts: dict[str, int] = collections.Counter(
-            obs.get("place_guess") or ""
-            for obs in obs_group
-            if obs.get("place_guess")
-        )
-        if not counts:
-            return ""
-        return max(counts, key=counts.__getitem__)
-
-    @staticmethod
-    def _unique_species(obs_group: list[dict]) -> list[str]:
-        """Collect unique common names from the observation group."""
-        seen: set[str] = set()
-        names: list[str] = []
-        for obs in obs_group:
-            taxon = obs.get("taxon") or {}
-            name = taxon.get("preferred_common_name") or taxon.get("name") or ""
-            if name and name not in seen:
-                seen.add(name)
-                names.append(name)
-        return names
-
-    @staticmethod
-    def _collect_photo_urls(obs_group: list[dict]) -> list[str]:
-        """Gather all photo URLs from the group (original size)."""
-        urls: list[str] = []
-        for obs in obs_group:
-            for photo in obs.get("photos") or []:
-                url = photo.get("url") or ""
-                if url:
-                    # Replace thumbnail suffix with original size
-                    urls.append(url.replace("square", "original"))
-        return urls
-
-    @staticmethod
-    def _taxon_tags(obs_group: list[dict]) -> list[str]:
-        """Return sorted friendly tags for each iconic taxon present in the group."""
-        seen: set[str] = set()
-        for obs in obs_group:
-            iconic = (obs.get("taxon") or {}).get("iconic_taxon_name") or ""
-            tag = _TAXON_TAGS.get(iconic)
-            if tag:
-                seen.add(tag)
-        return sorted(seen)
-
-    @staticmethod
-    def _bounding_box(obs_group: list[dict]) -> dict | None:
-        """Compute lat/lon bounding box for the group, or None if no geo data."""
-        lats: list[float] = []
-        lons: list[float] = []
-        for obs in obs_group:
-            lat = obs.get("latitude")
-            lon = obs.get("longitude")
-            if lat is not None and lon is not None:
-                try:
-                    lats.append(float(lat))
-                    lons.append(float(lon))
-                except (TypeError, ValueError):
-                    pass
-        if not lats:
-            return None
-        return {
-            "lat_min": min(lats),
-            "lat_max": max(lats),
-            "lon_min": min(lons),
-            "lon_max": max(lons),
-        }
