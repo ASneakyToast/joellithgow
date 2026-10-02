@@ -75,7 +75,7 @@ make staging-restore  →  ssh: restore-db.sh latest.db.gz → staging container
 
 ## Rebuilding the site
 
-The Astro frontend is rebuilt on Netlify. There is **no** auto-rebuild on publish (the old CMS webhook was removed). Trigger a build manually with the **"Rebuild site"** button in the editor toolbar — prod only; it POSTs `/api/rebuild`, which fires the Netlify build hook from `NETLIFY_BUILD_HOOK_URL`. Run `make webhooks` to list any registered webhooks.
+The Astro frontend is rebuilt on Netlify. **Publishing rebuilds the site automatically:** the prod CMS has an active webhook to the Netlify build hook (events `document.published`, `document.unpublished`, `document.deleted` and `changeset.published`), so a publish through the editor or the MCP tools updates the site in about a minute. `make webhooks` lists the registered webhooks. For a rebuild with no content change, use the **"Rebuild site"** button in the editor toolbar — prod only; it POSTs `/api/rebuild`, which fires the same build hook from `NETLIFY_BUILD_HOOK_URL`.
 
 ## MCP servers
 
@@ -84,7 +84,7 @@ mounted in-process on the CMS app. So MCP runs as its own process:
 
 - **Local / Claude Code** — stdio launcher, no deploy needed:
   `uv run python -m cms.mcp_server` (defaults to `CMS_URL=https://cms.joellithgow.com`).
-- **Remote (the hermes content bot, remote Claude)** — two HTTP Deployments in the cluster behind
+- **Remote (the hermes content bot, which runs in the cluster, and remote Claude)** — two HTTP Deployments in the cluster behind
   `mcp-proxy` (Caddy):
   - `cms-mcp` → `cms.joellithgow.com/mcp` — content CRUD/publish tools.
   - `cms-gateway-mcp` → `cms.joellithgow.com/mcp/gateway` — Spotify/iNat sync tools.
@@ -168,7 +168,7 @@ src/content/config.ts           # collection definitions + Zod schemas
 
 - CMS fields are `snake_case` (`publish_date`, `post_type`, `has_detail_page`). The legacy markdown files in `src/content/blog/` are seed sources with `camelCase` frontmatter (`publishDate`, `type`, `hasDetailPage`). The site reads from the CMS, not from those files.
 - A definition is **not** a blog post: it has `term`, `definition`, `personal_notes`, `sources`, `tags` and no `post_type` of its own. The site gives it a synthetic `post_type: 'definition'` when it merges definitions into blog feeds (`src/lib/astraeus.ts`).
-- Publishing does not rebuild the site. See *Rebuilding the site*.
+- Publishing, unpublishing and deleting fire the Netlify build hook through a CMS webhook. See *Rebuilding the site*.
 
 ## Gotchas
 
