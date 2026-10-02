@@ -15,11 +15,17 @@ import json
 import os
 
 from mcp.server.fastmcp import FastMCP
+from starlette_cms_gateways.base import SyncRange
 from starlette_cms_gateways.client import CMSClient, CMSError
 from starlette_cms_gateways.discovery import discover_gateways
+from starlette_cms_gateways.jobstore import JobStore
 
 CMS_URL = os.environ.get("CMS_URL", "http://cms-prod:8000")
 CMS_API_KEY = os.environ.get("CMS_API_KEY", "")
+# Holds each gateway's sync cursor. Without a file that survives restarts,
+# since_last_sync falls back to an all-time sync every run — correct (syncs are
+# idempotent) but slower. Point this at a mounted volume to keep the cursor.
+GATEWAY_JOBS_DB = os.environ.get("GATEWAY_JOBS_DB", "gateway_jobs.db")
 
 mcp = FastMCP("joellithgow-gateways")
 
@@ -28,7 +34,12 @@ def _get_client() -> CMSClient:
     return CMSClient(base_url=CMS_URL.rstrip("/"), api_key=CMS_API_KEY or None)
 
 
-async def _sync_gateway_inner(gateway_name: str, client: CMSClient) -> dict:
+async def _sync_gateway_inner(
+    gateway_name: str,
+    client: CMSClient,
+    sync_range: SyncRange | None = None,
+    job_store: JobStore | None = None,
+) -> dict:
     """Run a single gateway sync, return result summary."""
     gateways = discover_gateways()
     if gateway_name not in gateways:
@@ -37,13 +48,19 @@ async def _sync_gateway_inner(gateway_name: str, client: CMSClient) -> dict:
 
     gateway_cls = gateways[gateway_name]
     try:
-        gateway = gateway_cls(cms_client=client)
-        result = await gateway.sync()
+        gateway = gateway_cls(
+            cms_client=client,
+            job_store=job_store if job_store is not None else JobStore(GATEWAY_JOBS_DB),
+            job_store_key=gateway_name,
+        )
+        result = await gateway.sync(sync_range)
         return {
             "gateway": gateway_name,
+            "range": result.window.to_dict() if result.window else {"mode": gateway.range.mode},
             "created": result.created,
             "updated": result.updated,
             "skipped": result.skipped,
+            "deferred": result.deferred,
             "errors": len(result.errors),
             "error_details": [
                 {"import_ref": ref, "message": msg} for ref, msg in (result.errors or [])
@@ -66,43 +83,72 @@ async def list_gateways() -> str:
         bt = getattr(cls, "block_type", "?")
         auto = getattr(cls, "auto_publish", False)
         imm = getattr(cls, "immutable", False)
+        default_range = getattr(cls, "default_range", "since_last_sync")
         lines.append(
             f"- **{name}**  "
             f"service=`{svc}`  block=`{bt}`  "
-            f"auto_publish={auto}  immutable={imm}"
+            f"auto_publish={auto}  immutable={imm}  default_range={default_range}"
         )
     return "\n".join(lines)
 
 
 @mcp.tool()
-async def sync_gateway(gateway_name: str) -> str:
+async def sync_gateway(
+    gateway_name: str,
+    range: str | None = None,  # noqa: A002
+    from_date: str | None = None,
+    to_date: str | None = None,
+) -> str:
     """
-    Run a full sync for a named gateway.
+    Sync a named gateway into the CMS.
 
     Discovers external service data (Spotify liked songs, iNaturalist field
-    trips, etc.) and upserts it as CMS documents. Call ``list_gateways`` first
-    to see available gateway names.
+    trips, etc.) and upserts it as CMS documents. A re-sync that finds nothing
+    new changes nothing, and fields you edited in the editor are never
+    overwritten. Call ``list_gateways`` first to see available gateway names.
 
     Args:
         gateway_name: The entry-point name of the gateway, e.g.
             ``spotify-liked-dump`` or ``inaturalist-field-trips``.
+        range: What to cover. ``since_last_sync`` (the default for both
+            gateways) fetches only what changed since the last clean run;
+            ``all_time`` re-reads everything (first run, or to repair);
+            ``custom`` backfills ``from_date``..``to_date``.
+        from_date: ``YYYY-MM-DD``. For ``custom``: the first observed date
+            (iNaturalist) or liked month (Spotify) to include.
+        to_date: ``YYYY-MM-DD``. For ``custom``: the last one to include.
     """
+    try:
+        sync_range = (
+            SyncRange.parse(range, from_date, to_date) if (range or from_date or to_date) else None
+        )
+    except ValueError as exc:
+        return f"❌ Invalid range: {exc}"
+
     client = _get_client()
     try:
-        result = await _sync_gateway_inner(gateway_name, client)
+        result = await _sync_gateway_inner(gateway_name, client, sync_range)
     finally:
         await client.close()
 
     if "error" in result:
         return f"❌ {result['error']}"
 
+    mode = result["range"]["mode"]
+    note = " (no cursor yet, so everything)" if result["range"].get("fell_back") else ""
     parts = [
-        f"✅ Synced **{result['gateway']}**",
+        f"✅ Synced **{result['gateway']}** — {mode}{note}",
         f"  • Created: {result['created']}",
         f"  • Updated: {result['updated']}",
-        f"  • Skipped: {result['skipped']}",
+        f"  • Skipped (nothing new): {result['skipped']}",
         f"  • Errors: {result['errors']}",
     ]
+    if result["deferred"]:
+        parts.append(
+            f"  • Deferred: {len(result['deferred'])} — someone has an unpublished draft "
+            "on these, so they were left alone and will be retried:"
+        )
+        parts += [f"    - `{ref}`" for ref in result["deferred"]]
     if result.get("error_details"):
         for err in result["error_details"]:
             parts.append(f"    - `{err['import_ref']}`: {err['message']}")
