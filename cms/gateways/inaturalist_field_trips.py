@@ -23,9 +23,9 @@ Ranges (``self.range``, see ``BaseGateway.sync``):
     all_time         every observation.
     custom           observations *observed* between the given dates.
 
-An outing a run could not finish (a person's draft is on it, or the write
-failed) is on the retry list; the next run calls :meth:`refetch`, which
-re-reads the outing's day, so it is tried again whatever its range.
+An outing a run leaves alone (a person's draft is on it) or fails on is reported
+in the sync reply and not remembered: an incremental run only meets it again if
+iNaturalist changes it, so catch it up with an ``all_time`` run.
 
 An observation deleted at iNaturalist, or one whose date was edited, is only
 noticed by ``all_time`` (an edited date is also caught incrementally). A
@@ -41,9 +41,9 @@ from __future__ import annotations
 import collections
 import math
 import os
-from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
+from collections.abc import AsyncIterator, Iterable, Iterator
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -381,18 +381,6 @@ def build_outing_item(
     )
 
 
-def ref_day(import_ref: str) -> str | None:
-    """The ``YYYY-MM-DD`` an outing's ``import_ref`` is for, or ``None`` for any other ref."""
-    if not import_ref.startswith(LEGACY_REF_PREFIX):
-        return None
-    day = import_ref.removeprefix(LEGACY_REF_PREFIX)[:10]
-    try:
-        date.fromisoformat(day)
-    except ValueError:
-        return None
-    return day
-
-
 def existing_outing(doc: dict[str, Any]) -> tuple[str, ExistingOuting] | None:
     """``(outing_date, ExistingOuting)`` for a stored outing document."""
     body = doc.get("body") or {}
@@ -462,23 +450,6 @@ class INaturalistFieldTripsGateway(BaseGateway):
                     if obs.get("observed_on"):
                         by_day[obs["observed_on"]].append(obs)
 
-        for item in self._outings(by_day, existing_by_day):
-            yield item
-
-    async def refetch(self, import_refs: Sequence[str]) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
-        """
-        Rebuild the outings of the days *import_refs* belong to.
-
-        Called for the retry list: an outing is rebuilt from its whole day, so the
-        refs of a day come back together (the ones nobody asked for are no-ops).
-        A day with no observations left yields nothing, and its refs are dropped.
-        """
-        days = {day for ref in import_refs if (day := ref_day(ref))}
-        if not days:
-            return
-        existing_by_day = await self._existing_by_day()
-        async with httpx.AsyncClient(timeout=30) as http:
-            by_day = await self._fetch_days(http, days)
         for item in self._outings(by_day, existing_by_day):
             yield item
 

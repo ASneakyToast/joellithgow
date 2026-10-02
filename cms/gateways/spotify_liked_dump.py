@@ -21,9 +21,9 @@ A track you un-like disappears from its month only when that month is
 refreshed again. A month before the floor is only ever touched by ``custom``.
 A document is never deleted by a sync.
 
-A month a run could not finish (a person's draft is on it, or the write failed)
-is on the retry list; the next run calls :meth:`refetch`, which re-reads that
-month, so it is tried again whatever the run's range.
+A month a run leaves alone (a person's draft is on it) or fails on is reported in
+the sync reply and not remembered: an incremental run only meets it again if you
+like or un-like a song in it, so catch it up with an ``all_time`` run.
 
 Environment variables:
     SPOTIPY_CLIENT_ID       Spotify application client ID
@@ -41,7 +41,7 @@ import asyncio
 import calendar
 import collections
 import os
-from collections.abc import AsyncIterator, Iterator, Sequence
+from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
 import spotipy
@@ -73,15 +73,6 @@ def month_bounds(window: SyncWindow) -> tuple[str | None, str | None]:
     if window.mode == "since_last_sync" and window.changed_since is not None:
         return max(MONTH_FLOOR, window.changed_since.strftime("%Y-%m")), None
     return MONTH_FLOOR, None
-
-
-def ref_month(import_ref: str) -> str | None:
-    """The ``YYYY-MM`` a month post's ``import_ref`` is for, or ``None`` for any other ref."""
-    prefix = "spotify:dump:"
-    if not import_ref.startswith(prefix):
-        return None
-    month = import_ref.removeprefix(prefix)
-    return month if len(month) == 7 and month[4] == "-" and month[:4].isdigit() and month[5:].isdigit() else None
 
 
 def curate_track(item: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -145,20 +136,6 @@ class SpotifyLikedDumpGateway(BaseGateway):
         window = await self.resolve_window()
         first_month, last_month = month_bounds(window)
         for item in self._month_items(await self._collect(first_month, last_month)):
-            yield item
-
-    async def refetch(self, import_refs: Sequence[str]) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
-        """
-        Rebuild the months *import_refs* name (``spotify:dump:YYYY-MM``).
-
-        The floor does not apply: these were asked for by name. A month with no
-        liked tracks left yields nothing, and its ref is dropped.
-        """
-        wanted = {m for ref in import_refs if (m := ref_month(ref))}
-        if not wanted:
-            return
-        by_month = await self._collect(min(wanted), None)
-        for item in self._month_items({m: by_month[m] for m in sorted(wanted) if m in by_month}):
             yield item
 
     async def _collect(

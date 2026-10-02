@@ -10,7 +10,7 @@ Since 2026-10-01 prod (`cms.joellithgow.com`) runs in the k3s cluster, managed i
 
 - **Deploy CMS code:** merge to `main` (`build-cms.yml` pushes `ghcr.io/asneakytoast/joellithgow-cms:jl-<joellithgow sha>-astraeus-<astraeus sha>`), then bump the image pin in jlithgow-ops (`deployment.yaml`, `mcp.yaml`) to that tag and merge. Pin the `jl-…` tag, not `astraeus-<sha>`: that one only changes with astraeus, so a pin on it keeps the node's cached image. Argo syncs it. Never `make prod-deploy` for this — it targets EC2.
 - **Config / secrets:** `secrets.enc.yaml` (sops) in jlithgow-ops. Pods read it as plain env vars, so after a change run `kubectl -n astraeus rollout restart deploy/astraeus-cms`.
-- **Backups:** Litestream streams `content.db` to R2 (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restores it into an empty volume on pod start. It replicates the whole file, so the gateway sync state (cursor, retry list, job history; see *Gateways*) is in the backup too.
+- **Backups:** Litestream streams `content.db` to R2 (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restores it into an empty volume on pod start. It replicates the whole file, so the gateway sync state (cursor and job history; see *Gateways*) is in the backup too.
 - **EC2-only `make` targets** (`db-sync`, `backup`, `prod-deploy`, `prod-restart`, `mcp-deploy`, `caddy-deploy`, `cron-install`, `staging-*`) act on the fallback box. `make db-sync` pulls EC2's *stale* backup, not live prod, until it is repointed at R2.
 
 ---
@@ -134,15 +134,16 @@ Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run th
   overwritten. Stored iNat observations are slim records (`curate_observation`), not iNaturalist's raw payload, and
   carry no `quality_grade` (community IDs change it, which would republish a post for nothing the site shows).
 - **Each document is published as soon as it is written**, one at a time (no run changeset). A post a person has a
-  draft on, or one you unpublished, is *deferred*: left alone, named in the sync reply, put on a retry list and
-  retried next run (`refetch` re-reads that outing's day / that month). The gateway's own leftover draft (a publish
-  that failed) is finished, not deferred. See ADR 023 in astraeus.
+  draft on, or one you unpublished, is left alone and named in the sync reply (the code calls it *deferred*). Nothing
+  remembers it: an incremental run meets it again only if the source changes, so once they publish or discard the
+  draft run `all_time` to catch it up. The gateway's own leftover draft (a publish that failed) is finished, not
+  left alone, the next time a run meets the doc. See ADR 023 in astraeus.
 - **Ranges and the cursor.** `since_last_sync` (default), `all_time` (first run / repair), `custom`
-  (`from_date`..`to_date`, the observed date or liked month). The cursor, retry list and job history live **in the
+  (`from_date`..`to_date`, the observed date or liked month). The cursor and job history live **in the
   CMS's own database** (`content.db`, so Litestream carries them to R2); the MCP sidecar and `gateways sync` read and
-  write them through the CMS gateway API (`/api/gateways/{name}/cursor|retry|runs`), so the admin page, the MCP tool
+  write them through the CMS gateway API (`/api/gateways/{name}/cursor|runs`), so the admin page, the MCP tool
   and the CLI share one cursor and it survives restarts. It moves to the run's start after any run that did not
-  raise (never after `custom`); deferred and failed items never hold it back. The sidecar needs no volume and no
+  raise (never after `custom`); items left alone or failed never hold it back. The sidecar needs no volume and no
   `GATEWAY_JOBS_DB`.
 - **Spotify floor.** `MONTH_FLOOR = "2025-01"`: `all_time` and `since_last_sync` never touch an earlier month. The 31
   pre-2025 monthly posts are deleted by the migration below. A `custom` range ignores the floor on purpose, so a
@@ -152,9 +153,11 @@ Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run th
 - **Check the clustering radius on real data:** `uv run python -m cms.inat_outing_report --only-differing`.
 - **One-off migration of existing docs** (`cms/migrate_gateway_docs.py`; read its docstring): `report` (read-only:
   pending drafts told apart as gateway-only vs a person's, the pre-floor Spotify months, what an `all_time` sync would
-  create and update, open changesets holding gateway docs) → `apply` (discards gateway-only drafts; with
-  `--delete-pre-floor --snapshot-confirmed` also deletes the pre-floor months; `--allow-prod` against prod) → one
-  `PYTHONPATH=. uv run gateways sync <name> --range all_time` per gateway (or the `sync_gateway` MCP tool) → `verify` (no drafts, no stray `draft` key or raw payload,
+  create and update, the stale open changesets old runs left) → `apply` (discards gateway-only drafts; with
+  `--delete-pre-floor --snapshot-confirmed` also deletes the pre-floor months; then cleans the stale changesets:
+  deletes those holding only gateway docs, trims gateway docs out of mixed ones, leaves any holding a person's draft
+  and any `review`/`scheduled` one; `--allow-prod` against prod. Re-run it once a person has resolved their draft) → one
+  `PYTHONPATH=. uv run gateways sync <name> --range all_time` per gateway (or the `sync_gateway` MCP tool) → `verify` (no drafts, no leftover open changeset, no stray `draft` key or raw payload,
   slugs and publish_dates unchanged except on 07-04, and a second `all_time` sync writes nothing). Develop against a
   local `litestream restore` of prod (credentials in jlithgow-ops `litestream-secrets.enc.yaml`), never prod first,
   and show Joel the report before anything is written. Titles are seeded, so check the 07-04 posts' titles by hand:
