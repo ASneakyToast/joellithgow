@@ -133,11 +133,12 @@ Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run th
   written on update, so a re-sync that finds nothing new writes nothing and a hand edit to anything else is never
   overwritten. Stored iNat observations are slim records (`curate_observation`), not iNaturalist's raw payload, and
   carry no `quality_grade` (community IDs change it, which would republish a post for nothing the site shows).
-- **Each document is published as soon as it is written**, one at a time (no run changeset). Each publish fires the
-  prod build webhook, so a sync that changes N posts starts up to N builds (a quiet sync starts none). A post a person has a
+- **A run is one changeset, published once at the end**: one `changeset.published` webhook, so one site build however
+  many posts changed, and all or nothing (a quiet sync opens no changeset and starts no build). If the publish fails the
+  run raises (the job is an error) and the cursor stays, so the next run finishes the posts. A post a person has a
   draft on, or one you unpublished, is left alone and named in the sync reply (the code calls it *deferred*). Nothing
   remembers it: an incremental run meets it again only if the source changes, so once they publish or discard the
-  draft run `all_time` to catch it up. The gateway's own leftover draft (a publish that failed) is finished, not
+  draft run `all_time` to catch it up. The gateway's own leftover draft (from a failed publish) is finished, not
   left alone, the next time a run meets the doc. See ADR 023 in astraeus.
 - **Ranges and the cursor.** `since_last_sync` (default), `all_time` (first run / repair), `custom`
   (`from_date`..`to_date`, the observed date or liked month). The cursor and job history live **in the
@@ -163,10 +164,10 @@ Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run th
   local `litestream restore` of prod (credentials in jlithgow-ops `litestream-secrets.enc.yaml`), never prod first,
   and show Joel the report before anything is written. Titles are seeded, so check the 07-04 posts' titles by hand:
   the document that kept the old ref keeps its old title even if its cluster is the Albany one. Publishing rebuilds the
-  site through the Netlify webhook (see *Rebuilding the site*), so there is no Rebuild to press afterwards, but the
-  migration fires one build per deleted month and per published post: the report's section 5 counts them. The CMS
-  can't pause a webhook (only create/delete) and doesn't coalesce, so decide beforehand whether to accept the builds
-  or delete the hook for the run and re-create it.
+  site through the Netlify webhook (see *Rebuilding the site*), so there is no Rebuild to press afterwards. Each gateway's
+  sync is one publish (one build), but each deleted pre-floor month fires its own `document.deleted` (one build each):
+  the report's section 5 counts them. The CMS can't pause a webhook (only create/delete) and doesn't coalesce, so
+  decide beforehand whether to accept those builds or delete the hook for the `apply` and re-create it.
 
 ## Environment
 

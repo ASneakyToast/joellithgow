@@ -20,7 +20,8 @@ outings, and publishes.
                   ``apply`` will do to each (see below);
                5. the webhooks the migration will fire. Prod has one that rebuilds the
                   site on every publish and delete, and the CMS does not coalesce them:
-                  each deleted month and each published post is a separate build.
+                  the sync publishes its changeset once (one build), but each deleted
+                  month is a separate ``document.deleted`` (one build each).
              ``--snapshot-out FILE`` records each doc's slug and publish_date for verify.
     apply    Step 2 and 3 of the plan: discards the gateway-only drafts (a person's
              are listed and left alone). ``--delete-pre-floor`` also deletes the
@@ -200,6 +201,17 @@ class PreviewClient(CMSClient):
         self.updated[ref] = sorted(k for k, v in body.items() if norm(live.get(k)) != norm(v))
         return {"id": doc_id}
 
+    async def publish_changeset(self, changeset_id: str) -> dict[str, Any]:
+        self.writes.append(("publish-changeset", changeset_id))
+        return {"id": changeset_id}
+
+    async def add_to_changeset(self, changeset_id: str, doc_id: str) -> None:
+        doc = self._seen.get(doc_id, {})
+        self.writes.append(("link", doc.get("import_ref") or doc_id))
+
+    async def delete_changeset(self, changeset_id: str) -> None:
+        self.writes.append(("delete-changeset", changeset_id))
+
     async def publish_document(self, doc_id: str) -> dict[str, Any]:
         doc = self._seen.get(doc_id, {})
         self.writes.append(("publish", doc.get("import_ref") or doc_id))
@@ -326,8 +338,9 @@ async def clean_changesets(client: CMSClient, plans: list[ChangesetPlan]) -> tup
 # Webhooks
 # ---------------------------------------------------------------------------
 
-# What a migration writes, as the CMS events a webhook can subscribe to.
-PUBLISH_EVENT, DELETE_EVENT = "document.published", "document.deleted"
+# What a migration writes, as the CMS events a webhook can subscribe to. A gateway sync
+# publishes one changeset per gateway run, so it fires one changeset.published each.
+PUBLISH_EVENT, DELETE_EVENT = "changeset.published", "document.deleted"
 
 
 async def active_webhooks(client: CMSClient) -> list[tuple[str, list[str]]]:
@@ -350,8 +363,8 @@ async def active_webhooks(client: CMSClient) -> list[tuple[str, list[str]]]:
 def expected_events(
     loaded: Loaded, previews: list[Preview] | None, *, delete_pre_floor: bool = True
 ) -> dict[str, int]:
-    """How many publish and delete events the migration will fire (the sync's, if previewed)."""
-    published = sum(len(p.created) + len(p.updated) for p in previews or [])
+    """How many changeset-publish and delete events the migration will fire."""
+    published = sum(1 for p in previews or [] if p.created or p.updated)
     return {
         PUBLISH_EVENT: published,
         DELETE_EVENT: len(pre_floor(loaded.docs[DUMP])) if delete_pre_floor else 0,
