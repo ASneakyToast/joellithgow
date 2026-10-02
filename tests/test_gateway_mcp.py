@@ -93,3 +93,23 @@ async def test_deferred_documents_are_named_in_the_reply(wired):
 
     assert "Deferred: 1" in out and "inaturalist:outing:2026-05-03" in out
     assert "Updated: 0" in out
+
+
+@pytest.mark.asyncio
+async def test_the_cursor_the_tool_writes_is_the_one_the_cms_serves_and_the_run_is_in_history(wired, env):
+    from datetime import datetime
+
+    client, store, _ = env
+    _, api, _ = wired
+    api.db = [raw_obs(1, "2026-05-03", *PARK)]
+
+    await srv.sync_gateway("inaturalist-field-trips")
+
+    served = (await client._get_http().get(
+        "http://testserver/api/gateways/inaturalist-field-trips/cursor"
+    )).json()["cursor"]
+    assert served and datetime.fromisoformat(served) == await store.get_cursor("inaturalist-field-trips")
+    jobs = await store.list_for_gateway("inaturalist-field-trips")
+    assert [j["status"] for j in jobs] == ["done"], "an MCP run is in the job history"
+    assert jobs[0]["result"]["created"] == 1
+    assert await store.get_last_synced("inaturalist-field-trips") is not None
