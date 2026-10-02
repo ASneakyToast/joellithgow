@@ -15,6 +15,15 @@ import json
 import os
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
+from starlette_cms.mcp.server import (
+    DEFAULT_LIST_LIMIT,
+    MAX_LIST_LIMIT,
+    MAX_RESPONSE_CHARS,
+    READ_ONLY,
+    _reject_unknown_arguments,
+    summarize_document,
+)
 from starlette_cms_gateways.base import SyncRange
 from starlette_cms_gateways.client import CMSClient, CMSError
 from starlette_cms_gateways.discovery import discover_gateways
@@ -29,6 +38,16 @@ CMS_API_KEY = os.environ.get("CMS_API_KEY", "")
 # the `gateways` CLI all share one cursor, and it survives a restart of this pod.
 
 mcp = FastMCP("joellithgow-gateways")
+
+# Follows the astraeus MCP tool conventions (ADR 005): list tools return bounded summaries,
+# long lists are capped, unknown arguments fail loudly, every tool is annotated.
+# A sync writes and publishes (which fires the site-rebuild webhook) and reads Spotify /
+# iNaturalist, so it is open-world; it is idempotent and destroys nothing.
+SYNC = ToolAnnotations(
+    readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True
+)
+# How many deferred / failed items a sync reply names before saying "and N more".
+MAX_NAMED = 10
 
 
 def _get_client() -> CMSClient:
@@ -67,7 +86,7 @@ async def _sync_gateway_inner(
         return {"gateway": gateway_name, "error": str(exc)}
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 async def list_gateways() -> str:
     """List all available gateway implementations and their metadata."""
     gateways = discover_gateways()
@@ -89,7 +108,15 @@ async def list_gateways() -> str:
     return "\n".join(lines)
 
 
-@mcp.tool()
+def _named(items: list[str]) -> list[str]:
+    """Bullet lines for *items*, at most MAX_NAMED, then how many more there are."""
+    lines = [f"    - {item}" for item in items[:MAX_NAMED]]
+    if len(items) > MAX_NAMED:
+        lines.append(f"    - …and {len(items) - MAX_NAMED} more")
+    return lines
+
+
+@mcp.tool(annotations=SYNC)
 async def sync_gateway(
     gateway_name: str,
     range: str | None = None,  # noqa: A002
@@ -149,41 +176,54 @@ async def sync_gateway(
             f"  • Left alone: {len(result['deferred'])} — someone has an unpublished draft on "
             "these. Publish or discard the draft, then run `all_time` to catch them up:"
         )
-        parts += [f"    - `{ref}`" for ref in result["deferred"]]
+        parts += _named([f"`{ref}`" for ref in result["deferred"]])
     if result.get("error_details"):
         parts.append("    (an `all_time` run tries these again)")
-        for err in result["error_details"]:
-            parts.append(f"    - `{err['import_ref']}`: {err['message']}")
+        parts += _named([f"`{e['import_ref']}`: {e['message']}" for e in result["error_details"]])
 
     return "\n".join(parts)
 
 
-@mcp.tool()
+@mcp.tool(annotations=READ_ONLY)
 async def get_recent_gateway_items(
     block_type: str,
-    limit: int = 20,
+    limit: int = DEFAULT_LIST_LIMIT,
 ) -> str:
     """
-    List recently synced CMS documents for a specific gateway service.
+    List recently synced CMS documents for a gateway, as short summaries WITHOUT bodies.
+
+    Each item has its id, type, slug, title, status, dates and an excerpt. To read one in
+    full, use the content MCP's get_document tool with its id. Output is capped at
+    20,000 characters.
 
     Args:
         block_type: The CMS document type for this gateway, e.g.
-            ``spotify_liked_song`` or ``inaturalist_outing``.
-        limit: Maximum number of documents to return. Default 20.
+            ``spotify_liked_dump`` or ``inaturalist_outing``.
+        limit: Maximum number of documents to return, 1-50. Default 10.
     """
+    if not 1 <= limit <= MAX_LIST_LIMIT:
+        return f"❌ limit must be between 1 and {MAX_LIST_LIMIT}, not {limit}."
     client = _get_client()
     try:
         data = await client.list_documents(doc_type=block_type, limit=limit)
     finally:
         await client.close()
 
-    docs = data.get("documents", [])
+    docs = [summarize_document(d).model_dump() for d in data.get("documents", [])]
     total = data.get("total", 0)
-    return (
+    text = (
         f"{total} document(s) of type {block_type!r} "
-        f"(showing {len(docs)}):\n"
-        + json.dumps(docs, indent=2, default=str)
+        f"(showing {len(docs)}):\n" + json.dumps(docs, indent=2, default=str)
     )
+    if len(text) > MAX_RESPONSE_CHARS:
+        text = (
+            text[:MAX_RESPONSE_CHARS]
+            + f"\n… truncated at {MAX_RESPONSE_CHARS} characters; pass a smaller `limit`."
+        )
+    return text
+
+
+_reject_unknown_arguments(mcp)  # a misnamed argument must fail, not be silently dropped
 
 
 if __name__ == "__main__":

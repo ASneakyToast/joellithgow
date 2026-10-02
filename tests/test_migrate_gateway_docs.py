@@ -139,6 +139,12 @@ async def docs(client, doc_type):
 async def test_report_writes_nothing_and_shows_all_four_sections(env, api, legacy, source_obs, tmp_path, capsys):
     client, store, transport = env
     api.db = [*source_obs[0], *source_obs[1], *source_obs[2]]
+    hook = await client._get_http().post(
+        f"{URL}/api/webhooks",
+        json={"url": "https://api.netlify.com/build_hooks/SECRETTOKEN",
+              "events": ["document.published", "document.deleted", "changeset.published"]},
+    )
+    assert hook.status_code == 201, hook.text
     transport.calls.clear()
     snap = tmp_path / "before.json"
 
@@ -162,6 +168,11 @@ async def test_report_writes_nothing_and_shows_all_four_sections(env, api, legac
     assert "UPDATE  inaturalist:outing:2026-05-10" in out, "the gateway draft is assumed discarded"
     assert "DEFER   inaturalist:outing:2026-05-17" in out
     assert "UPDATE  spotify:dump:2026-09" in out
+    # 5. the webhooks: how many events, to which host, and never the secret URL
+    assert "== 5. webhooks this will fire ==" in out
+    assert "api.netlify.com: " in out and "2 x document.deleted" in out
+    assert "x document.published" in out and "does not coalesce" in out
+    assert "SECRETTOKEN" not in out
     # the snapshot verify compares against
     snapped = json.loads(snap.read_text())
     assert snapped["inaturalist:outing:2026-05-03"]["slug"] == "nature-outing-2026-05-03"

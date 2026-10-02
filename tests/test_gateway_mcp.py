@@ -114,3 +114,39 @@ async def test_the_cursor_the_tool_writes_is_the_one_the_cms_serves_and_the_run_
     assert [j["status"] for j in jobs] == ["done"], "an MCP run is in the job history"
     assert jobs[0]["result"]["created"] == 1
     assert await store.get_last_synced("inaturalist-field-trips") is not None
+
+
+@pytest.mark.asyncio
+async def test_recent_items_are_bounded_summaries_without_bodies(wired):
+    _, api, _ = wired
+    api.db = [raw_obs(i, f"2026-05-{i:02d}", *PARK) for i in range(1, 4)]
+    await srv.sync_gateway("inaturalist-field-trips")
+
+    out = await srv.get_recent_gateway_items("inaturalist_outing", limit=2)
+
+    assert "3 document(s)" in out and "(showing 2)" in out
+    assert "observations" not in out and "species_list" not in out, "no bodies in a list"
+    assert "slug" in out and "title" in out
+    assert (await srv.get_recent_gateway_items("inaturalist_outing", limit=500)).startswith("❌ limit")
+
+
+@pytest.mark.asyncio
+async def test_a_long_deferred_list_is_capped_in_the_reply():
+    result = {
+        "gateway": "g", "range": {"mode": "all_time"}, "created": 0, "updated": 0, "skipped": 0,
+        "errors": 0, "error_details": [], "deferred": [f"ref:{i}" for i in range(srv.MAX_NAMED + 5)],
+    }
+    lines = srv._named([f"`{r}`" for r in result["deferred"]])
+    assert len(lines) == srv.MAX_NAMED + 1 and lines[-1].endswith("…and 5 more")
+
+
+def test_tools_are_annotated_and_reject_unknown_arguments():
+    tools = {t.name: t for t in srv.mcp._tool_manager.list_tools()}
+    assert tools["get_recent_gateway_items"].annotations.readOnlyHint is True
+    sync = tools["sync_gateway"].annotations
+    assert (sync.readOnlyHint, sync.destructiveHint, sync.openWorldHint) == (False, False, True)
+    from pydantic import ValidationError
+
+    model = tools["sync_gateway"].fn_metadata.arg_model
+    with pytest.raises(ValidationError, match="Did you mean `gateway_name`"):
+        model.model_validate({"gateway": "x"})

@@ -37,3 +37,6 @@ src/content/projects/
 .cache/
 cms/gateways/__pycache__/
 src/*.egg-info/
+
+# Python bytecode
+__pycache__/
