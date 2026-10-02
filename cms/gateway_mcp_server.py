@@ -18,14 +18,15 @@ from mcp.server.fastmcp import FastMCP
 from starlette_cms_gateways.base import SyncRange
 from starlette_cms_gateways.client import CMSClient, CMSError
 from starlette_cms_gateways.discovery import discover_gateways
-from starlette_cms_gateways.jobstore import JobStore
+from starlette_cms_gateways.runner import run_recorded
+from starlette_cms_gateways.state import RemoteSyncState
 
 CMS_URL = os.environ.get("CMS_URL", "http://cms-prod:8000")
 CMS_API_KEY = os.environ.get("CMS_API_KEY", "")
-# Holds each gateway's sync cursor. Without a file that survives restarts,
-# since_last_sync falls back to an all-time sync every run — correct (syncs are
-# idempotent) but slower. Point this at a mounted volume to keep the cursor.
-GATEWAY_JOBS_DB = os.environ.get("GATEWAY_JOBS_DB", "gateway_jobs.db")
+# This sidecar keeps no state of its own. The sync cursor, the retry list and the
+# job history live in the CMS's database and are read and written through the CMS
+# gateway API (RemoteSyncState), so a run from here, from the admin page or from
+# the `gateways` CLI all share one cursor, and it survives a restart of this pod.
 
 mcp = FastMCP("joellithgow-gateways")
 
@@ -38,7 +39,6 @@ async def _sync_gateway_inner(
     gateway_name: str,
     client: CMSClient,
     sync_range: SyncRange | None = None,
-    job_store: JobStore | None = None,
 ) -> dict:
     """Run a single gateway sync, return result summary."""
     gateways = discover_gateways()
@@ -48,12 +48,9 @@ async def _sync_gateway_inner(
 
     gateway_cls = gateways[gateway_name]
     try:
-        gateway = gateway_cls(
-            cms_client=client,
-            job_store=job_store if job_store is not None else JobStore(GATEWAY_JOBS_DB),
-            job_store_key=gateway_name,
-        )
-        result = await gateway.sync(sync_range)
+        state = RemoteSyncState(client)
+        gateway = gateway_cls(cms_client=client, job_store=state, job_store_key=gateway_name)
+        result = await run_recorded(gateway, state, gateway_name, sync_range)
         return {
             "gateway": gateway_name,
             "range": result.window.to_dict() if result.window else {"mode": gateway.range.mode},
@@ -61,6 +58,9 @@ async def _sync_gateway_inner(
             "updated": result.updated,
             "skipped": result.skipped,
             "deferred": result.deferred,
+            "recovered": result.recovered,
+            "dropped": result.dropped,
+            "retry": [e.to_dict() for e in result.retry],
             "errors": len(result.errors),
             "error_details": [
                 {"import_ref": ref, "message": msg} for ref, msg in (result.errors or [])
@@ -103,15 +103,18 @@ async def sync_gateway(
     Sync a named gateway into the CMS.
 
     Discovers external service data (Spotify liked songs, iNaturalist field
-    trips, etc.) and upserts it as CMS documents. A re-sync that finds nothing
-    new changes nothing, and fields you edited in the editor are never
-    overwritten. Call ``list_gateways`` first to see available gateway names.
+    trips, etc.) and upserts it as CMS documents, publishing each one as it is
+    written. A re-sync that finds nothing new changes nothing, and fields you
+    edited in the editor are never overwritten (an iNaturalist outing's tags are
+    the exception: they follow the observations). A post someone has an unpublished
+    draft on is left alone and retried next run. Call ``list_gateways`` first to
+    see available gateway names.
 
     Args:
         gateway_name: The entry-point name of the gateway, e.g.
             ``spotify-liked-dump`` or ``inaturalist-field-trips``.
         range: What to cover. ``since_last_sync`` (the default for both
-            gateways) fetches only what changed since the last clean run;
+            gateways) fetches only what changed since the last run;
             ``all_time`` re-reads everything (first run, or to repair);
             ``custom`` backfills ``from_date``..``to_date``.
         from_date: ``YYYY-MM-DD``. For ``custom``: the first observed date
@@ -146,10 +149,22 @@ async def sync_gateway(
     if result["deferred"]:
         parts.append(
             f"  • Deferred: {len(result['deferred'])} — someone has an unpublished draft "
-            "on these, so they were left alone and will be retried:"
+            "on these, so they were left alone. They are on the retry list and are "
+            "tried again on the next run (publish or discard the draft first):"
         )
         parts += [f"    - `{ref}`" for ref in result["deferred"]]
+    if result["recovered"]:
+        parts.append(f"  • Retried and finished: {len(result['recovered'])}")
+    if result["dropped"]:
+        parts.append(
+            f"  • Dropped from the retry list (no longer at the source): {len(result['dropped'])}"
+        )
+    errored = {e["import_ref"] for e in result.get("error_details", [])}
+    waiting = [e for e in result["retry"] if e["reason"] == "error" and e["import_ref"] not in errored]
+    if waiting:
+        parts.append(f"  • Still on the retry list from earlier failures: {len(waiting)}")
     if result.get("error_details"):
+        parts.append("    (these are on the retry list and are tried again on the next run)")
         for err in result["error_details"]:
             parts.append(f"    - `{err['import_ref']}`: {err['message']}")
 

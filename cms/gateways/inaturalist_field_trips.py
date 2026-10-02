@@ -9,9 +9,12 @@ What it stores is what the site shows — a count, species names, photo URLs, a
 bounding box and a slim record per observation — not iNaturalist's raw payload,
 which is ~35 KB per observation and changes whenever anyone comments or faves.
 
-Ownership. ``owned_fields`` are machine-sourced and refreshed on every sync.
-Everything else (title, place, tags, publish date) is seeded when the outing is
-first created and then belongs to whoever edits it in the CMS.
+Ownership. ``owned_fields`` are machine-sourced and refreshed on every sync,
+including ``tags`` (the taxon groups seen), so adding a bird to an outing later
+adds ``birds``. The accepted cost: a hand edit to an outing's tags is overwritten
+by the next sync that changes the outing. Everything else (title, place, publish
+date) is seeded when the outing is first created and then belongs to whoever
+edits it in the CMS.
 
 Ranges (``self.range``, see ``BaseGateway.sync``):
     since_last_sync  ask iNat for observations changed since the cursor
@@ -20,13 +23,17 @@ Ranges (``self.range``, see ``BaseGateway.sync``):
     all_time         every observation.
     custom           observations *observed* between the given dates.
 
+An outing a run could not finish (a person's draft is on it, or the write
+failed) is on the retry list; the next run calls :meth:`refetch`, which
+re-reads the outing's day, so it is tried again whatever its range.
+
 An observation deleted at iNaturalist, or one whose date was edited, is only
 noticed by ``all_time`` (an edited date is also caught incrementally). A
 document is never deleted by a sync.
 
 Environment variables:
     INATURALIST_USERNAME        iNaturalist username to fetch observations for
-    INATURALIST_OUTING_RADIUS_M Override the outing radius in metres (default 1000)
+    INATURALIST_OUTING_RADIUS_M Override the outing radius in metres (default 3000)
 """
 
 from __future__ import annotations
@@ -34,9 +41,9 @@ from __future__ import annotations
 import collections
 import math
 import os
-from collections.abc import AsyncIterator, Iterable
+from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 import httpx
@@ -45,7 +52,18 @@ from starlette_cms_gateways import BaseGateway, GatewayItem
 
 _INAT_API = "https://api.inaturalist.org/v1"
 _PAGE_SIZE = 200
-DEFAULT_RADIUS_M = 1000.0
+# 3 km: on the real data only 2026-07-04 (Oakland, then Albany) splits. At 1 km the
+# 2026-05-25 and 2026-09-05 hikes, whose sightings are spread along a trail, split
+# wrongly too.
+DEFAULT_RADIUS_M = 3000.0
+
+
+def outing_radius_m() -> float:
+    """The radius outings are clustered at: ``INATURALIST_OUTING_RADIUS_M`` or the default.
+
+    Everything that clusters (the gateway, the migration, the report) reads it here.
+    """
+    return float(os.environ.get("INATURALIST_OUTING_RADIUS_M") or DEFAULT_RADIUS_M)
 
 # Maps iNaturalist iconic_taxon_name → friendly tag
 _TAXON_TAGS: dict[str, str] = {
@@ -142,7 +160,8 @@ def curate_observation(obs: dict[str, Any]) -> dict[str, Any]:
         "common_name": taxon.get("preferred_common_name") or "",
         "iconic_taxon": taxon.get("iconic_taxon_name") or "",
         "place_guess": obs.get("place_guess") or "",
-        "quality_grade": obs.get("quality_grade") or "",
+        # No quality_grade: community IDs change it, which would republish a post
+        # for something the site never shows.
     }
     if coords:
         out["lat"], out["lon"] = coords
@@ -150,10 +169,13 @@ def curate_observation(obs: dict[str, Any]) -> dict[str, Any]:
 
 
 def cluster_observations(
-    observations: Iterable[dict[str, Any]], radius_m: float = DEFAULT_RADIUS_M
+    observations: Iterable[dict[str, Any]], radius_m: float | None = None
 ) -> list[list[dict[str, Any]]]:
     """
     Split one day's observations into outings.
+
+    *radius_m* defaults to :func:`outing_radius_m`, so every caller that does not
+    pass one clusters at the configured radius.
 
     Located observations are linked when within *radius_m* of each other
     (single linkage, so a long trail is one outing). Unlocated ones — no
@@ -161,6 +183,8 @@ def cluster_observations(
     else the nearest in time, else the first. With nothing located at all the
     day is one outing. Clusters come back earliest-first, members in time order.
     """
+    if radius_m is None:
+        radius_m = outing_radius_m()
     obs_list = sorted(observations, key=_sort_key)
     located = [(o, c) for o in obs_list if (c := observation_coords(o))]
     unlocated = [o for o in obs_list if not observation_coords(o)]
@@ -346,8 +370,8 @@ def build_outing_item(
             "publish_date": day,
             "outing_date": day,
             "place_guess": place,
-            "tags": taxon_tags(obs_group),
             # Owned by the gateway (see INaturalistFieldTripsGateway.owned_fields):
+            "tags": taxon_tags(obs_group),
             "observation_count": float(len(obs_group)),
             "species_list": unique_species(obs_group),
             "observations": [curate_observation(o) for o in obs_group],
@@ -355,6 +379,18 @@ def build_outing_item(
             "bounding_box": bounding_box(obs_group),
         },
     )
+
+
+def ref_day(import_ref: str) -> str | None:
+    """The ``YYYY-MM-DD`` an outing's ``import_ref`` is for, or ``None`` for any other ref."""
+    if not import_ref.startswith(LEGACY_REF_PREFIX):
+        return None
+    day = import_ref.removeprefix(LEGACY_REF_PREFIX)[:10]
+    try:
+        date.fromisoformat(day)
+    except ValueError:
+        return None
+    return day
 
 
 def existing_outing(doc: dict[str, Any]) -> tuple[str, ExistingOuting] | None:
@@ -388,14 +424,13 @@ class INaturalistFieldTripsGateway(BaseGateway):
         "observations",
         "photo_urls",
         "bounding_box",
+        "tags",
     )
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._username = os.environ["INATURALIST_USERNAME"]
-        self.cluster_radius_m = float(
-            os.environ.get("INATURALIST_OUTING_RADIUS_M", DEFAULT_RADIUS_M)
-        )
+        self.cluster_radius_m = outing_radius_m()
 
     async def fetch(self) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
         """Yield one GatewayItem per outing in the requested range."""
@@ -413,10 +448,7 @@ class INaturalistFieldTripsGateway(BaseGateway):
                 for day, outings in existing_by_day.items():
                     if any(ex.observation_ids & changed_ids for ex in outings):
                         days.add(day)
-                by_day = {
-                    day: await self._fetch_observations(http, {"observed_on": day})
-                    for day in sorted(days)
-                }
+                by_day = await self._fetch_days(http, days)
             else:
                 params: dict[str, Any] = {}
                 if window.mode == "custom":
@@ -430,15 +462,49 @@ class INaturalistFieldTripsGateway(BaseGateway):
                     if obs.get("observed_on"):
                         by_day[obs["observed_on"]].append(obs)
 
+        for item in self._outings(by_day, existing_by_day):
+            yield item
+
+    async def refetch(self, import_refs: Sequence[str]) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
+        """
+        Rebuild the outings of the days *import_refs* belong to.
+
+        Called for the retry list: an outing is rebuilt from its whole day, so the
+        refs of a day come back together (the ones nobody asked for are no-ops).
+        A day with no observations left yields nothing, and its refs are dropped.
+        """
+        days = {day for ref in import_refs if (day := ref_day(ref))}
+        if not days:
+            return
+        existing_by_day = await self._existing_by_day()
+        async with httpx.AsyncClient(timeout=30) as http:
+            by_day = await self._fetch_days(http, days)
+        for item in self._outings(by_day, existing_by_day):
+            yield item
+
+    # -----------------------------------------------------------------------
+    # Private helpers
+    # -----------------------------------------------------------------------
+
+    def _outings(
+        self,
+        by_day: dict[str, list[dict[str, Any]]],
+        existing_by_day: dict[str, list[ExistingOuting]],
+    ) -> Iterator[GatewayItem]:
+        """The items for *by_day*'s observations, clustered at this gateway's radius."""
         for day in sorted(by_day):
             clusters = cluster_observations(by_day[day], self.cluster_radius_m)
             keys = assign_outing_keys(day, clusters, existing_by_day.get(day, []))
             for cluster, (ref, slug) in zip(clusters, keys, strict=True):
                 yield build_outing_item(day, ref, slug, cluster)
 
-    # -----------------------------------------------------------------------
-    # Private helpers
-    # -----------------------------------------------------------------------
+    async def _fetch_days(
+        self, http: httpx.AsyncClient, days: Iterable[str]
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Every observation of each of *days*, by day."""
+        return {
+            day: await self._fetch_observations(http, {"observed_on": day}) for day in sorted(days)
+        }
 
     async def _existing_by_day(self) -> dict[str, list[ExistingOuting]]:
         """Existing outing documents, grouped by the date they are for."""

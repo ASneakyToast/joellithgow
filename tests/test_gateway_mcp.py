@@ -1,4 +1,4 @@
-"""The sync_gateway MCP tool: range arguments, cursor store, and what it tells the caller."""
+"""The sync_gateway MCP tool: range arguments, the CMS-held cursor, and what it tells the caller."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from gateway_fakes import PARK, raw_obs
 
 
 @pytest.fixture
-def wired(env, api, monkeypatch, tmp_path):
+def wired(env, api, monkeypatch):
     client, store, transport = env
 
     def fresh_client() -> CMSClient:
@@ -21,10 +21,11 @@ def wired(env, api, monkeypatch, tmp_path):
         return CMSClient(base_url="http://testserver", _http_client=http)
 
     monkeypatch.setattr(srv, "_get_client", fresh_client)
-    monkeypatch.setattr(srv, "GATEWAY_JOBS_DB", str(tmp_path / "mcp-jobs.db"))
-    monkeypatch.setattr(
-        srv, "discover_gateways", lambda: {"inaturalist-field-trips": INaturalistFieldTripsGateway}
-    )
+    # The tool reads discover_gateways from the server module; the CMS's gateway API
+    # (which serves the cursor) resolves gateway names with its own copy.
+    gateways = {"inaturalist-field-trips": INaturalistFieldTripsGateway}
+    monkeypatch.setattr(srv, "discover_gateways", lambda: gateways)
+    monkeypatch.setattr("starlette_cms_gateways.admin.api.discover_gateways", lambda: gateways)
     return client, api, transport
 
 

@@ -30,6 +30,9 @@ from cms.gateways.inaturalist_field_trips import (
 from cms.gateways.spotify_liked_dump import SpotifyLikedDumpGateway, month_bounds
 from gateway_fakes import FAR, GARDEN, PARK, PARK_NEAR, FakeSpotify, library, liked, raw_obs
 
+KM = 1 / 111.2  # degrees of latitude in a kilometre
+KEY = "inaturalist_field_trips"  # the state key of a gateway built without job_store_key
+
 
 def inat_gateway(client, store):
     return INaturalistFieldTripsGateway(cms_client=client, job_store=store)
@@ -236,10 +239,10 @@ async def test_inat_new_observation_updates_and_publishes_leaving_edits_alone(en
     gw = inat_gateway(client, store)
     await gw.sync()
 
-    # Joel retitles the post, adds commentary-ish tags, and publishes.
+    # Joel retitles the post and publishes.
     docs = await outing_docs(client)
     doc = docs["inaturalist:outing:2026-05-03"]
-    await client.update_document(doc["id"], body={"title": "Robins at the Long Meadow", "tags": ["birds", "favourite"]})
+    await client.update_document(doc["id"], body={"title": "Robins at the Long Meadow"})
     await client.publish_document(doc["id"])
 
     api.db.append(
@@ -255,7 +258,6 @@ async def test_inat_new_observation_updates_and_publishes_leaving_edits_alone(en
     assert edited["body"]["observation_count"] == 2
     assert edited["body"]["species_list"] == ["American Robin", "Blue Jay"]
     assert edited["body"]["title"] == "Robins at the Long Meadow"
-    assert edited["body"]["tags"] == ["birds", "favourite"]
     assert edited["body"]["publish_date"] == "2026-05-03"
     assert docs["inaturalist:outing:2026-05-10"]["body"]["observation_count"] == 1
 
@@ -520,3 +522,205 @@ def test_outing_report_shows_where_the_radius_matters():
     assert "2026-05-03" in out and "depends on radius" in out
     assert "1 day(s) where the radius changes the answer" in out
     assert "2026-05-10" not in report(obs, [500, 2000], only_differing=True)
+
+
+# ---------------------------------------------------------------------------
+# The 3 km radius, on days shaped like the real ones
+# ---------------------------------------------------------------------------
+#
+# The real coordinates are not in this repo, so these are built to the same shape (the
+# shape the decision rests on): sightings spread along a trail with hops over 1 km, and a
+# day in two cities. `python -m cms.inat_outing_report --only-differing` checks real data.
+
+
+def trail(day: str, hops_km: list[float], start=(40.70, -73.95)) -> list[dict]:
+    lat, lon = start
+    out = [raw_obs(1, day, lat, lon, time="08:00")]
+    for i, hop in enumerate(hops_km, start=2):
+        lat += hop * KM
+        out.append(raw_obs(i, day, lat, lon, time=f"{8 + i}:00"))
+    return out
+
+
+OAKLAND = (37.8044, -122.2712)
+ALBANY = (37.8869, -122.2978)  # ~9.5 km north
+
+
+def test_three_km_gives_one_two_and_one_outings_on_the_real_days():
+    may_25 = trail("2026-05-25", [1.6, 1.6])  # a 3.2 km hike, a sighting every 1.6 km
+    jul_4 = [
+        raw_obs(10, "2026-07-04", *OAKLAND, time="09:00", place="Oakland, CA"),
+        raw_obs(11, "2026-07-04", *ALBANY, time="14:00", place="Albany, CA"),
+    ]
+    sep_5 = trail("2026-09-05", [1.1, 2.4, 0.4])
+
+    assert inat.DEFAULT_RADIUS_M == 3000
+    assert [len(cluster_observations(day)) for day in (may_25, jul_4, sep_5)] == [1, 2, 1]
+    # ...and why 1 km was wrong: it splits both hikes.
+    assert [len(cluster_observations(day, 1000)) for day in (may_25, jul_4, sep_5)] == [3, 2, 3]
+
+
+def test_every_caller_clusters_at_the_configured_radius(monkeypatch):
+    obs = trail("2026-05-25", [1.6, 1.6])
+    monkeypatch.setenv("INATURALIST_USERNAME", "tester")
+    monkeypatch.setenv("INATURALIST_OUTING_RADIUS_M", "1000")
+
+    assert INaturalistFieldTripsGateway(cms_client=None).cluster_radius_m == 1000  # type: ignore[arg-type]
+    assert inat.outing_radius_m() == 1000
+    assert len(cluster_observations(obs)) == 3, "no radius passed: the env override still applies"
+    monkeypatch.delenv("INATURALIST_OUTING_RADIUS_M")
+    assert len(cluster_observations(obs)) == 1
+
+
+# ---------------------------------------------------------------------------
+# Tags are owned; quality_grade is not stored
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_inat_adding_a_bird_later_adds_the_birds_tag_and_overwrites_a_hand_edit(env, api):
+    client, store, _ = env
+    api.db = [raw_obs(1, "2026-05-03", *PARK, common="Oak", name="Quercus", iconic="Plantae")]
+    gw = inat_gateway(client, store)
+    await gw.sync()
+    doc = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
+    assert doc["body"]["tags"] == ["plants"]
+    await client.update_document(doc["id"], body={"title": "Oaks", "tags": ["plants", "favourite"]})
+    await client.publish_document(doc["id"])
+
+    api.db.append(raw_obs(2, "2026-05-03", *PARK_NEAR, time="09:40", updated="2099-01-01T00:00:00+00:00"))
+    result = await gw.sync()
+
+    assert result.updated == 1
+    edited = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
+    assert edited["body"]["tags"] == ["birds", "plants"], "tags follow the observations"
+    assert edited["body"]["title"] == "Oaks", "the title stays the editor's"
+
+
+@pytest.mark.asyncio
+async def test_spotify_tags_stay_seeded(env):
+    client, store, _ = env
+    gw = SpotifyLikedDumpGateway(
+        cms_client=client, job_store=store, spotify_client=FakeSpotify([liked("a", "2026-08-01T10:00:00Z")])
+    )
+    await gw.sync()
+    assert "tags" not in SpotifyLikedDumpGateway.owned_fields
+    sep = (await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08"))
+    await client.update_document(sep["id"], body={"tags": ["music", "mine"]})
+    await client.publish_document(sep["id"])
+    gw._sp = FakeSpotify([liked("b", "2026-08-09T10:00:00Z"), liked("a", "2026-08-01T10:00:00Z")])
+
+    await gw.sync(SyncRange("all_time"))
+
+    sep = (await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08"))
+    assert sep["body"]["tags"] == ["music", "mine"] and sep["body"]["song_count"] == 2
+
+
+@pytest.mark.asyncio
+async def test_a_community_id_change_is_not_an_update(env, api):
+    """quality_grade moves when people identify an observation; the site never shows it."""
+    client, store, transport = env
+    api.db = [raw_obs(1, "2026-05-03", *PARK, quality_grade="needs_id")]
+    gw = inat_gateway(client, store)
+    await gw.sync()
+    doc = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
+    assert "quality_grade" not in doc["body"]["observations"][0]
+
+    api.db[0]["quality_grade"] = "research"
+    api.db[0]["updated_at"] = "2099-01-01T00:00:00+00:00"
+    transport.calls.clear()
+    result = await gw.sync()
+
+    assert (result.updated, result.skipped) == (0, 1)
+    assert transport.writes() == []
+
+
+# ---------------------------------------------------------------------------
+# Retry: a deferred outing or month is re-fetched next run
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_inat_deferred_outing_is_refetched_after_the_person_publishes(env, api):
+    client, store, _ = env
+    api.db = [raw_obs(1, "2026-05-03", *PARK, time="09:00")]
+    gw = inat_gateway(client, store)
+    await gw.sync()
+    doc = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
+    await client.update_document(doc["id"], body={"title": "Half-written"})  # a person's draft
+
+    api.db.append(raw_obs(2, "2026-05-03", *PARK_NEAR, time="09:40", updated="2099-01-01T00:00:00+00:00"))
+    deferred = await gw.sync()
+    assert deferred.deferred == ["inaturalist:outing:2026-05-03"]
+    assert await store.get_cursor(KEY) == deferred.started_at, "the deferral does not hold the cursor"
+    assert [e.import_ref for e in await store.get_retry(KEY)] == ["inaturalist:outing:2026-05-03"]
+
+    # The observation is now old news upstream: updated_since no longer returns it, so
+    # only the retry list can bring the outing back.
+    api.db[1]["updated_at"] = "2000-01-01T00:00:00+00:00"
+    await client.publish_document(doc["id"])
+    api.requests.clear()
+    result = await gw.sync()
+
+    assert result.recovered == ["inaturalist:outing:2026-05-03"] and result.updated == 1
+    assert any(r.get("observed_on") == "2026-05-03" for r in api.requests), "it re-read that day"
+    edited = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
+    assert edited["body"]["observation_count"] == 2 and edited["body"]["title"] == "Half-written"
+    assert await store.get_retry(KEY) == []
+
+
+@pytest.mark.asyncio
+async def test_inat_refetch_names_days_not_other_refs(env, api):
+    client, store, _ = env
+    api.db = [raw_obs(1, "2026-05-03", *PARK), raw_obs(2, "2026-05-10", *PARK)]
+    gw = inat_gateway(client, store)
+
+    items = [i async for i in gw.refetch(["inaturalist:outing:2026-05-03", "spotify:dump:2026-09"])]
+
+    assert [i.import_ref for i in items] == ["inaturalist:outing:2026-05-03"]
+    assert [r.get("observed_on") for r in api.requests] == ["2026-05-03"]
+    assert [i async for i in gw.refetch(["spotify:dump:2026-09"])] == []
+
+
+def test_ref_day_and_ref_month_parse_only_their_own_refs():
+    assert inat.ref_day("inaturalist:outing:2026-07-04") == "2026-07-04"
+    assert inat.ref_day("inaturalist:outing:2026-07-04:2") == "2026-07-04"
+    assert inat.ref_day("inaturalist:outing:nonsense") is None
+    assert inat.ref_day("spotify:dump:2026-09") is None
+    from cms.gateways.spotify_liked_dump import ref_month
+
+    assert ref_month("spotify:dump:2026-09") == "2026-09"
+    assert ref_month("spotify:dump:2026-9") is None and ref_month("inaturalist:outing:2026-09-01") is None
+
+
+@pytest.mark.asyncio
+async def test_spotify_deferred_month_is_refetched_without_the_run_covering_it(env):
+    client, store, transport = env
+    sp = FakeSpotify([liked("a", "2026-08-01T10:00:00Z")])
+    gw = SpotifyLikedDumpGateway(cms_client=client, job_store=store, spotify_client=sp)
+    await gw.sync()
+    aug = await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08")
+    await client.update_document(aug["id"], body={"title": "Half-written"})  # a person's draft
+
+    sp.items = [liked("b", "2026-08-09T10:00:00Z"), liked("a", "2026-08-01T10:00:00Z")]
+    r = await gw.sync(SyncRange("all_time"))
+    assert r.deferred == ["spotify:dump:2026-08"]
+
+    await client.publish_document(aug["id"])
+    # since_last_sync covers only the current month, not August. Only the retry reaches it.
+    result = await gw.sync()
+
+    assert result.recovered == ["spotify:dump:2026-08"] and result.updated == 1
+    aug = await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08")
+    assert aug["body"]["song_count"] == 2 and aug["body"]["title"] == "Half-written"
+
+
+@pytest.mark.asyncio
+async def test_spotify_refetch_ignores_the_floor_because_the_month_was_asked_for_by_name(env):
+    client, store, _ = env
+    sp = FakeSpotify([liked("a", "2026-08-01T10:00:00Z"), liked("old", "2024-12-31T23:00:00Z")])
+    gw = SpotifyLikedDumpGateway(cms_client=client, job_store=store, spotify_client=sp)
+
+    got = [i.import_ref async for i in gw.refetch(["spotify:dump:2024-12", "spotify:dump:2026-08"])]
+
+    assert got == ["spotify:dump:2024-12", "spotify:dump:2026-08"]

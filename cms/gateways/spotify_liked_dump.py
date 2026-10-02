@@ -13,13 +13,17 @@ when the month is first created and then belong to whoever edits them.
 Ranges (``self.range``, see ``BaseGateway.sync``):
     since_last_sync  refresh every month from the one containing the cursor
                      (minus the gateway's overlap) up to now.
-    all_time         every month from ``_MONTH_FLOOR``.
+    all_time         every month from ``MONTH_FLOOR``.
     custom           the months containing ``start``..``end``; the floor does
                      not apply, so an explicit backfill can reach earlier.
 
 A track you un-like disappears from its month only when that month is
-refreshed again. An older month is only ever refreshed by ``all_time`` or
-``custom``. A document is never deleted by a sync.
+refreshed again. A month before the floor is only ever touched by ``custom``.
+A document is never deleted by a sync.
+
+A month a run could not finish (a person's draft is on it, or the write failed)
+is on the retry list; the next run calls :meth:`refetch`, which re-reads that
+month, so it is tried again whatever the run's range.
 
 Environment variables:
     SPOTIPY_CLIENT_ID       Spotify application client ID
@@ -37,7 +41,7 @@ import asyncio
 import calendar
 import collections
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any
 
 import spotipy
@@ -48,10 +52,12 @@ from starlette_cms_gateways import BaseGateway, GatewayItem, SyncWindow
 _SCOPE = "user-library-read"
 
 # Only sync months from this point forward (inclusive, "YYYY-MM" lexical compare).
-# Older liked-song history is intentionally excluded — without this floor, an
-# all-time sync re-emits the full library back to 2017 and re-creates deleted
-# pre-floor months. A custom range ignores it on purpose.
-_MONTH_FLOOR = "2025-01"
+# The library goes back to 2017, and the site only wants 2025 on. Months before the
+# floor were synced once, before it existed: those 31 posts stay in the CMS until
+# the gateway migration (cms/migrate_gateway_docs.py) deletes them. Nothing but
+# that migration removes a document, so a *custom* range, which ignores the floor
+# on purpose, re-creates any pre-floor month it covers as a new published post.
+MONTH_FLOOR = "2025-01"
 _PAGE_SIZE = 50
 
 
@@ -65,8 +71,17 @@ def month_bounds(window: SyncWindow) -> tuple[str | None, str | None]:
         last = window.end.strftime("%Y-%m") if window.end else None
         return first, last
     if window.mode == "since_last_sync" and window.changed_since is not None:
-        return max(_MONTH_FLOOR, window.changed_since.strftime("%Y-%m")), None
-    return _MONTH_FLOOR, None
+        return max(MONTH_FLOOR, window.changed_since.strftime("%Y-%m")), None
+    return MONTH_FLOOR, None
+
+
+def ref_month(import_ref: str) -> str | None:
+    """The ``YYYY-MM`` a month post's ``import_ref`` is for, or ``None`` for any other ref."""
+    prefix = "spotify:dump:"
+    if not import_ref.startswith(prefix):
+        return None
+    month = import_ref.removeprefix(prefix)
+    return month if len(month) == 7 and month[4] == "-" and month[:4].isdigit() and month[5:].isdigit() else None
 
 
 def curate_track(item: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -129,7 +144,27 @@ class SpotifyLikedDumpGateway(BaseGateway):
         """Yield one GatewayItem per YYYY-MM bucket of liked tracks in range."""
         window = await self.resolve_window()
         first_month, last_month = month_bounds(window)
+        for item in self._month_items(await self._collect(first_month, last_month)):
+            yield item
 
+    async def refetch(self, import_refs: Sequence[str]) -> AsyncIterator[GatewayItem]:  # type: ignore[override]
+        """
+        Rebuild the months *import_refs* name (``spotify:dump:YYYY-MM``).
+
+        The floor does not apply: these were asked for by name. A month with no
+        liked tracks left yields nothing, and its ref is dropped.
+        """
+        wanted = {m for ref in import_refs if (m := ref_month(ref))}
+        if not wanted:
+            return
+        by_month = await self._collect(min(wanted), None)
+        for item in self._month_items({m: by_month[m] for m in sorted(wanted) if m in by_month}):
+            yield item
+
+    async def _collect(
+        self, first_month: str | None, last_month: str | None
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Liked songs by ``YYYY-MM`` from *first_month* to *last_month* (``None``: open)."""
         tracks_by_month: dict[str, list[dict]] = collections.defaultdict(list)
         offset = 0
         while True:
@@ -157,8 +192,11 @@ class SpotifyLikedDumpGateway(BaseGateway):
             if reached_before_range or result.get("next") is None:
                 break
             offset += _PAGE_SIZE
+        return tracks_by_month
 
-        # Yield one item per month, sorted oldest-first
+    @staticmethod
+    def _month_items(tracks_by_month: dict[str, list[dict[str, Any]]]) -> Iterator[GatewayItem]:
+        """One GatewayItem per month, oldest first."""
         for month_key in sorted(tracks_by_month):
             songs = tracks_by_month[month_key]
             year_str, month_str = month_key.split("-")

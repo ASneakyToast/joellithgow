@@ -10,7 +10,7 @@ Since 2026-10-01 prod (`cms.joellithgow.com`) runs in the k3s cluster, managed i
 
 - **Deploy CMS code:** merge to `main` (`build-cms.yml` pushes `ghcr.io/asneakytoast/joellithgow-cms:jl-<joellithgow sha>-astraeus-<astraeus sha>`), then bump the image pin in jlithgow-ops (`deployment.yaml`, `mcp.yaml`) to that tag and merge. Pin the `jl-…` tag, not `astraeus-<sha>`: that one only changes with astraeus, so a pin on it keeps the node's cached image. Argo syncs it. Never `make prod-deploy` for this — it targets EC2.
 - **Config / secrets:** `secrets.enc.yaml` (sops) in jlithgow-ops. Pods read it as plain env vars, so after a change run `kubectl -n astraeus rollout restart deploy/astraeus-cms`.
-- **Backups:** Litestream streams `content.db` to R2 (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restores it into an empty volume on pod start.
+- **Backups:** Litestream streams `content.db` to R2 (`jlithgow-ops-backups`, `astraeus-cms/prod/content.db`) and restores it into an empty volume on pod start. It replicates the whole file, so the gateway sync state (cursor, retry list, job history; see *Gateways*) is in the backup too.
 - **EC2-only `make` targets** (`db-sync`, `backup`, `prod-deploy`, `prod-restart`, `mcp-deploy`, `caddy-deploy`, `cron-install`, `staging-*`) act on the fallback box. `make db-sync` pulls EC2's *stale* backup, not live prod, until it is repointed at R2.
 
 ---
@@ -118,27 +118,47 @@ jlithgow-ops (see *Where prod runs*). The `mcp-deploy` / `caddy-deploy` targets 
 Both gateways are `starlette-cms-gateways` subclasses in `cms/gateways/`, run through the `sync_gateway` MCP tool
 (hermes, the Claude app), the admin page (`/gateways`) or `gateways sync`. They are configured per gateway, not hard-coded:
 
-- **One post per outing / month.** iNat: same observed date and observations within `cluster_radius_m` (1 km,
-  chained; override with `INATURALIST_OUTING_RADIUS_M`) is one outing, so two places in a day are two posts. The
-  first outing of a day keeps `inaturalist:outing:YYYY-MM-DD` / `nature-outing-YYYY-MM-DD`; later ones get `:2`,
-  `-2`, and an outing keeps its document when observations are added (matched by observation id, not by order).
-  Spotify: `spotify:dump:YYYY-MM`. `publish_date` is the observed date / the 1st of the month; the site sorts by it.
-- **Owned vs. seeded fields.** `owned_fields` (iNat: count, species, observations, photo URLs, bounding box;
-  Spotify: songs, song_count) are machine-sourced and refreshed. Title, place, tags, publish date are written once
-  at creation, then belong to the editor. Only owned fields are hashed and written on update, so a re-sync that
-  finds nothing new writes nothing, and a hand edit is never overwritten. Stored iNat observations are slim records
-  (`curate_observation`), not iNaturalist's raw payload.
-- **Auto-publish, including updates.** Both gateways publish what they write, in one run changeset. A document with a
-  pending human draft (or one you unpublished) is *deferred*: left alone, named in the sync reply, retried next run.
-- **Ranges.** `since_last_sync` (default), `all_time` (first run / repair), `custom` (`from_date`..`to_date`, the
-  observed date or liked month). The cursor is in `JobStore` (`GATEWAY_JOBS_DB`, default `gateway_jobs.db`), advances
-  only after a clean run, and is only a speed-up: with none, a run just covers everything.
+- **One post per outing / month.** iNat: same observed date and observations within **3 km** of each other
+  (chained, so a trail is one outing; `DEFAULT_RADIUS_M = 3000`, override with `INATURALIST_OUTING_RADIUS_M`) is one
+  outing, so two places in a day are two posts. On the real data only 2026-07-04 (Oakland, then Albany) splits; at
+  1 km the 05-25 and 09-05 hikes split wrongly too. Everything that clusters (gateway, migration, report) reads
+  `outing_radius_m()`. The first outing of a day keeps `inaturalist:outing:YYYY-MM-DD` / `nature-outing-YYYY-MM-DD`;
+  later ones get `:2`, `-2`, and an outing keeps its document when observations are added (matched by observation
+  id, not by order). Spotify: `spotify:dump:YYYY-MM`. `publish_date` is the observed date / the 1st of the month; the
+  site sorts by it.
+- **Owned vs. seeded fields.** `owned_fields` are machine-sourced and refreshed: iNat count, species, observations,
+  photo URLs, bounding box **and `tags`** (so adding a bird to an outing later adds `birds`; a hand edit to an
+  outing's tags is overwritten, an accepted trade-off); Spotify songs and song_count. Title, place and publish date
+  (and Spotify's `tags`) are written once at creation, then belong to the editor. Only owned fields are hashed and
+  written on update, so a re-sync that finds nothing new writes nothing and a hand edit to anything else is never
+  overwritten. Stored iNat observations are slim records (`curate_observation`), not iNaturalist's raw payload, and
+  carry no `quality_grade` (community IDs change it, which would republish a post for nothing the site shows).
+- **Each document is published as soon as it is written**, one at a time (no run changeset). A post a person has a
+  draft on, or one you unpublished, is *deferred*: left alone, named in the sync reply, put on a retry list and
+  retried next run (`refetch` re-reads that outing's day / that month). The gateway's own leftover draft (a publish
+  that failed) is finished, not deferred. See ADR 023 in astraeus.
+- **Ranges and the cursor.** `since_last_sync` (default), `all_time` (first run / repair), `custom`
+  (`from_date`..`to_date`, the observed date or liked month). The cursor, retry list and job history live **in the
+  CMS's own database** (`content.db`, so Litestream carries them to R2); the MCP sidecar and `gateways sync` read and
+  write them through the CMS gateway API (`/api/gateways/{name}/cursor|retry|runs`), so the admin page, the MCP tool
+  and the CLI share one cursor and it survives restarts. It moves to the run's start after any run that did not
+  raise (never after `custom`); deferred and failed items never hold it back. The sidecar needs no volume and no
+  `GATEWAY_JOBS_DB`.
+- **Spotify floor.** `MONTH_FLOOR = "2025-01"`: `all_time` and `since_last_sync` never touch an earlier month. The 31
+  pre-2025 monthly posts are deleted by the migration below. A `custom` range ignores the floor on purpose, so a
+  backfill of older months re-creates them as new *published* posts.
 - **Deletions.** An incremental run cannot see an unliked song or a deleted observation; only `all_time` can, and
   no sync ever deletes a document. A song you un-like drops out the next time its month is refreshed.
 - **Check the clustering radius on real data:** `uv run python -m cms.inat_outing_report --only-differing`.
-- **One-off migration of existing docs:** `uv run python -m cms.migrate_gateway_docs --cms-url http://localhost:8001`
-  (dry run; add `--apply`). It refuses to `--apply` to prod without `--allow-prod`. Develop against a local restore
-  (`litestream restore` from the R2 replica), never prod first.
+- **One-off migration of existing docs** (`cms/migrate_gateway_docs.py`; read its docstring): `report` (read-only:
+  pending drafts told apart as gateway-only vs a person's, the pre-floor Spotify months, what an `all_time` sync would
+  create and update, open changesets holding gateway docs) → `apply` (discards gateway-only drafts; with
+  `--delete-pre-floor --snapshot-confirmed` also deletes the pre-floor months; `--allow-prod` against prod) → one
+  `PYTHONPATH=. uv run gateways sync <name> --range all_time` per gateway (or the `sync_gateway` MCP tool) → `verify` (no drafts, no stray `draft` key or raw payload,
+  slugs and publish_dates unchanged except on 07-04, and a second `all_time` sync writes nothing). Develop against a
+  local `litestream restore` of prod (credentials in jlithgow-ops `litestream-secrets.enc.yaml`), never prod first,
+  and show Joel the report before anything is written. Titles are seeded, so check the 07-04 posts' titles by hand:
+  the document that kept the old ref keeps its old title even if its cluster is the Albany one. Then press Rebuild.
 
 ## Environment
 
@@ -199,6 +219,8 @@ src/content/config.ts           # collection definitions + Zod schemas
 
 ## Gotchas
 
+- The `gateways` console script cannot import `cms` on its own (the repo root is not on its path): run it as
+  `PYTHONPATH=. uv run gateways ...`, from the repo root. `python -m` entry points (`cms.mcp_server`, `cms.migrate_gateway_docs`) are fine.
 - The Docker **image** no longer needs a sibling astraeus checkout — the multi-stage Dockerfile clones astraeus (pinned by `ASTRAEUS_REF`) at build time. **Local dev** (`docker-compose.local.yml`) still bind-mounts `../astraeus/`, so the sibling checkout is still required for `make dev`.
 - `bun run dev` hangs if the CMS is unreachable — always run `make cms-up` or `make dev` instead of bare `bun run dev`.
 - The content loader returns `[]` silently if `ASTRAEUS_API_KEY` is unset — useful for skipping CMS during pure frontend work.
