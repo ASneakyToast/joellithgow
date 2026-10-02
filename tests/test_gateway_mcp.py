@@ -91,7 +91,8 @@ async def test_deferred_documents_are_named_in_the_reply(wired):
 
     out = await srv.sync_gateway("inaturalist-field-trips", range="all_time")
 
-    assert "Deferred: 1" in out and "inaturalist:outing:2026-05-03" in out
+    assert "Left alone: 1" in out and "inaturalist:outing:2026-05-03" in out
+    assert "all_time" in out, "it says how to catch them up"
     assert "Updated: 0" in out
 
 

@@ -16,15 +16,21 @@ outings, and publishes.
                   both gateways against iNaturalist and Spotify, with every write
                   recorded instead of made; it assumes the gateway-only drafts of
                   step 1 are gone, as they will be);
-               4. open changesets that hold gateway docs (for information).
+               4. the stale open changesets earlier gateway runs left behind, and what
+                  ``apply`` will do to each (see below).
              ``--snapshot-out FILE`` records each doc's slug and publish_date for verify.
     apply    Step 2 and 3 of the plan: discards the gateway-only drafts (a person's
              are listed and left alone). ``--delete-pre-floor`` also deletes the
              pre-floor Spotify docs, and then needs ``--snapshot-confirmed``: say, by
              passing it, that a fresh Litestream snapshot exists. Against prod it also
-             needs ``--allow-prod``.
+             needs ``--allow-prod``. It also cleans up the open changesets that old
+             gateway runs left: one that holds only gateway docs is deleted; one that
+             also holds other docs just loses the gateway docs; one that holds a doc a
+             person has a draft on is left alone. Only ``open`` changesets are touched
+             (``review`` and ``scheduled`` ones are deliberate), and no document changes.
     verify   Read-only. Checks the result of the sync that follows apply: no gateway
-             doc has a pending draft, none has a ``draft`` key or a raw iNaturalist
+             doc has a pending draft, no open changeset is left holding gateway docs
+             (the sync opens none), none has a ``draft`` key or a raw iNaturalist
              payload, slugs and publish_dates match the snapshot except on days that
              split, and (unless ``--skip-sync-check``) a second ``all_time`` sync
              would write nothing. Prints the titles of every split day to check by hand.
@@ -243,25 +249,74 @@ async def preview_sync(
 
 
 # ---------------------------------------------------------------------------
-# Changesets (information)
+# Stale changesets
 # ---------------------------------------------------------------------------
 
 
-async def open_changesets_with_gateway_docs(client: CMSClient) -> list[tuple[str, str, int]]:
-    """``(id, title, n_gateway_docs)`` for open changesets that hold gateway docs."""
-    http = client._get_http()
-    resp = await http.get(
+@dataclass
+class ChangesetPlan:
+    """What to do to one open changeset that earlier gateway runs left behind."""
+
+    id: str
+    title: str
+    action: str  # delete | unlink | keep
+    gateway_docs: list[str]  # ids of the gateway docs in it
+    others: int = 0  # documents in it that are not gateway docs
+    note: str = ""
+
+
+# The title a gateway run gave its own changeset (BaseGateway.sync): "<service> sync — <date>".
+RUN_TITLE_MARKERS = tuple(f"{t} sync" for t in (INaturalistFieldTripsGateway.service_name, SpotifyLikedDumpGateway.service_name))
+
+
+async def plan_changesets(client: CMSClient, loaded: Loaded) -> list[ChangesetPlan]:
+    """
+    The open changesets to clean up. Judged as if ``apply`` had already discarded the
+    gateway-only drafts, so a changeset is only kept for a doc a *person* has a draft on.
+    """
+    blocked = {f.doc_id for f in loaded.drafts if f.verdict == "human-edits"}
+    resp = await client._get_http().get(
         f"{client.base_url}/api/changesets",
         params={"status": "open", "include_documents": "true"},
         headers=client._auth_headers(),
     )
     resp.raise_for_status()
-    out = []
+    plans: list[ChangesetPlan] = []
     for cs in resp.json().get("changesets", []):
-        n = sum(1 for d in cs.get("documents", []) if d.get("doc_type") in GATEWAY_TYPES)
-        if n:
-            out.append((cs["id"], cs["title"], n))
-    return out
+        docs = cs.get("documents", [])
+        mine = [d["id"] for d in docs if d.get("doc_type") in GATEWAY_TYPES]
+        others = len(docs) - len(mine)
+        if not mine:
+            # Empty and named for a gateway run: debris. Anything else is not ours.
+            if not docs and cs["title"].startswith(RUN_TITLE_MARKERS):
+                plans.append(ChangesetPlan(cs["id"], cs["title"], "delete", [], 0, "empty"))
+            continue
+        if blocked & set(mine):
+            plans.append(
+                ChangesetPlan(cs["id"], cs["title"], "keep", mine, others,
+                              "holds a doc a person has a draft on")
+            )
+        elif others:
+            plans.append(ChangesetPlan(cs["id"], cs["title"], "unlink", mine, others))
+        else:
+            plans.append(ChangesetPlan(cs["id"], cs["title"], "delete", mine, 0))
+    return plans
+
+
+async def clean_changesets(client: CMSClient, plans: list[ChangesetPlan]) -> tuple[int, int]:
+    """Carry out *plans*. Returns ``(deleted, unlinked)``. No document is touched."""
+    http, deleted, unlinked = client._get_http(), 0, 0
+    for plan in plans:
+        base = f"{client.base_url}/api/changesets/{plan.id}"
+        if plan.action == "delete":
+            (await http.delete(base, headers=client._auth_headers())).raise_for_status()
+            deleted += 1
+        elif plan.action == "unlink":
+            for doc_id in plan.gateway_docs:
+                resp = await http.delete(f"{base}/documents/{doc_id}", headers=client._auth_headers())
+                resp.raise_for_status()
+            unlinked += 1
+    return deleted, unlinked
 
 
 # ---------------------------------------------------------------------------
@@ -288,7 +343,7 @@ def snapshot(loaded: Loaded) -> dict[str, dict[str, Any]]:
 def render_report(
     loaded: Loaded,
     previews: list[Preview] | None,
-    changesets: list[tuple[str, str, int]],
+    changesets: list[ChangesetPlan],
 ) -> str:
     L: list[str] = []
     n_docs = {t: len(d) for t, d in loaded.docs.items()}
@@ -332,10 +387,20 @@ def render_report(
         for ref, msg in p.errors:
             L.append(f"  ERROR   {ref}  {msg}")
 
-    L += ["", "== 4. open changesets holding gateway docs (information) =="]
-    L.append(f"{len(changesets)} changeset(s)")
-    for cs_id, title, n in changesets:
-        L.append(f"  {title!r} ({cs_id}): {n} gateway doc(s)")
+    L += ["", "== 4. stale open changesets from old gateway runs (apply cleans these up) =="]
+    L.append(
+        f"{sum(c.action == 'delete' for c in changesets)} to delete, "
+        f"{sum(c.action == 'unlink' for c in changesets)} to trim, "
+        f"{sum(c.action == 'keep' for c in changesets)} to leave alone. No document changes."
+    )
+    for c in changesets:
+        what = {
+            "delete": f"DELETE  holds only gateway docs ({len(c.gateway_docs)})" if c.gateway_docs
+            else "DELETE  empty, named for a gateway run",
+            "unlink": f"TRIM    remove its {len(c.gateway_docs)} gateway doc(s); keeps {c.others} other(s)",
+            "keep": f"KEEP    {c.note}",
+        }[c.action]
+        L.append(f"  {c.title!r} ({c.id}): {what}")
     return "\n".join(L)
 
 
@@ -353,8 +418,11 @@ async def delete_document(client: CMSClient, doc_id: str) -> None:
 
 async def apply(
     client: CMSClient, loaded: Loaded, *, delete_pre_floor: bool
-) -> tuple[list[str], list[str]]:
-    """Discard the gateway-only drafts, then (if asked) delete the pre-floor months."""
+) -> tuple[list[str], list[str], tuple[int, int]]:
+    """
+    Discard the gateway-only drafts, then (if asked) delete the pre-floor months, then
+    clean up the changesets that held them. Returns ``(discarded, deleted, (deleted, trimmed))``.
+    """
     discarded, deleted = [], []
     for f in loaded.drafts:
         if f.verdict == "gateway-only":
@@ -364,7 +432,9 @@ async def apply(
         for d in pre_floor(loaded.docs[DUMP]):
             await delete_document(client, d["id"])
             deleted.append(d["import_ref"])
-    return discarded, deleted
+    # After the deletes: a deleted month is no longer in any changeset.
+    cleaned = await clean_changesets(client, await plan_changesets(client, loaded))
+    return discarded, deleted, cleaned
 
 
 # ---------------------------------------------------------------------------
@@ -381,13 +451,21 @@ def split_days(outings: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]
 
 
 def verify_problems(
-    loaded: Loaded, before: dict[str, dict[str, Any]] | None, previews: list[Preview] | None
+    loaded: Loaded,
+    before: dict[str, dict[str, Any]] | None,
+    previews: list[Preview] | None,
+    changesets: list[ChangesetPlan] | None = None,
 ) -> tuple[list[str], list[str]]:
     """``(problems, notes)``. Problems fail the verify; notes are for a person to read."""
     problems: list[str] = []
     notes: list[str] = []
     for f in loaded.drafts:
         problems.append(f"{f.doc_type} {f.import_ref}: pending draft ({f.verdict})")
+    for c in changesets or []:
+        if c.action == "keep":
+            notes.append(f"changeset {c.title!r} still holds a doc a person has a draft on")
+        else:
+            problems.append(f"open changeset {c.title!r} ({c.id}) is left over: {c.action}")
     for doc_type, docs in loaded.docs.items():
         for d in docs:
             body = d.get("body") or {}
@@ -477,7 +555,7 @@ async def run(args: argparse.Namespace, *, client: CMSClient | None = None, gate
             discarded = {f.doc_id for f in loaded.drafts if f.verdict == "gateway-only"}
             previews = await maybe_preview(discarded)
             print(f"REPORT against {args.cms_url} (nothing is written)\n")
-            print(render_report(loaded, previews, await open_changesets_with_gateway_docs(client)))
+            print(render_report(loaded, previews, await plan_changesets(client, loaded)))
             if args.snapshot_out:
                 with open(args.snapshot_out, "w") as f:
                     json.dump(snapshot(loaded), f, indent=1, sort_keys=True)
@@ -486,8 +564,11 @@ async def run(args: argparse.Namespace, *, client: CMSClient | None = None, gate
 
         if args.command == "apply":
             print(f"APPLY against {args.cms_url}")
-            discarded, deleted = await apply(client, loaded, delete_pre_floor=args.delete_pre_floor)
+            discarded, deleted, (cs_deleted, cs_trimmed) = await apply(
+                client, loaded, delete_pre_floor=args.delete_pre_floor
+            )
             print(f"discarded {len(discarded)} gateway draft(s)")
+            print(f"changesets: deleted {cs_deleted}, trimmed {cs_trimmed}")
             human = [f for f in loaded.drafts if f.verdict == "human-edits"]
             for f in human:
                 print(f"  left alone (a person's draft): {f.import_ref} differs in {f.differing}")
@@ -503,7 +584,9 @@ async def run(args: argparse.Namespace, *, client: CMSClient | None = None, gate
             if args.snapshot:
                 with open(args.snapshot) as f:
                     before = json.load(f)
-            problems, notes = verify_problems(loaded, before, await maybe_preview(set()))
+            problems, notes = verify_problems(
+                loaded, before, await maybe_preview(set()), await plan_changesets(client, loaded)
+            )
             for n in notes:
                 print(n)
             for p in problems:

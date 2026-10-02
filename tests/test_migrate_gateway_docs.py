@@ -229,11 +229,17 @@ async def test_the_whole_migration_ends_clean_and_a_second_all_time_sync_writes_
     assert code == 1 and "pending draft" in out and "2026-05-17" in out
     assert "2026-05-03 split into 2 outings" in out and "Greenwood Cemetery" in out
 
-    # The person publishes their draft; the next all_time sync catches the doc up.
+    # The person publishes their draft; the next all_time sync catches the doc up. Their
+    # draft's changeset was kept (a person's work was in it); publishing the doc does not
+    # close it, so verify flags it and a second apply cleans it up.
     c = outings["inaturalist:outing:2026-05-17"]
     await client.publish_document(c["id"])
     again = await all_time(client, store)
     assert again["inaturalist-field-trips"].updated == 1
+    capsys.readouterr()
+    assert await mig.run(ns("verify", snapshot=str(snap), skip_sync_check=True), client=client) == 1
+    assert "is left over" in capsys.readouterr().out
+    assert await mig.run(ns("apply"), client=client) == 0, "nothing of a person's is waiting now"
 
     # Step 5: verify is clean, slugs and publish_dates are unchanged, and a re-run writes nothing.
     capsys.readouterr()
@@ -317,3 +323,68 @@ async def test_a_gateway_without_credentials_does_not_stop_the_other_being_previ
     assert [p.gateway for p in previews] == ["inaturalist-field-trips", "spotify-liked-dump"]
     assert len(previews[0].created) == 2 and not previews[0].errors
     assert "SPOTIPY_CLIENT_ID" in previews[1].errors[0][1]
+
+
+async def make_changeset(client, title: str, doc_ids: list[str], status: str | None = None) -> str:
+    http = client._get_http()
+    cs = (await http.post(f"{URL}/api/changesets", json={"title": title})).json()["id"]
+    for doc_id in doc_ids:
+        assert (await http.post(f"{URL}/api/changesets/{cs}/documents/{doc_id}")).status_code in (200, 201)
+    if status:
+        assert (await http.patch(f"{URL}/api/changesets/{cs}", json={"status": status})).status_code == 200
+    return cs
+
+
+async def changesets(client) -> dict[str, list[str]]:
+    http = client._get_http()
+    out = {}
+    for status in ("open", "review"):
+        resp = await http.get(f"{URL}/api/changesets", params={"status": status, "include_documents": "true"})
+        for cs in resp.json()["changesets"]:
+            out[cs["title"]] = [d["id"] for d in cs["documents"]]
+    return out
+
+
+@pytest.mark.asyncio
+async def test_apply_cleans_the_stale_changesets_and_never_touches_a_document(env, legacy, capsys):
+    client, _, _ = env
+    blog = await client.create_document(
+        doc_type="blog_post", slug="hello",
+        body={"title": "Hello", "description": "d", "publish_date": "2026-09-01", "post_type": "article"},
+    )
+    await client.publish_document(blog["id"])
+    # Clear what the fixture's own edits opened, so each case below is exactly one changeset.
+    for cs in (await client._get_http().get(f"{URL}/api/changesets")).json()["changesets"]:
+        await client._get_http().delete(f"{URL}/api/changesets/{cs['id']}")
+
+    await make_changeset(client, "inaturalist_field_trips sync — Sep 6", [legacy["a"], legacy["b"]])
+    await make_changeset(client, "Sep 7", [legacy["sp"], blog["id"]])
+    await make_changeset(client, "Sep 8", [legacy["c"]])  # C holds a person's draft
+    await make_changeset(client, "spotify_liked_dump sync — Sep 9", [])
+    await make_changeset(client, "My own plan", [])
+    await make_changeset(client, "Ready for review", [legacy["a"]], status="review")
+    docs_before = {r: (d["body"], d["published"]) for r, d in {**await docs(client, "inaturalist_outing"), **await docs(client, "spotify_liked_dump")}.items()}
+
+    # The report says what apply will do.
+    await mig.run(ns("report", skip_sync_preview=True), client=client)
+    out = capsys.readouterr().out
+    assert "2 to delete, 1 to trim, 1 to leave alone" in out
+    assert "'Sep 8'" in out and "KEEP" in out
+
+    await mig.run(ns("apply"), client=client)
+
+    left = await changesets(client)
+    assert "inaturalist_field_trips sync — Sep 6" not in left, "held only gateway docs: deleted"
+    assert "spotify_liked_dump sync — Sep 9" not in left, "empty and named for a gateway run: deleted"
+    assert left["Sep 7"] == [blog["id"]], "mixed: only the gateway doc was removed from it"
+    assert left["Sep 8"] == [legacy["c"]], "a person's draft is in it: left exactly as it was"
+    assert left["My own plan"] == [], "an empty changeset that is not a gateway's is not touched"
+    assert left["Ready for review"] == [legacy["a"]], "review changesets are deliberate: untouched"
+    after = {r: (d["body"], d["published"]) for r, d in {**await docs(client, "inaturalist_outing"), **await docs(client, "spotify_liked_dump")}.items()}
+    # No document was edited, published, unpublished or deleted: the live bodies are as they were.
+    assert after == docs_before
+
+    # Applying again is a no-op.
+    capsys.readouterr()
+    await mig.run(ns("apply"), client=client)
+    assert "changesets: deleted 0, trimmed 0" in capsys.readouterr().out

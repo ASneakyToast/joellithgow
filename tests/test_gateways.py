@@ -636,12 +636,12 @@ async def test_a_community_id_change_is_not_an_update(env, api):
 
 
 # ---------------------------------------------------------------------------
-# Retry: a deferred outing or month is re-fetched next run
+# A post left alone is caught up by an all_time run
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_inat_deferred_outing_is_refetched_after_the_person_publishes(env, api):
+async def test_inat_outing_a_person_has_a_draft_on_is_left_alone_then_caught_up_by_all_time(env, api):
     client, store, _ = env
     api.db = [raw_obs(1, "2026-05-03", *PARK, time="09:00")]
     gw = inat_gateway(client, store)
@@ -650,52 +650,25 @@ async def test_inat_deferred_outing_is_refetched_after_the_person_publishes(env,
     await client.update_document(doc["id"], body={"title": "Half-written"})  # a person's draft
 
     api.db.append(raw_obs(2, "2026-05-03", *PARK_NEAR, time="09:40", updated="2099-01-01T00:00:00+00:00"))
-    deferred = await gw.sync()
-    assert deferred.deferred == ["inaturalist:outing:2026-05-03"]
-    assert await store.get_cursor(KEY) == deferred.started_at, "the deferral does not hold the cursor"
-    assert [e.import_ref for e in await store.get_retry(KEY)] == ["inaturalist:outing:2026-05-03"]
+    left = await gw.sync()
+    assert left.deferred == ["inaturalist:outing:2026-05-03"]
+    assert await store.get_cursor(KEY) == left.started_at, "being left alone does not hold the cursor"
 
-    # The observation is now old news upstream: updated_since no longer returns it, so
-    # only the retry list can bring the outing back.
+    # They publish; iNaturalist has nothing newer, so an incremental run does not meet the outing.
     api.db[1]["updated_at"] = "2000-01-01T00:00:00+00:00"
     await client.publish_document(doc["id"])
-    api.requests.clear()
-    result = await gw.sync()
+    quiet = await gw.sync()
+    assert (quiet.updated, quiet.deferred) == (0, [])
 
-    assert result.recovered == ["inaturalist:outing:2026-05-03"] and result.updated == 1
-    assert any(r.get("observed_on") == "2026-05-03" for r in api.requests), "it re-read that day"
+    caught_up = await gw.sync(SyncRange("all_time"))
+    assert caught_up.updated == 1
     edited = (await outing_docs(client))["inaturalist:outing:2026-05-03"]
     assert edited["body"]["observation_count"] == 2 and edited["body"]["title"] == "Half-written"
-    assert await store.get_retry(KEY) == []
 
 
 @pytest.mark.asyncio
-async def test_inat_refetch_names_days_not_other_refs(env, api):
+async def test_spotify_month_a_person_has_a_draft_on_is_left_alone_then_caught_up_by_all_time(env):
     client, store, _ = env
-    api.db = [raw_obs(1, "2026-05-03", *PARK), raw_obs(2, "2026-05-10", *PARK)]
-    gw = inat_gateway(client, store)
-
-    items = [i async for i in gw.refetch(["inaturalist:outing:2026-05-03", "spotify:dump:2026-09"])]
-
-    assert [i.import_ref for i in items] == ["inaturalist:outing:2026-05-03"]
-    assert [r.get("observed_on") for r in api.requests] == ["2026-05-03"]
-    assert [i async for i in gw.refetch(["spotify:dump:2026-09"])] == []
-
-
-def test_ref_day_and_ref_month_parse_only_their_own_refs():
-    assert inat.ref_day("inaturalist:outing:2026-07-04") == "2026-07-04"
-    assert inat.ref_day("inaturalist:outing:2026-07-04:2") == "2026-07-04"
-    assert inat.ref_day("inaturalist:outing:nonsense") is None
-    assert inat.ref_day("spotify:dump:2026-09") is None
-    from cms.gateways.spotify_liked_dump import ref_month
-
-    assert ref_month("spotify:dump:2026-09") == "2026-09"
-    assert ref_month("spotify:dump:2026-9") is None and ref_month("inaturalist:outing:2026-09-01") is None
-
-
-@pytest.mark.asyncio
-async def test_spotify_deferred_month_is_refetched_without_the_run_covering_it(env):
-    client, store, transport = env
     sp = FakeSpotify([liked("a", "2026-08-01T10:00:00Z")])
     gw = SpotifyLikedDumpGateway(cms_client=client, job_store=store, spotify_client=sp)
     await gw.sync()
@@ -703,24 +676,12 @@ async def test_spotify_deferred_month_is_refetched_without_the_run_covering_it(e
     await client.update_document(aug["id"], body={"title": "Half-written"})  # a person's draft
 
     sp.items = [liked("b", "2026-08-09T10:00:00Z"), liked("a", "2026-08-01T10:00:00Z")]
-    r = await gw.sync(SyncRange("all_time"))
-    assert r.deferred == ["spotify:dump:2026-08"]
+    left = await gw.sync(SyncRange("all_time"))
+    assert left.deferred == ["spotify:dump:2026-08"]
 
     await client.publish_document(aug["id"])
-    # since_last_sync covers only the current month, not August. Only the retry reaches it.
-    result = await gw.sync()
+    caught_up = await gw.sync(SyncRange("all_time"))
 
-    assert result.recovered == ["spotify:dump:2026-08"] and result.updated == 1
+    assert caught_up.updated == 1
     aug = await client.find_by_import_ref("spotify_liked_dump", "spotify:dump:2026-08")
     assert aug["body"]["song_count"] == 2 and aug["body"]["title"] == "Half-written"
-
-
-@pytest.mark.asyncio
-async def test_spotify_refetch_ignores_the_floor_because_the_month_was_asked_for_by_name(env):
-    client, store, _ = env
-    sp = FakeSpotify([liked("a", "2026-08-01T10:00:00Z"), liked("old", "2024-12-31T23:00:00Z")])
-    gw = SpotifyLikedDumpGateway(cms_client=client, job_store=store, spotify_client=sp)
-
-    got = [i.import_ref async for i in gw.refetch(["spotify:dump:2024-12", "spotify:dump:2026-08"])]
-
-    assert got == ["spotify:dump:2024-12", "spotify:dump:2026-08"]

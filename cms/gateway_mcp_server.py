@@ -23,7 +23,7 @@ from starlette_cms_gateways.state import RemoteSyncState
 
 CMS_URL = os.environ.get("CMS_URL", "http://cms-prod:8000")
 CMS_API_KEY = os.environ.get("CMS_API_KEY", "")
-# This sidecar keeps no state of its own. The sync cursor, the retry list and the
+# This sidecar keeps no state of its own. The sync cursor and the
 # job history live in the CMS's database and are read and written through the CMS
 # gateway API (RemoteSyncState), so a run from here, from the admin page or from
 # the `gateways` CLI all share one cursor, and it survives a restart of this pod.
@@ -58,9 +58,6 @@ async def _sync_gateway_inner(
             "updated": result.updated,
             "skipped": result.skipped,
             "deferred": result.deferred,
-            "recovered": result.recovered,
-            "dropped": result.dropped,
-            "retry": [e.to_dict() for e in result.retry],
             "errors": len(result.errors),
             "error_details": [
                 {"import_ref": ref, "message": msg} for ref, msg in (result.errors or [])
@@ -107,7 +104,8 @@ async def sync_gateway(
     written. A re-sync that finds nothing new changes nothing, and fields you
     edited in the editor are never overwritten (an iNaturalist outing's tags are
     the exception: they follow the observations). A post someone has an unpublished
-    draft on is left alone and retried next run. Call ``list_gateways`` first to
+    draft on is left alone and named in the reply; run ``all_time`` once they publish
+    or discard it to catch it up. Call ``list_gateways`` first to
     see available gateway names.
 
     Args:
@@ -148,23 +146,12 @@ async def sync_gateway(
     ]
     if result["deferred"]:
         parts.append(
-            f"  • Deferred: {len(result['deferred'])} — someone has an unpublished draft "
-            "on these, so they were left alone. They are on the retry list and are "
-            "tried again on the next run (publish or discard the draft first):"
+            f"  • Left alone: {len(result['deferred'])} — someone has an unpublished draft on "
+            "these. Publish or discard the draft, then run `all_time` to catch them up:"
         )
         parts += [f"    - `{ref}`" for ref in result["deferred"]]
-    if result["recovered"]:
-        parts.append(f"  • Retried and finished: {len(result['recovered'])}")
-    if result["dropped"]:
-        parts.append(
-            f"  • Dropped from the retry list (no longer at the source): {len(result['dropped'])}"
-        )
-    errored = {e["import_ref"] for e in result.get("error_details", [])}
-    waiting = [e for e in result["retry"] if e["reason"] == "error" and e["import_ref"] not in errored]
-    if waiting:
-        parts.append(f"  • Still on the retry list from earlier failures: {len(waiting)}")
     if result.get("error_details"):
-        parts.append("    (these are on the retry list and are tried again on the next run)")
+        parts.append("    (an `all_time` run tries these again)")
         for err in result["error_details"]:
             parts.append(f"    - `{err['import_ref']}`: {err['message']}")
 

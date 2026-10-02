@@ -23,7 +23,7 @@ from gateway_fakes import INAT_URL, FakeINat, RecordingTransport
 async def env(tmp_path, monkeypatch):
     """``(client, job_store, transport)`` over a fresh CMS with the site's schema.
 
-    ``job_store`` is the CMS's own gateway state (cursor, retry list, job history), the
+    ``job_store`` is the CMS's own gateway state (cursor and job history), the
     same store the gateway API serves, so a run through the MCP tool or the CLI and a run
     handed ``job_store`` directly see one cursor.
     """
