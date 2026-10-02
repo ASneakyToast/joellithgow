@@ -2,12 +2,13 @@
 Read-only: how would your real iNaturalist observations split into outings?
 
 Fetches the public observations for a user, groups them by day and prints, per
-day, how many outings each candidate radius gives. Days where the answer depends
-on the radius are the ones to eyeball. Writes nothing and needs no CMS.
+day, how many outings each candidate radius gives, and the outings at the radius
+the gateway uses (3 km, or INATURALIST_OUTING_RADIUS_M). Days where the answer
+depends on the radius are the ones to eyeball. Writes nothing and needs no CMS.
 
 Usage:
     uv run python -m cms.inat_outing_report                       # INATURALIST_USERNAME
-    uv run python -m cms.inat_outing_report --user joel583 --radii 250 500 1000 2000
+    uv run python -m cms.inat_outing_report --user joel583 --radii 500 1000 3000 5000
     uv run python -m cms.inat_outing_report --only-differing
 """
 
@@ -21,11 +22,11 @@ import os
 import httpx
 
 from cms.gateways.inaturalist_field_trips import (
-    DEFAULT_RADIUS_M,
     INaturalistFieldTripsGateway,
     cluster_observations,
     dominant_place,
     observation_coords,
+    outing_radius_m,
 )
 
 
@@ -58,7 +59,7 @@ def report(observations: list[dict], radii: list[float], only_differing: bool = 
             f"{day}  {len(obs):>4}  {located:>7}  " + "  ".join(f"{c:>6}" for c in counts) + flag
         )
         if varies or len(set(counts)) == 1 and counts[0] > 1:
-            for i, cluster in enumerate(cluster_observations(obs, DEFAULT_RADIUS_M), 1):
+            for i, cluster in enumerate(cluster_observations(obs, outing_radius_m()), 1):
                 lines.append(f"              outing {i}: {len(cluster):>3} obs  {dominant_place(cluster) or '(no place)'}")
     lines.append("")
     lines.append(
@@ -71,7 +72,7 @@ def report(observations: list[dict], radii: list[float], only_differing: bool = 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--user", default=os.environ.get("INATURALIST_USERNAME", "joel583"))
-    ap.add_argument("--radii", type=float, nargs="+", default=[250, 500, DEFAULT_RADIUS_M, 2000, 5000])
+    ap.add_argument("--radii", type=float, nargs="+", default=[500, 1000, outing_radius_m(), 5000])
     ap.add_argument("--only-differing", action="store_true")
     args = ap.parse_args()
     print(report(asyncio.run(fetch_all(args.user)), args.radii, args.only_differing))

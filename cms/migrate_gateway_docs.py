@@ -1,44 +1,54 @@
 """
-One-off migration of gateway-synced documents to the curated, one-outing-per-place shape.
+One-off migration of gateway-synced documents. Three read/write steps around one sync.
 
-What it does, per document:
+The gateways used to park a draft revision on every published doc they touched, and
+Spotify months before ``MONTH_FLOOR`` exist that the site no longer wants. This
+cleans that up, then lets an ordinary ``all_time`` sync do the rest: it rewrites the
+owned fields, stamps the new content hashes, drops the stray ``draft`` key (the CMS
+drops keys its models do not know on every write), splits 2026-07-04 into its two
+outings, and publishes.
 
-  inaturalist_outing
-    * discards the stray draft revision a gateway sync left on the published doc
-    * replaces the raw ~35 KB-per-observation payload with the curated fields the
-      gateway now stores, and drops the stray ``draft`` key
-    * re-keys a day that holds several places into one document per outing; the
-      document that holds most of an outing's observations keeps its ref, slug and
-      URL, and a new document gets ``nature-outing-YYYY-MM-DD-2`` and so on
-    * stores the content hash the gateway will compute, so the next sync is a no-op
-  spotify_liked_dump
-    * discards stray gateway drafts and stores the new content hash. Payloads are
-      already curated, so the body is not rewritten.
+    report   Read-only. Prints, and writes nothing:
+               1. every gateway doc with a pending draft: the gateway's own, or a
+                  person's (with the fields that differ);
+               2. the pre-floor Spotify months that would be deleted;
+               3. what an ``all_time`` sync would create and update (a real run of
+                  both gateways against iNaturalist and Spotify, with every write
+                  recorded instead of made; it assumes the gateway-only drafts of
+                  step 1 are gone, as they will be);
+               4. open changesets that hold gateway docs (for information).
+             ``--snapshot-out FILE`` records each doc's slug and publish_date for verify.
+    apply    Step 2 and 3 of the plan: discards the gateway-only drafts (a person's
+             are listed and left alone). ``--delete-pre-floor`` also deletes the
+             pre-floor Spotify docs, and then needs ``--snapshot-confirmed``: say, by
+             passing it, that a fresh Litestream snapshot exists. Against prod it also
+             needs ``--allow-prod``.
+    verify   Read-only. Checks the result of the sync that follows apply: no gateway
+             doc has a pending draft, none has a ``draft`` key or a raw iNaturalist
+             payload, slugs and publish_dates match the snapshot except on days that
+             split, and (unless ``--skip-sync-check``) a second ``all_time`` sync
+             would write nothing. Prints the titles of every split day to check by hand.
 
-It works offline from what is already stored: no iNaturalist or Spotify call. Run an
-``all_time`` gateway sync afterwards to pick up anything the stored data lacks.
+The sync itself is not run here. After ``apply``:
 
-Safety:
-  * Dry run unless ``--apply`` is given. The dry run writes nothing and prints, per
-    document, what would change, including what each pending draft differs by.
-  * A draft is discarded only when everything it changes is a gateway-owned field. A
-    draft that touches a human field (title, tags, notes, ...) is reported and the
-    document is left entirely alone.
-  * ``--apply`` against cms.joellithgow.com also needs ``--allow-prod``. Develop and
-    check against a local restore of the Litestream replica first, and confirm a
-    fresh snapshot exists before the prod run.
-  * All writes go in one changeset, published at the end, so the history shows them
-    as a single "gateway migration".
+    PYTHONPATH=. uv run gateways sync inaturalist-field-trips --cms-url URL --api-key KEY --range all_time
+    PYTHONPATH=. uv run gateways sync spotify-liked-dump      --cms-url URL --api-key KEY --range all_time
 
-Usage:
-    uv run python -m cms.migrate_gateway_docs --cms-url http://localhost:8001
-    uv run python -m cms.migrate_gateway_docs --cms-url http://localhost:8001 --apply
+(``PYTHONPATH=.`` because the ``gateways`` script does not have the repo root on its path,
+and so cannot import ``cms``. The MCP ``sync_gateway`` tool does the same run.)
+
+Develop against a local ``litestream restore`` of prod (credentials in jlithgow-ops
+``litestream-secrets.enc.yaml``) served by a local CMS. Never against prod first.
+
+    uv run python -m cms.migrate_gateway_docs report --cms-url http://localhost:8001 \
+        --snapshot-out before.json
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import collections
 import json
 import os
 import sys
@@ -46,384 +56,483 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
 
-from starlette_cms_gateways.base import GatewayItem
+from starlette_cms_gateways.base import BaseGateway, SyncRange
 from starlette_cms_gateways.client import CMSClient
+from starlette_cms_gateways.drafts import draft_verdict, norm
 
 from cms.gateways.inaturalist_field_trips import (
     INaturalistFieldTripsGateway,
-    assign_outing_keys,
-    build_outing_item,
-    cluster_observations,
     dominant_place,
-    existing_outing,
     is_curated,
 )
-from cms.gateways.spotify_liked_dump import SpotifyLikedDumpGateway
+from cms.gateways.spotify_liked_dump import MONTH_FLOOR, SpotifyLikedDumpGateway
 
 OUTING = INaturalistFieldTripsGateway.block_type
 DUMP = SpotifyLikedDumpGateway.block_type
-OUTING_OWNED = set(INaturalistFieldTripsGateway.owned_fields)
-DUMP_OWNED = set(SpotifyLikedDumpGateway.owned_fields)
+GATEWAY_TYPES = (OUTING, DUMP)
+OWNED = {
+    OUTING: INaturalistFieldTripsGateway.owned_fields,
+    DUMP: SpotifyLikedDumpGateway.owned_fields,
+}
 PROD_HOST = "cms.joellithgow.com"
 STRAY_KEY = "draft"
 
 
 # ---------------------------------------------------------------------------
-# Plan
+# Loading
 # ---------------------------------------------------------------------------
 
 
 @dataclass
-class Action:
-    """What to do to one document (or, for ``create``, one new document)."""
-
-    kind: str  # update | create | clean | blocked | noop
+class DraftFinding:
     doc_type: str
     import_ref: str
-    doc_id: str | None = None
-    slug: str = ""
-    discard_draft: bool = False
-    body_patch: dict[str, Any] = field(default_factory=dict)
-    meta_hash: str | None = None
-    new_item: GatewayItem | None = None
-    notes: list[str] = field(default_factory=list)
+    doc_id: str
+    slug: str
+    verdict: str  # gateway-only | human-edits
+    differing: list[str]
+    note: str = ""
 
 
-def _norm(value: Any) -> Any:
-    """Round-trip through JSON so 2 and 2.0, tuples and lists compare as stored."""
-    return json.loads(json.dumps(value, sort_keys=True))
+@dataclass
+class Loaded:
+    docs: dict[str, list[dict[str, Any]]]
+    drafts: list[DraftFinding]
 
 
-def draft_verdict(
-    published: dict[str, Any], draft: dict[str, Any] | None, owned: set[str]
-) -> tuple[str, list[str]]:
-    """
-    ``("none"|"gateway-only"|"human-edits", fields_that_differ)``.
-
-    A draft is the gateway's when every field it changes is one the gateway owns
-    (or the stray ``draft`` key). Anything else might be a person's unpublished work.
-    """
-    if not draft:
-        return "none", []
-    keys = set(published) | set(draft)
-    differing = sorted(
-        k for k in keys if _norm(published.get(k)) != _norm(draft.get(k)) and k != STRAY_KEY
-    )
-    human = [k for k in differing if k not in owned]
-    return ("human-edits" if human else "gateway-only"), differing
-
-
-def _meta(doc: dict[str, Any]) -> dict[str, Any]:
-    meta = doc.get("meta") or {}
-    return json.loads(meta) if isinstance(meta, str) else meta
-
-
-def _holds_raw(doc: dict[str, Any]) -> bool:
-    obs = [o for o in (doc.get("body") or {}).get("observations") or [] if isinstance(o, dict)]
-    return any(not is_curated(o) for o in obs)
-
-
-def _auto_title(obs_group: list[dict[str, Any]], day: str) -> str:
-    return dominant_place(obs_group) or day
-
-
-def plan_outings(
-    docs: list[dict[str, Any]], drafts: dict[str, dict[str, Any] | None]
-) -> list[Action]:
-    """Plan the outing migration from the stored documents and their draft bodies."""
-    by_day: dict[str, list[dict[str, Any]]] = {}
-    for doc in docs:
-        parsed = existing_outing(doc)
-        day = parsed[0] if parsed else (doc.get("body") or {}).get("outing_date") or "?"
-        by_day.setdefault(day, []).append(doc)
-
-    actions: list[Action] = []
-    for day in sorted(by_day):
-        day_docs = by_day[day]
-        existing = [e[1] for d in day_docs if (e := existing_outing(d)) is not None]
-        # Only documents still holding iNaturalist's raw payload are rebuilt. A curated
-        # record no longer carries the taxon, photos and position the rebuild reads, so
-        # rebuilding from it would wipe species_list, photo_urls and bounding_box.
-        # Already-migrated documents are only cleaned (draft, stray key).
-        raw_docs = [d for d in day_docs if _holds_raw(d)]
-        all_obs = [
-            o
-            for d in raw_docs
-            for o in (d.get("body") or {}).get("observations") or []
-            if isinstance(o, dict)
-        ]
-        clusters = cluster_observations(all_obs) if all_obs else []
-        keys = assign_outing_keys(day, clusters, existing) if clusters else []
-        by_ref = {ref: (cluster, slug) for cluster, (ref, slug) in zip(clusters, keys, strict=True)}
-        doc_refs = {d["import_ref"] for d in day_docs}
-
-        for doc in day_docs:
-            ref = doc["import_ref"]
-            body = doc.get("body") or {}
-            action = Action("noop", OUTING, ref, doc["id"], doc.get("slug", ""))
-            verdict, differing = draft_verdict(body, drafts.get(doc["id"]), OUTING_OWNED)
-            if verdict == "human-edits":
-                action.kind = "blocked"
-                action.notes.append(
-                    f"pending draft changes human fields {differing}: left alone, decide by hand"
-                )
-                actions.append(action)
+async def load(client: CMSClient) -> Loaded:
+    """Every gateway doc, and a verdict on each pending draft."""
+    docs: dict[str, list[dict[str, Any]]] = {}
+    findings: list[DraftFinding] = []
+    for doc_type in GATEWAY_TYPES:
+        rows: list[dict[str, Any]] = []
+        offset = 0
+        while True:
+            page = await client.list_documents(doc_type=doc_type, limit=100, offset=offset)
+            batch = page.get("documents", [])
+            rows += batch
+            offset += len(batch)
+            if not batch or offset >= page.get("total", 0):
+                break
+        docs[doc_type] = rows
+        for doc in rows:
+            if not doc.get("has_draft"):
                 continue
-            if verdict == "gateway-only":
-                action.discard_draft = True
-                action.notes.append(f"discard gateway draft (differs in {differing})")
-            if STRAY_KEY in body:
-                action.notes.append(f"drop stray {STRAY_KEY!r} key")
-
-            if ref in by_ref and doc in raw_docs:
-                cluster, _ = by_ref[ref]
-                item = build_outing_item(day, ref, doc.get("slug", ""), cluster)
-                target = item.owned_body(INaturalistFieldTripsGateway.owned_fields)
-                stale = {
-                    k: v for k, v in target.items() if _norm(body.get(k)) != _norm(v)
-                }
-                if stale:
-                    action.body_patch.update(target)
-                    action.notes.append(
-                        f"curate payload ({len(body.get('observations') or [])} raw → "
-                        f"{len(cluster)} slim observations; changes {sorted(stale)})"
+            ref, slug = doc.get("import_ref") or "?", doc.get("slug", "")
+            if doc.get("draft_deleted") or doc.get("draft_published") is not None:
+                findings.append(
+                    DraftFinding(
+                        doc_type, ref, doc["id"], slug, "human-edits", [],
+                        "staged deletion or publish-state change",
                     )
-                if len(clusters) > 1:
-                    if body.get("title") != _auto_title(all_obs, day):
-                        action.notes.append(
-                            f"day splits into {len(clusters)} outings; title was hand-edited, kept"
-                        )
-                    elif body.get("title") != item.body["title"]:
-                        action.body_patch.update(
-                            title=item.body["title"], place_guess=item.body["place_guess"]
-                        )
-                        action.notes.append(
-                            f"day splits into {len(clusters)} outings; "
-                            f"retitle to {item.body['title']!r}"
-                        )
-                    else:
-                        action.notes.append(f"day splits into {len(clusters)} outings")
-                new_hash = item.content_hash(INaturalistFieldTripsGateway.owned_fields)
-                if _meta(doc).get("content_hash") != new_hash:
-                    action.meta_hash = new_hash
-            elif doc in raw_docs:
-                action.notes.append("no cluster maps to this document; owned fields left as they are")
-
-            if action.discard_draft or action.body_patch or action.meta_hash or STRAY_KEY in body:
-                action.kind = "update" if (action.body_patch or action.meta_hash) else "clean"
-            actions.append(action)
-
-        for cluster, (ref, slug) in zip(clusters, keys, strict=True):
-            if ref in doc_refs:
-                continue
-            item = build_outing_item(day, ref, slug, cluster)
-            actions.append(
-                Action(
-                    "create", OUTING, ref, slug=slug, new_item=item,
-                    notes=[f"new outing split from {day}: {len(cluster)} observations at {item.body['title']!r}"],
                 )
+                continue
+            draft = await client.get_draft_body(doc["id"])
+            verdict, differing = draft_verdict(
+                doc.get("body") or {}, draft, OWNED[doc_type], ignore=(STRAY_KEY,)
             )
-    return actions
+            if verdict == "none":  # a draft equal to live, or the flags above: nothing of a person's
+                verdict = "gateway-only"
+            findings.append(DraftFinding(doc_type, ref, doc["id"], slug, verdict, differing))
+    return Loaded(docs, findings)
 
 
-def plan_dumps(
-    docs: list[dict[str, Any]], drafts: dict[str, dict[str, Any] | None]
-) -> list[Action]:
-    """Plan the Spotify check: drafts, stored hash, and slug/publish_date stability."""
-    actions: list[Action] = []
-    for doc in sorted(docs, key=lambda d: d.get("import_ref", "")):
-        ref = doc.get("import_ref") or ""
-        body = doc.get("body") or {}
-        month = ref.removeprefix("spotify:dump:")
-        action = Action("noop", DUMP, ref, doc["id"], doc.get("slug", ""))
+def pre_floor(docs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Spotify docs for months before the floor."""
+    return sorted(
+        (d for d in docs if (d.get("import_ref") or "").removeprefix("spotify:dump:") < MONTH_FLOOR),
+        key=lambda d: d.get("import_ref", ""),
+    )
 
-        if doc.get("slug") != f"spotify-dump-{month}":
-            action.notes.append(f"WARN slug {doc.get('slug')!r} != spotify-dump-{month}")
-        if body.get("publish_date") != f"{month}-01":
-            action.notes.append(f"WARN publish_date {body.get('publish_date')!r} != {month}-01")
-        extra = {k for s in body.get("songs") or [] for k in s} - {
-            "track_name", "artist_name", "album_name", "album_art_url", "spotify_url", "liked_at",
-        }
-        if extra:
-            action.notes.append(f"WARN songs carry uncurated keys {sorted(extra)}")
-        if STRAY_KEY in body:
-            action.notes.append(f"drop stray {STRAY_KEY!r} key")
 
-        verdict, differing = draft_verdict(body, drafts.get(doc["id"]), DUMP_OWNED)
-        if verdict == "human-edits":
-            action.kind = "blocked"
-            action.notes.append(f"pending draft changes human fields {differing}: left alone")
-            actions.append(action)
+# ---------------------------------------------------------------------------
+# What an all_time sync would do
+# ---------------------------------------------------------------------------
+
+
+class PreviewClient(CMSClient):
+    """
+    A CMS client that reads for real and records every write instead of making it.
+
+    ``discarded`` are doc ids whose pending draft the preview treats as already
+    discarded (what ``apply`` will have done before the sync runs).
+    """
+
+    def __init__(self, *args: Any, discarded: set[str] = frozenset(), **kwargs: Any) -> None:  # type: ignore[assignment]
+        super().__init__(*args, **kwargs)
+        self.discarded = set(discarded)
+        self.writes: list[tuple[str, str]] = []
+        self.created: list[tuple[str, str]] = []  # (import_ref, title)
+        self.updated: dict[str, list[str]] = {}  # import_ref → fields that change
+        self._seen: dict[str, dict[str, Any]] = {}  # doc id → doc
+
+    async def find_by_import_ref(self, doc_type: str, import_ref: str) -> dict[str, Any] | None:
+        doc = await super().find_by_import_ref(doc_type, import_ref)
+        if doc is not None:
+            if doc["id"] in self.discarded:
+                doc = {**doc, "has_draft": False}
+            self._seen[doc["id"]] = doc
+        return doc
+
+    async def create_changeset(self, title: str) -> str:
+        self.writes.append(("changeset", title))
+        return "preview"
+
+    async def create_document(self, *, doc_type, slug, body, import_ref=None, **kwargs):  # type: ignore[no-untyped-def]
+        self.writes.append(("create", import_ref or slug))
+        self.created.append((import_ref or slug, body.get("title", "")))
+        return {"id": f"preview-{import_ref}"}
+
+    async def update_document(self, doc_id, *, body, **kwargs):  # type: ignore[no-untyped-def]
+        doc = self._seen.get(doc_id, {})
+        ref = doc.get("import_ref") or doc_id
+        live = doc.get("body") or {}
+        self.writes.append(("update", ref))
+        self.updated[ref] = sorted(k for k, v in body.items() if norm(live.get(k)) != norm(v))
+        return {"id": doc_id}
+
+    async def publish_document(self, doc_id: str) -> dict[str, Any]:
+        doc = self._seen.get(doc_id, {})
+        self.writes.append(("publish", doc.get("import_ref") or doc_id))
+        return {"id": doc_id}
+
+    async def discard_draft(self, doc_id: str) -> dict[str, Any]:
+        self.writes.append(("discard", doc_id))
+        return {"id": doc_id}
+
+
+@dataclass
+class Preview:
+    gateway: str
+    created: list[tuple[str, str]] = field(default_factory=list)
+    updated: dict[str, list[str]] = field(default_factory=dict)
+    skipped: int = 0
+    deferred: list[str] = field(default_factory=list)
+    errors: list[tuple[str, str]] = field(default_factory=list)
+    writes: int = 0
+
+
+async def preview_sync(
+    client: CMSClient,
+    gateways: dict[str, type[BaseGateway] | BaseGateway],
+    discarded: set[str] = frozenset(),  # type: ignore[assignment]
+) -> list[Preview]:
+    """Run each gateway ``all_time`` against *client*'s CMS without writing anything."""
+    out: list[Preview] = []
+    for name, gw in gateways.items():
+        pc = PreviewClient(
+            base_url=client.base_url,
+            api_key=client._api_key,
+            _http_client=client._get_http(),
+            discarded=discarded,
+        )
+        try:
+            gateway = gw(cms_client=pc) if isinstance(gw, type) else gw
+        except KeyError as exc:  # a credential env var is missing: preview the other gateway anyway
+            out.append(Preview(name, errors=[("-", f"{exc} is not set, so this gateway was not previewed")]))
             continue
-        if verdict == "gateway-only":
-            action.discard_draft = True
-            action.notes.append(f"discard gateway draft (differs in {differing})")
-
-        songs = body.get("songs") or []
-        owned = {"songs": songs, "song_count": float(len(songs))}
-        new_hash = GatewayItem("", "", owned).content_hash(SpotifyLikedDumpGateway.owned_fields)
-        if _meta(doc).get("content_hash") != new_hash:
-            action.meta_hash = new_hash
-            action.notes.append("store the new content hash")
-        if action.discard_draft or action.meta_hash or STRAY_KEY in body:
-            action.kind = "update" if action.meta_hash or STRAY_KEY in body else "clean"
-        actions.append(action)
-    return actions
+        gateway._client = pc  # an injected instance must write nowhere, too
+        result = await gateway.sync(SyncRange("all_time"))
+        out.append(
+            Preview(
+                name, pc.created, pc.updated, result.skipped, result.deferred, result.errors,
+                len(pc.writes),
+            )
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------
-# IO
+# Changesets (information)
 # ---------------------------------------------------------------------------
 
 
-async def load(client: CMSClient, doc_type: str) -> tuple[list[dict], dict[str, dict | None]]:
-    """All documents of a type, and each one's pending draft body (None if none)."""
-    docs: list[dict] = []
-    offset = 0
-    while True:
-        page = await client.list_documents(doc_type=doc_type, limit=100, offset=offset)
-        batch = page.get("documents", [])
-        docs += batch
-        offset += len(batch)
-        if not batch or offset >= page.get("total", 0):
-            break
-    drafts: dict[str, dict | None] = {}
+async def open_changesets_with_gateway_docs(client: CMSClient) -> list[tuple[str, str, int]]:
+    """``(id, title, n_gateway_docs)`` for open changesets that hold gateway docs."""
     http = client._get_http()
-    for doc in docs:
-        if not doc.get("has_draft"):
-            drafts[doc["id"]] = None
-            continue
-        resp = await http.get(
-            f"{client.base_url}/api/documents/{doc['id']}",
-            params={"draft": "true"},
-            headers=client._auth_headers(),
+    resp = await http.get(
+        f"{client.base_url}/api/changesets",
+        params={"status": "open", "include_documents": "true"},
+        headers=client._auth_headers(),
+    )
+    resp.raise_for_status()
+    out = []
+    for cs in resp.json().get("changesets", []):
+        n = sum(1 for d in cs.get("documents", []) if d.get("doc_type") in GATEWAY_TYPES)
+        if n:
+            out.append((cs["id"], cs["title"], n))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Report
+# ---------------------------------------------------------------------------
+
+
+def snapshot(loaded: Loaded) -> dict[str, dict[str, Any]]:
+    """What verify compares against: each gateway doc's slug and dates."""
+    snap: dict[str, dict[str, Any]] = {}
+    for docs in loaded.docs.values():
+        for d in docs:
+            body = d.get("body") or {}
+            snap[d.get("import_ref") or d["id"]] = {
+                "doc_type": d.get("doc_type"),
+                "slug": d.get("slug"),
+                "publish_date": body.get("publish_date"),
+                "outing_date": body.get("outing_date"),
+                "title": body.get("title"),
+            }
+    return snap
+
+
+def render_report(
+    loaded: Loaded,
+    previews: list[Preview] | None,
+    changesets: list[tuple[str, str, int]],
+) -> str:
+    L: list[str] = []
+    n_docs = {t: len(d) for t, d in loaded.docs.items()}
+    L.append(f"gateway docs: {n_docs}")
+
+    L += ["", "== 1. pending drafts ==="]
+    own = [f for f in loaded.drafts if f.verdict == "gateway-only"]
+    human = [f for f in loaded.drafts if f.verdict == "human-edits"]
+    L.append(f"{len(own)} gateway-only (apply discards these), {len(human)} a person's (left alone)")
+    for f in own:
+        L.append(f"  gateway  {f.doc_type} {f.import_ref}: differs in {f.differing}")
+    for f in human:
+        L.append(
+            f"  HUMAN    {f.doc_type} {f.import_ref}: differs in {f.differing} {f.note}".rstrip()
+            + "   <- decide by hand: publish it or discard it"
         )
-        resp.raise_for_status()
-        drafts[doc["id"]] = resp.json().get("body")
-    return docs, drafts
 
+    L += ["", f"== 2. Spotify months before {MONTH_FLOOR} (apply --delete-pre-floor deletes) =="]
+    old = pre_floor(loaded.docs[DUMP])
+    L.append(f"{len(old)} doc(s)")
+    for d in old:
+        songs = len((d.get("body") or {}).get("songs") or [])
+        pub = "published" if d.get("published") else "unpublished"
+        L.append(f"  {d.get('import_ref')}  {d.get('slug')}  {songs} songs  {pub}")
 
-async def apply(client: CMSClient, actions: list[Action]) -> str | None:
-    """Write the plan, in one changeset published at the end. Returns its id."""
-    todo = [a for a in actions if a.kind in ("update", "clean", "create")]
-    if not todo:
-        return None
-    cs_id = await client.create_changeset("gateway migration — curated payloads, one outing per place")
-    for a in todo:
-        if a.kind == "create":
-            assert a.new_item is not None
-            await client.create_document(
-                doc_type=a.doc_type,
-                slug=a.slug,
-                body=a.new_item.body,
-                import_ref=a.import_ref,
-                meta={
-                    "content_hash": a.new_item.content_hash(INaturalistFieldTripsGateway.owned_fields),
-                    "title": a.new_item.title,
-                },
-                changeset_id=cs_id,
-            )
-            continue
-        assert a.doc_id is not None
-        if a.discard_draft:
-            await client.discard_draft(a.doc_id)
-        # Always PATCH, even with an empty body: the CMS re-validates the merged body
-        # and drops any key the model does not know, which is what removes the stray
-        # ``draft`` key.
-        await client.update_document(
-            a.doc_id,
-            body=a.body_patch,
-            meta={"content_hash": a.meta_hash} if a.meta_hash else None,
-            changeset_id=cs_id,
+    L += ["", "== 3. what an all_time sync would do (nothing was written) =="]
+    if previews is None:
+        L.append("skipped (--skip-sync-preview)")
+    for p in previews or []:
+        L.append(
+            f"{p.gateway}: create {len(p.created)}, update {len(p.updated)}, "
+            f"unchanged {p.skipped}, deferred {len(p.deferred)}, errors {len(p.errors)}"
         )
-    await client.publish_changeset(cs_id)
-    return cs_id
+        for ref, title in p.created:
+            L.append(f"  CREATE  {ref}  {title!r}")
+        for ref, fields in sorted(p.updated.items()):
+            tags = "   <- tags are owned now: a hand edit is overwritten" if "tags" in fields else ""
+            L.append(f"  UPDATE  {ref}  {fields}{tags}")
+        for ref in p.deferred:
+            L.append(f"  DEFER   {ref}  (a person's draft is on it)")
+        for ref, msg in p.errors:
+            L.append(f"  ERROR   {ref}  {msg}")
+
+    L += ["", "== 4. open changesets holding gateway docs (information) =="]
+    L.append(f"{len(changesets)} changeset(s)")
+    for cs_id, title, n in changesets:
+        L.append(f"  {title!r} ({cs_id}): {n} gateway doc(s)")
+    return "\n".join(L)
 
 
-async def verify(client: CMSClient) -> list[str]:
-    """Problems that remain after (or before) a migration. Empty means clean."""
+# ---------------------------------------------------------------------------
+# Apply
+# ---------------------------------------------------------------------------
+
+
+async def delete_document(client: CMSClient, doc_id: str) -> None:
+    resp = await client._get_http().delete(
+        f"{client.base_url}/api/documents/{doc_id}", headers=client._auth_headers()
+    )
+    resp.raise_for_status()
+
+
+async def apply(
+    client: CMSClient, loaded: Loaded, *, delete_pre_floor: bool
+) -> tuple[list[str], list[str]]:
+    """Discard the gateway-only drafts, then (if asked) delete the pre-floor months."""
+    discarded, deleted = [], []
+    for f in loaded.drafts:
+        if f.verdict == "gateway-only":
+            await client.discard_draft(f.doc_id)
+            discarded.append(f.import_ref)
+    if delete_pre_floor:
+        for d in pre_floor(loaded.docs[DUMP]):
+            await delete_document(client, d["id"])
+            deleted.append(d["import_ref"])
+    return discarded, deleted
+
+
+# ---------------------------------------------------------------------------
+# Verify
+# ---------------------------------------------------------------------------
+
+
+def split_days(outings: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """Days with more than one outing document."""
+    by_day: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for d in outings:
+        by_day[(d.get("body") or {}).get("outing_date") or "?"].append(d)
+    return {day: ds for day, ds in by_day.items() if len(ds) > 1}
+
+
+def verify_problems(
+    loaded: Loaded, before: dict[str, dict[str, Any]] | None, previews: list[Preview] | None
+) -> tuple[list[str], list[str]]:
+    """``(problems, notes)``. Problems fail the verify; notes are for a person to read."""
     problems: list[str] = []
-    for doc_type in (OUTING, DUMP):
-        docs, _ = await load(client, doc_type)
+    notes: list[str] = []
+    for f in loaded.drafts:
+        problems.append(f"{f.doc_type} {f.import_ref}: pending draft ({f.verdict})")
+    for doc_type, docs in loaded.docs.items():
         for d in docs:
             body = d.get("body") or {}
             ref = d.get("import_ref")
-            if d.get("has_draft"):
-                problems.append(f"{doc_type} {ref}: pending draft")
             if STRAY_KEY in body:
                 problems.append(f"{doc_type} {ref}: stray {STRAY_KEY!r} key")
             if doc_type == OUTING:
-                if body.get("publish_date") != body.get("outing_date"):
-                    problems.append(f"{ref}: publish_date != outing_date")
-                observed = {o.get("observed_on") for o in body.get("observations") or [] if isinstance(o, dict)}
-                if observed and observed != {body.get("outing_date")}:
-                    problems.append(f"{ref}: outing_date {body.get('outing_date')} but observations on {sorted(observed)}")
-                raw = [o for o in body.get("observations") or [] if isinstance(o, dict) and "comments" in o]
-                if raw:
-                    problems.append(f"{ref}: still holds {len(raw)} raw observation payloads")
-    return problems
+                obs = [o for o in body.get("observations") or [] if isinstance(o, dict)]
+                if any(not is_curated(o) for o in obs):
+                    problems.append(f"{ref}: still holds a raw iNaturalist payload")
+    if pre_floor(loaded.docs[DUMP]):
+        problems.append(f"{len(pre_floor(loaded.docs[DUMP]))} Spotify month(s) before {MONTH_FLOOR} remain")
+
+    split = split_days(loaded.docs[OUTING])
+    if before is not None:
+        for d in loaded.docs[OUTING] + loaded.docs[DUMP]:
+            ref = d.get("import_ref")
+            was = before.get(ref)
+            if was is None:
+                continue
+            body = d.get("body") or {}
+            for key, now in (("slug", d.get("slug")), ("publish_date", body.get("publish_date"))):
+                if was.get(key) != now and (body.get("outing_date") not in split):
+                    problems.append(f"{ref}: {key} changed {was.get(key)!r} → {now!r}")
+        created = set(snapshot(loaded)) - set(before)
+        notes.append(f"{len(created)} doc(s) are new since the snapshot: {sorted(created)}")
+
+    for day, docs in sorted(split.items()):
+        notes.append(f"{day} split into {len(docs)} outings. Check the titles by hand:")
+        for d in sorted(docs, key=lambda x: x.get("import_ref", "")):
+            body = d.get("body") or {}
+            obs = [o for o in body.get("observations") or [] if isinstance(o, dict)]
+            notes.append(
+                f"    {d.get('import_ref')}  slug={d.get('slug')}  title={body.get('title')!r}  "
+                f"obs={len(obs)}  actually at: {dominant_place(obs) or '(no place)'!r}"
+            )
+    for p in previews or []:
+        if p.writes:
+            problems.append(f"a second all_time sync of {p.gateway} would still write {p.writes} time(s)")
+        for ref, fields in sorted(p.updated.items()):
+            problems.append(f"  would update {ref}: {fields}")
+        for ref in p.deferred:
+            problems.append(f"  would defer {ref}")
+        for ref, msg in p.errors:
+            problems.append(f"  would error on {ref}: {msg}")
+    return problems, notes
 
 
-def render(actions: list[Action]) -> str:
-    lines: list[str] = []
-    for a in actions:
-        if a.kind == "noop" and not a.notes:
-            continue
-        lines.append(f"[{a.kind.upper():7}] {a.doc_type} {a.import_ref} ({a.slug})")
-        lines += [f"           - {n}" for n in a.notes]
-    counts: dict[str, int] = {}
-    for a in actions:
-        counts[a.kind] = counts.get(a.kind, 0) + 1
-    lines.append("")
-    lines.append("summary: " + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())))
-    return "\n".join(lines)
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 
-async def run(
-    cms_url: str,
-    api_key: str | None,
-    do_apply: bool,
-    allow_prod: bool,
-    *,
-    client: CMSClient | None = None,
-) -> int:
-    host = urlsplit(cms_url).hostname or ""
-    if do_apply and host == PROD_HOST and not allow_prod:
-        print(f"refusing to --apply to {PROD_HOST} without --allow-prod", file=sys.stderr)
+def real_gateways() -> dict[str, BaseGateway]:
+    """The two gateways, built from the environment. Raises KeyError without credentials."""
+    from starlette_cms_gateways.discovery import discover_gateways
+
+    found = discover_gateways()
+    return {name: cls for name, cls in found.items() if name in ("inaturalist-field-trips", "spotify-liked-dump")}  # type: ignore[misc]
+
+
+async def run(args: argparse.Namespace, *, client: CMSClient | None = None, gateways=None) -> int:  # type: ignore[no-untyped-def]
+    host = urlsplit(args.cms_url).hostname or ""
+    if args.command == "apply" and host == PROD_HOST and not args.allow_prod:
+        print(f"refusing to apply to {PROD_HOST} without --allow-prod", file=sys.stderr)
+        return 2
+    if args.command == "apply" and args.delete_pre_floor and not args.snapshot_confirmed:
+        print(
+            "refusing to delete without --snapshot-confirmed: take a fresh Litestream snapshot "
+            "first and pass the flag to say you did",
+            file=sys.stderr,
+        )
         return 2
 
-    owns_client = client is None
-    client = client or CMSClient(base_url=cms_url, api_key=api_key)
+    owns = client is None
+    client = client or CMSClient(base_url=args.cms_url, api_key=args.api_key)
     try:
-        outing_docs, outing_drafts = await load(client, OUTING)
-        dump_docs, dump_drafts = await load(client, DUMP)
-        actions = plan_outings(outing_docs, outing_drafts) + plan_dumps(dump_docs, dump_drafts)
-        print(f"{'APPLY' if do_apply else 'DRY RUN'} against {cms_url}\n")
-        print(render(actions))
-        blocked = [a for a in actions if a.kind == "blocked"]
-        if not do_apply:
-            print("\nnothing written. Re-run with --apply to make these changes.")
-            return 1 if blocked else 0
-        cs = await apply(client, actions)
-        print(f"\napplied in changeset {cs}" if cs else "\nnothing to apply")
-        problems = await verify(client)
-        for p in problems:
-            print(f"STILL WRONG: {p}")
-        print("verified clean" if not problems else f"{len(problems)} problem(s) remain")
-        return 1 if (problems or blocked) else 0
+        loaded = await load(client)
+
+        async def maybe_preview(discarded: set[str]) -> list[Preview] | None:
+            if getattr(args, "skip_sync_preview", False) or getattr(args, "skip_sync_check", False):
+                return None
+            gws = gateways if gateways is not None else real_gateways()
+            return await preview_sync(client, gws, discarded)
+
+        if args.command == "report":
+            discarded = {f.doc_id for f in loaded.drafts if f.verdict == "gateway-only"}
+            previews = await maybe_preview(discarded)
+            print(f"REPORT against {args.cms_url} (nothing is written)\n")
+            print(render_report(loaded, previews, await open_changesets_with_gateway_docs(client)))
+            if args.snapshot_out:
+                with open(args.snapshot_out, "w") as f:
+                    json.dump(snapshot(loaded), f, indent=1, sort_keys=True)
+                print(f"\nsnapshot written to {args.snapshot_out}")
+            return 0
+
+        if args.command == "apply":
+            print(f"APPLY against {args.cms_url}")
+            discarded, deleted = await apply(client, loaded, delete_pre_floor=args.delete_pre_floor)
+            print(f"discarded {len(discarded)} gateway draft(s)")
+            human = [f for f in loaded.drafts if f.verdict == "human-edits"]
+            for f in human:
+                print(f"  left alone (a person's draft): {f.import_ref} differs in {f.differing}")
+            print(f"deleted {len(deleted)} pre-floor Spotify doc(s)")
+            print(
+                "\nnext: run one all_time sync per gateway (see this module's docstring), "
+                "then `verify`."
+            )
+            return 1 if human else 0
+
+        if args.command == "verify":
+            before = None
+            if args.snapshot:
+                with open(args.snapshot) as f:
+                    before = json.load(f)
+            problems, notes = verify_problems(loaded, before, await maybe_preview(set()))
+            for n in notes:
+                print(n)
+            for p in problems:
+                print(f"STILL WRONG: {p}")
+            print("verified clean" if not problems else f"{len(problems)} problem(s)")
+            return 1 if problems else 0
+        raise AssertionError(args.command)
     finally:
-        if owns_client:
+        if owns:
             await client.close()
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cms-url", required=True)
-    ap.add_argument("--api-key", default=os.environ.get("CMS_API_KEY"))
-    ap.add_argument("--apply", action="store_true", help="write the changes (default: dry run)")
-    ap.add_argument("--allow-prod", action="store_true", help=f"permit --apply against {PROD_HOST}")
-    args = ap.parse_args()
-    sys.exit(asyncio.run(run(args.cms_url, args.api_key, args.apply, args.allow_prod)))
+    sub = ap.add_subparsers(dest="command", required=True)
+    for name in ("report", "apply", "verify"):
+        p = sub.add_parser(name)
+        p.add_argument("--cms-url", required=True)
+        p.add_argument("--api-key", default=os.environ.get("CMS_API_KEY"))
+    sub.choices["report"].add_argument("--snapshot-out", metavar="FILE")
+    sub.choices["report"].add_argument("--skip-sync-preview", action="store_true")
+    a = sub.choices["apply"]
+    a.add_argument("--delete-pre-floor", action="store_true")
+    a.add_argument("--snapshot-confirmed", action="store_true")
+    a.add_argument("--allow-prod", action="store_true", help=f"permit apply against {PROD_HOST}")
+    v = sub.choices["verify"]
+    v.add_argument("--snapshot", metavar="FILE")
+    v.add_argument("--skip-sync-check", action="store_true")
+    sys.exit(asyncio.run(run(ap.parse_args())))
 
 
 if __name__ == "__main__":
