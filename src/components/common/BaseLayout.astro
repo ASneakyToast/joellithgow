@@ -148,9 +148,13 @@ const {
   <link rel="alternate" type="application/rss+xml" title="Joel Lithgow's Blog" href="/rss.xml" />
 
   <!-- Astraeus inline editor — loaded only when PUBLIC_CMS_BASE is set.
-       No defer/async: the embed script reads document.currentScript synchronously. -->
+       defer, so a slow or unreachable CMS can't hold up first paint (a plain
+       script in <head> blocks rendering). Not async: document.currentScript is
+       still set while a deferred classic script runs, and defer keeps the order
+       and waits for the DOM, which the embed's querySelectorAll needs. -->
   {import.meta.env.PUBLIC_CMS_BASE && (
     <script
+      defer
       src={`${import.meta.env.PUBLIC_CMS_BASE}/editor/embed.js`}
       data-cms-base={import.meta.env.PUBLIC_CMS_BASE}
       data-cms-media-base={import.meta.env.PUBLIC_MEDIA_BASE}
