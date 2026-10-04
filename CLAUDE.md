@@ -85,7 +85,7 @@ The site is built from published documents only, so a post that was never publis
 - Only `blog_post`. Gateway drafts (Spotify months, iNat outings held for review) and definitions are not drawn; edit those in the editor shell.
 - The template is one article-style card, so a `collection` draft shows without its links; open it in the shell for that.
 - Changesets are not one default set. A post made with `create_document` (the MCP bot, hermes) is in **no** changeset until it is edited, and an API edit sent with no active changeset (the MCP tools) starts its own date-titled one ("Oct 4", "Oct 4 (2)") per document. The browser editor adopts one changeset and keeps adding to it. Use *all drafts* to see everything; the picker's changeset entries only list what has been grouped.
-- The picker lives in the embed bundle (`starlette_editor/static/embed.js`, built from astraeus `editor_src/embed/`). A change there reaches prod through the usual path: merge astraeus, bump `ASTRAEUS_REF` in the `Dockerfile`, merge, then bump the image pin in jlithgow-ops (see *Where prod runs*).
+- The picker lives in the embed bundle (`starlette_editor/static/embed.js`, built from astraeus `editor_src/embed/`). A change there reaches prod through the usual path: merge astraeus, then build a new image and bump the pin in jlithgow-ops (see *Where prod runs*). `build-cms.yml` builds against astraeus `main` whatever the `Dockerfile` says, but it only runs on a push touching `cms/**`, `Dockerfile`, `pyproject.toml` or the workflow (or a manual run), so a site-only merge builds nothing. Bumping the `Dockerfile`'s `ASTRAEUS_REF` is the usual way to trigger it, and keeps local `make dev` builds on the same astraeus.
 
 ## MCP servers
 
