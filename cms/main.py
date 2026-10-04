@@ -61,6 +61,11 @@ CORS_ORIGINS: list[str] = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 # a production deploy.
 NETLIFY_BUILD_HOOK_URL = os.environ.get("NETLIFY_BUILD_HOOK_URL")
 
+# ADR 024: apply collab steps on the server instead of trusting the editor's copy of
+# the document. Off unless CMS_VERIFY_COLLAB=1, so turning it on (or back off) is a
+# config change and a pod restart, not a code change.
+VERIFY_COLLAB = os.environ.get("CMS_VERIFY_COLLAB") == "1"
+
 cms = CMS(
     database_url=DATABASE_URL,
     auth="apikey",
@@ -70,6 +75,7 @@ cms = CMS(
     session_secret=SESSION_SECRET,
     admin_users=ADMIN_USERS,
     cors_origins=CORS_ORIGINS,
+    verify_collab=VERIFY_COLLAB,
 )
 
 register_documents(cms)
