@@ -47,11 +47,12 @@ export const getStaticPaths = (async () => {
       posts: buckets.get(key)!,
       currentKey: key,
       timeline,
+      isLatest: i === 0,
     },
   }));
 }) satisfies GetStaticPaths;
 
-const { posts, currentKey, timeline } = Astro.props;
+const { posts, currentKey, timeline, isLatest } = Astro.props;
 
 // Group the full timeline into per-year blocks. The ←/→ buttons page through
 // the years client-side (no navigation); only clicking a Q# loads that quarter.
@@ -172,7 +173,10 @@ const jsonLd = {
         {/* Feed dives straight in — identity + tags live in the global header */}
         {posts.length > 0 && (
           <section id="blog" class="featured-posts-section">
-            <div class="log-feed">
+            {/* data-cms-list + the template below let the editor show unpublished
+                posts here while editing. Latest quarter only: that is where a new
+                post would land. */}
+            <div class="log-feed" data-cms-list={isLatest ? 'blog_post' : undefined}>
               {posts.map((post) => {
                 // Editorial types (not gateway-synced dumps/outings) can be
                 // edited inline from the index. data-cms-id scopes which
@@ -488,6 +492,33 @@ const jsonLd = {
               })}
             </div>
           </section>
+        )}
+
+        {/* Card prototype the editor copies for each unpublished post (see
+            astraeus embed/drafts.js). Same markup and classes as the full post
+            card above, so it is styled the same; data-cms-fill says which field
+            fills which element. Never visible: <template> contents don't render. */}
+        {isLatest && (
+          <template data-cms-draft-template="blog_post">
+            <article class="log-record" data-type="article">
+              <div class="record-body">
+                <time class="record-date" data-cms-fill="publish_date" data-cms-fill-format="date"></time>
+                <Card variant="flat" as="article" class="featured-post-card" data-post-type="article">
+                  <h2 class="post-title">
+                    <span class="post-title-text" data-cms-field="title" data-cms-fill="title"></span>
+                  </h2>
+                  <p class="post-description" data-cms-field="description" data-cms-fill="description"></p>
+                  <div
+                    class="post-excerpt-preview"
+                    data-cms-field="body_markdown"
+                    data-cms-collapsible=""
+                    data-cms-fill="body_markdown"
+                    data-cms-fill-format="excerpt"
+                  />
+                </Card>
+              </div>
+            </article>
+          </template>
         )}
 
         {/* Quarter timeline — ←/→ page through 2-year blocks (client-side); click a Q# to open it */}

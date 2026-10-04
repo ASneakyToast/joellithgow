@@ -78,6 +78,15 @@ make staging-restore  →  ssh: restore-db.sh latest.db.gz → staging container
 
 The Astro frontend is rebuilt on Netlify. **Publishing rebuilds the site automatically:** the prod CMS has an active webhook to the Netlify build hook (events `document.published`, `document.unpublished`, `document.deleted` and `changeset.published`), so a publish through the editor or the MCP tools updates the site in about a minute. `make webhooks` lists the registered webhooks. For a rebuild with no content change, use the **"Rebuild site"** button in the editor toolbar — prod only; it POSTs `/api/rebuild`, which fires the same build hook from `NETLIFY_BUILD_HOOK_URL`.
 
+## Drafts on the blog index
+
+The site is built from published documents only, so a post that was never published has no card on `/blog`. When you are logged in and press **Edit** there, the embed script draws a card for each unpublished `blog_post` from a `<template data-cms-draft-template="blog_post">` in `src/pages/blog/[...page].astro` (latest quarter only, where a new post would land), and the picker next to Edit chooses which: live + all drafts (default), live only, or live + one open changeset. The contract and its limits live in the astraeus editor README (*Inline editing on a static site*). Things worth knowing:
+
+- Only `blog_post`. Gateway drafts (Spotify months, iNat outings held for review) and definitions are not drawn; edit those in the editor shell.
+- The template is one article-style card, so a `collection` draft shows without its links; open it in the shell for that.
+- Changesets are not one default set. A post made with `create_document` (the MCP bot, hermes) is in **no** changeset until it is edited, and an API edit sent with no active changeset (the MCP tools) starts its own date-titled one ("Oct 4", "Oct 4 (2)") per document. The browser editor adopts one changeset and keeps adding to it. Use *all drafts* to see everything; the picker's changeset entries only list what has been grouped.
+- The picker lives in the embed bundle (`starlette_editor/static/embed.js`, built from astraeus `editor_src/embed/`). A change there reaches prod through the usual path: merge astraeus, bump `ASTRAEUS_REF` in the `Dockerfile`, merge, then bump the image pin in jlithgow-ops (see *Where prod runs*).
+
 ## MCP servers
 
 `starlette-cms` exposes MCP via a standalone `build_mcp_server()` FastMCP builder — it is **not**
