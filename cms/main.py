@@ -66,6 +66,13 @@ NETLIFY_BUILD_HOOK_URL = os.environ.get("NETLIFY_BUILD_HOOK_URL")
 # config change and a pod restart, not a code change.
 VERIFY_COLLAB = os.environ.get("CMS_VERIFY_COLLAB") == "1"
 
+# Where new drafts collect. A post made with create_document (the MCP bot, hermes) and
+# an edit that names no changeset join the open changeset with this title, made if none
+# is open, so "what is waiting to go live" is one list. Gateway runs name their own
+# changeset and are unaffected. Set CMS_DEFAULT_CHANGESET to rename it, or to an empty
+# string for the old behaviour (a draft in no changeset until edited).
+DEFAULT_CHANGESET = os.environ.get("CMS_DEFAULT_CHANGESET", "Staging") or None
+
 cms = CMS(
     database_url=DATABASE_URL,
     auth="apikey",
@@ -76,6 +83,7 @@ cms = CMS(
     admin_users=ADMIN_USERS,
     cors_origins=CORS_ORIGINS,
     verify_collab=VERIFY_COLLAB,
+    default_changeset=DEFAULT_CHANGESET,
 )
 
 register_documents(cms)
