@@ -3,7 +3,7 @@
   base = "."
   
   # Build command for Astro.js
-  command = "npm run build"
+  command = "bun install --frozen-lockfile && bun run build"
   
   # Directory that contains the deploy-ready HTML files and assets
   publish = "dist"
@@ -15,7 +15,7 @@
 # Production context: deploys from main
 [context.production]
   publish = "dist"
-  command = "npm run build"
+  command = "bun install --frozen-lockfile && bun run build"
   [context.production.environment]
     ASTRAEUS_URL = "https://cms.joellithgow.com"
     PUBLIC_CMS_BASE = "https://cms.joellithgow.com"
@@ -28,7 +28,7 @@
 # Deploy Preview context: deploys from pull requests
 [context.deploy-preview]
   publish = "dist"
-  command = "npm run build"
+  command = "bun install --frozen-lockfile && bun run build"
   [context.deploy-preview.environment]
     ASTRAEUS_URL = "https://cms-staging.joellithgow.com"
     PUBLIC_CMS_BASE = "https://cms-staging.joellithgow.com"
@@ -36,7 +36,7 @@
 # Branch Deploy context: deploys from branches (not PRs, not main)
 [context.branch-deploy]
   publish = "dist"
-  command = "npm run build"
+  command = "bun install --frozen-lockfile && bun run build"
   [context.branch-deploy.environment]
     ASTRAEUS_URL = "https://cms-staging.joellithgow.com"
     PUBLIC_CMS_BASE = "https://cms-staging.joellithgow.com"
