@@ -176,7 +176,7 @@ const jsonLd = {
             {/* data-cms-list + the template below let the editor show unpublished
                 posts here while editing. Latest quarter only: that is where a new
                 post would land. */}
-            <div class="log-feed" data-cms-list={isLatest ? 'blog_post' : undefined}>
+            <div class="log-feed" data-cms-list={isLatest ? 'blog_post definition' : undefined}>
               {posts.map((post) => {
                 // Editorial types (not gateway-synced dumps/outings) can be
                 // edited inline from the index. data-cms-id scopes which
@@ -515,6 +515,27 @@ const jsonLd = {
                     data-cms-fill="body_markdown"
                     data-cms-fill-format="excerpt"
                   />
+                </Card>
+              </div>
+            </article>
+          </template>
+        )}
+
+        {/* The same for a definition: the dictionary-style card, minus the link (a
+            draft has no page yet) and with nothing editable, like the live ones. */}
+        {isLatest && (
+          <template data-cms-draft-template="definition">
+            <article class="log-record" data-type="definition">
+              <div class="record-body">
+                <time class="record-date" data-cms-fill="publish_date" data-cms-fill-format="date"></time>
+                <Card variant="flat" as="article" class="featured-post-card" data-post-type="definition">
+                  <h2 class="post-title">
+                    <span class="post-title-text" data-cms-fill="term"></span>
+                  </h2>
+                  <blockquote class="definition-preview">
+                    <p data-cms-fill="definition" data-cms-fill-format="excerpt"></p>
+                  </blockquote>
+                  <p class="post-description" data-cms-fill="personal_notes" data-cms-fill-format="excerpt"></p>
                 </Card>
               </div>
             </article>
