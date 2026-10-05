@@ -241,17 +241,12 @@
         });
 
         scheduleIdleWork(() => {
-          this.preloadCriticalResources();
-        });
-
-        scheduleIdleWork(() => {
           this.setupLazyLoading();
         });
       } else {
         // Fallback for browsers without requestIdleCallback
         setTimeout(() => {
           this.optimizeImages();
-          this.preloadCriticalResources();
           this.setupLazyLoading();
         }, 1000);
       }
@@ -280,22 +275,6 @@
             // Example: img.src = src.replace('.jpg', '-low.jpg');
           }
         }
-      });
-    }
-
-    preloadCriticalResources() {
-      // Preload critical resources for better performance
-      const criticalResources = [
-        '/assets/css/themes.css',
-        // Add other critical resources here
-      ];
-
-      criticalResources.forEach(resource => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = resource.endsWith('.css') ? 'style' : 'script';
-        link.href = resource;
-        document.head.appendChild(link);
       });
     }
 

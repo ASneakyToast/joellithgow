@@ -32,7 +32,7 @@ HOUSEGALLERY_API_KEY=your-api-key-here
 ### 3. Build the Site
 
 ```bash
-npm run build
+bun run build
 ```
 
 That's it! Astro will automatically:
@@ -64,7 +64,7 @@ Artworks are automatically grouped into projects based on:
 ## Development Workflow
 
 ### Development Mode
-- During development (`npm run dev`), if no API key is provided, the site will show empty states
+- During development (`bun run dev`), if no API key is provided, the site will show empty states
 - Add your API key to `.env` to develop with real data
 
 ### Production Deployment
@@ -109,7 +109,7 @@ The system automatically categorizes images as:
 - Check that the key is active in the housegallery admin
 
 ### Build errors
-- Run `npm run build` to see detailed error messages
+- Run `bun run build` to see detailed error messages
 - Check that all required fields are present in the transformed data
 - Verify image URLs are accessible
 
