@@ -11,7 +11,7 @@ How content on joellithgow.com is shaped. For field names and types, `cms/schema
 | A case study | `project_page` | |
 | A job on the resume | `experience_entry` | |
 
-Spotify dumps and iNaturalist outings are created by the gateways as drafts for review. Don't write those by hand.
+Spotify dumps and iNaturalist outings are created and auto-published by the gateways. Don't write those by hand.
 
 ## `post_type` for `blog_post`
 
@@ -29,11 +29,18 @@ New posts default to `has_detail_page: true`. Six of the current posts set it to
 - `personal_notes`: your take, context, predictions, in markdown. This is where first-person opinion goes.
 - `sources`: a list mixing `link` and `citation` entries. Leave it empty rather than inventing a source.
 
-## Voice
+## Who writes what
 
-Joel's posts, going by the existing ones, are first person, conversational and curious, and they say when something is a guess. Observations come before predictions, and uncertainty is stated openly ("I don't know the answer", "live blogging/QAing, I guess"), so drafts should do the same.
+Joel writes his posts. He wants very little to no AI-written prose in them, and is frustrated when an agent turns what he said into writing and pads it with filler. Matching his voice is not the goal; adding less is.
 
-When drafting for Joel:
+- **Body: his words.** When Joel gives you the text (a "short thought on a link" is the common case), the body is that text. Fix obvious typos and punctuation only. Don't rephrase, expand, add a summary of the source, add a conclusion, or leave `[JOEL: ...]` placeholders. If a word looks like a typo but might be a joke or pun, keep it and ask, or flag it in your reply.
+- **Tagline: the one place an agent writes.** The `description` field is shown in the editor as **Tagline**. It is the short line under the title (and the page meta description and RSS summary). If Joel doesn't give one, write one: short, with a take, in the register of "Is this the formalization of commercial world-view classifier models?" rather than a literal restatement of the post. He may tune this over time.
+- **A thought about one link:** `post_type: thought`, the link goes inline in the body (his text, then "Via [source title](url)"), and `links` stays empty. `links` is for `collection` posts: items there also show on `/blog/links` and the tag pages.
+- **Title, excerpt and tags** are small metadata, not prose: keep them plain and factual, reuse existing tags (see *Tags*), and say what you chose so he can change it.
+
+### When Joel explicitly asks for a drafted piece
+
+Only then, longer drafting is fine. Joel's posts, going by the existing ones, are first person, conversational and curious, and they say when something is a guess. Observations come before predictions, and uncertainty is stated openly ("I don't know the answer", "live blogging/QAing, I guess"), so drafts should do the same.
 
 - Mark places for his own experience with a `[JOEL: ...]` placeholder, and remove them all before publishing.
 - Separate what a source says from what Joel thinks. Don't present a guess about someone else's reasoning as fact.
@@ -45,6 +52,7 @@ Tags are lowercase and hyphenated. Reuse the existing ones where they fit before
 
 ## Publishing
 
-- Content is published manually from the editor UI (Review & Publish), or via gateway syncs. Gateways create drafts that you review and publish.
-- Publishing does not rebuild the site. Use the "Rebuild site" button in the editor toolbar (prod only) to fire the Netlify build.
+- Posts are published from the editor UI (the toolbar's Publish ships the open changeset, else "Staging") or with `publish_document`. Gateway syncs auto-publish their own documents.
+- New drafts made with `create_document` collect in an open "Staging" changeset; publishing one document on its own takes it out of Staging. See `CLAUDE.md`, *Drafts on the blog index*.
+- Publishing, unpublishing and deleting rebuild the site automatically through a CMS webhook to Netlify (about a minute). The editor's "Rebuild site" button (prod only) is for a rebuild with no content change. Never `publish_document` unless Joel asked you to.
 - The body field is stored as ProseMirror JSON, not markdown, despite its name (`body_markdown`). Check the MCP tool's input schema for how it accepts the body before relying on markdown going in.

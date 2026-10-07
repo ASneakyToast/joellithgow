@@ -20,7 +20,18 @@ def register_documents(cms: CMS) -> None:
     @cms.document("blog_post")
     class BlogPostDocument:
         title: str = TextField(required=True, max_length=500)
-        description: str = TextField(required=True, max_length=1000)
+        # Stored as `description` (the site's meta description, RSS summary and
+        # card subtitle all read it) but shown as "Tagline": it is used as a
+        # short one-line take under the title, not a summary of the post.
+        description: str = TextField(
+            required=True,
+            max_length=1000,
+            label="Tagline",
+            help_text=(
+                "One short line under the title (also the meta description and RSS summary). "
+                "Opinionated, not a restatement of the post. If none is given, write one."
+            ),
+        )
         publish_date: str = TextField(required=True)          # ISO 8601 — wrap with new Date()
         post_type: str = SelectField(choices=["article", "thought", "collection"], required=True)
         # ProseMirror JSON, not Markdown, despite the field name — stored rich
@@ -31,7 +42,13 @@ def register_documents(cms: CMS) -> None:
         excerpt: str = TextField(max_length=2000)
         author: str = TextField(max_length=200)
         image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
-        links: list | None = JSONField()                      # for collection type: list[LinkItem]
+        links: list | None = JSONField(                       # for collection type: list[LinkItem]
+            help_text=(
+                "Only for `collection` posts (and short posts with no detail page): a list of "
+                "{url, title, description, date_added}. Items also appear on /blog/links and the tag "
+                "pages. A thought about one link puts that link inline in the body instead."
+            ),
+        )
         tags: list | None = JSONField()                       # list[str]
         featured: bool = BoolField(default=False)
         has_detail_page: bool = BoolField(default=True)
