@@ -26,6 +26,7 @@ from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
 from astraeus_portal import Portal, PortalApp
+from cms.media import MOUNT_PATH as MEDIA_MOUNT_PATH, build_media
 from cms.oauth import OAuthSettings, build_oauth_routes
 from cms.schema import register_documents
 
@@ -136,10 +137,16 @@ rebuild_actions = (
 # Gate the admin shells behind session auth. Without a guard the /shell pages
 # embed the CMS api_key in their HTML and are served to anyone — the guard
 # requires a valid cms_session cookie (login at /api/auth/login) instead.
+# Media library (cms/media.py). None unless MEDIA_BUCKET is set.
+media = build_media(cms)
+
 editor = Editor(
     cms=cms,
     actions=rebuild_actions,
     auth=lambda request: check_session_auth(request, cms),
+    # Enables the image picker on ImageFields. The blog `image` is a JSONField, so
+    # it gets no picker: paste a media URL into it (see schema.py).
+    media_base=MEDIA_MOUNT_PATH if media else None,
 )
 gateway_admin = GatewayAdmin(cms=cms, auth=lambda request: check_session_auth(request, cms))
 
@@ -205,7 +212,11 @@ async def lifespan(app):
     if chat._store is not None:
         await chat._store.init_db()
     async with cms.lifespan_context(app):
-        yield
+        if media is None:
+            yield
+        else:
+            async with media.lifespan_context(app):
+                yield
 
 # Starlette's Mount only matches "/admin/" and below, and the bare "/admin"
 # falls through to the catch-all CMS mount, which 404s. A redirect makes the
@@ -236,6 +247,8 @@ app = Starlette(
         Mount("/editor", app=editor.app),
         Mount("/gateways", app=gateway_admin.app),
         Mount("/chat", app=chat.app),
+        # Above the catch-all, or the CMS answers /media first.
+        *([Mount(MEDIA_MOUNT_PATH, app=media.app)] if media else []),
         Mount("/", app=cms.app),
     ],
     lifespan=lifespan,

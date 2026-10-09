@@ -41,7 +41,17 @@ def register_documents(cms: CMS) -> None:
         body_markdown: dict = RichTextField()
         excerpt: str = TextField(max_length=2000)
         author: str = TextField(max_length=200)
-        image: dict | None = JSONField()                      # { src, alt, type, fallbackSrc?, poster? }
+        image: dict | None = JSONField(                       # { src, alt, type, fallbackSrc?, poster? }
+            help_text=(
+                "The card and header image, as an object: {\"src\": ..., \"alt\": ...}. Both are "
+                "required and both are strings. Optional: type (\"image\" or \"video\"), fallbackSrc, "
+                "poster, link. For an image uploaded to the media library, src is the absolute URL "
+                "https://cms.joellithgow.com/media/iiif/<asset key>/full/1200,/0/default.webp (width "
+                "after full/ is yours to pick), because the site is static and a relative src would "
+                "resolve against Netlify. Find the asset key in the media library at /media/admin, "
+                "or with the media MCP's list_assets."
+            ),
+        )
         links: list | None = JSONField(                       # for collection type: list[LinkItem]
             help_text=(
                 "Only for `collection` posts (and short posts with no detail page): a list of "
