@@ -16,6 +16,7 @@ dependencies = [
     "spotipy>=2.23",
     "astraeus-otel>=0.1.0",
     "astraeus-portal>=0.1.0",
+    "mediakit[admin]>=0.2.0",
 ]
 
 [tool.uv]
@@ -27,6 +28,7 @@ starlette-chat = { path = "../astraeus/packages/starlette-chat", editable = true
 starlette-cms-gateways = { path = "../astraeus/packages/starlette-cms-gateways", editable = true }
 astraeus-otel = { path = "../astraeus/packages/astraeus-otel", editable = true }
 astraeus-portal = { path = "../astraeus/packages/astraeus-portal", editable = true }
+mediakit = { path = "../astraeus/packages/mediakit", editable = true }
 
 [project.entry-points."starlette_cms_gateways.gateways"]
 spotify-liked-dump      = "cms.gateways.spotify_liked_dump:SpotifyLikedDumpGateway"
