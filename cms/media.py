@@ -5,6 +5,10 @@ Mediakit keeps the originals in R2 and serves every image itself
 (``/media/iiif/<key>/...`` answers with a 302 to a short-lived presigned URL), so
 the bucket stays private and its credentials never leave the pod.
 
+With ``MEDIA_DERIVATIVES_BUCKET`` set, renditions live in a separate public bucket and
+``/media/iiif/...`` redirects to ``MEDIA_DERIVATIVES_PUBLIC_URL``, so Cloudflare's edge
+serves them; originals are never in that bucket.
+
 Read routes are public on purpose: the static site's <img> tags carry no
 credentials. Everything that writes, and the admin pages, take ``media_auth``:
 the CMS login cookie (the browser, and the editor's picker) or
@@ -53,6 +57,10 @@ def build_media(cms: CMS, env: Mapping[str, str] = os.environ) -> MediaKit | Non
             endpoint_url=env.get("MEDIA_ENDPOINT_URL"),
             aws_access_key_id=env.get("MEDIA_ACCESS_KEY_ID"),
             aws_secret_access_key=env.get("MEDIA_SECRET_ACCESS_KEY"),
+            # Renditions in a public bucket of their own, served from a custom
+            # domain: originals stay private. Unset, they sit beside the originals.
+            derivatives_bucket=env.get("MEDIA_DERIVATIVES_BUCKET"),
+            derivatives_public_url=env.get("MEDIA_DERIVATIVES_PUBLIC_URL"),
             # A file of its own beside content.db: Litestream replicates it
             # separately, and a catalog problem can't touch the documents.
             catalog_path=env.get("MEDIA_CATALOG_PATH", "./cms/data/media.db"),

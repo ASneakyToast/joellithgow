@@ -179,3 +179,27 @@ async def test_prepare_upload_signs_against_the_r2_bucket(site):
     assert "jlithgow-media" in body["upload_url"]
     assert "X-Amz-Signature" in body["upload_url"]
     assert body["key"].startswith("originals/")
+
+
+def test_renditions_bucket_and_public_url_come_from_the_environment(tmp_path):
+    cms = CMS(database_url=f"sqlite:///{tmp_path / 'content.db'}", session_secret=SESSION_SECRET)
+    env = media_env(
+        tmp_path,
+        MEDIA_DERIVATIVES_BUCKET="jlithgow-media-public",
+        MEDIA_DERIVATIVES_PUBLIC_URL="https://media.joellithgow.com",
+    )
+
+    mk = build_media(cms, env)
+
+    assert mk is not None
+    assert mk.config.derivatives_bucket == "jlithgow-media-public"
+    assert mk.config.derivatives_public_url == "https://media.joellithgow.com"
+
+
+def test_renditions_stay_beside_the_originals_without_a_bucket_setting(tmp_path):
+    cms = CMS(database_url=f"sqlite:///{tmp_path / 'content.db'}", session_secret=SESSION_SECRET)
+
+    mk = build_media(cms, media_env(tmp_path))
+
+    assert mk is not None
+    assert mk.config.derivatives_bucket is None
