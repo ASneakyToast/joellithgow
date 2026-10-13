@@ -13,6 +13,7 @@ setup_telemetry(TelemetryConfig(service_name="joellithgow-cms"))
 import json
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import httpx
 from starlette.applications import Starlette
@@ -22,6 +23,7 @@ from starlette.routing import Mount, Route
 from starlette_cms import CMS
 from starlette_cms.auth import check_session_auth, require_auth
 from starlette_editor import Editor
+from starlette_cms_feedback import FeedbackAdmin
 from starlette_cms_gateways.admin import GatewayAdmin
 from starlette_chat import ChatAPI, register_editorial_blocks
 from starlette_chat.providers.openai import OpenAICompatibleProvider
@@ -150,6 +152,16 @@ editor = Editor(
 )
 gateway_admin = GatewayAdmin(cms=cms, auth=lambda request: check_session_auth(request, cms))
 
+# Feedback and bug reports for Astraeus. Reports live in their own SQLite file
+# beside content.db (so the volume and Litestream cover it) and are only served
+# through auth-checked routes — the document API is public-read here.
+FEEDBACK_DB_PATH = Path(DATABASE_URL.removeprefix("sqlite:///")).with_name("feedback.db")
+feedback_admin = FeedbackAdmin(
+    cms=cms,
+    db_path=FEEDBACK_DB_PATH,
+    auth=lambda request: check_session_auth(request, cms),
+)
+
 # LM Studio (local) or OpenAI — set OPENAI_API_KEY + OPENAI_BASE_URL to override.
 # Defaults to LM Studio at http://localhost:1234/v1.
 portal = Portal(
@@ -165,6 +177,12 @@ portal = Portal(
             path="/gateways/shell",
             description="Sync data from external services into the CMS",
             icon="🔄",
+        ),
+        PortalApp(
+            name="Feedback",
+            path="/feedback/shell",
+            description="File and triage feedback and bug reports for Astraeus",
+            icon="🐛",
         ),
         PortalApp(
             name="Chat",
@@ -246,6 +264,7 @@ app = Starlette(
         Mount("/admin", app=portal.app),
         Mount("/editor", app=editor.app),
         Mount("/gateways", app=gateway_admin.app),
+        Mount("/feedback", app=feedback_admin.app),
         Mount("/chat", app=chat.app),
         # Above the catch-all, or the CMS answers /media first.
         *([Mount(MEDIA_MOUNT_PATH, app=media.app)] if media else []),

@@ -709,6 +709,7 @@ dependencies = [
     { name = "spotipy" },
     { name = "starlette-chat", extra = ["openai"] },
     { name = "starlette-cms", extra = ["collab-verify", "mcp"] },
+    { name = "starlette-cms-feedback", extra = ["mcp"] },
     { name = "starlette-cms-gateways" },
     { name = "starlette-editor" },
     { name = "uvicorn", extra = ["standard"] },
@@ -727,6 +728,7 @@ requires-dist = [
     { name = "spotipy", specifier = ">=2.23" },
     { name = "starlette-chat", extras = ["openai"], editable = "../astraeus/packages/starlette-chat" },
     { name = "starlette-cms", extras = ["mcp", "collab-verify"], editable = "../astraeus/packages/starlette-cms" },
+    { name = "starlette-cms-feedback", extras = ["mcp"], editable = "../astraeus/packages/starlette-cms-feedback" },
     { name = "starlette-cms-gateways", editable = "../astraeus/packages/starlette-cms-gateways" },
     { name = "starlette-editor", editable = "../astraeus/packages/starlette-editor" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
@@ -2268,6 +2270,32 @@ requires-dist = [
     { name = "websockets", specifier = ">=12.0" },
 ]
 provides-extras = ["mcp", "postgres", "collab-verify", "dev"]
+
+[[package]]
+name = "starlette-cms-feedback"
+version = "0.1.0"
+source = { editable = "../astraeus/packages/starlette-cms-feedback" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "starlette-cms" },
+]
+
+[package.optional-dependencies]
+mcp = [
+    { name = "mcp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "starlette-cms", editable = "../astraeus/packages/starlette-cms" },
+    { name = "starlette-cms-feedback", extras = ["full"], marker = "extra == 'dev'" },
+    { name = "starlette-cms-feedback", extras = ["mcp"], marker = "extra == 'full'" },
+]
+provides-extras = ["mcp", "full", "dev"]
 
 [[package]]
 name = "starlette-cms-gateways"
