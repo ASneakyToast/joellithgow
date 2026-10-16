@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE: ghcr.io/asneakytoast/joellithgow-cms
+  IMAGE: ghcr.io/joellithgow95/joellithgow-cms
 
 jobs:
   build:
@@ -51,7 +51,7 @@ jobs:
         run: |
           REF="${{ inputs.astraeus_ref }}"
           if [ -z "$REF" ]; then
-            REF=$(git ls-remote https://github.com/ASneakyToast/astraeus main | cut -f1)
+            REF=$(git ls-remote https://github.com/joellithgow95/astraeus main | cut -f1)
           fi
           test -n "$REF" || { echo "::error::could not resolve astraeus main"; exit 1; }
           echo "sha=$REF" >> "$GITHUB_OUTPUT"

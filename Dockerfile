@@ -18,7 +18,7 @@ WORKDIR /app
 # ASTRAEUS_REF (or pass --build-arg ASTRAEUS_REF=<sha|tag>) to pull newer
 # astraeus package changes.
 ARG ASTRAEUS_REF=9f71383ff7f9a6246e5f6693eade2aedfb6a81c8
-RUN git clone https://github.com/ASneakyToast/astraeus.git \
+RUN git clone https://github.com/joellithgow95/astraeus.git \
     && git -C astraeus checkout "${ASTRAEUS_REF}"
 
 # Sync deps against the pinned workspace (../astraeus/... sources resolve here).
@@ -54,7 +54,7 @@ ENV PATH="/app/joellithgow/.venv/bin:$PATH"
 ARG ASTRAEUS_REF
 ENV ASTRAEUS_REF=${ASTRAEUS_REF}
 LABEL org.opencontainers.image.revision=${ASTRAEUS_REF}
-LABEL org.opencontainers.image.source=https://github.com/ASneakyToast/joellithgow
+LABEL org.opencontainers.image.source=https://github.com/joellithgow95/joellithgow
 
 EXPOSE 8000
 
