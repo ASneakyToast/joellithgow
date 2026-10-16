@@ -144,7 +144,7 @@ prod-restart:
 # astraeus commit is baked into the image as $ASTRAEUS_REF, so `deployed-ref`
 # can report what is actually running.
 
-ASTRAEUS_REPO := https://github.com/ASneakyToast/astraeus
+ASTRAEUS_REPO := https://github.com/joellithgow95/astraeus
 
 ## Build the CMS image in CI against the latest astraeus main, and wait for it
 .PHONY: image-build
